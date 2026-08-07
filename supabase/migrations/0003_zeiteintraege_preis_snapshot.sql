@@ -25,7 +25,12 @@ create trigger zeiteintraege_set_preis
 
 -- View neu erstellen: Betrag basiert jetzt auf dem eingefrorenen Preis (z.preis)
 -- statt dem aktuellen Katalogpreis (d.preis).
-create or replace view v_zeiteintraege
+-- Hinweis: "create or replace view" erlaubt nur ANHÄNGEN neuer Spalten am
+-- Ende, kein Einfügen mittendrin (sonst Fehler 42P16 "cannot change name of
+-- view column"). Daher hier: view löschen und komplett neu anlegen.
+drop view if exists v_zeiteintraege;
+
+create view v_zeiteintraege
   with (security_invoker = true)
 as
 select
@@ -39,7 +44,6 @@ select
   z.rabatt_prozent,
   z.referenz,
   z.beleg_id,
-  z.preis,
   round(
     (z.dauer_minuten / 60.0) * z.preis * (1 - z.rabatt_prozent / 100.0),
     2
@@ -66,7 +70,8 @@ select
   d.konto,
   mw.code as mwst_code,
   p.name as mitarbeiter_name,
-  z.user_id
+  z.user_id,
+  z.preis
 from zeiteintraege z
 join mandate m on m.id = z.mandat_id
 join kunden k on k.id = m.kunde_id
