@@ -97,4 +97,6 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
   vorname: string | null;
   dienstleistung_bezeichnung: string;
   mitarbeiter_name: string;
+  klasse_id: string | null;
+  klasse_bezeichnung: string | null;
 };

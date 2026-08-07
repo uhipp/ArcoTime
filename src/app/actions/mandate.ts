@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { heuteIso } from "@/lib/date-utils";
 
 function mandatFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -13,7 +14,7 @@ function mandatFromForm(formData: FormData) {
     bezeichnung: String(formData.get("bezeichnung") ?? "").trim(),
     status: String(formData.get("status") ?? "aktiv"),
     kostenstelle: str(formData.get("kostenstelle")),
-    startdatum: str(formData.get("startdatum")) ?? new Date().toISOString().slice(0, 10),
+    startdatum: str(formData.get("startdatum")) ?? heuteIso(),
     notizen: str(formData.get("notizen")),
     sichtbar_fuer_alle: formData.get("sichtbar_fuer_alle") === "on",
   };

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { heuteIso } from "@/lib/date-utils";
 
 function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -11,7 +12,7 @@ function zeiteintragFromForm(formData: FormData) {
   return {
     mandat_id: String(formData.get("mandat_id")),
     dienstleistung_id: String(formData.get("dienstleistung_id")),
-    datum: str(formData.get("datum")) ?? new Date().toISOString().slice(0, 10),
+    datum: str(formData.get("datum")) ?? heuteIso(),
     start_zeit: str(formData.get("start_zeit")),
     end_zeit: str(formData.get("end_zeit")),
     dauer_minuten: Number(formData.get("dauer_minuten") ?? 0),

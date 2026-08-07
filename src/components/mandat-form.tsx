@@ -1,3 +1,4 @@
+import { heuteIso } from "@/lib/date-utils";
 import type { Kunde, Mandat } from "@/lib/types";
 
 export function MandatForm({
@@ -78,7 +79,7 @@ export function MandatForm({
             id="startdatum"
             name="startdatum"
             type="date"
-            defaultValue={mandat?.startdatum ?? new Date().toISOString().slice(0, 10)}
+            defaultValue={mandat?.startdatum ?? heuteIso()}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>

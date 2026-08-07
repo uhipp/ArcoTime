@@ -13,6 +13,13 @@ export default function DashboardPage() {
           <div className="text-sm text-gray-500">Zeit erfassen & eigene Einträge</div>
         </Link>
         <Link
+          href="/auswertungen"
+          className="block rounded-lg border bg-white p-5 hover:shadow"
+        >
+          <div className="font-medium">Auswertungen</div>
+          <div className="text-sm text-gray-500">Tag / Woche / Monat mit Filtern</div>
+        </Link>
+        <Link
           href="/kunden"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
@@ -35,7 +42,7 @@ export default function DashboardPage() {
         </Link>
       </div>
       <p className="text-sm text-gray-500 mt-8">
-        Auswertungen, Kalender und Export folgen in Phase 3–4.
+        Kalender und Export folgen in Phase 4.
       </p>
     </div>
   );

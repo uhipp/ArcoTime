@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { heuteIso } from "@/lib/date-utils";
 import type { Dienstleistung, Mandat, Zeiteintrag } from "@/lib/types";
-
-function heute() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function jetztAlsZeit() {
   const d = new Date();
@@ -154,7 +151,7 @@ export function ZeiterfassungForm({
           id="datum"
           name="datum"
           type="date"
-          defaultValue={zeiteintrag?.datum ?? heute()}
+          defaultValue={zeiteintrag?.datum ?? heuteIso()}
           required
           className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />

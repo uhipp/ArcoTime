@@ -2,21 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
 import { createZeiteintrag } from "@/app/actions/zeiteintraege";
+import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
-
-function montagDieserWoche(bezug = new Date()) {
-  const d = new Date(bezug);
-  const tag = d.getDay(); // 0 = Sonntag
-  const diff = tag === 0 ? -6 : 1 - tag;
-  d.setDate(d.getDate() + diff);
-  return d.toISOString().slice(0, 10);
-}
-
-function sonntagDieserWoche(bezug = new Date()) {
-  const montag = new Date(montagDieserWoche(bezug));
-  montag.setDate(montag.getDate() + 6);
-  return montag.toISOString().slice(0, 10);
-}
 
 export default async function ZeiterfassungPage({
   searchParams,
@@ -24,8 +11,9 @@ export default async function ZeiterfassungPage({
   searchParams: Promise<{ error?: string; von?: string; bis?: string }>;
 }) {
   const { error, von, bis } = await searchParams;
-  const vonDatum = von ?? montagDieserWoche();
-  const bisDatum = bis ?? sonntagDieserWoche();
+  const [defaultVon, defaultBis] = zeitraumFuer("woche", heuteIso());
+  const vonDatum = von ?? defaultVon;
+  const bisDatum = bis ?? defaultBis;
 
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();

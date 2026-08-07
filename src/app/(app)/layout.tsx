@@ -34,6 +34,9 @@ export default async function AppLayout({
               <Link href="/zeiterfassung" className="hover:text-arcos-navy">
                 Zeiterfassung
               </Link>
+              <Link href="/auswertungen" className="hover:text-arcos-navy">
+                Auswertungen
+              </Link>
               <Link href="/kunden" className="hover:text-arcos-navy">
                 Kunden
               </Link>
