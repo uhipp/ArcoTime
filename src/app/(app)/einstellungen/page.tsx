@@ -34,7 +34,7 @@ export default async function EinstellungenPage() {
                 {k.bezeichnung}
               </span>
               <form action={toggleKlasse.bind(null, k.id, !k.aktiv)}>
-                <button type="submit" className="text-xs text-blue-600 hover:underline">
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
                   {k.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
@@ -50,7 +50,7 @@ export default async function EinstellungenPage() {
           />
           <button
             type="submit"
-            className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
           >
             Hinzufügen
           </button>
@@ -69,7 +69,7 @@ export default async function EinstellungenPage() {
                 {m.code} – {m.bezeichnung} ({Number(m.satz).toFixed(1)}%)
               </span>
               <form action={toggleMwstCode.bind(null, m.id, !m.aktiv)}>
-                <button type="submit" className="text-xs text-blue-600 hover:underline">
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
                   {m.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
@@ -98,7 +98,7 @@ export default async function EinstellungenPage() {
           />
           <button
             type="submit"
-            className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
           >
             Hinzufügen
           </button>

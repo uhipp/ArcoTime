@@ -15,7 +15,7 @@ export default async function DienstleistungenPage() {
         <h1 className="text-2xl font-semibold">Dienstleistungen</h1>
         <Link
           href="/dienstleistungen/neu"
-          className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
           + Neue Dienstleistung
         </Link>
@@ -45,7 +45,7 @@ export default async function DienstleistungenPage() {
                 <td className="px-4 py-2">
                   <Link
                     href={`/dienstleistungen/${d.id}`}
-                    className="text-blue-600 hover:underline"
+                    className="text-arcos-steel hover:underline"
                   >
                     {d.bezeichnung}
                   </Link>

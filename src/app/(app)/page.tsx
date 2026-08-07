@@ -6,6 +6,13 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-semibold mb-6">Übersicht</h1>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link
+          href="/zeiterfassung"
+          className="block rounded-lg border bg-white p-5 hover:shadow"
+        >
+          <div className="font-medium">Zeiterfassung</div>
+          <div className="text-sm text-gray-500">Zeit erfassen & eigene Einträge</div>
+        </Link>
+        <Link
           href="/kunden"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
@@ -28,7 +35,7 @@ export default function DashboardPage() {
         </Link>
       </div>
       <p className="text-sm text-gray-500 mt-8">
-        Zeiterfassung, Auswertungen, Kalender und Export folgen in Phase 2–4.
+        Auswertungen, Kalender und Export folgen in Phase 3–4.
       </p>
     </div>
   );

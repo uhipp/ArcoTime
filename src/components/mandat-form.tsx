@@ -28,7 +28,7 @@ export function MandatForm({
           name="kunde_id"
           required
           defaultValue={mandat?.kunde_id ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         >
           <option value="" disabled>
             Bitte wählen…
@@ -51,7 +51,7 @@ export function MandatForm({
           name="bezeichnung"
           required
           defaultValue={mandat?.bezeichnung ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
 
@@ -64,7 +64,7 @@ export function MandatForm({
             id="status"
             name="status"
             defaultValue={mandat?.status ?? "aktiv"}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="aktiv">Aktiv</option>
             <option value="inaktiv">Inaktiv</option>
@@ -79,7 +79,7 @@ export function MandatForm({
             name="startdatum"
             type="date"
             defaultValue={mandat?.startdatum ?? new Date().toISOString().slice(0, 10)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>
       </div>
@@ -92,7 +92,7 @@ export function MandatForm({
           id="kostenstelle"
           name="kostenstelle"
           defaultValue={mandat?.kostenstelle ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
         <p className="text-xs text-gray-400 mt-1">
           Wird bei jedem Zeiteintrag dieses Mandats automatisch in den Export
@@ -118,14 +118,14 @@ export function MandatForm({
           name="notizen"
           rows={3}
           defaultValue={mandat?.notizen ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
 
       <div className="flex gap-3">
         <button
           type="submit"
-          className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
           Speichern
         </button>

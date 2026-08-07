@@ -30,7 +30,7 @@ export function DienstleistungForm({
           name="bezeichnung"
           required
           defaultValue={dienstleistung?.bezeichnung ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
 
@@ -43,7 +43,7 @@ export function DienstleistungForm({
           name="beschreibung"
           rows={2}
           defaultValue={dienstleistung?.beschreibung ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
 
@@ -57,7 +57,7 @@ export function DienstleistungForm({
             name="klasse_id"
             required
             defaultValue={dienstleistung?.klasse_id ?? ""}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="" disabled>
               Bitte wählen…
@@ -77,7 +77,7 @@ export function DienstleistungForm({
             id="einheit"
             name="einheit"
             defaultValue={dienstleistung?.einheit ?? "Stunde"}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="Stunde">Stunde</option>
             <option value="Pauschale">Pauschale</option>
@@ -97,7 +97,7 @@ export function DienstleistungForm({
           min="0"
           required
           defaultValue={dienstleistung?.preis ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
 
@@ -111,7 +111,7 @@ export function DienstleistungForm({
             id="konto"
             name="konto"
             defaultValue={dienstleistung?.konto ?? ""}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>
         <div>
@@ -122,7 +122,7 @@ export function DienstleistungForm({
             id="mwst_code_id"
             name="mwst_code_id"
             defaultValue={dienstleistung?.mwst_code_id ?? ""}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="">Keiner</option>
             {mwstCodes.map((m) => (
@@ -146,7 +146,7 @@ export function DienstleistungForm({
       <div className="flex gap-3">
         <button
           type="submit"
-          className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
           Speichern
         </button>

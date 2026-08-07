@@ -1,4 +1,5 @@
 import type { Kunde } from "@/lib/types";
+import { PlzOrtFields } from "@/components/plz-ort-fields";
 
 export function KundeForm({
   kunde,
@@ -49,8 +50,7 @@ export function KundeForm({
             className="col-span-2"
           />
           <Field label="Postfach" name="postfach" defaultValue={kunde?.postfach} />
-          <Field label="PLZ" name="plz" defaultValue={kunde?.plz} />
-          <Field label="Ort" name="ort" defaultValue={kunde?.ort} />
+          <PlzOrtFields defaultPlz={kunde?.plz} defaultOrt={kunde?.ort} />
           <Field
             label="Land"
             name="land"
@@ -86,14 +86,14 @@ export function KundeForm({
           name="notizen"
           defaultValue={kunde?.notizen ?? ""}
           rows={3}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </section>
 
       <div className="flex gap-3">
         <button
           type="submit"
-          className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
           Speichern
         </button>
@@ -136,7 +136,7 @@ function Field({
         type={type}
         required={required}
         defaultValue={defaultValue ?? ""}
-        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
       />
       {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>

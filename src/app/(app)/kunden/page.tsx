@@ -29,7 +29,7 @@ export default async function KundenPage({
         <h1 className="text-2xl font-semibold">Kunden</h1>
         <Link
           href="/kunden/neu"
-          className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
           + Neuer Kunde
         </Link>
@@ -41,7 +41,7 @@ export default async function KundenPage({
           name="q"
           defaultValue={q ?? ""}
           placeholder="Suche nach Name, Ort, Adress-Schlüssel…"
-          className="w-full max-w-sm rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full max-w-sm rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </form>
 
@@ -65,7 +65,7 @@ export default async function KundenPage({
             {(kunden as Kunde[] | null)?.map((k) => (
               <tr key={k.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">
-                  <Link href={`/kunden/${k.id}`} className="text-blue-600 hover:underline">
+                  <Link href={`/kunden/${k.id}`} className="text-arcos-steel hover:underline">
                     {k.vorname ? `${k.vorname} ` : ""}
                     {k.name}
                   </Link>

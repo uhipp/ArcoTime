@@ -29,7 +29,7 @@ export default async function MandatePage({
         <h1 className="text-2xl font-semibold">Mandate</h1>
         <Link
           href="/mandate/neu"
-          className="rounded bg-blue-600 text-white text-sm font-medium px-4 py-2 hover:bg-blue-700"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
           + Neues Mandat
         </Link>
@@ -86,7 +86,7 @@ export default async function MandatePage({
             {mandate?.map((m) => (
               <tr key={m.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">
-                  <Link href={`/mandate/${m.id}`} className="text-blue-600 hover:underline">
+                  <Link href={`/mandate/${m.id}`} className="text-arcos-steel hover:underline">
                     {m.bezeichnung}
                   </Link>
                 </td>

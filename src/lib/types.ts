@@ -69,3 +69,32 @@ export type Dienstleistung = {
   dienstleistungsklassen?: Pick<Dienstleistungsklasse, "id" | "bezeichnung">;
   mwst_codes?: Pick<MwstCode, "id" | "code">;
 };
+
+export type Zeiteintrag = {
+  id: string;
+  mandat_id: string;
+  dienstleistung_id: string;
+  user_id: string;
+  datum: string;
+  start_zeit: string | null;
+  end_zeit: string | null;
+  dauer_minuten: number;
+  beschreibung: string | null;
+  rabatt_prozent: number;
+  referenz: string | null;
+  beleg_id: string | null;
+  preis: number | null;
+};
+
+// Zeile aus der View v_zeiteintraege (inkl. berechnetem Betrag & Stammdaten)
+export type ZeiteintragMitDetails = Zeiteintrag & {
+  menge_stunden: number;
+  betrag: number;
+  mandat_bezeichnung: string;
+  kostenstelle: string | null;
+  kunde_id: string;
+  kunde_name: string;
+  vorname: string | null;
+  dienstleistung_bezeichnung: string;
+  mitarbeiter_name: string;
+};
