@@ -37,6 +37,9 @@ export default async function AppLayout({
               <Link href="/auswertungen" className="hover:text-arcos-navy">
                 Auswertungen
               </Link>
+              <Link href="/kalender" className="hover:text-arcos-navy">
+                Kalender
+              </Link>
               <Link href="/kunden" className="hover:text-arcos-navy">
                 Kunden
               </Link>
@@ -46,6 +49,11 @@ export default async function AppLayout({
               <Link href="/dienstleistungen" className="hover:text-arcos-navy">
                 Dienstleistungen
               </Link>
+              {isAdmin && (
+                <Link href="/export" className="hover:text-arcos-navy">
+                  Export
+                </Link>
+              )}
               {isAdmin && (
                 <Link href="/einstellungen" className="hover:text-arcos-navy">
                   Einstellungen

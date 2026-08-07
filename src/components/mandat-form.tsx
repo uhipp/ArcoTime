@@ -101,6 +101,25 @@ export function MandatForm({
         </p>
       </div>
 
+      <div>
+        <label className="block text-sm font-medium mb-1" htmlFor="naechste_belegnummer">
+          Nächste Belegnummer
+        </label>
+        <input
+          id="naechste_belegnummer"
+          name="naechste_belegnummer"
+          type="number"
+          placeholder="470000"
+          defaultValue={mandat?.naechste_belegnummer ?? ""}
+          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          Wird beim nächsten Export für dieses Mandat vergeben und danach
+          automatisch um 1 erhöht. Nur ändern, wenn du z.B. an eine bestehende
+          Nummerierung im Buchhaltungssystem anschliessen willst.
+        </p>
+      </div>
+
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"

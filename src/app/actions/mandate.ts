@@ -9,7 +9,7 @@ function mandatFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
     v && String(v).trim() !== "" ? String(v).trim() : null;
 
-  return {
+  const werte: Record<string, unknown> = {
     kunde_id: String(formData.get("kunde_id")),
     bezeichnung: String(formData.get("bezeichnung") ?? "").trim(),
     status: String(formData.get("status") ?? "aktiv"),
@@ -18,6 +18,15 @@ function mandatFromForm(formData: FormData) {
     notizen: str(formData.get("notizen")),
     sichtbar_fuer_alle: formData.get("sichtbar_fuer_alle") === "on",
   };
+
+  // Nur setzen, wenn ausgefüllt – sonst bleibt der bestehende Zähler des
+  // Mandats unangetastet (nicht mit null überschreiben).
+  const belegnummer = str(formData.get("naechste_belegnummer"));
+  if (belegnummer !== null) {
+    werte.naechste_belegnummer = Number(belegnummer);
+  }
+
+  return werte;
 }
 
 export async function createMandat(formData: FormData) {

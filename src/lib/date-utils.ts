@@ -64,6 +64,24 @@ export function formatDatumCH(iso: string) {
   return parseISO(iso).toLocaleDateString("de-CH");
 }
 
+/** Wochenraster (6 Wochen à 7 Tage, Montag-Start) rund um den Monat von `bezugsdatumIso`. */
+export function monatsRaster(bezugsdatumIso: string): string[][] {
+  const bezug = parseISO(bezugsdatumIso);
+  const start = montag(ersterImMonat(bezug));
+  const end = sonntag(letzterImMonat(bezug));
+
+  const tage: string[] = [];
+  const cur = new Date(start);
+  while (cur <= end) {
+    tage.push(toISO(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const wochen: string[][] = [];
+  for (let i = 0; i < tage.length; i += 7) wochen.push(tage.slice(i, i + 7));
+  return wochen;
+}
+
 export function label(ansicht: Ansicht, von: string, bis: string) {
   if (ansicht === "tag") return formatDatumCH(von);
   if (ansicht === "woche") return `${formatDatumCH(von)} – ${formatDatumCH(bis)}`;

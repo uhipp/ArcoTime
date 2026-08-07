@@ -36,6 +36,7 @@ export type Mandat = {
   startdatum: string;
   notizen: string | null;
   sichtbar_fuer_alle: boolean;
+  naechste_belegnummer: number;
   kunden?: Pick<Kunde, "id" | "name" | "vorname">;
 };
 
@@ -99,4 +100,29 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
   mitarbeiter_name: string;
   klasse_id: string | null;
   klasse_bezeichnung: string | null;
+  adress_schluessel: string | null;
+  anrede: string | null;
+  adresse_zusatz: string | null;
+  strasse: string | null;
+  postfach: string | null;
+  plz: string | null;
+  ort: string | null;
+  land: string;
+  email: string | null;
+  telefon: string | null;
+  waehrung: string;
+  zahlungskondition_tage: number;
+  konto: string | null;
+  mwst_code: string | null;
+};
+
+export type BelegExport = {
+  id: string;
+  belegnummer: number;
+  mandat_id: string;
+  zeitraum_von: string;
+  zeitraum_bis: string;
+  anzahl_positionen: number;
+  erstellt_am: string;
+  mandate?: { bezeichnung: string; kunden?: { name: string; vorname: string | null } | null } | null;
 };
