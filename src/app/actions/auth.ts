@@ -14,7 +14,7 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent("Anmeldung fehlgeschlagen. E-Mail/Passwort prüfen.")}`);
+    redirect(`/login?error=${encodeURIComponent(`Anmeldung fehlgeschlagen: ${error.message}`)}`);
   }
 
   redirect("/");
