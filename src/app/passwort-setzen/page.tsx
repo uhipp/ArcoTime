@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { login } from "@/app/actions/auth";
+import { setzeNeuesPasswort } from "@/app/actions/auth";
 
-export default async function LoginPage({
+export default async function PasswortSetzenPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
@@ -17,12 +17,11 @@ export default async function LoginPage({
           width={140}
           height={28}
           className="h-7 w-auto mb-4"
-          priority
         />
         <h1 className="font-heading font-bold text-xl text-arcos-navy mb-1">
-          ArcoTime
+          Neues Passwort setzen
         </h1>
-        <p className="text-sm text-gray-500 mb-6">Bitte melde dich an.</p>
+        <p className="text-sm text-gray-500 mb-6">Mindestens 8 Zeichen.</p>
 
         {error && (
           <div className="mb-4 rounded bg-red-50 text-red-700 text-sm px-3 py-2">
@@ -30,33 +29,35 @@ export default async function LoginPage({
           </div>
         )}
 
-        <form action={login} className="space-y-4">
+        <form action={setzeNeuesPasswort} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="email">
-              E-Mail
+            <label className="block text-sm font-medium mb-1" htmlFor="passwort">
+              Neues Passwort
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="passwort"
+              name="passwort"
+              type="password"
               required
-              autoComplete="email"
+              minLength={8}
+              autoComplete="new-password"
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
           </div>
           <div>
             <label
               className="block text-sm font-medium mb-1"
-              htmlFor="password"
+              htmlFor="passwort_wiederholung"
             >
-              Passwort
+              Passwort wiederholen
             </label>
             <input
-              id="password"
-              name="password"
+              id="passwort_wiederholung"
+              name="passwort_wiederholung"
               type="password"
               required
-              autoComplete="current-password"
+              minLength={8}
+              autoComplete="new-password"
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
           </div>
@@ -64,16 +65,9 @@ export default async function LoginPage({
             type="submit"
             className="w-full rounded bg-arcos-steel text-white text-sm font-medium py-2 hover:bg-arcos-navy"
           >
-            Anmelden
+            Passwort speichern
           </button>
         </form>
-
-        <a
-          href="/passwort-vergessen"
-          className="block text-center text-sm text-gray-500 hover:underline mt-4"
-        >
-          Passwort vergessen?
-        </a>
       </div>
     </div>
   );

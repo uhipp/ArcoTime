@@ -29,7 +29,20 @@ export async function updateSession(request: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname.startsWith("/login");
+  // /auth/confirm muss IMMER durchgelassen werden, unabhängig vom
+  // Session-Status – der Link-Austausch dort etabliert die (Recovery-)
+  // Session erst bzw. überschreibt eine evtl. bestehende bewusst.
+  if (request.nextUrl.pathname.startsWith("/auth/confirm")) {
+    return response;
+  }
+
+  // Seiten, die ohne bestehende Session erreichbar sein müssen: Login und
+  // die Passwort-vergessen-Anfrage. Bereits eingeloggte Nutzer werden von
+  // hier weg auf die Übersicht geleitet.
+  const oeffentlichePfade = ["/login", "/passwort-vergessen"];
+  const isLoginPage = oeffentlichePfade.some((p) =>
+    request.nextUrl.pathname.startsWith(p)
+  );
 
   if (!data.user && !isLoginPage) {
     const url = request.nextUrl.clone();
