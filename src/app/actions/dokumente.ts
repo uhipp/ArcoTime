@@ -132,6 +132,31 @@ export async function verwerfeDokument(dokumentId: string) {
   await supabase.from("dokumente").delete().eq("id", dokumentId);
 }
 
+// Kategorie/Notiz nachträglich ergänzen oder ändern – z.B. wenn eine
+// Datei ohne Kategorie hochgeladen wurde und das später nachgeholt werden
+// soll. Nutzt dieselbe Berechtigung wie das Löschen (Admin oder die
+// hochladende Person).
+export async function aktualisiereDokument(
+  dokumentId: string,
+  formData: FormData
+): Promise<{ data: Dokument | null; error: string | null }> {
+  const kategorieId = String(formData.get("kategorie_id") ?? "").trim() || null;
+  const notiz = String(formData.get("notiz") ?? "").trim() || null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("dokumente")
+    .update({ kategorie_id: kategorieId, notiz })
+    .eq("id", dokumentId)
+    .select("*, dokument_kategorien(bezeichnung), hochgeladen:profiles!hochgeladen_von(name)")
+    .single();
+
+  if (error || !data) {
+    return { data: null, error: error?.message ?? "Aktualisieren fehlgeschlagen." };
+  }
+  return { data: data as Dokument, error: null };
+}
+
 export async function loescheDokument(
   dokumentId: string,
   pfad: string

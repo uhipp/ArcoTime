@@ -25,10 +25,22 @@ export async function GET(
     return NextResponse.json({ error: "Nicht gefunden." }, { status: 404 });
   }
 
+  // PDF/Bilder kann der Browser selbst anzeigen – dafür darf die URL
+  // KEIN "download" erzwingen (sonst landet die Datei nur im lokalen
+  // Downloads-Ordner statt in einem neuen Tab). Alles andere (Office,
+  // E-Mail-Dateien, …) kann der Browser nicht anzeigen, dafür bleibt der
+  // erzwungene Download mit dem ursprünglichen Dateinamen sinnvoll.
+  const endung = "." + (dokument.dateiname.split(".").pop() ?? "").toLowerCase();
+  const vorschaufaehig = [".pdf", ".jpg", ".jpeg", ".png", ".heic", ".heif"].includes(endung);
+
   const admin = createAdminClient();
   const { data: signiert, error } = await admin.storage
     .from("dokumente")
-    .createSignedUrl(dokument.speicherpfad, 60, { download: dokument.dateiname });
+    .createSignedUrl(
+      dokument.speicherpfad,
+      60,
+      vorschaufaehig ? {} : { download: dokument.dateiname }
+    );
 
   if (error || !signiert) {
     return NextResponse.json({ error: "Datei nicht verfügbar." }, { status: 404 });

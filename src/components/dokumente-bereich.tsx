@@ -1,14 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   bereiteDokumentUploadVor,
   bestaetigeDokumentUpload,
   verwerfeDokument,
+  aktualisiereDokument,
   loescheDokument,
 } from "@/app/actions/dokumente";
 import type { Dokument, DokumentBereich } from "@/lib/types";
+
+const OHNE_KATEGORIE = "__ohne__";
 
 function formatGroesse(bytes: number | null) {
   if (!bytes) return "–";
@@ -51,9 +54,17 @@ export function DokumenteBereich({
   const [ziehtDatei, setZiehtDatei] = useState(false);
   const [kategorieId, setKategorieId] = useState("");
   const [notiz, setNotiz] = useState("");
+  const [filterKategorie, setFilterKategorie] = useState("");
+  const [bearbeitetId, setBearbeitetId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const kannHochladen = bereich !== "mitarbeitende" || istAdmin;
+
+  const sichtbareDokumente = useMemo(() => {
+    if (!filterKategorie) return dokumente;
+    if (filterKategorie === OHNE_KATEGORIE) return dokumente.filter((d) => !d.kategorie_id);
+    return dokumente.filter((d) => d.kategorie_id === filterKategorie);
+  }, [dokumente, filterKategorie]);
 
   async function ladeDateiHoch(datei: File) {
     setFehler(null);
@@ -110,6 +121,16 @@ export function DokumenteBereich({
       return;
     }
     setDokumente((liste) => liste.filter((d) => d.id !== dokument.id));
+  }
+
+  async function handleBearbeitenSpeichern(dokumentId: string, formData: FormData) {
+    const { data, error } = await aktualisiereDokument(dokumentId, formData);
+    if (error || !data) {
+      setFehler(error ?? "Aktualisieren fehlgeschlagen.");
+      return;
+    }
+    setDokumente((liste) => liste.map((d) => (d.id === dokumentId ? data : d)));
+    setBearbeitetId(null);
   }
 
   return (
@@ -172,12 +193,79 @@ export function DokumenteBereich({
         </div>
       )}
 
-      {dokumente.length === 0 ? (
-        <p className="text-sm text-gray-400">Keine Dokumente.</p>
+      {kategorien.length > 0 && dokumente.length > 0 && (
+        <div className="flex items-center gap-2 mb-3">
+          <label className="text-xs text-gray-500">Filtern nach Kategorie:</label>
+          <select
+            value={filterKategorie}
+            onChange={(e) => setFilterKategorie(e.target.value)}
+            className="rounded border border-gray-300 px-2 py-1 text-sm"
+          >
+            <option value="">Alle</option>
+            {kategorien.map((k) => (
+              <option key={k.id} value={k.id}>
+                {k.bezeichnung}
+              </option>
+            ))}
+            <option value={OHNE_KATEGORIE}>Ohne Kategorie</option>
+          </select>
+        </div>
+      )}
+
+      {sichtbareDokumente.length === 0 ? (
+        <p className="text-sm text-gray-400">
+          {dokumente.length === 0 ? "Keine Dokumente." : "Keine Dokumente in dieser Kategorie."}
+        </p>
       ) : (
         <ul className="bg-white rounded-lg border divide-y">
-          {dokumente.map((d) => {
-            const darfLoeschen = istAdmin || d.hochgeladen_von === aktuellerUserId;
+          {sichtbareDokumente.map((d) => {
+            const darfBearbeiten = istAdmin || d.hochgeladen_von === aktuellerUserId;
+
+            if (bearbeitetId === d.id) {
+              return (
+                <li key={d.id} className="px-4 py-2.5 text-sm">
+                  <form
+                    action={(formData) => handleBearbeitenSpeichern(d.id, formData)}
+                    className="flex flex-wrap items-center gap-2"
+                  >
+                    <span className="text-lg shrink-0">{iconFuer(d.dateiname)}</span>
+                    <span className="font-medium truncate">{d.dateiname}</span>
+                    <select
+                      name="kategorie_id"
+                      defaultValue={d.kategorie_id ?? ""}
+                      className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    >
+                      <option value="">Ohne Kategorie</option>
+                      {kategorien.map((k) => (
+                        <option key={k.id} value={k.id}>
+                          {k.bezeichnung}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      name="notiz"
+                      defaultValue={d.notiz ?? ""}
+                      placeholder="Notiz"
+                      className="rounded border border-gray-300 px-2 py-1 text-sm flex-1 min-w-[8rem]"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded bg-arcos-steel text-white text-xs font-medium px-3 py-1.5 hover:bg-arcos-navy"
+                    >
+                      Speichern
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBearbeitetId(null)}
+                      className="text-xs text-gray-500 hover:underline"
+                    >
+                      Abbrechen
+                    </button>
+                  </form>
+                </li>
+              );
+            }
+
             return (
               <li key={d.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
                 <span className="text-lg shrink-0">{iconFuer(d.dateiname)}</span>
@@ -197,7 +285,16 @@ export function DokumenteBereich({
                     {d.notiz && ` · ${d.notiz}`}
                   </p>
                 </div>
-                {darfLoeschen && (
+                {darfBearbeiten && (
+                  <button
+                    type="button"
+                    onClick={() => setBearbeitetId(d.id)}
+                    className="text-xs text-arcos-steel hover:underline shrink-0"
+                  >
+                    Bearbeiten
+                  </button>
+                )}
+                {darfBearbeiten && (
                   <button
                     type="button"
                     onClick={() => handleLoeschen(d)}
