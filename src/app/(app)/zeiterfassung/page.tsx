@@ -122,7 +122,7 @@ export default async function ZeiterfassungPage({
                   <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {laeuft ? (
-                      <span className="font-medium text-red-700">⏱ läuft</span>
+                      <span className="font-medium text-red-700">⏱ Timer aktiv</span>
                     ) : (
                       `${z.menge_stunden} h`
                     )}
