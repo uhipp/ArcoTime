@@ -49,16 +49,16 @@ export default async function AppLayout({
             {/* Fixes Applikations-Logo (nicht mandantenspezifisch). Slogan
                 bewusst als Text statt im Bild – im Bild eingebetteter Text
                 wird beim Herunterskalieren auf Header-Grösse unleserlich. */}
-            <Link href="/" className="shrink-0 text-right">
+            <Link href="/" className="shrink-0 flex flex-col items-center">
               <Image
                 src="/arcotime-logo.png"
                 alt="ArcoTime"
                 width={286}
                 height={197}
-                className="h-14 w-auto ml-auto"
+                className="h-14 w-auto"
                 priority
               />
-              <span className="block text-xs text-gray-500 mt-0.5">
+              <span className="text-xs text-gray-500 mt-0.5 whitespace-nowrap">
                 Smart planen. Besser arbeiten.
               </span>
             </Link>
