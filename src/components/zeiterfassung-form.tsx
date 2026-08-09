@@ -8,8 +8,10 @@ function minutenZwischen(start: string, ende: string): number | null {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = ende.split(":").map(Number);
   if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return null;
-  const diff = eh * 60 + em - (sh * 60 + sm);
-  return diff > 0 ? diff : null;
+  // Bewusst auch 0/negativ zurückgeben (statt null), damit das Dauer-Feld
+  // den tatsächlichen Von/Bis-Wert transparent zeigt, statt auf einem alten
+  // Stand stehen zu bleiben, wenn z.B. Von = Bis eingegeben wird.
+  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
 }
 
 function formatDauer(minuten: number) {
@@ -285,12 +287,16 @@ export function ZeiterfassungForm({
                 id="dauer_minuten"
                 name="dauer_minuten"
                 type="number"
-                min={1}
-                required
+                min={0}
                 value={dauer}
                 onChange={(e) => setDauer(Number(e.target.value))}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
               />
+              {/* Bewusst nicht "required"/min=1: beim Klick auf "Timer
+                  starten" würde die Browser-Validierung sonst auch dieses
+                  Feld prüfen, obwohl der Timer die Dauer erst beim Stoppen
+                  braucht. Die eigentliche Prüfung (> 0) passiert serverseitig
+                  beim Speichern. */}
             </div>
           </div>
           {dauer > 0 && (

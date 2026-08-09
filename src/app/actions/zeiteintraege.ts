@@ -29,6 +29,14 @@ export async function createZeiteintrag(formData: FormData) {
   const { data: userData } = await supabase.auth.getUser();
   const values = zeiteintragFromForm(formData);
 
+  if (!values.dauer_minuten || values.dauer_minuten <= 0) {
+    redirect(
+      `/zeiterfassung?error=${encodeURIComponent(
+        "Bitte eine gültige Dauer angeben (mind. 1 Minute) – Von/Bis oder Dauer prüfen."
+      )}`
+    );
+  }
+
   const { error } = await supabase.from("zeiteintraege").insert({
     ...values,
     mitarbeiter_id: values.mitarbeiter_id ?? userData.user?.id,
@@ -46,6 +54,14 @@ export async function createZeiteintrag(formData: FormData) {
 export async function updateZeiteintrag(id: string, formData: FormData) {
   const supabase = await createClient();
   const values = zeiteintragFromForm(formData);
+
+  if (!values.dauer_minuten || values.dauer_minuten <= 0) {
+    redirect(
+      `/zeiterfassung/${id}?error=${encodeURIComponent(
+        "Bitte eine gültige Dauer angeben (mind. 1 Minute) – Von/Bis oder Dauer prüfen."
+      )}`
+    );
+  }
 
   const { error } = await supabase
     .from("zeiteintraege")
