@@ -5,7 +5,17 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { heuteIso } from "@/lib/date-utils";
+import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
 import type { AnfrageStatus } from "@/lib/types";
+
+async function nameFuer(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  id: string | null
+): Promise<string | null> {
+  if (!id) return null;
+  const { data } = await supabase.from("profiles").select("name").eq("id", id).single();
+  return data?.name ?? null;
+}
 
 function anfrageFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -27,6 +37,14 @@ export async function createAnfrage(formData: FormData) {
   const supabase = await createClient();
   const values = anfrageFromForm(formData);
 
+  // Wird die Anfrage direkt bei der Erfassung zugewiesen, den Namen der/des
+  // Mitarbeitenden schon jetzt als erste Zeile in die Beschreibung setzen –
+  // gleiche Konvention wie in der Zeiterfassung (wichtig für den Export).
+  if (values.zugewiesen_an) {
+    const name = await nameFuer(supabase, values.zugewiesen_an);
+    if (name) values.beschreibung = mitNamePraefix(values.beschreibung, name);
+  }
+
   const { error } = await supabase.from("anfragen").insert(values);
   if (error) {
     redirect(`/anfragen/neu?error=${encodeURIComponent(error.message)}`);
@@ -39,6 +57,25 @@ export async function createAnfrage(formData: FormData) {
 export async function updateAnfrage(id: string, formData: FormData) {
   const supabase = await createClient();
   const values = anfrageFromForm(formData);
+
+  // Wird im Formular eine (neue) Person zugewiesen, den Namen als erste
+  // Zeile in die Beschreibung einfügen – auch wenn schon vorher Text
+  // erfasst wurde, bevor eine Zuweisung möglich war.
+  const { data: bestehend } = await supabase
+    .from("anfragen")
+    .select("zugewiesen_an")
+    .eq("id", id)
+    .single();
+
+  if (values.zugewiesen_an && values.zugewiesen_an !== bestehend?.zugewiesen_an) {
+    const [neuerName, alterName] = await Promise.all([
+      nameFuer(supabase, values.zugewiesen_an),
+      nameFuer(supabase, bestehend?.zugewiesen_an ?? null),
+    ]);
+    if (neuerName) {
+      values.beschreibung = mitNamePraefix(values.beschreibung, neuerName, alterName);
+    }
+  }
 
   const { error } = await supabase.from("anfragen").update(values).eq("id", id);
   if (error) {
@@ -143,9 +180,18 @@ export async function uebernehmeAnfrage(id: string) {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
+  const [{ data: bestehend }, name] = await Promise.all([
+    supabase.from("anfragen").select("beschreibung, zugewiesen_an").eq("id", id).single(),
+    nameFuer(supabase, userData.user?.id ?? null),
+  ]);
+
+  const beschreibung = name
+    ? mitNamePraefix(bestehend?.beschreibung ?? null, name, null)
+    : bestehend?.beschreibung ?? null;
+
   const { error } = await supabase
     .from("anfragen")
-    .update({ zugewiesen_an: userData.user?.id, status: "in_bearbeitung" })
+    .update({ zugewiesen_an: userData.user?.id, status: "in_bearbeitung", beschreibung })
     .eq("id", id);
 
   revalidatePath("/anfragen");
