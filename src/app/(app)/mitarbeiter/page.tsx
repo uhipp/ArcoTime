@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { updateMitarbeiter, ladeMitarbeitendeEin } from "@/app/actions/mitarbeiter";
@@ -80,6 +81,7 @@ export default async function MitarbeitendePage({
               <th className="px-4 py-2">E-Mail</th>
               <th className="px-4 py-2">Rolle</th>
               <th className="px-4 py-2"></th>
+              <th className="px-4 py-2"></th>
             </tr>
           </thead>
           <tbody>
@@ -128,12 +130,17 @@ export default async function MitarbeitendePage({
                       Speichern
                     </button>
                   </td>
+                  <td className="px-2 py-2 text-right whitespace-nowrap">
+                    <Link href={`/mitarbeiter/${m.id}`} className="text-arcos-steel hover:underline text-sm">
+                      Dokumente
+                    </Link>
+                  </td>
                 </tr>
               );
             })}
             {(!mitarbeitende || mitarbeitende.length === 0) && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
                   Keine Mitarbeitenden gefunden.
                 </td>
               </tr>

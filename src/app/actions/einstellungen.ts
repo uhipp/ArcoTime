@@ -136,3 +136,26 @@ export async function toggleAnfragePrioritaet(id: string, aktiv: boolean) {
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen", aktiv ? "Priorität aktiviert." : "Priorität deaktiviert."));
 }
+
+// ---------------------------------------------------------
+// Dokument-Kategorien (Auswahlliste für die Dokumentenablage)
+// ---------------------------------------------------------
+export async function createDokumentKategorie(formData: FormData) {
+  const supabase = await createClient();
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) return;
+
+  const { error } = await supabase.from("dokument_kategorien").insert({ bezeichnung });
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", "Kategorie hinzugefügt."));
+}
+
+export async function toggleDokumentKategorie(id: string, aktiv: boolean) {
+  const supabase = await createClient();
+  await supabase.from("dokument_kategorien").update({ aktiv }).eq("id", id);
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", aktiv ? "Kategorie aktiviert." : "Kategorie deaktiviert."));
+}

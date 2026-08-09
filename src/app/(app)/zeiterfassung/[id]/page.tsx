@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/get-profile";
+import { getCurrentProfile } from "@/lib/get-profile";
+import { ladeDokumente } from "@/lib/dokumente-laden";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
+import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateZeiteintrag, deleteZeiteintrag, stoppeTimer } from "@/app/actions/zeiteintraege";
 import { DeleteButton } from "@/components/delete-button";
 import type { Zeiteintrag } from "@/lib/types";
@@ -19,14 +21,15 @@ export default async function ZeiteintragDetailPage({
 
   const [
     { data: zeiteintrag },
-    user,
+    profile,
     { data: projekte },
     { data: dienstleistungen },
     { data: mitarbeitende },
     { data: rabattsaetze },
+    { dokumente, kategorien },
   ] = await Promise.all([
     supabase.from("zeiteintraege").select("*").eq("id", id).single(),
-    getCurrentUser(),
+    getCurrentProfile(),
     supabase
       .from("projekte")
       .select("*, kunden(name, vorname)")
@@ -37,6 +40,7 @@ export default async function ZeiteintragDetailPage({
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
+    ladeDokumente(supabase, "zeiteintrag", id),
   ]);
 
   if (!zeiteintrag) notFound();
@@ -75,12 +79,24 @@ export default async function ZeiteintragDetailPage({
           dienstleistungen={dienstleistungen ?? []}
           mitarbeitende={mitarbeitende ?? []}
           rabattsaetze={rabattsaetze ?? []}
-          aktuellerUserId={user?.id ?? ""}
+          aktuellerUserId={profile?.id ?? ""}
           action={updateAction}
           stoppeTimerAction={stoppeAction}
           error={error}
         />
       )}
+
+      <div className="max-w-2xl mt-8">
+        <h2 className="text-lg font-medium mb-4">Dokumente</h2>
+        <DokumenteBereich
+          bereich="zeiteintrag"
+          bezugId={id}
+          initialDokumente={dokumente}
+          kategorien={kategorien}
+          aktuellerUserId={profile?.id ?? ""}
+          istAdmin={profile?.role === "admin"}
+        />
+      </div>
     </div>
   );
 }

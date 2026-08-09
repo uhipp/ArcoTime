@@ -72,9 +72,11 @@ export default async function AppLayout({
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-500 shrink-0">
-            <span>
-              {profile?.name} {isAdmin && "(Admin)"}
-            </span>
+            {profile && (
+              <Link href={`/mitarbeiter/${profile.id}`} className="hover:text-arcos-navy">
+                {profile.name} {isAdmin && "(Admin)"}
+              </Link>
+            )}
             <form action={logout}>
               <button
                 type="submit"

@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/get-profile";
+import { ladeDokumente } from "@/lib/dokumente-laden";
 import { KundeForm } from "@/components/kunde-form";
+import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateKunde, deleteKunde } from "@/app/actions/kunden";
 import { DeleteButton } from "@/components/delete-button";
 import type { Kunde, ZeiteintragMitDetails } from "@/lib/types";
@@ -42,15 +45,19 @@ export default async function KundeDetailPage({
   if (projekt_id) zeitQuery = zeitQuery.eq("projekt_id", projekt_id);
 
   const [
+    profile,
     { data: kunde },
     { data: projekte },
     { data: anfragen },
     { data: zeiteintraege },
+    { dokumente, kategorien },
   ] = await Promise.all([
+    getCurrentProfile(),
     supabase.from("kunden").select("*").eq("id", id).single(),
     supabase.from("projekte").select("id, bezeichnung").eq("kunde_id", id).order("bezeichnung"),
     anfragenQuery,
     zeitQuery,
+    ladeDokumente(supabase, "kunde", id),
   ]);
 
   if (!kunde) notFound();
@@ -229,6 +236,18 @@ export default async function KundeDetailPage({
             </div>
           </div>
         </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-medium mb-4">Dokumente</h2>
+        <DokumenteBereich
+          bereich="kunde"
+          bezugId={id}
+          initialDokumente={dokumente}
+          kategorien={kategorien}
+          aktuellerUserId={profile?.id ?? ""}
+          istAdmin={profile?.role === "admin"}
+        />
       </div>
     </div>
   );

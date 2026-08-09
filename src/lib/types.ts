@@ -155,3 +155,21 @@ export type BelegExport = {
   erstellt_am: string;
   projekte?: { bezeichnung: string; kunden?: { name: string; vorname: string | null } | null } | null;
 };
+
+export type DokumentBereich = "kunde" | "projekt" | "mitarbeitende" | "anfrage" | "zeiteintrag";
+
+export type Dokument = {
+  id: string;
+  bereich: DokumentBereich;
+  bezug_id: string;
+  dateiname: string;
+  speicherpfad: string;
+  mime_type: string | null;
+  groesse_bytes: number | null;
+  kategorie_id: string | null;
+  notiz: string | null;
+  hochgeladen_von: string | null;
+  created_at: string;
+  dokument_kategorien?: { bezeichnung: string } | null;
+  hochgeladen?: { name: string } | null;
+};

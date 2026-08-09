@@ -51,16 +51,20 @@ Einstellungen, kein Fixwert im Code. Kategorie ist optional.
 ## Speicherung
 
 Ein privater Supabase-Storage-Bucket (`dokumente`), **kein** direkter
-Zugriff vom Browser auf die Storage-API. Stattdessen:
+Browser-Zugriff ohne Prüfung. Die Datei selbst läuft aber NICHT über eine
+eigene Server-Function (Vercel-Funktionen haben ein Body-Limit, das
+grössere Dateien sonst mit "413 Payload Too Large" abweisen würde),
+sondern direkt zwischen Browser und Supabase Storage:
 
-- **Upload**: Server Action prüft zuerst über den normalen (RLS-geprüften)
+- **Upload**: Server Action prüft über den normalen (RLS-geprüften)
   Supabase-Client, ob die Zieltabelle (Kunde/Projekt/…) für den Anwender
-  überhaupt sichtbar ist, legt dann die `dokumente`-Zeile an und schreibt
-  die Datei über den Service-Role-Client (`createAdminClient()`) in den
-  Bucket.
+  überhaupt sichtbar ist, legt dann die `dokumente`-Zeile an und erzeugt
+  über den Service-Role-Client eine kurzlebige, auf genau diesen Pfad
+  beschränkte signierte Upload-URL. Der Browser lädt die Datei direkt zu
+  dieser URL hoch.
 - **Download/Anzeige**: eine eigene Route (`/api/dokumente/[id]`) liest die
   `dokumente`-Zeile über den normalen RLS-Client (unsichtbar = 404) und
-  liefert die Datei dann über den Service-Role-Client aus.
+  leitet dann auf eine kurzlebige signierte Download-URL weiter.
 
 Die Berechtigungsprüfung liegt damit an **einer** Stelle (der
 `dokumente`-Tabelle), nicht doppelt in Storage-Policies UND App-Code – das

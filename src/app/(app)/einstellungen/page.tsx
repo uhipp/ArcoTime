@@ -13,6 +13,8 @@ import {
   toggleAnfrageKanal,
   createAnfragePrioritaet,
   toggleAnfragePrioritaet,
+  createDokumentKategorie,
+  toggleDokumentKategorie,
 } from "@/app/actions/einstellungen";
 
 export default async function EinstellungenPage({
@@ -31,12 +33,14 @@ export default async function EinstellungenPage({
     { data: rabattsaetze },
     { data: kanaele },
     { data: prioritaeten },
+    { data: dokumentKategorien },
   ] = await Promise.all([
     supabase.from("dienstleistungsklassen").select("*").order("sortierung"),
     supabase.from("mwst_codes").select("*").order("code"),
     supabase.from("rabattsaetze").select("*").order("sortierung"),
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),
     supabase.from("anfrage_prioritaeten").select("*").order("sortierung"),
+    supabase.from("dokument_kategorien").select("*").order("sortierung"),
   ]);
 
   return (
@@ -257,6 +261,43 @@ export default async function EinstellungenPage({
             name="bezeichnung"
             required
             placeholder="Bezeichnung"
+            className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Dokument-Kategorien</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Auswahlliste für die Dokumentenablage (bei Kunden, Projekten,
+          Mitarbeitenden, Anfragen und Zeiteinträgen). Kategorie ist beim
+          Hochladen optional.
+        </p>
+        <ul className="bg-white rounded-lg border divide-y mb-4">
+          {dokumentKategorien?.map((k) => (
+            <li key={k.id} className="flex items-center justify-between px-4 py-2 text-sm">
+              <span className={k.aktiv ? "" : "text-gray-400 line-through"}>
+                {k.bezeichnung}
+              </span>
+              <form action={toggleDokumentKategorie.bind(null, k.id, !k.aktiv)}>
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  {k.aktiv ? "deaktivieren" : "aktivieren"}
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <form action={createDokumentKategorie} className="flex gap-2">
+          <input
+            name="bezeichnung"
+            required
+            placeholder="Neue Kategorie…"
             className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
           />
           <button

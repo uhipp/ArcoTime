@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
+import { ladeDokumente } from "@/lib/dokumente-laden";
 import { AnfrageForm } from "@/components/anfrage-form";
+import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { DeleteButton } from "@/components/delete-button";
 import { rabattLabel } from "@/lib/rabatt";
 import {
@@ -33,6 +35,7 @@ export default async function AnfrageDetailPage({
     { data: rabattsaetze },
     { data: kanaele },
     { data: prioritaeten },
+    { dokumente, kategorien },
   ] = await Promise.all([
     getCurrentProfile(),
     supabase.from("anfragen").select("*, kunden(id, name, vorname)").eq("id", id).single(),
@@ -43,6 +46,7 @@ export default async function AnfrageDetailPage({
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),
     supabase.from("anfrage_prioritaeten").select("*").order("sortierung"),
+    ladeDokumente(supabase, "anfrage", id),
   ]);
 
   if (!anfrage) notFound();
@@ -191,6 +195,18 @@ export default async function AnfrageDetailPage({
           </Link>
         </p>
       )}
+
+      <div className="max-w-2xl">
+        <h2 className="text-lg font-medium mb-4">Dokumente</h2>
+        <DokumenteBereich
+          bereich="anfrage"
+          bezugId={id}
+          initialDokumente={dokumente}
+          kategorien={kategorien}
+          aktuellerUserId={profile?.id ?? ""}
+          istAdmin={profile?.role === "admin"}
+        />
+      </div>
     </div>
   );
 }
