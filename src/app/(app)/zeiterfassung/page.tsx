@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/get-profile";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
 import { createZeiteintrag, starteTimer } from "@/app/actions/zeiteintraege";
 import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
@@ -16,8 +17,8 @@ export default async function ZeiterfassungPage({
   const bisDatum = bis ?? defaultBis;
 
   const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  const aktuellerUserId = userData.user?.id ?? "";
+  const user = await getCurrentUser();
+  const aktuellerUserId = user?.id ?? "";
 
   const [
     { data: projekte },

@@ -46,16 +46,6 @@ export default async function AuswertungenPage({
   const isAdmin = profile?.role === "admin";
   const supabase = await createClient();
 
-  const [{ data: kunden }, { data: projekte }, { data: klassen }, { data: mitarbeitende }] =
-    await Promise.all([
-      supabase.from("kunden").select("id, name, vorname").order("name"),
-      supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
-      supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
-      isAdmin
-        ? supabase.from("profiles").select("id, name").order("name")
-        : Promise.resolve({ data: null }),
-    ]);
-
   let query = supabase
     .from("v_zeiteintraege")
     .select("*")
@@ -69,7 +59,23 @@ export default async function AuswertungenPage({
   if (params.klasse_id) query = query.eq("klasse_id", params.klasse_id);
   if (params.mitarbeiter_id) query = query.eq("mitarbeiter_id", params.mitarbeiter_id);
 
-  const { data, error } = await query;
+  // Alle Queries unabhängig voneinander gleichzeitig statt nacheinander
+  // abschicken (die Haupt-Query hängt nicht von den Filter-Listen ab).
+  const [
+    { data: kunden },
+    { data: projekte },
+    { data: klassen },
+    { data: mitarbeitende },
+    { data, error },
+  ] = await Promise.all([
+    supabase.from("kunden").select("id, name, vorname").order("name"),
+    supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
+    supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
+    isAdmin
+      ? supabase.from("profiles").select("id, name").order("name")
+      : Promise.resolve({ data: null }),
+    query,
+  ]);
   const zeilen = (data as ZeiteintragMitDetails[] | null) ?? [];
 
   const summeStunden = zeilen.reduce((s, z) => s + Number(z.menge_stunden), 0);

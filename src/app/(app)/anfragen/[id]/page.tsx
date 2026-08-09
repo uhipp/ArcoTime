@@ -22,27 +22,24 @@ export default async function AnfrageDetailPage({
   const { id } = await params;
   const { error } = await searchParams;
   const supabase = await createClient();
-  const profile = await getCurrentProfile();
-
-  const { data: anfrage } = await supabase
-    .from("anfragen")
-    .select("*, kunden(id, name, vorname)")
-    .eq("id", id)
-    .single();
-
-  if (!anfrage) notFound();
 
   const [
+    profile,
+    { data: anfrage },
     { data: kunden },
     { data: projekte },
     { data: mitarbeitende },
     { data: dienstleistungen },
   ] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("anfragen").select("*, kunden(id, name, vorname)").eq("id", id).single(),
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("dienstleistungen").select("id, bezeichnung, aktiv").eq("aktiv", true).order("bezeichnung"),
   ]);
+
+  if (!anfrage) notFound();
 
   const updateAction = updateAnfrage.bind(null, id);
   const deleteAction = deleteAnfrage.bind(null, id);

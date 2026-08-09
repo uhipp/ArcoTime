@@ -1,18 +1,32 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
+// react-cache: innerhalb EINES Requests (Layout + Page + evtl. weitere
+// Komponenten, die alle denselben eingeloggten Nutzer brauchen) wird
+// supabase.auth.getUser() dadurch nur EINMAL wirklich über das Netz zu
+// Supabase Auth geschickt, statt bei jedem Aufruf erneut – das war die
+// Hauptursache für das spürbar langsame Laden/Speichern (jeder Seitenaufbau
+// hat bisher 2-4 einzelne Auth-Roundtrips ausgelöst, weil Layout, Page und
+// teilweise die Seite selbst je einmal separat nachgefragt haben).
+export const getCurrentUser = cache(async () => {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  return data.user;
+});
+
 // Lädt Profil (Name + Rolle) des eingeloggten Nutzers.
 // Middleware garantiert bereits, dass ein Nutzer eingeloggt ist.
-export async function getCurrentProfile(): Promise<Profile | null> {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return null;
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
+  const user = await getCurrentUser();
+  if (!user) return null;
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, name, role")
-    .eq("id", userData.user.id)
+    .select("id, name, vorname, nachname, email, role")
+    .eq("id", user.id)
     .single();
 
   return profile as Profile | null;
-}
+});

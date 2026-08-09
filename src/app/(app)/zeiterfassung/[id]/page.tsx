@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/get-profile";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
 import { updateZeiteintrag, deleteZeiteintrag, stoppeTimer } from "@/app/actions/zeiteintraege";
 import { DeleteButton } from "@/components/delete-button";
@@ -16,28 +17,27 @@ export default async function ZeiteintragDetailPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const { data: zeiteintrag } = await supabase
-    .from("zeiteintraege")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const [
+    { data: zeiteintrag },
+    user,
+    { data: projekte },
+    { data: dienstleistungen },
+    { data: mitarbeitende },
+  ] = await Promise.all([
+    supabase.from("zeiteintraege").select("*").eq("id", id).single(),
+    getCurrentUser(),
+    supabase
+      .from("projekte")
+      .select("*, kunden(name, vorname)")
+      .order("bezeichnung"),
+    supabase
+      .from("dienstleistungen")
+      .select("id, bezeichnung, aktiv")
+      .order("bezeichnung"),
+    supabase.from("profiles").select("id, name").order("name"),
+  ]);
 
   if (!zeiteintrag) notFound();
-
-  const { data: userData } = await supabase.auth.getUser();
-
-  const [{ data: projekte }, { data: dienstleistungen }, { data: mitarbeitende }] =
-    await Promise.all([
-      supabase
-        .from("projekte")
-        .select("*, kunden(name, vorname)")
-        .order("bezeichnung"),
-      supabase
-        .from("dienstleistungen")
-        .select("id, bezeichnung, aktiv")
-        .order("bezeichnung"),
-      supabase.from("profiles").select("id, name").order("name"),
-    ]);
 
   const istExportiert = Boolean(zeiteintrag.beleg_id);
   const updateAction = updateZeiteintrag.bind(null, id);
@@ -72,7 +72,7 @@ export default async function ZeiteintragDetailPage({
           projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
           mitarbeitende={mitarbeitende ?? []}
-          aktuellerUserId={userData.user?.id ?? ""}
+          aktuellerUserId={user?.id ?? ""}
           action={updateAction}
           stoppeTimerAction={stoppeAction}
           error={error}
