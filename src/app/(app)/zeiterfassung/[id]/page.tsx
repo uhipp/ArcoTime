@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
-import { updateZeiteintrag, deleteZeiteintrag } from "@/app/actions/zeiteintraege";
+import { updateZeiteintrag, deleteZeiteintrag, stoppeTimer } from "@/app/actions/zeiteintraege";
 import { DeleteButton } from "@/components/delete-button";
 import type { Zeiteintrag } from "@/lib/types";
 
@@ -42,6 +42,7 @@ export default async function ZeiteintragDetailPage({
   const istExportiert = Boolean(zeiteintrag.beleg_id);
   const updateAction = updateZeiteintrag.bind(null, id);
   const deleteAction = deleteZeiteintrag.bind(null, id);
+  const stoppeAction = stoppeTimer.bind(null, id);
 
   return (
     <div>
@@ -73,6 +74,7 @@ export default async function ZeiteintragDetailPage({
           mitarbeitende={mitarbeitende ?? []}
           aktuellerUserId={userData.user?.id ?? ""}
           action={updateAction}
+          stoppeTimerAction={stoppeAction}
           error={error}
         />
       )}

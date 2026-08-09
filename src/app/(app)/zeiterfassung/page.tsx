@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
-import { createZeiteintrag } from "@/app/actions/zeiteintraege";
+import { createZeiteintrag, starteTimer } from "@/app/actions/zeiteintraege";
 import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 
@@ -59,6 +59,7 @@ export default async function ZeiterfassungPage({
           mitarbeitende={mitarbeitende ?? []}
           aktuellerUserId={aktuellerUserId}
           action={createZeiteintrag}
+          starteTimerAction={starteTimer}
           error={error}
         />
       </div>
@@ -104,31 +105,46 @@ export default async function ZeiterfassungPage({
             </tr>
           </thead>
           <tbody>
-            {zeilen.map((z) => (
-              <tr key={z.id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2 whitespace-nowrap">
-                  {new Date(z.datum).toLocaleDateString("de-CH")}
-                </td>
-                <td className="px-4 py-2">
-                  {z.vorname ? `${z.vorname} ` : ""}
-                  {z.kunde_name} – {z.projekt_bezeichnung}
-                </td>
-                <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{z.menge_stunden} h</td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  CHF {Number(z.betrag).toFixed(2)}
-                </td>
-                <td className="px-4 py-2 text-right">
-                  {z.beleg_id ? (
-                    <span className="text-xs text-gray-400">exportiert</span>
-                  ) : (
-                    <Link href={`/zeiterfassung/${z.id}`} className="text-arcos-steel hover:underline">
-                      Bearbeiten
-                    </Link>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {zeilen.map((z) => {
+              const laeuft = Boolean(z.timer_gestartet_um);
+              return (
+                <tr
+                  key={z.id}
+                  className={`border-t ${laeuft ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"}`}
+                >
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {new Date(z.datum).toLocaleDateString("de-CH")}
+                  </td>
+                  <td className="px-4 py-2">
+                    {z.vorname ? `${z.vorname} ` : ""}
+                    {z.kunde_name} – {z.projekt_bezeichnung}
+                  </td>
+                  <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {laeuft ? (
+                      <span className="font-medium text-red-700">⏱ läuft</span>
+                    ) : (
+                      `${z.menge_stunden} h`
+                    )}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {laeuft ? "–" : `CHF ${Number(z.betrag).toFixed(2)}`}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {z.beleg_id ? (
+                      <span className="text-xs text-gray-400">exportiert</span>
+                    ) : (
+                      <Link
+                        href={`/zeiterfassung/${z.id}`}
+                        className={laeuft ? "font-medium text-red-700 hover:underline" : "text-arcos-steel hover:underline"}
+                      >
+                        {laeuft ? "Stoppen" : "Bearbeiten"}
+                      </Link>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {zeilen.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-400">

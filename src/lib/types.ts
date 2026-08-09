@@ -82,7 +82,8 @@ export type Zeiteintrag = {
   datum: string;
   start_zeit: string | null;
   end_zeit: string | null;
-  dauer_minuten: number;
+  dauer_minuten: number | null;
+  timer_gestartet_um: string | null;
   beschreibung: string | null;
   rabatt_prozent: number;
   referenz: string | null;
@@ -92,8 +93,8 @@ export type Zeiteintrag = {
 
 // Zeile aus der View v_zeiteintraege (inkl. berechnetem Betrag & Stammdaten)
 export type ZeiteintragMitDetails = Zeiteintrag & {
-  menge_stunden: number;
-  betrag: number;
+  menge_stunden: number | null;
+  betrag: number | null;
   projekt_bezeichnung: string;
   kostenstelle: string | null;
   kunde_id: string;

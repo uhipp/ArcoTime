@@ -29,6 +29,7 @@ export default async function ExportPage({
     .from("v_zeiteintraege")
     .select("*")
     .is("beleg_id", null)
+    .is("timer_gestartet_um", null)
     .gte("datum", von)
     .lte("datum", bis)
     .order("datum", { ascending: true });

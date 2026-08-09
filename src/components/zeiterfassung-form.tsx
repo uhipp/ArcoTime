@@ -4,11 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
 import type { Dienstleistung, Projekt, Zeiteintrag } from "@/lib/types";
 
-function jetztAlsZeit() {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
 function minutenZwischen(start: string, ende: string): number | null {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = ende.split(":").map(Number);
@@ -23,6 +18,37 @@ function formatDauer(minuten: number) {
   return `${h}h ${String(m).padStart(2, "0")}min`;
 }
 
+function formatUhrzeit(iso: string) {
+  return new Date(iso).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Live-Anzeige der bereits verstrichenen Zeit seit einem echten,
+// server-seitig gespeicherten Zeitpunkt – funktioniert auch nach einem
+// Neuladen der Seite korrekt, weil sie sich nicht auf lokalen React-State
+// verlässt, sondern auf den tatsächlichen Startzeitpunkt.
+function LaufendeZeit({ seit }: { seit: string }) {
+  const [sekunden, setSekunden] = useState(() =>
+    Math.max(0, Math.floor((Date.now() - new Date(seit).getTime()) / 1000))
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSekunden(Math.max(0, Math.floor((Date.now() - new Date(seit).getTime()) / 1000)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [seit]);
+
+  const h = Math.floor(sekunden / 3600);
+  const m = Math.floor((sekunden % 3600) / 60);
+  const s = sekunden % 60;
+
+  return (
+    <span className="font-mono text-lg font-semibold text-red-700">
+      {String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
+    </span>
+  );
+}
+
 export function ZeiterfassungForm({
   zeiteintrag,
   projekte,
@@ -30,6 +56,8 @@ export function ZeiterfassungForm({
   mitarbeitende,
   aktuellerUserId,
   action,
+  starteTimerAction,
+  stoppeTimerAction,
   error,
 }: {
   zeiteintrag?: Zeiteintrag;
@@ -40,15 +68,16 @@ export function ZeiterfassungForm({
   mitarbeitende: { id: string; name: string }[];
   aktuellerUserId: string;
   action: (formData: FormData) => void;
+  starteTimerAction?: (formData: FormData) => void;
+  stoppeTimerAction?: (formData: FormData) => void;
   error?: string;
 }) {
+  const istNeu = !zeiteintrag;
+  const laeuft = Boolean(zeiteintrag?.timer_gestartet_um);
+
   const [startZeit, setStartZeit] = useState(zeiteintrag?.start_zeit?.slice(0, 5) ?? "");
   const [endZeit, setEndZeit] = useState(zeiteintrag?.end_zeit?.slice(0, 5) ?? "");
   const [dauer, setDauer] = useState(zeiteintrag?.dauer_minuten ?? 0);
-  const [timerLaeuft, setTimerLaeuft] = useState(false);
-  const [timerSekunden, setTimerSekunden] = useState(0);
-  const timerStart = useRef<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [mitarbeiterId, setMitarbeiterId] = useState(
     zeiteintrag?.mitarbeiter_id ?? aktuellerUserId
@@ -65,7 +94,7 @@ export function ZeiterfassungForm({
 
     setBeschreibung((aktuell) => {
       const zeilen = aktuell.split("\n");
-      if (aktuell === "" ) return `${neuerName}\n`;
+      if (aktuell === "") return `${neuerName}\n`;
       if (zeilen[0] === alterName) {
         zeilen[0] = neuerName;
         return zeilen.join("\n");
@@ -79,42 +108,12 @@ export function ZeiterfassungForm({
     const name = nameFuer(mitarbeiterId);
     const neu = `${name}\n`;
     setBeschreibung(neu);
-    // Cursor ans Ende setzen, damit direkt weitergeschrieben werden kann.
     requestAnimationFrame(() => {
       const el = beschreibungRef.current;
       if (el) {
         el.selectionStart = el.selectionEnd = neu.length;
       }
     });
-  }
-
-  // Live-Ticker während der Timer läuft
-  useEffect(() => {
-    if (!timerLaeuft) return;
-    intervalRef.current = setInterval(() => {
-      if (timerStart.current) {
-        setTimerSekunden(Math.floor((Date.now() - timerStart.current) / 1000));
-      }
-    }, 1000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [timerLaeuft]);
-
-  function timerStarten() {
-    timerStart.current = Date.now();
-    setTimerSekunden(0);
-    setTimerLaeuft(true);
-    setStartZeit(jetztAlsZeit());
-    setEndZeit("");
-  }
-
-  function timerStoppen() {
-    setTimerLaeuft(false);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    const minuten = Math.max(1, Math.round(timerSekunden / 60));
-    setDauer(minuten);
-    setEndZeit(jetztAlsZeit());
   }
 
   function onZeitChange(neueStart: string, neueEnde: string) {
@@ -142,9 +141,10 @@ export function ZeiterfassungForm({
           id="mitarbeiter_id"
           name="mitarbeiter_id"
           required
+          disabled={laeuft}
           value={mitarbeiterId}
           onChange={(e) => onMitarbeiterChange(e.target.value)}
-          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
         >
           {mitarbeitende.map((m) => (
             <option key={m.id} value={m.id}>
@@ -164,8 +164,9 @@ export function ZeiterfassungForm({
             id="projekt_id"
             name="projekt_id"
             required
+            disabled={laeuft}
             defaultValue={zeiteintrag?.projekt_id ?? ""}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
           >
             <option value="" disabled>
               Bitte wählen…
@@ -190,8 +191,9 @@ export function ZeiterfassungForm({
             id="dienstleistung_id"
             name="dienstleistung_id"
             required
+            disabled={laeuft}
             defaultValue={zeiteintrag?.dienstleistung_id ?? ""}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
           >
             <option value="" disabled>
               Bitte wählen…
@@ -214,82 +216,88 @@ export function ZeiterfassungForm({
           id="datum"
           name="datum"
           type="date"
+          disabled={laeuft}
           defaultValue={zeiteintrag?.datum ?? heuteIso()}
           required
-          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
         />
       </div>
 
-      <div className="rounded border border-gray-200 p-4 bg-gray-50">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium">Zeit erfassen</span>
-          {!timerLaeuft ? (
-            <button
-              type="button"
-              onClick={timerStarten}
-              className="text-sm rounded bg-green-600 text-white px-3 py-1.5 hover:bg-green-700"
-            >
-              ▶ Timer starten
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={timerStoppen}
-              className="text-sm rounded bg-red-600 text-white px-3 py-1.5 hover:bg-red-700"
-            >
-              ⏹ Stoppen ({String(Math.floor(timerSekunden / 60)).padStart(2, "0")}:
-              {String(timerSekunden % 60).padStart(2, "0")})
-            </button>
+      {laeuft ? (
+        <div className="rounded border-2 border-red-300 bg-red-50 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-red-700">⏱ Timer läuft</span>
+            <LaufendeZeit seit={zeiteintrag!.timer_gestartet_um!} />
+          </div>
+          <p className="text-xs text-red-600 mt-1">
+            Gestartet um {formatUhrzeit(zeiteintrag!.timer_gestartet_um!)} — diese Seite
+            kann verlassen werden, der Timer läuft im Hintergrund weiter. Unter
+            "Zeiterfassung" ist der Eintrag rot markiert.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded border border-gray-200 p-4 bg-gray-50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium">Zeit erfassen</span>
+            {istNeu && starteTimerAction && (
+              <button
+                type="submit"
+                formAction={starteTimerAction}
+                className="text-sm rounded bg-green-600 text-white px-3 py-1.5 hover:bg-green-700"
+              >
+                ▶ Timer starten
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="start_zeit">
+                Von
+              </label>
+              <input
+                id="start_zeit"
+                name="start_zeit"
+                type="time"
+                value={startZeit}
+                onChange={(e) => onZeitChange(e.target.value, endZeit)}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="end_zeit">
+                Bis
+              </label>
+              <input
+                id="end_zeit"
+                name="end_zeit"
+                type="time"
+                value={endZeit}
+                onChange={(e) => onZeitChange(startZeit, e.target.value)}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="dauer_minuten">
+                Dauer (Minuten)
+              </label>
+              <input
+                id="dauer_minuten"
+                name="dauer_minuten"
+                type="number"
+                min={1}
+                required
+                value={dauer}
+                onChange={(e) => setDauer(Number(e.target.value))}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+              />
+            </div>
+          </div>
+          {dauer > 0 && (
+            <p className="text-xs text-gray-400 mt-2">≈ {formatDauer(dauer)}</p>
           )}
         </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs text-gray-500 mb-1" htmlFor="start_zeit">
-              Von
-            </label>
-            <input
-              id="start_zeit"
-              name="start_zeit"
-              type="time"
-              value={startZeit}
-              onChange={(e) => onZeitChange(e.target.value, endZeit)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1" htmlFor="end_zeit">
-              Bis
-            </label>
-            <input
-              id="end_zeit"
-              name="end_zeit"
-              type="time"
-              value={endZeit}
-              onChange={(e) => onZeitChange(startZeit, e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1" htmlFor="dauer_minuten">
-              Dauer (Minuten)
-            </label>
-            <input
-              id="dauer_minuten"
-              name="dauer_minuten"
-              type="number"
-              min={1}
-              required
-              value={dauer}
-              onChange={(e) => setDauer(Number(e.target.value))}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-            />
-          </div>
-        </div>
-        {dauer > 0 && (
-          <p className="text-xs text-gray-400 mt-2">≈ {formatDauer(dauer)}</p>
-        )}
-      </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="beschreibung">
@@ -308,43 +316,54 @@ export function ZeiterfassungForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="rabatt_prozent">
-            Rabatt (%)
-          </label>
-          <input
-            id="rabatt_prozent"
-            name="rabatt_prozent"
-            type="number"
-            min={0}
-            max={100}
-            step="0.1"
-            defaultValue={zeiteintrag?.rabatt_prozent ?? 0}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-          />
+      {!laeuft && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="rabatt_prozent">
+              Rabatt (%)
+            </label>
+            <input
+              id="rabatt_prozent"
+              name="rabatt_prozent"
+              type="number"
+              min={0}
+              max={100}
+              step="0.1"
+              defaultValue={zeiteintrag?.rabatt_prozent ?? 0}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="referenz">
+              Referenz (optional)
+            </label>
+            <input
+              id="referenz"
+              name="referenz"
+              defaultValue={zeiteintrag?.referenz ?? ""}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="referenz">
-            Referenz (optional)
-          </label>
-          <input
-            id="referenz"
-            name="referenz"
-            defaultValue={zeiteintrag?.referenz ?? ""}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-          />
-        </div>
-      </div>
+      )}
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={timerLaeuft}
-          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-50"
-        >
-          Speichern
-        </button>
+        {laeuft && stoppeTimerAction ? (
+          <button
+            type="submit"
+            formAction={stoppeTimerAction}
+            className="rounded bg-red-600 text-white text-sm font-medium px-4 py-2 hover:bg-red-700"
+          >
+            ⏹ Timer stoppen
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Speichern
+          </button>
+        )}
         <a
           href="/zeiterfassung"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
