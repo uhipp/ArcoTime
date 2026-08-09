@@ -62,3 +62,33 @@ export async function deleteKunde(id: string) {
   revalidatePath("/kunden");
   redirect(mitErfolg("/kunden", "Kunde gelöscht."));
 }
+
+// Variante für die Schnellerfassung direkt aus anderen Formularen heraus
+// (z.B. beim Erfassen einer Anfrage, wenn der Kunde noch fehlt) – bewusst
+// OHNE redirect(), damit die aufrufende Seite nicht verlassen wird. Nutzt
+// dieselbe Feldzuordnung/Defaults wie die reguläre Kundenerfassung, damit
+// die Stammdaten konsistent bleiben; Adresse & Rechnungsangaben können
+// später unter "Kunden" ergänzt werden.
+export async function erstelleKundeSchnell(
+  formData: FormData
+): Promise<{ data: { id: string; name: string; vorname: string | null } | null; error: string | null }> {
+  const supabase = await createClient();
+  const values = kundeFromForm(formData);
+
+  if (!values.name) {
+    return { data: null, error: "Name ist ein Pflichtfeld." };
+  }
+
+  const { data, error } = await supabase
+    .from("kunden")
+    .insert(values)
+    .select("id, name, vorname")
+    .single();
+
+  if (error) {
+    return { data: null, error: error.message };
+  }
+
+  revalidatePath("/kunden");
+  return { data, error: null };
+}
