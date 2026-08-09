@@ -19,30 +19,52 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b-2 border-arcos-steel">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-start justify-between gap-y-3 gap-x-8">
-          {/* Mandant + Benutzer/Abmelden – bewusst gestapelt statt in
-              einer Zeile mit der Navigation, das wirkte zuvor überladen. */}
-          <div className="flex flex-col gap-1 shrink-0">
-            {organisation && (
-              <span className="font-heading font-semibold text-sm text-arcos-navy tracking-tight">
-                {organisation.name}
-              </span>
-            )}
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              {profile && (
-                <Link href={`/mitarbeiter/${profile.id}`} className="hover:text-arcos-navy">
-                  {profile.name} {isAdmin && "(Admin)"}
-                </Link>
+        <div className="max-w-5xl mx-auto px-4 pt-3">
+          {/* Erste Zeile: Mandant + Benutzer/Abmelden links, Logo rechts.
+              Bewusst nur 2 Elemente in dieser Zeile (statt 3 mit der
+              Navigation) – bei einem grossen Logo würde eine 3-Element-Zeile
+              sonst umbrechen und das Logo unter die Navigation rutschen
+              lassen statt daneben zu bleiben. */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1 shrink-0">
+              {organisation && (
+                <span className="font-heading font-semibold text-sm text-arcos-navy tracking-tight">
+                  {organisation.name}
+                </span>
               )}
-              <form action={logout}>
-                <button type="submit" className="text-gray-500 hover:text-gray-800">
-                  Abmelden
-                </button>
-              </form>
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                {profile && (
+                  <Link href={`/mitarbeiter/${profile.id}`} className="hover:text-arcos-navy">
+                    {profile.name} {isAdmin && "(Admin)"}
+                  </Link>
+                )}
+                <form action={logout}>
+                  <button type="submit" className="text-gray-500 hover:text-gray-800">
+                    Abmelden
+                  </button>
+                </form>
+              </div>
             </div>
+
+            {/* Fixes Applikations-Logo (nicht mandantenspezifisch). Slogan
+                bewusst als Text statt im Bild – im Bild eingebetteter Text
+                wird beim Herunterskalieren auf Header-Grösse unleserlich. */}
+            <Link href="/" className="shrink-0 text-right">
+              <Image
+                src="/arcotime-logo.png"
+                alt="ArcoTime"
+                width={286}
+                height={197}
+                className="h-14 w-auto ml-auto"
+                priority
+              />
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Smart planen. Besser arbeiten.
+              </span>
+            </Link>
           </div>
 
-          <nav className="flex flex-wrap gap-4 text-sm">
+          <nav className="flex flex-wrap gap-4 text-sm py-3">
             <Link href="/zeiterfassung" className="hover:text-arcos-navy">
               Zeiterfassung
             </Link>
@@ -80,20 +102,6 @@ export default async function AppLayout({
               </Link>
             )}
           </nav>
-
-          {/* Fixes Applikations-Logo (nicht mandantenspezifisch), inkl.
-              Slogan. Original-Lockup ohne Zuschnitt liegt zusätzlich unter
-              arcotime-logo-full.png. */}
-          <Link href="/" className="shrink-0">
-            <Image
-              src="/arcotime-logo.png"
-              alt="ArcoTime – Smart planen. Besser arbeiten."
-              width={311}
-              height={218}
-              className="h-20 w-auto"
-              priority
-            />
-          </Link>
         </div>
       </header>
       <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
