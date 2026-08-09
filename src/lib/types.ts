@@ -121,6 +121,30 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
   mwst_code: string | null;
 };
 
+export type AnfrageKanal = "telefon" | "email" | "whatsapp" | "brief" | "persoenlich" | "sonstiges";
+export type AnfrageStatus = "neu" | "in_bearbeitung" | "wiedervorlage" | "erledigt";
+export type AnfragePrioritaet = "tief" | "normal" | "hoch";
+
+export type Anfrage = {
+  id: string;
+  kunde_id: string;
+  projekt_id: string | null;
+  titel: string;
+  beschreibung: string | null;
+  kanal: AnfrageKanal;
+  status: AnfrageStatus;
+  prioritaet: AnfragePrioritaet;
+  zugewiesen_an: string | null;
+  wiedervorlage_am: string | null;
+  erledigt_am: string | null;
+  zeiteintrag_id: string | null;
+  erstellt_von: string | null;
+  created_at: string;
+  kunden?: Pick<Kunde, "id" | "name" | "vorname"> | null;
+  projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
+  zugewiesen?: Pick<Profile, "id" | "name"> | null;
+};
+
 export type BelegExport = {
   id: string;
   belegnummer: number;
