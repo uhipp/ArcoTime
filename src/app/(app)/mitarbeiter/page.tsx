@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
-import { updateMitarbeiter } from "@/app/actions/mitarbeiter";
+import { updateMitarbeiter, ladeMitarbeitendeEin } from "@/app/actions/mitarbeiter";
 import type { Profile } from "@/lib/types";
 
-export default async function MitarbeiterPage({
+export default async function MitarbeitendePage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
@@ -17,17 +17,12 @@ export default async function MitarbeiterPage({
 
   const { data: mitarbeitende } = await supabase
     .from("profiles")
-    .select("id, name, vorname, nachname, role")
+    .select("id, name, vorname, nachname, email, role")
     .order("nachname");
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Mitarbeiter</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Vorname/Nachname und Rolle der Mitarbeitenden deiner Organisation.
-        Neue Mitarbeitende lädst du weiterhin über das Supabase-Dashboard
-        ein — hier pflegst du danach ihre Angaben.
-      </p>
+      <h1 className="text-2xl font-semibold mb-6">Mitarbeitende</h1>
 
       {error && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2 mb-4">
@@ -35,12 +30,54 @@ export default async function MitarbeiterPage({
         </div>
       )}
 
+      <div className="bg-white rounded-lg border p-5 mb-8">
+        <h2 className="text-lg font-medium mb-1">Neue Person einladen</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Legt direkt einen Login an und sendet eine E-Mail mit einem Link,
+          über den die Person selbst ihr Passwort festlegt.
+        </p>
+        <form action={ladeMitarbeitendeEin} className="flex flex-wrap items-end gap-3 text-sm">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Vorname</label>
+            <input
+              name="vorname"
+              required
+              className="rounded border border-gray-300 px-3 py-2 min-w-[9rem]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Nachname</label>
+            <input
+              name="nachname"
+              required
+              className="rounded border border-gray-300 px-3 py-2 min-w-[9rem]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">E-Mail</label>
+            <input
+              name="email"
+              type="email"
+              required
+              className="rounded border border-gray-300 px-3 py-2 min-w-[14rem]"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Einladungslink senden
+          </button>
+        </form>
+      </div>
+
       <div className="bg-white rounded-lg border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
               <th className="px-4 py-2">Vorname</th>
               <th className="px-4 py-2">Nachname</th>
+              <th className="px-4 py-2">E-Mail</th>
               <th className="px-4 py-2">Rolle</th>
               <th className="px-4 py-2"></th>
             </tr>
@@ -70,6 +107,7 @@ export default async function MitarbeiterPage({
                       className="w-full rounded border border-gray-300 px-2 py-1.5"
                     />
                   </td>
+                  <td className="px-2 py-2 text-gray-500">{m.email ?? "–"}</td>
                   <td className="px-2 py-2">
                     <select
                       name="role"
@@ -77,7 +115,7 @@ export default async function MitarbeiterPage({
                       form={`form-${m.id}`}
                       className="rounded border border-gray-300 px-2 py-1.5"
                     >
-                      <option value="mitarbeiter">Mitarbeiter</option>
+                      <option value="mitarbeiter">Mitarbeitende</option>
                       <option value="admin">Admin</option>
                     </select>
                   </td>
@@ -95,7 +133,7 @@ export default async function MitarbeiterPage({
             })}
             {(!mitarbeitende || mitarbeitende.length === 0) && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
                   Keine Mitarbeitenden gefunden.
                 </td>
               </tr>

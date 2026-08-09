@@ -1,20 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
-
-async function siteOrigin() {
-  const h = await headers();
-  // Hinter Vercel/Proxies steht die tatsächliche externe Origin oft nur in
-  // x-forwarded-*, "origin" selbst kann fehlen -> Fallback zusammensetzen.
-  const origin = h.get("origin");
-  if (origin) return origin;
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  return `${proto}://${host}`;
-}
+import { siteOrigin } from "@/lib/site-origin";
 
 export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "");
