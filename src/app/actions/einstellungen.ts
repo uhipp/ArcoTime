@@ -13,6 +13,7 @@ import { getCurrentOrganisation } from "@/lib/get-profile";
 export async function updateOrganisation(formData: FormData) {
   const supabase = await createClient();
   const name = String(formData.get("name") ?? "").trim();
+  const zeigeAufLogin = formData.get("zeige_auf_login") === "on";
   if (!name) {
     redirect(`/einstellungen?error=${encodeURIComponent("Bitte einen Namen angeben.")}`);
   }
@@ -24,14 +25,20 @@ export async function updateOrganisation(formData: FormData) {
 
   const { error } = await supabase
     .from("organisationen")
-    .update({ name })
+    .update({ name, zeige_auf_login: zeigeAufLogin })
     .eq("id", organisation.id);
 
   if (error) {
-    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+    // Verletzt den "höchstens eine Organisation"-Unique-Index (0017), wenn
+    // bereits eine andere Organisation als Login-Anzeige markiert ist.
+    const meldung = error.code === "23505"
+      ? "Es kann nur eine Organisation gleichzeitig auf der Login-Seite angezeigt werden. Bitte zuerst bei der anderen Organisation deaktivieren."
+      : error.message;
+    redirect(`/einstellungen?error=${encodeURIComponent(meldung)}`);
   }
 
   revalidatePath("/", "layout");
+  revalidatePath("/login");
   redirect(mitErfolg("/einstellungen", "Name gespeichert."));
 }
 

@@ -63,20 +63,35 @@ export default async function EinstellungenPage({
         <p className="text-sm text-gray-500 mb-3">
           Erscheint im Header anstelle eines fixen Kunden-Logos.
         </p>
-        <form action={updateOrganisation} className="flex gap-2">
-          <input
-            name="name"
-            required
-            defaultValue={organisation?.name ?? ""}
-            placeholder="Name der Organisation"
-            className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
-          >
-            Speichern
-          </button>
+        <form action={updateOrganisation} className="space-y-3">
+          <div className="flex gap-2">
+            <input
+              name="name"
+              required
+              defaultValue={organisation?.name ?? ""}
+              placeholder="Name der Organisation"
+              className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+            />
+            <button
+              type="submit"
+              className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+            >
+              Speichern
+            </button>
+          </div>
+          <label className="flex items-start gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              name="zeige_auf_login"
+              defaultChecked={organisation?.zeige_auf_login ?? false}
+              className="mt-0.5"
+            />
+            <span>
+              Auf der Login-Seite anzeigen. Übergangslösung: Solange es noch
+              keine eigene Adresse pro Organisation gibt, kann das nur eine
+              Organisation gleichzeitig sein.
+            </span>
+          </label>
         </form>
       </section>
 

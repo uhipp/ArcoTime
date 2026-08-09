@@ -35,16 +35,20 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 // Header statt eines fixen Kunden-Logos angezeigt, da ArcoTime an mehrere
 // Organisationen (Mandanten) vergeben werden kann und das Arcos-Group-Logo
 // dafür nicht (mehr) passend ist.
-export const getCurrentOrganisation = cache(async (): Promise<{ id: string; name: string } | null> => {
-  const user = await getCurrentUser();
-  if (!user) return null;
+export const getCurrentOrganisation = cache(
+  async (): Promise<{ id: string; name: string; zeige_auf_login: boolean } | null> => {
+    const user = await getCurrentUser();
+    if (!user) return null;
 
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("*, organisationen(id, name)")
-    .eq("id", user.id)
-    .single();
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("*, organisationen(id, name, zeige_auf_login)")
+      .eq("id", user.id)
+      .single();
 
-  return (data?.organisationen as { id: string; name: string } | null) ?? null;
-});
+    return (
+      (data?.organisationen as { id: string; name: string; zeige_auf_login: boolean } | null) ?? null
+    );
+  }
+);

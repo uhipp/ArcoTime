@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { requestPasswordReset } from "@/app/actions/auth";
+import { getLoginMandantName } from "@/lib/login-mandant";
 
 export default async function PasswortVergessenPage({
   searchParams,
@@ -7,17 +8,21 @@ export default async function PasswortVergessenPage({
   searchParams: Promise<{ error?: string; gesendet?: string }>;
 }) {
   const { error, gesendet } = await searchParams;
+  const mandantName = await getLoginMandantName();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-lg shadow p-8">
         <Image
-          src="/arcos-group-logo.png"
-          alt="Arcos Group"
-          width={140}
-          height={28}
-          className="h-7 w-auto mb-4"
+          src="/arcotime-logo.png"
+          alt="ArcoTime"
+          width={286}
+          height={197}
+          className="h-14 w-auto mb-2"
         />
+        {mandantName && (
+          <p className="text-sm font-medium text-arcos-navy mb-4">{mandantName}</p>
+        )}
         <h1 className="font-heading font-bold text-xl text-arcos-navy mb-1">
           Passwort vergessen
         </h1>
