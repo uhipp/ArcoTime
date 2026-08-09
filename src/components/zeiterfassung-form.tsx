@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
+import { RABATT_OPTIONEN, rabattLabel } from "@/lib/rabatt";
 import type { Dienstleistung, Projekt, Zeiteintrag } from "@/lib/types";
 
 function minutenZwischen(start: string, ende: string): number | null {
@@ -326,18 +327,20 @@ export function ZeiterfassungForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="rabatt_prozent">
-              Rabatt (%)
+              Rabatt
             </label>
-            <input
+            <select
               id="rabatt_prozent"
               name="rabatt_prozent"
-              type="number"
-              min={0}
-              max={100}
-              step="0.1"
               defaultValue={zeiteintrag?.rabatt_prozent ?? 0}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-            />
+            >
+              {RABATT_OPTIONEN.map((r) => (
+                <option key={r} value={r}>
+                  {rabattLabel(r)}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="referenz">

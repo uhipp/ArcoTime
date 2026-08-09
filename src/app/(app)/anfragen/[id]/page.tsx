@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { AnfrageForm } from "@/components/anfrage-form";
 import { DeleteButton } from "@/components/delete-button";
+import { RABATT_OPTIONEN, rabattLabel } from "@/lib/rabatt";
 import {
   updateAnfrage,
   deleteAnfrage,
@@ -82,12 +83,9 @@ export default async function AnfrageDetailPage({
           </h2>
           <p className="text-sm text-gray-500 mb-4">
             Erzeugt beim Abschluss direkt einen Zeiteintrag, damit nichts vergessen wird.
+            Nicht verrechenbare Arbeit bitte über das interne Projekt mit Rabatt 100% erfassen.
           </p>
           <form action={erledigenAction} className="space-y-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="nicht_verrechnen" />
-              Nicht verrechnen
-            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Projekt</label>
@@ -121,7 +119,7 @@ export default async function AnfrageDetailPage({
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Dauer (Minuten)</label>
                 <input
@@ -142,6 +140,20 @@ export default async function AnfrageDetailPage({
                   {mitarbeitende?.map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Rabatt</label>
+                <select
+                  name="rabatt_prozent"
+                  defaultValue={0}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                >
+                  {RABATT_OPTIONEN.map((r) => (
+                    <option key={r} value={r}>
+                      {rabattLabel(r)}
                     </option>
                   ))}
                 </select>

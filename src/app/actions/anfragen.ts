@@ -73,36 +73,26 @@ export async function setzeStatus(id: string, status: AnfrageStatus) {
   if (error) throw new Error(error.message);
 }
 
-// Schliesst eine Anfrage ab – optional inkl. automatisch erzeugtem
-// Zeiteintrag (Dienstleistung + Dauer), damit nichts vergessen wird.
+// Schliesst eine Anfrage ab und erzeugt dabei IMMER einen Zeiteintrag
+// (Dienstleistung + Dauer) – auch wenn nicht verrechnet wird (dann mit
+// Rabatt 100%). So bleibt die tatsächlich aufgewendete Zeit vollständig
+// erfasst, was Soll/Ist-Stundenauswertungen je Mitarbeitendem erst möglich
+// macht (nicht verrechenbare Arbeit läuft dazu über ein internes Projekt +
+// eine unproduktive Dienstleistung in den Stammdaten).
 export async function erledigeAnfrage(id: string, formData: FormData) {
   const supabase = await createClient();
-  const nichtVerrechnen = formData.get("nicht_verrechnen") === "on";
-
-  if (nichtVerrechnen) {
-    const { error } = await supabase
-      .from("anfragen")
-      .update({ status: "erledigt", erledigt_am: new Date().toISOString() })
-      .eq("id", id);
-
-    if (error) {
-      redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
-    }
-
-    revalidatePath("/anfragen");
-    redirect(mitErfolg(`/anfragen/${id}`, "Anfrage erledigt."));
-  }
 
   const projekt_id = String(formData.get("projekt_id") ?? "").trim();
   const dienstleistung_id = String(formData.get("dienstleistung_id") ?? "").trim();
   const dauer_minuten = Number(formData.get("dauer_minuten") ?? 0);
   const beschreibung = String(formData.get("beschreibung") ?? "").trim() || null;
   const mitarbeiter_id = String(formData.get("mitarbeiter_id") ?? "").trim();
+  const rabatt_prozent = Number(formData.get("rabatt_prozent") ?? 0);
 
   if (!projekt_id || !dienstleistung_id || dauer_minuten <= 0) {
     redirect(
       `/anfragen/${id}?error=${encodeURIComponent(
-        "Für die Verrechnung bitte Projekt, Dienstleistung und eine gültige Dauer angeben (oder 'nicht verrechnen' anhaken)."
+        "Bitte Projekt, Dienstleistung und eine gültige Dauer angeben. Für nicht verrechenbare Arbeit bitte das interne Projekt wählen und Rabatt auf 100% setzen."
       )}`
     );
   }
@@ -119,6 +109,7 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
       datum: heuteIso(),
       beschreibung,
       dauer_minuten,
+      rabatt_prozent,
     })
     .select("id")
     .single();
