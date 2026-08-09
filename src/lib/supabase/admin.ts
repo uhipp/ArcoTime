@@ -16,6 +16,14 @@ export function createAdminClient() {
   }
 
   return createClient(url, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      // Ohne das erzeugt inviteUserByEmail einen Link im alten Format
+      // (Token im "#"-Teil der URL) – den kann /auth/confirm nicht lesen,
+      // da Fragmente serverseitig nie ankommen. Mit "pkce" passt der
+      // generierte Link zu unserem bestehenden /auth/confirm-Flow.
+      flowType: "pkce",
+    },
   });
 }
