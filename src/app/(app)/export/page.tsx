@@ -171,7 +171,7 @@ export default async function ExportPage({
         <input type="hidden" name="von" value={von} />
         <input type="hidden" name="bis" value={bis} />
 
-        <div className="bg-white rounded-lg border overflow-hidden mb-4">
+        <div className="bg-white rounded-lg border overflow-hidden mb-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
@@ -229,7 +229,7 @@ export default async function ExportPage({
       </form>
 
       <h2 className="text-lg font-medium mt-10 mb-3">Frühere Exporte</h2>
-      <div className="bg-white rounded-lg border overflow-hidden">
+      <div className="bg-white rounded-lg border overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>

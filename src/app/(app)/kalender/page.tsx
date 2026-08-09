@@ -187,7 +187,7 @@ export default async function KalenderPage({
         </button>
       </form>
 
-      <div className="bg-white rounded-lg border overflow-hidden">
+      <div className="bg-white rounded-lg border overflow-hidden overflow-x-auto">
         <div className="grid grid-cols-7 text-xs text-gray-500 border-b">
           {WOCHENTAGE.map((tag) => (
             <div key={tag} className="px-2 py-2 text-center font-medium">

@@ -92,7 +92,7 @@ export default async function ZeiterfassungPage({
         </div>
       )}
 
-      <div className="bg-white rounded-lg border overflow-hidden mb-3">
+      <div className="bg-white rounded-lg border overflow-hidden mb-3 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
