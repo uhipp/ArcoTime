@@ -16,9 +16,9 @@ export default async function PasswortSetzenPage({
         <Image
           src="/arcotime-logo.png"
           alt="ArcoTime"
-          width={286}
-          height={197}
-          className="h-14 w-auto mb-2"
+          width={311}
+          height={218}
+          className="h-20 w-auto mb-4 mx-auto block"
         />
         {mandantName && (
           <p className="text-sm font-medium text-arcos-navy mb-4">{mandantName}</p>

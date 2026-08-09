@@ -19,7 +19,7 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b-2 border-arcos-steel">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-y-3 gap-x-8">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-start justify-between gap-y-3 gap-x-8">
           {/* Mandant + Benutzer/Abmelden – bewusst gestapelt statt in
               einer Zeile mit der Navigation, das wirkte zuvor überladen. */}
           <div className="flex flex-col gap-1 shrink-0">
@@ -81,17 +81,16 @@ export default async function AppLayout({
             )}
           </nav>
 
-          {/* Fixes Applikations-Logo (nicht mandantenspezifisch). Auf Icon +
-              Schriftzug zugeschnitten (ohne Slogan/Weissraum) – die
-              Original-Datei mit vollem Lockup liegt unter
-              arcotime-logo-full.png für andere Verwendungen (z.B. Login-Seite). */}
+          {/* Fixes Applikations-Logo (nicht mandantenspezifisch), inkl.
+              Slogan. Original-Lockup ohne Zuschnitt liegt zusätzlich unter
+              arcotime-logo-full.png. */}
           <Link href="/" className="shrink-0">
             <Image
               src="/arcotime-logo.png"
-              alt="ArcoTime"
-              width={286}
-              height={197}
-              className="h-9 w-auto"
+              alt="ArcoTime – Smart planen. Besser arbeiten."
+              width={311}
+              height={218}
+              className="h-20 w-auto"
               priority
             />
           </Link>
