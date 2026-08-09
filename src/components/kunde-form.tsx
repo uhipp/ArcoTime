@@ -22,7 +22,7 @@ export function KundeForm({
         <h2 className="text-sm font-semibold text-gray-500 mb-3">
           Adresse
         </h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Anrede" name="anrede" defaultValue={kunde?.anrede} />
           <Field
             label="Externer Adress-Schlüssel"
@@ -65,7 +65,7 @@ export function KundeForm({
         <h2 className="text-sm font-semibold text-gray-500 mb-3">
           Rechnungswesen
         </h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field
             label="Währung"
             name="waehrung"

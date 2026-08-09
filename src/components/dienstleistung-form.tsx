@@ -47,7 +47,7 @@ export function DienstleistungForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="klasse_id">
             Klasse
@@ -102,7 +102,7 @@ export function DienstleistungForm({
       </div>
 
       <h2 className="text-sm font-semibold text-gray-500">Buchhaltung</h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="konto">
             Konto

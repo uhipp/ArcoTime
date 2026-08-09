@@ -157,7 +157,7 @@ export function ZeiterfassungForm({
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="projekt_id">
             Projekt
@@ -252,7 +252,7 @@ export function ZeiterfassungForm({
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs text-gray-500 mb-1" htmlFor="start_zeit">
                 Von
@@ -323,7 +323,7 @@ export function ZeiterfassungForm({
       </div>
 
       {!laeuft && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="rabatt_prozent">
               Rabatt (%)
