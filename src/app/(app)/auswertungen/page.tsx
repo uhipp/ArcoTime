@@ -274,6 +274,7 @@ export default async function AuswertungenPage({
                 <th className="px-4 py-2">Klasse</th>
                 <th className="px-4 py-2">Dauer</th>
                 <th className="px-4 py-2">Betrag</th>
+                {isAdmin && <th className="px-4 py-2"></th>}
               </tr>
             </thead>
             <tbody>
@@ -302,12 +303,30 @@ export default async function AuswertungenPage({
                     <td className="px-4 py-2 whitespace-nowrap">
                       {laeuft ? "–" : `CHF ${Number(z.betrag).toFixed(2)}`}
                     </td>
+                    {isAdmin && (
+                      <td className="px-4 py-2 text-right whitespace-nowrap">
+                        {z.beleg_id ? (
+                          <span className="text-xs text-gray-400">exportiert</span>
+                        ) : (
+                          <Link
+                            href={`/zeiterfassung/${z.id}`}
+                            className={
+                              laeuft
+                                ? "font-medium text-red-700 hover:underline"
+                                : "text-arcos-steel hover:underline"
+                            }
+                          >
+                            {laeuft ? "Stoppen" : "Bearbeiten"}
+                          </Link>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })}
               {zeilen.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 7 : 6} className="px-4 py-6 text-center text-gray-400">
+                  <td colSpan={isAdmin ? 8 : 6} className="px-4 py-6 text-center text-gray-400">
                     Keine Einträge im gewählten Zeitraum.
                   </td>
                 </tr>
@@ -323,6 +342,7 @@ export default async function AuswertungenPage({
                   <td className="px-4 py-2 whitespace-nowrap">
                     CHF {summeBetrag.toFixed(2)}
                   </td>
+                  {isAdmin && <td></td>}
                 </tr>
               </tfoot>
             )}
