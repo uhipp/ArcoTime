@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { mitErfolg } from "@/lib/erfolg";
 
 async function siteOrigin() {
   const h = await headers();
@@ -81,5 +82,5 @@ export async function setzeNeuesPasswort(formData: FormData) {
     redirect(`/passwort-setzen?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/");
+  redirect(mitErfolg("/", "Passwort erfolgreich geändert."));
 }

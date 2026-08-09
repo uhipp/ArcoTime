@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { mitErfolg } from "@/lib/erfolg";
 
 function kundeFromForm(formData: FormData) {
   const num = (v: FormDataEntryValue | null) =>
@@ -39,7 +40,7 @@ export async function createKunde(formData: FormData) {
   }
 
   revalidatePath("/kunden");
-  redirect("/kunden");
+  redirect(mitErfolg("/kunden", "Kunde gespeichert."));
 }
 
 export async function updateKunde(id: string, formData: FormData) {
@@ -52,12 +53,12 @@ export async function updateKunde(id: string, formData: FormData) {
   }
 
   revalidatePath("/kunden");
-  redirect("/kunden");
+  redirect(mitErfolg("/kunden", "Kunde gespeichert."));
 }
 
 export async function deleteKunde(id: string) {
   const supabase = await createClient();
   await supabase.from("kunden").delete().eq("id", id);
   revalidatePath("/kunden");
-  redirect("/kunden");
+  redirect(mitErfolg("/kunden", "Kunde gelöscht."));
 }

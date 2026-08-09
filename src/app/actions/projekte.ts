@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
+import { mitErfolg } from "@/lib/erfolg";
 
 function projektFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -39,7 +40,7 @@ export async function createProjekt(formData: FormData) {
   }
 
   revalidatePath("/projekte");
-  redirect("/projekte");
+  redirect(mitErfolg("/projekte", "Projekt gespeichert."));
 }
 
 export async function updateProjekt(id: string, formData: FormData) {
@@ -52,12 +53,12 @@ export async function updateProjekt(id: string, formData: FormData) {
   }
 
   revalidatePath("/projekte");
-  redirect("/projekte");
+  redirect(mitErfolg("/projekte", "Projekt gespeichert."));
 }
 
 export async function deleteProjekt(id: string) {
   const supabase = await createClient();
   await supabase.from("projekte").delete().eq("id", id);
   revalidatePath("/projekte");
-  redirect("/projekte");
+  redirect(mitErfolg("/projekte", "Projekt gelöscht."));
 }

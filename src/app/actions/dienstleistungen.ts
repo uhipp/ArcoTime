@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { mitErfolg } from "@/lib/erfolg";
 
 function dienstleistungFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -30,7 +31,7 @@ export async function createDienstleistung(formData: FormData) {
   }
 
   revalidatePath("/dienstleistungen");
-  redirect("/dienstleistungen");
+  redirect(mitErfolg("/dienstleistungen", "Dienstleistung gespeichert."));
 }
 
 export async function updateDienstleistung(id: string, formData: FormData) {
@@ -46,12 +47,12 @@ export async function updateDienstleistung(id: string, formData: FormData) {
   }
 
   revalidatePath("/dienstleistungen");
-  redirect("/dienstleistungen");
+  redirect(mitErfolg("/dienstleistungen", "Dienstleistung gespeichert."));
 }
 
 export async function deleteDienstleistung(id: string) {
   const supabase = await createClient();
   await supabase.from("dienstleistungen").delete().eq("id", id);
   revalidatePath("/dienstleistungen");
-  redirect("/dienstleistungen");
+  redirect(mitErfolg("/dienstleistungen", "Dienstleistung gelöscht."));
 }

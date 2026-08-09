@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { logout } from "@/app/actions/auth";
+import { Toast } from "@/components/toast";
 
 export default async function AppLayout({
   children,
@@ -82,6 +84,9 @@ export default async function AppLayout({
         </div>
       </header>
       <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <Suspense fallback={null}>
+        <Toast />
+      </Suspense>
     </div>
   );
 }
