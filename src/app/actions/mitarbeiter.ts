@@ -22,5 +22,5 @@ export async function updateMitarbeiter(id: string, formData: FormData) {
   }
 
   revalidatePath("/mitarbeiter");
-  redirect(mitErfolg("/mitarbeiter", "Mitarbeiter gespeichert."));
+  redirect(mitErfolg("/mitarbeiter", "Mitarbeitende gespeichert."));
 }

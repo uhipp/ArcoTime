@@ -137,7 +137,7 @@ export function ZeiterfassungForm({
 
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="mitarbeiter_id">
-          Mitarbeiter
+          Mitarbeitende
         </label>
         <select
           id="mitarbeiter_id"

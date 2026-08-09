@@ -172,9 +172,9 @@ export default async function ZeiterfassungPage({
         </table>
       </div>
       <p className="text-xs text-gray-400">
-        Zeigt Einträge, die dir als Mitarbeiter zugeordnet sind — auch wenn
-        jemand anders sie für dich erfasst hat. Ausführlichere Auswertungen
-        über alle Mitarbeitenden findest du unter "Auswertungen".
+        Zeigt Einträge, die dir zugeordnet sind — auch wenn jemand anders sie
+        für dich erfasst hat. Ausführlichere Auswertungen über alle
+        Mitarbeitenden findest du unter "Auswertungen".
       </p>
     </div>
   );

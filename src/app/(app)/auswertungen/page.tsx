@@ -205,7 +205,7 @@ export default async function AuswertungenPage({
         </div>
         {isAdmin && (
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Mitarbeiter</label>
+            <label className="block text-xs text-gray-500 mb-1">Mitarbeitende</label>
             <select
               name="mitarbeiter_id"
               defaultValue={params.mitarbeiter_id ?? ""}
@@ -268,7 +268,7 @@ export default async function AuswertungenPage({
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
                 <th className="px-4 py-2">Datum</th>
-                {isAdmin && <th className="px-4 py-2">Mitarbeiter</th>}
+                {isAdmin && <th className="px-4 py-2">Mitarbeitende</th>}
                 <th className="px-4 py-2">Kunde / Projekt</th>
                 <th className="px-4 py-2">Dienstleistung</th>
                 <th className="px-4 py-2">Klasse</th>

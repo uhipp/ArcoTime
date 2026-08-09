@@ -167,7 +167,7 @@ export default async function KalenderPage({
         </div>
         {isAdmin && (
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Mitarbeiter</label>
+            <label className="block text-xs text-gray-500 mb-1">Mitarbeitende</label>
             <select
               name="mitarbeiter_id"
               defaultValue={params.mitarbeiter_id ?? ""}
