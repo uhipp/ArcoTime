@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { login } from "@/app/actions/auth";
+import { HashSessionHandler } from "@/components/hash-session-handler";
 
 export default async function LoginPage({
   searchParams,
@@ -10,6 +11,7 @@ export default async function LoginPage({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <HashSessionHandler />
       <div className="w-full max-w-sm bg-white rounded-lg shadow p-8">
         <Image
           src="/arcos-group-logo.png"
