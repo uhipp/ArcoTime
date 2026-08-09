@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/get-profile";
+import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { FARBEN_OPTIONEN } from "@/lib/farben";
 import {
+  updateOrganisation,
   createKlasse,
   toggleKlasse,
   createMwstCode,
@@ -26,6 +27,7 @@ export default async function EinstellungenPage({
   if (profile?.role !== "admin") redirect("/");
 
   const { error } = await searchParams;
+  const organisation = await getCurrentOrganisation();
   const supabase = await createClient();
   const [
     { data: klassen },
@@ -55,6 +57,28 @@ export default async function EinstellungenPage({
       {error && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
       )}
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Organisation</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Erscheint im Header anstelle eines fixen Kunden-Logos.
+        </p>
+        <form action={updateOrganisation} className="flex gap-2">
+          <input
+            name="name"
+            required
+            defaultValue={organisation?.name ?? ""}
+            placeholder="Name der Organisation"
+            className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Speichern
+          </button>
+        </form>
+      </section>
 
       <section>
         <h2 className="text-lg font-medium mb-3">Dienstleistungsklassen</h2>

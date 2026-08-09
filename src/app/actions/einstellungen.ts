@@ -4,6 +4,36 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
+import { getCurrentOrganisation } from "@/lib/get-profile";
+
+// ---------------------------------------------------------
+// Organisation (Mandant) – Titel, der im Header statt eines fixen
+// Kunden-Logos angezeigt wird.
+// ---------------------------------------------------------
+export async function updateOrganisation(formData: FormData) {
+  const supabase = await createClient();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Bitte einen Namen angeben.")}`);
+  }
+
+  const organisation = await getCurrentOrganisation();
+  if (!organisation) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Organisation nicht gefunden.")}`);
+  }
+
+  const { error } = await supabase
+    .from("organisationen")
+    .update({ name })
+    .eq("id", organisation.id);
+
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect(mitErfolg("/einstellungen", "Name gespeichert."));
+}
 
 export async function createKlasse(formData: FormData) {
   const supabase = await createClient();
