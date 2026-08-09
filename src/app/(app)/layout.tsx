@@ -81,14 +81,17 @@ export default async function AppLayout({
             )}
           </nav>
 
-          {/* Fixes Applikations-Logo (nicht mandantenspezifisch) */}
+          {/* Fixes Applikations-Logo (nicht mandantenspezifisch). Auf Icon +
+              Schriftzug zugeschnitten (ohne Slogan/Weissraum) – die
+              Original-Datei mit vollem Lockup liegt unter
+              arcotime-logo-full.png für andere Verwendungen (z.B. Login-Seite). */}
           <Link href="/" className="shrink-0">
             <Image
               src="/arcotime-logo.png"
               alt="ArcoTime"
-              width={140}
-              height={32}
-              className="h-8 w-auto"
+              width={286}
+              height={197}
+              className="h-9 w-auto"
               priority
             />
           </Link>
