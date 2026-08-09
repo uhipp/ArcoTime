@@ -13,7 +13,7 @@ import type { ZeiteintragMitDetails } from "@/lib/types";
 type SearchParams = {
   datum?: string;
   kunde_id?: string;
-  mandat_id?: string;
+  projekt_id?: string;
   klasse_id?: string;
   user_id?: string;
 };
@@ -46,10 +46,10 @@ export default async function KalenderPage({
   const isAdmin = profile?.role === "admin";
   const supabase = await createClient();
 
-  const [{ data: kunden }, { data: mandate }, { data: klassen }, { data: mitarbeitende }] =
+  const [{ data: kunden }, { data: projekte }, { data: klassen }, { data: mitarbeitende }] =
     await Promise.all([
       supabase.from("kunden").select("id, name, vorname").order("name"),
-      supabase.from("mandate").select("*, kunden(name, vorname)").order("bezeichnung"),
+      supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
       supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
       isAdmin
         ? supabase.from("profiles").select("id, name").order("name")
@@ -63,7 +63,7 @@ export default async function KalenderPage({
     .lte("datum", rasterBis);
 
   if (params.kunde_id) query = query.eq("kunde_id", params.kunde_id);
-  if (params.mandat_id) query = query.eq("mandat_id", params.mandat_id);
+  if (params.projekt_id) query = query.eq("projekt_id", params.projekt_id);
   if (params.klasse_id) query = query.eq("klasse_id", params.klasse_id);
   if (params.user_id) query = query.eq("user_id", params.user_id);
 
@@ -135,14 +135,14 @@ export default async function KalenderPage({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Mandat</label>
+          <label className="block text-xs text-gray-500 mb-1">Projekt</label>
           <select
-            name="mandat_id"
-            defaultValue={params.mandat_id ?? ""}
+            name="projekt_id"
+            defaultValue={params.projekt_id ?? ""}
             className="rounded border border-gray-300 px-2 py-1.5 min-w-[12rem]"
           >
             <option value="">Alle</option>
-            {mandate?.map((m) => (
+            {projekte?.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.kunden?.vorname ? `${m.kunden.vorname} ` : ""}
                 {m.kunden?.name} – {m.bezeichnung}

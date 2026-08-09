@@ -25,13 +25,13 @@ export type Kunde = {
   notizen: string | null;
 };
 
-export type MandatStatus = "aktiv" | "inaktiv";
+export type ProjektStatus = "aktiv" | "inaktiv";
 
-export type Mandat = {
+export type Projekt = {
   id: string;
   kunde_id: string;
   bezeichnung: string;
-  status: MandatStatus;
+  status: ProjektStatus;
   kostenstelle: string | null;
   startdatum: string;
   notizen: string | null;
@@ -73,7 +73,7 @@ export type Dienstleistung = {
 
 export type Zeiteintrag = {
   id: string;
-  mandat_id: string;
+  projekt_id: string;
   dienstleistung_id: string;
   user_id: string;
   datum: string;
@@ -91,7 +91,7 @@ export type Zeiteintrag = {
 export type ZeiteintragMitDetails = Zeiteintrag & {
   menge_stunden: number;
   betrag: number;
-  mandat_bezeichnung: string;
+  projekt_bezeichnung: string;
   kostenstelle: string | null;
   kunde_id: string;
   kunde_name: string;
@@ -119,10 +119,10 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
 export type BelegExport = {
   id: string;
   belegnummer: number;
-  mandat_id: string;
+  projekt_id: string;
   zeitraum_von: string;
   zeitraum_bis: string;
   anzahl_positionen: number;
   erstellt_am: string;
-  mandate?: { bezeichnung: string; kunden?: { name: string; vorname: string | null } | null } | null;
+  projekte?: { bezeichnung: string; kunden?: { name: string; vorname: string | null } | null } | null;
 };

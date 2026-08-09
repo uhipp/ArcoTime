@@ -37,7 +37,7 @@ export default async function KundeDetailPage({
         <DeleteButton
           action={deleteAction}
           label="Kunde löschen"
-          confirmText="Kunde inkl. aller zugehörigen Mandate ohne Zeiteinträge wirklich löschen?"
+          confirmText="Kunde inkl. aller zugehörigen Projekte ohne Zeiteinträge wirklich löschen?"
         />
       </div>
       <KundeForm kunde={kunde as Kunde} action={updateAction} error={error} />

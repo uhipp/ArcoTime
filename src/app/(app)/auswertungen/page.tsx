@@ -15,7 +15,7 @@ type SearchParams = {
   ansicht?: string;
   datum?: string;
   kunde_id?: string;
-  mandat_id?: string;
+  projekt_id?: string;
   klasse_id?: string;
   user_id?: string;
   gruppieren?: string;
@@ -40,16 +40,16 @@ export default async function AuswertungenPage({
     params.ansicht === "tag" || params.ansicht === "monat" ? (params.ansicht as Ansicht) : "woche";
   const bezugsdatum = params.datum ?? heuteIso();
   const [von, bis] = zeitraumFuer(ansicht, bezugsdatum);
-  const gruppieren = params.gruppieren === "mandat";
+  const gruppieren = params.gruppieren === "projekt";
 
   const profile = await getCurrentProfile();
   const isAdmin = profile?.role === "admin";
   const supabase = await createClient();
 
-  const [{ data: kunden }, { data: mandate }, { data: klassen }, { data: mitarbeitende }] =
+  const [{ data: kunden }, { data: projekte }, { data: klassen }, { data: mitarbeitende }] =
     await Promise.all([
       supabase.from("kunden").select("id, name, vorname").order("name"),
-      supabase.from("mandate").select("*, kunden(name, vorname)").order("bezeichnung"),
+      supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
       supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
       isAdmin
         ? supabase.from("profiles").select("id, name").order("name")
@@ -65,7 +65,7 @@ export default async function AuswertungenPage({
     .order("start_zeit", { ascending: true });
 
   if (params.kunde_id) query = query.eq("kunde_id", params.kunde_id);
-  if (params.mandat_id) query = query.eq("mandat_id", params.mandat_id);
+  if (params.projekt_id) query = query.eq("projekt_id", params.projekt_id);
   if (params.klasse_id) query = query.eq("klasse_id", params.klasse_id);
   if (params.user_id) query = query.eq("user_id", params.user_id);
 
@@ -75,14 +75,14 @@ export default async function AuswertungenPage({
   const summeStunden = zeilen.reduce((s, z) => s + Number(z.menge_stunden), 0);
   const summeBetrag = zeilen.reduce((s, z) => s + Number(z.betrag), 0);
 
-  // Gruppierung nach Kunde/Mandat (Client-seitig aggregiert, Datensatz pro
+  // Gruppierung nach Kunde/Projekt (Client-seitig aggregiert, Datensatz pro
   // Periode ist klein genug für eine einfache JS-Aggregation).
   const gruppen = new Map<
     string,
-    { kunde: string; mandat: string; stunden: number; betrag: number; anzahl: number }
+    { kunde: string; projekt: string; stunden: number; betrag: number; anzahl: number }
   >();
   for (const z of zeilen) {
-    const key = z.mandat_id;
+    const key = z.projekt_id;
     const bestehend = gruppen.get(key);
     const kundeLabel = `${z.vorname ? `${z.vorname} ` : ""}${z.kunde_name}`;
     if (bestehend) {
@@ -92,7 +92,7 @@ export default async function AuswertungenPage({
     } else {
       gruppen.set(key, {
         kunde: kundeLabel,
-        mandat: z.mandat_bezeichnung,
+        projekt: z.projekt_bezeichnung,
         stunden: Number(z.menge_stunden),
         betrag: Number(z.betrag),
         anzahl: 1,
@@ -173,14 +173,14 @@ export default async function AuswertungenPage({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Mandat</label>
+          <label className="block text-xs text-gray-500 mb-1">Projekt</label>
           <select
-            name="mandat_id"
-            defaultValue={params.mandat_id ?? ""}
+            name="projekt_id"
+            defaultValue={params.projekt_id ?? ""}
             className="rounded border border-gray-300 px-2 py-1.5 min-w-[12rem]"
           >
             <option value="">Alle</option>
-            {mandate?.map((m) => (
+            {projekte?.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.kunden?.vorname ? `${m.kunden.vorname} ` : ""}
                 {m.kunden?.name} – {m.bezeichnung}
@@ -224,11 +224,11 @@ export default async function AuswertungenPage({
         <button type="submit" className="rounded border px-4 py-1.5 hover:bg-gray-50">
           Filtern
         </button>
-        {(params.kunde_id || params.mandat_id || params.klasse_id || params.user_id) && (
+        {(params.kunde_id || params.projekt_id || params.klasse_id || params.user_id) && (
           <Link
             href={baueQuery(
               { ansicht, datum: bezugsdatum },
-              { kunde_id: "", mandat_id: "", klasse_id: "", user_id: "" }
+              { kunde_id: "", projekt_id: "", klasse_id: "", user_id: "" }
             )}
             className="text-gray-500 hover:underline"
           >
@@ -247,12 +247,12 @@ export default async function AuswertungenPage({
           Alle Positionen
         </Link>
         <Link
-          href={baueQuery(params, { gruppieren: "mandat" })}
+          href={baueQuery(params, { gruppieren: "projekt" })}
           className={`px-3 py-1.5 rounded border ${
             gruppieren ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
           }`}
         >
-          Gruppiert nach Mandat
+          Gruppiert nach Projekt
         </Link>
       </div>
 
@@ -269,7 +269,7 @@ export default async function AuswertungenPage({
               <tr>
                 <th className="px-4 py-2">Datum</th>
                 {isAdmin && <th className="px-4 py-2">Mitarbeiter</th>}
-                <th className="px-4 py-2">Kunde / Mandat</th>
+                <th className="px-4 py-2">Kunde / Projekt</th>
                 <th className="px-4 py-2">Dienstleistung</th>
                 <th className="px-4 py-2">Klasse</th>
                 <th className="px-4 py-2">Dauer</th>
@@ -283,7 +283,7 @@ export default async function AuswertungenPage({
                   {isAdmin && <td className="px-4 py-2">{z.mitarbeiter_name}</td>}
                   <td className="px-4 py-2">
                     {z.vorname ? `${z.vorname} ` : ""}
-                    {z.kunde_name} – {z.mandat_bezeichnung}
+                    {z.kunde_name} – {z.projekt_bezeichnung}
                   </td>
                   <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
                   <td className="px-4 py-2">{z.klasse_bezeichnung ?? "–"}</td>
@@ -322,7 +322,7 @@ export default async function AuswertungenPage({
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
                 <th className="px-4 py-2">Kunde</th>
-                <th className="px-4 py-2">Mandat</th>
+                <th className="px-4 py-2">Projekt</th>
                 <th className="px-4 py-2">Positionen</th>
                 <th className="px-4 py-2">Dauer</th>
                 <th className="px-4 py-2">Betrag</th>
@@ -332,7 +332,7 @@ export default async function AuswertungenPage({
               {gruppenListe.map((g, i) => (
                 <tr key={i} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-2">{g.kunde}</td>
-                  <td className="px-4 py-2">{g.mandat}</td>
+                  <td className="px-4 py-2">{g.projekt}</td>
                   <td className="px-4 py-2">{g.anzahl}</td>
                   <td className="px-4 py-2 whitespace-nowrap">{g.stunden.toFixed(2)} h</td>
                   <td className="px-4 py-2 whitespace-nowrap">CHF {g.betrag.toFixed(2)}</td>

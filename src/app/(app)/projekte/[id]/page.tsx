@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { MandatForm } from "@/components/mandat-form";
-import { updateMandat, deleteMandat } from "@/app/actions/mandate";
+import { ProjektForm } from "@/components/projekt-form";
+import { updateProjekt, deleteProjekt } from "@/app/actions/projekte";
 import { DeleteButton } from "@/components/delete-button";
-import type { Mandat } from "@/lib/types";
+import type { Projekt } from "@/lib/types";
 
-export default async function MandatDetailPage({
+export default async function ProjektDetailPage({
   params,
   searchParams,
 }: {
@@ -16,34 +16,34 @@ export default async function MandatDetailPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const { data: mandat } = await supabase
-    .from("mandate")
+  const { data: projekt } = await supabase
+    .from("projekte")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (!mandat) notFound();
+  if (!projekt) notFound();
 
   const { data: kunden } = await supabase
     .from("kunden")
     .select("id, name, vorname")
     .order("name");
 
-  const updateAction = updateMandat.bind(null, id);
-  const deleteAction = deleteMandat.bind(null, id);
+  const updateAction = updateProjekt.bind(null, id);
+  const deleteAction = deleteProjekt.bind(null, id);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">{mandat.bezeichnung}</h1>
+        <h1 className="text-2xl font-semibold">{projekt.bezeichnung}</h1>
         <DeleteButton
           action={deleteAction}
-          label="Mandat löschen"
-          confirmText="Mandat wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
+          label="Projekt löschen"
+          confirmText="Projekt wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
         />
       </div>
-      <MandatForm
-        mandat={mandat as Mandat}
+      <ProjektForm
+        projekt={projekt as Projekt}
         kunden={kunden ?? []}
         action={updateAction}
         error={error}

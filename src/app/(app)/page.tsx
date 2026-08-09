@@ -38,11 +38,11 @@ export default async function DashboardPage() {
           <div className="text-sm text-gray-500">Adressen verwalten</div>
         </Link>
         <Link
-          href="/mandate"
+          href="/projekte"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
-          <div className="font-medium">Mandate</div>
-          <div className="text-sm text-gray-500">Mandate je Kunde</div>
+          <div className="font-medium">Projekte</div>
+          <div className="text-sm text-gray-500">Projekte je Kunde</div>
         </Link>
         <Link
           href="/dienstleistungen"

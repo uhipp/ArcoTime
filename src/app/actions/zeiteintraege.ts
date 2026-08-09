@@ -10,7 +10,7 @@ function zeiteintragFromForm(formData: FormData) {
     v && String(v).trim() !== "" ? String(v).trim() : null;
 
   return {
-    mandat_id: String(formData.get("mandat_id")),
+    projekt_id: String(formData.get("projekt_id")),
     dienstleistung_id: String(formData.get("dienstleistung_id")),
     datum: str(formData.get("datum")) ?? heuteIso(),
     start_zeit: str(formData.get("start_zeit")),

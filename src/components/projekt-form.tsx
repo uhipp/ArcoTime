@@ -1,13 +1,13 @@
 import { heuteIso } from "@/lib/date-utils";
-import type { Kunde, Mandat } from "@/lib/types";
+import type { Kunde, Projekt } from "@/lib/types";
 
-export function MandatForm({
-  mandat,
+export function ProjektForm({
+  projekt,
   kunden,
   action,
   error,
 }: {
-  mandat?: Mandat;
+  projekt?: Projekt;
   kunden: Pick<Kunde, "id" | "name" | "vorname">[];
   action: (formData: FormData) => void;
   error?: string;
@@ -28,7 +28,7 @@ export function MandatForm({
           id="kunde_id"
           name="kunde_id"
           required
-          defaultValue={mandat?.kunde_id ?? ""}
+          defaultValue={projekt?.kunde_id ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         >
           <option value="" disabled>
@@ -51,7 +51,7 @@ export function MandatForm({
           id="bezeichnung"
           name="bezeichnung"
           required
-          defaultValue={mandat?.bezeichnung ?? ""}
+          defaultValue={projekt?.bezeichnung ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
@@ -64,7 +64,7 @@ export function MandatForm({
           <select
             id="status"
             name="status"
-            defaultValue={mandat?.status ?? "aktiv"}
+            defaultValue={projekt?.status ?? "aktiv"}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="aktiv">Aktiv</option>
@@ -79,7 +79,7 @@ export function MandatForm({
             id="startdatum"
             name="startdatum"
             type="date"
-            defaultValue={mandat?.startdatum ?? heuteIso()}
+            defaultValue={projekt?.startdatum ?? heuteIso()}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>
@@ -92,11 +92,11 @@ export function MandatForm({
         <input
           id="kostenstelle"
           name="kostenstelle"
-          defaultValue={mandat?.kostenstelle ?? ""}
+          defaultValue={projekt?.kostenstelle ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
         <p className="text-xs text-gray-400 mt-1">
-          Wird bei jedem Zeiteintrag dieses Mandats automatisch in den Export
+          Wird bei jedem Zeiteintrag dieses Projekts automatisch in den Export
           übernommen.
         </p>
       </div>
@@ -110,11 +110,11 @@ export function MandatForm({
           name="naechste_belegnummer"
           type="number"
           placeholder="470000"
-          defaultValue={mandat?.naechste_belegnummer ?? ""}
+          defaultValue={projekt?.naechste_belegnummer ?? ""}
           className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
         <p className="text-xs text-gray-400 mt-1">
-          Wird beim nächsten Export für dieses Mandat vergeben und danach
+          Wird beim nächsten Export für dieses Projekt vergeben und danach
           automatisch um 1 erhöht. Nur ändern, wenn du z.B. an eine bestehende
           Nummerierung im Buchhaltungssystem anschliessen willst.
         </p>
@@ -124,7 +124,7 @@ export function MandatForm({
         <input
           type="checkbox"
           name="sichtbar_fuer_alle"
-          defaultChecked={mandat?.sichtbar_fuer_alle ?? true}
+          defaultChecked={projekt?.sichtbar_fuer_alle ?? true}
         />
         Für alle Mitarbeitenden sichtbar
       </label>
@@ -137,7 +137,7 @@ export function MandatForm({
           id="notizen"
           name="notizen"
           rows={3}
-          defaultValue={mandat?.notizen ?? ""}
+          defaultValue={projekt?.notizen ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
@@ -150,7 +150,7 @@ export function MandatForm({
           Speichern
         </button>
         <a
-          href="/mandate"
+          href="/projekte"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
         >
           Abbrechen

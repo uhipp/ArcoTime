@@ -9,12 +9,12 @@ export async function erstelleExport(formData: FormData) {
 
   const von = String(formData.get("von"));
   const bis = String(formData.get("bis"));
-  const mandatIds = formData.getAll("mandat_ids").map(String);
+  const projektIds = formData.getAll("projekt_ids").map(String);
 
-  if (mandatIds.length === 0) {
+  if (projektIds.length === 0) {
     redirect(
       `/export?von=${von}&bis=${bis}&error=${encodeURIComponent(
-        "Bitte mindestens ein Mandat auswählen."
+        "Bitte mindestens ein Projekt auswählen."
       )}`
     );
   }
@@ -22,9 +22,9 @@ export async function erstelleExport(formData: FormData) {
   const belegIds: string[] = [];
   let gesamtAnzahl = 0;
 
-  for (const mandatId of mandatIds) {
+  for (const projektId of projektIds) {
     const { data, error } = await supabase.rpc("erstelle_export", {
-      p_mandat_id: mandatId,
+      p_projekt_id: projektId,
       p_von: von,
       p_bis: bis,
     });
@@ -45,7 +45,7 @@ export async function erstelleExport(formData: FormData) {
   if (belegIds.length === 0) {
     redirect(
       `/export?von=${von}&bis=${bis}&error=${encodeURIComponent(
-        "Keine offenen Positionen für die gewählten Mandate im Zeitraum."
+        "Keine offenen Positionen für die gewählten Projekte im Zeitraum."
       )}`
     );
   }

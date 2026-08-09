@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 
-function mandatFromForm(formData: FormData) {
+function projektFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
     v && String(v).trim() !== "" ? String(v).trim() : null;
 
@@ -20,7 +20,7 @@ function mandatFromForm(formData: FormData) {
   };
 
   // Nur setzen, wenn ausgefüllt – sonst bleibt der bestehende Zähler des
-  // Mandats unangetastet (nicht mit null überschreiben).
+  // Projekts unangetastet (nicht mit null überschreiben).
   const belegnummer = str(formData.get("naechste_belegnummer"));
   if (belegnummer !== null) {
     werte.naechste_belegnummer = Number(belegnummer);
@@ -29,35 +29,35 @@ function mandatFromForm(formData: FormData) {
   return werte;
 }
 
-export async function createMandat(formData: FormData) {
+export async function createProjekt(formData: FormData) {
   const supabase = await createClient();
-  const values = mandatFromForm(formData);
+  const values = projektFromForm(formData);
 
-  const { error } = await supabase.from("mandate").insert(values);
+  const { error } = await supabase.from("projekte").insert(values);
   if (error) {
-    redirect(`/mandate/neu?error=${encodeURIComponent(error.message)}`);
+    redirect(`/projekte/neu?error=${encodeURIComponent(error.message)}`);
   }
 
-  revalidatePath("/mandate");
-  redirect("/mandate");
+  revalidatePath("/projekte");
+  redirect("/projekte");
 }
 
-export async function updateMandat(id: string, formData: FormData) {
+export async function updateProjekt(id: string, formData: FormData) {
   const supabase = await createClient();
-  const values = mandatFromForm(formData);
+  const values = projektFromForm(formData);
 
-  const { error } = await supabase.from("mandate").update(values).eq("id", id);
+  const { error } = await supabase.from("projekte").update(values).eq("id", id);
   if (error) {
-    redirect(`/mandate/${id}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/projekte/${id}?error=${encodeURIComponent(error.message)}`);
   }
 
-  revalidatePath("/mandate");
-  redirect("/mandate");
+  revalidatePath("/projekte");
+  redirect("/projekte");
 }
 
-export async function deleteMandat(id: string) {
+export async function deleteProjekt(id: string) {
   const supabase = await createClient();
-  await supabase.from("mandate").delete().eq("id", id);
-  revalidatePath("/mandate");
-  redirect("/mandate");
+  await supabase.from("projekte").delete().eq("id", id);
+  revalidatePath("/projekte");
+  redirect("/projekte");
 }

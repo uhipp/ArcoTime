@@ -18,10 +18,10 @@ export default async function ZeiterfassungPage({
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
-  const [{ data: mandate }, { data: dienstleistungen }, { data: eintraege, error: listError }] =
+  const [{ data: projekte }, { data: dienstleistungen }, { data: eintraege, error: listError }] =
     await Promise.all([
       supabase
-        .from("mandate")
+        .from("projekte")
         .select("*, kunden(name, vorname)")
         .order("bezeichnung"),
       supabase
@@ -48,7 +48,7 @@ export default async function ZeiterfassungPage({
 
       <div className="mb-8">
         <ZeiterfassungForm
-          mandate={mandate ?? []}
+          projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
           action={createZeiteintrag}
           error={error}
@@ -88,7 +88,7 @@ export default async function ZeiterfassungPage({
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
               <th className="px-4 py-2">Datum</th>
-              <th className="px-4 py-2">Kunde / Mandat</th>
+              <th className="px-4 py-2">Kunde / Projekt</th>
               <th className="px-4 py-2">Dienstleistung</th>
               <th className="px-4 py-2">Dauer</th>
               <th className="px-4 py-2">Betrag</th>
@@ -103,7 +103,7 @@ export default async function ZeiterfassungPage({
                 </td>
                 <td className="px-4 py-2">
                   {z.vorname ? `${z.vorname} ` : ""}
-                  {z.kunde_name} – {z.mandat_bezeichnung}
+                  {z.kunde_name} – {z.projekt_bezeichnung}
                 </td>
                 <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
                 <td className="px-4 py-2 whitespace-nowrap">{z.menge_stunden} h</td>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
-import type { Dienstleistung, Mandat, Zeiteintrag } from "@/lib/types";
+import type { Dienstleistung, Projekt, Zeiteintrag } from "@/lib/types";
 
 function jetztAlsZeit() {
   const d = new Date();
@@ -25,13 +25,13 @@ function formatDauer(minuten: number) {
 
 export function ZeiterfassungForm({
   zeiteintrag,
-  mandate,
+  projekte,
   dienstleistungen,
   action,
   error,
 }: {
   zeiteintrag?: Zeiteintrag;
-  mandate: (Pick<Mandat, "id" | "bezeichnung" | "status"> & {
+  projekte: (Pick<Projekt, "id" | "bezeichnung" | "status"> & {
     kunden?: { name: string; vorname: string | null } | null;
   })[];
   dienstleistungen: Pick<Dienstleistung, "id" | "bezeichnung" | "aktiv">[];
@@ -94,20 +94,20 @@ export function ZeiterfassungForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="mandat_id">
-            Mandat
+          <label className="block text-sm font-medium mb-1" htmlFor="projekt_id">
+            Projekt
           </label>
           <select
-            id="mandat_id"
-            name="mandat_id"
+            id="projekt_id"
+            name="projekt_id"
             required
-            defaultValue={zeiteintrag?.mandat_id ?? ""}
+            defaultValue={zeiteintrag?.projekt_id ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="" disabled>
               Bitte wählen…
             </option>
-            {mandate.map((m) => (
+            {projekte.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.kunden?.vorname ? `${m.kunden.vorname} ` : ""}
                 {m.kunden?.name} – {m.bezeichnung}

@@ -16,7 +16,7 @@ const plexSansCondensed = IBM_Plex_Sans_Condensed({
 
 export const metadata: Metadata = {
   title: "ArcoTime",
-  description: "Zeiterfassung für Mandatsarbeit – Arcos Group",
+  description: "Zeiterfassung für Projektarbeit – Arcos Group",
   icons: {
     icon: "/favicon-32.png",
     apple: "/icon-192.png",

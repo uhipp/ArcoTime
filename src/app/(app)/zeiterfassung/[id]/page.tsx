@@ -24,9 +24,9 @@ export default async function ZeiteintragDetailPage({
 
   if (!zeiteintrag) notFound();
 
-  const [{ data: mandate }, { data: dienstleistungen }] = await Promise.all([
+  const [{ data: projekte }, { data: dienstleistungen }] = await Promise.all([
     supabase
-      .from("mandate")
+      .from("projekte")
       .select("*, kunden(name, vorname)")
       .order("bezeichnung"),
     supabase
@@ -64,7 +64,7 @@ export default async function ZeiteintragDetailPage({
       ) : (
         <ZeiterfassungForm
           zeiteintrag={zeiteintrag as Zeiteintrag}
-          mandate={mandate ?? []}
+          projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
           action={updateAction}
           error={error}

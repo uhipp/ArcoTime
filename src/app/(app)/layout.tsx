@@ -43,8 +43,8 @@ export default async function AppLayout({
               <Link href="/kunden" className="hover:text-arcos-navy">
                 Kunden
               </Link>
-              <Link href="/mandate" className="hover:text-arcos-navy">
-                Mandate
+              <Link href="/projekte" className="hover:text-arcos-navy">
+                Projekte
               </Link>
               <Link href="/dienstleistungen" className="hover:text-arcos-navy">
                 Dienstleistungen

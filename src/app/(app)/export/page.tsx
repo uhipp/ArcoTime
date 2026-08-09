@@ -38,9 +38,9 @@ export default async function ExportPage({
   const gruppen = new Map<
     string,
     {
-      mandat_id: string;
+      projekt_id: string;
       kunde: string;
-      mandat: string;
+      projekt: string;
       anzahl: number;
       stunden: number;
       betrag: number;
@@ -49,7 +49,7 @@ export default async function ExportPage({
     }
   >();
   for (const z of offene) {
-    const g = gruppen.get(z.mandat_id);
+    const g = gruppen.get(z.projekt_id);
     const kundeLabel = `${z.vorname ? `${z.vorname} ` : ""}${z.kunde_name}`;
     if (g) {
       g.anzahl += 1;
@@ -58,10 +58,10 @@ export default async function ExportPage({
       if (z.datum < g.minDatum) g.minDatum = z.datum;
       if (z.datum > g.maxDatum) g.maxDatum = z.datum;
     } else {
-      gruppen.set(z.mandat_id, {
-        mandat_id: z.mandat_id,
+      gruppen.set(z.projekt_id, {
+        projekt_id: z.projekt_id,
         kunde: kundeLabel,
-        mandat: z.mandat_bezeichnung,
+        projekt: z.projekt_bezeichnung,
         anzahl: 1,
         stunden: Number(z.menge_stunden),
         betrag: Number(z.betrag),
@@ -72,13 +72,13 @@ export default async function ExportPage({
   }
   const gruppenListe = [...gruppen.values()].sort((a, b) => a.kunde.localeCompare(b.kunde));
 
-  const mandatIds = gruppenListe.map((g) => g.mandat_id);
-  const { data: mandateInfo } =
-    mandatIds.length > 0
-      ? await supabase.from("mandate").select("id, naechste_belegnummer").in("id", mandatIds)
+  const projektIds = gruppenListe.map((g) => g.projekt_id);
+  const { data: projekteInfo } =
+    projektIds.length > 0
+      ? await supabase.from("projekte").select("id, naechste_belegnummer").in("id", projektIds)
       : { data: [] };
-  const belegnummerProMandat = new Map(
-    (mandateInfo ?? []).map((m) => [m.id, m.naechste_belegnummer])
+  const belegnummerProProjekt = new Map(
+    (projekteInfo ?? []).map((m) => [m.id, m.naechste_belegnummer])
   );
 
   let erstellteBelege: BelegExport[] = [];
@@ -86,14 +86,14 @@ export default async function ExportPage({
     const ids = params.erstellt.split(",");
     const { data } = await supabase
       .from("belege_exporte")
-      .select("*, mandate(bezeichnung, kunden(name, vorname))")
+      .select("*, projekte(bezeichnung, kunden(name, vorname))")
       .in("id", ids);
     erstellteBelege = (data as BelegExport[] | null) ?? [];
   }
 
   const { data: historie } = await supabase
     .from("belege_exporte")
-    .select("*, mandate(bezeichnung, kunden(name, vorname))")
+    .select("*, projekte(bezeichnung, kunden(name, vorname))")
     .order("erstellt_am", { ascending: false })
     .limit(20);
 
@@ -116,8 +116,8 @@ export default async function ExportPage({
           <ul className="mb-3 list-disc list-inside">
             {erstellteBelege.map((b) => (
               <li key={b.id}>
-                Belegnummer {b.belegnummer} – {b.mandate?.kunden?.vorname ? `${b.mandate.kunden.vorname} ` : ""}
-                {b.mandate?.kunden?.name} – {b.mandate?.bezeichnung} ({b.anzahl_positionen} Positionen)
+                Belegnummer {b.belegnummer} – {b.projekte?.kunden?.vorname ? `${b.projekte.kunden.vorname} ` : ""}
+                {b.projekte?.kunden?.name} – {b.projekte?.bezeichnung} ({b.anzahl_positionen} Positionen)
               </li>
             ))}
           </ul>
@@ -162,7 +162,7 @@ export default async function ExportPage({
 
       <p className="text-sm text-gray-500 mb-3">
         Noch nicht abgerechnete Positionen im Zeitraum {formatDatumCH(von)} – {formatDatumCH(bis)}
-        , gruppiert nach Mandat. Ausgewählte Mandate erhalten je eine neue Belegnummer; alle
+        , gruppiert nach Projekt. Ausgewählte Projekte erhalten je eine neue Belegnummer; alle
         zugehörigen Positionen werden als abgerechnet markiert.
       </p>
 
@@ -175,7 +175,7 @@ export default async function ExportPage({
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
                 <th className="px-4 py-2 w-8"></th>
-                <th className="px-4 py-2">Kunde / Mandat</th>
+                <th className="px-4 py-2">Kunde / Projekt</th>
                 <th className="px-4 py-2">Zeitraum</th>
                 <th className="px-4 py-2">Positionen</th>
                 <th className="px-4 py-2">Dauer</th>
@@ -185,17 +185,17 @@ export default async function ExportPage({
             </thead>
             <tbody>
               {gruppenListe.map((g) => (
-                <tr key={g.mandat_id} className="border-t">
+                <tr key={g.projekt_id} className="border-t">
                   <td className="px-4 py-2">
                     <input
                       type="checkbox"
-                      name="mandat_ids"
-                      value={g.mandat_id}
+                      name="projekt_ids"
+                      value={g.projekt_id}
                       defaultChecked
                     />
                   </td>
                   <td className="px-4 py-2">
-                    {g.kunde} – {g.mandat}
+                    {g.kunde} – {g.projekt}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {formatDatumCH(g.minDatum)} – {formatDatumCH(g.maxDatum)}
@@ -203,7 +203,7 @@ export default async function ExportPage({
                   <td className="px-4 py-2">{g.anzahl}</td>
                   <td className="px-4 py-2 whitespace-nowrap">{g.stunden.toFixed(2)} h</td>
                   <td className="px-4 py-2 whitespace-nowrap">CHF {g.betrag.toFixed(2)}</td>
-                  <td className="px-4 py-2">{belegnummerProMandat.get(g.mandat_id) ?? "–"}</td>
+                  <td className="px-4 py-2">{belegnummerProProjekt.get(g.projekt_id) ?? "–"}</td>
                 </tr>
               ))}
               {gruppenListe.length === 0 && (
@@ -234,7 +234,7 @@ export default async function ExportPage({
             <tr>
               <th className="px-4 py-2">Erstellt am</th>
               <th className="px-4 py-2">Belegnummer</th>
-              <th className="px-4 py-2">Kunde / Mandat</th>
+              <th className="px-4 py-2">Kunde / Projekt</th>
               <th className="px-4 py-2">Zeitraum</th>
               <th className="px-4 py-2">Positionen</th>
               <th className="px-4 py-2"></th>
@@ -248,8 +248,8 @@ export default async function ExportPage({
                 </td>
                 <td className="px-4 py-2">{b.belegnummer}</td>
                 <td className="px-4 py-2">
-                  {b.mandate?.kunden?.vorname ? `${b.mandate.kunden.vorname} ` : ""}
-                  {b.mandate?.kunden?.name} – {b.mandate?.bezeichnung}
+                  {b.projekte?.kunden?.vorname ? `${b.projekte.kunden.vorname} ` : ""}
+                  {b.projekte?.kunden?.name} – {b.projekte?.bezeichnung}
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap">
                   {formatDatumCH(b.zeitraum_von)} – {formatDatumCH(b.zeitraum_bis)}

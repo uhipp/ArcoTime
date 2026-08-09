@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function MandatePage({
+export default async function ProjektePage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string; kunde_id?: string }>;
@@ -10,14 +10,14 @@ export default async function MandatePage({
   const supabase = await createClient();
 
   let query = supabase
-    .from("mandate")
+    .from("projekte")
     .select("*, kunden(id, name, vorname)")
     .order("bezeichnung", { ascending: true });
 
   if (status) query = query.eq("status", status);
   if (kunde_id) query = query.eq("kunde_id", kunde_id);
 
-  const { data: mandate, error } = await query;
+  const { data: projekte, error } = await query;
   const { data: kunden } = await supabase
     .from("kunden")
     .select("id, name, vorname")
@@ -26,12 +26,12 @@ export default async function MandatePage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Mandate</h1>
+        <h1 className="text-2xl font-semibold">Projekte</h1>
         <Link
-          href="/mandate/neu"
+          href="/projekte/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + Neues Mandat
+          + Neues Projekt
         </Link>
       </div>
 
@@ -76,17 +76,17 @@ export default async function MandatePage({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
-              <th className="px-4 py-2">Mandat</th>
+              <th className="px-4 py-2">Projekt</th>
               <th className="px-4 py-2">Kunde</th>
               <th className="px-4 py-2">Kostenstelle</th>
               <th className="px-4 py-2">Status</th>
             </tr>
           </thead>
           <tbody>
-            {mandate?.map((m) => (
+            {projekte?.map((m) => (
               <tr key={m.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">
-                  <Link href={`/mandate/${m.id}`} className="text-arcos-steel hover:underline">
+                  <Link href={`/projekte/${m.id}`} className="text-arcos-steel hover:underline">
                     {m.bezeichnung}
                   </Link>
                 </td>
@@ -108,10 +108,10 @@ export default async function MandatePage({
                 </td>
               </tr>
             ))}
-            {mandate?.length === 0 && (
+            {projekte?.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
-                  Keine Mandate gefunden.
+                  Keine Projekte gefunden.
                 </td>
               </tr>
             )}
