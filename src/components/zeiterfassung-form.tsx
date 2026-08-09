@@ -27,6 +27,8 @@ export function ZeiterfassungForm({
   zeiteintrag,
   projekte,
   dienstleistungen,
+  mitarbeitende,
+  aktuellerUserId,
   action,
   error,
 }: {
@@ -35,6 +37,8 @@ export function ZeiterfassungForm({
     kunden?: { name: string; vorname: string | null } | null;
   })[];
   dienstleistungen: Pick<Dienstleistung, "id" | "bezeichnung" | "aktiv">[];
+  mitarbeitende: { id: string; name: string }[];
+  aktuellerUserId: string;
   action: (formData: FormData) => void;
   error?: string;
 }) {
@@ -45,6 +49,44 @@ export function ZeiterfassungForm({
   const [timerSekunden, setTimerSekunden] = useState(0);
   const timerStart = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [mitarbeiterId, setMitarbeiterId] = useState(
+    zeiteintrag?.mitarbeiter_id ?? aktuellerUserId
+  );
+  const [beschreibung, setBeschreibung] = useState(zeiteintrag?.beschreibung ?? "");
+  const beschreibungRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const nameFuer = (id: string) => mitarbeitende.find((m) => m.id === id)?.name ?? "";
+
+  function onMitarbeiterChange(neueId: string) {
+    const alterName = nameFuer(mitarbeiterId);
+    const neuerName = nameFuer(neueId);
+    setMitarbeiterId(neueId);
+
+    setBeschreibung((aktuell) => {
+      const zeilen = aktuell.split("\n");
+      if (aktuell === "" ) return `${neuerName}\n`;
+      if (zeilen[0] === alterName) {
+        zeilen[0] = neuerName;
+        return zeilen.join("\n");
+      }
+      return aktuell;
+    });
+  }
+
+  function onBeschreibungFocus() {
+    if (beschreibung !== "") return;
+    const name = nameFuer(mitarbeiterId);
+    const neu = `${name}\n`;
+    setBeschreibung(neu);
+    // Cursor ans Ende setzen, damit direkt weitergeschrieben werden kann.
+    requestAnimationFrame(() => {
+      const el = beschreibungRef.current;
+      if (el) {
+        el.selectionStart = el.selectionEnd = neu.length;
+      }
+    });
+  }
 
   // Live-Ticker während der Timer läuft
   useEffect(() => {
@@ -91,6 +133,27 @@ export function ZeiterfassungForm({
           {error}
         </div>
       )}
+
+      <div>
+        <label className="block text-sm font-medium mb-1" htmlFor="mitarbeiter_id">
+          Mitarbeiter
+        </label>
+        <select
+          id="mitarbeiter_id"
+          name="mitarbeiter_id"
+          required
+          value={mitarbeiterId}
+          onChange={(e) => onMitarbeiterChange(e.target.value)}
+          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+        >
+          {mitarbeitende.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+              {m.id === aktuellerUserId ? " (ich)" : ""}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -233,10 +296,13 @@ export function ZeiterfassungForm({
           Beschreibung
         </label>
         <textarea
+          ref={beschreibungRef}
           id="beschreibung"
           name="beschreibung"
-          rows={2}
-          defaultValue={zeiteintrag?.beschreibung ?? ""}
+          rows={3}
+          value={beschreibung}
+          onChange={(e) => setBeschreibung(e.target.value)}
+          onFocus={onBeschreibungFocus}
           placeholder="Was wurde gemacht?"
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />

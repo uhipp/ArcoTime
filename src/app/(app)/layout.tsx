@@ -50,6 +50,11 @@ export default async function AppLayout({
                 Dienstleistungen
               </Link>
               {isAdmin && (
+                <Link href="/mitarbeiter" className="hover:text-arcos-navy">
+                  Mitarbeiter
+                </Link>
+              )}
+              {isAdmin && (
                 <Link href="/export" className="hover:text-arcos-navy">
                   Export
                 </Link>

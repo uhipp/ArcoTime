@@ -17,26 +17,32 @@ export default async function ZeiterfassungPage({
 
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
+  const aktuellerUserId = userData.user?.id ?? "";
 
-  const [{ data: projekte }, { data: dienstleistungen }, { data: eintraege, error: listError }] =
-    await Promise.all([
-      supabase
-        .from("projekte")
-        .select("*, kunden(name, vorname)")
-        .order("bezeichnung"),
-      supabase
-        .from("dienstleistungen")
-        .select("id, bezeichnung, aktiv")
-        .order("bezeichnung"),
-      supabase
-        .from("v_zeiteintraege")
-        .select("*")
-        .eq("user_id", userData.user?.id ?? "")
-        .gte("datum", vonDatum)
-        .lte("datum", bisDatum)
-        .order("datum", { ascending: false })
-        .order("start_zeit", { ascending: false }),
-    ]);
+  const [
+    { data: projekte },
+    { data: dienstleistungen },
+    { data: mitarbeitende },
+    { data: eintraege, error: listError },
+  ] = await Promise.all([
+    supabase
+      .from("projekte")
+      .select("*, kunden(name, vorname)")
+      .order("bezeichnung"),
+    supabase
+      .from("dienstleistungen")
+      .select("id, bezeichnung, aktiv")
+      .order("bezeichnung"),
+    supabase.from("profiles").select("id, name").order("name"),
+    supabase
+      .from("v_zeiteintraege")
+      .select("*")
+      .eq("mitarbeiter_id", aktuellerUserId)
+      .gte("datum", vonDatum)
+      .lte("datum", bisDatum)
+      .order("datum", { ascending: false })
+      .order("start_zeit", { ascending: false }),
+  ]);
 
   const zeilen = (eintraege as ZeiteintragMitDetails[] | null) ?? [];
   const summeStunden = zeilen.reduce((s, z) => s + Number(z.menge_stunden), 0);
@@ -50,6 +56,8 @@ export default async function ZeiterfassungPage({
         <ZeiterfassungForm
           projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
+          mitarbeitende={mitarbeitende ?? []}
+          aktuellerUserId={aktuellerUserId}
           action={createZeiteintrag}
           error={error}
         />
@@ -148,8 +156,9 @@ export default async function ZeiterfassungPage({
         </table>
       </div>
       <p className="text-xs text-gray-400">
-        Ausführlichere Tages-/Wochen-/Monatsauswertungen mit Filtern über alle
-        Mitarbeitenden folgen in Phase 3.
+        Zeigt Einträge, die dir als Mitarbeiter zugeordnet sind — auch wenn
+        jemand anders sie für dich erfasst hat. Ausführlichere Auswertungen
+        über alle Mitarbeitenden findest du unter "Auswertungen".
       </p>
     </div>
   );

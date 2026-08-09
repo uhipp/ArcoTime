@@ -12,6 +12,7 @@ function zeiteintragFromForm(formData: FormData) {
   return {
     projekt_id: String(formData.get("projekt_id")),
     dienstleistung_id: String(formData.get("dienstleistung_id")),
+    mitarbeiter_id: str(formData.get("mitarbeiter_id")),
     datum: str(formData.get("datum")) ?? heuteIso(),
     start_zeit: str(formData.get("start_zeit")),
     end_zeit: str(formData.get("end_zeit")),
@@ -29,6 +30,7 @@ export async function createZeiteintrag(formData: FormData) {
 
   const { error } = await supabase.from("zeiteintraege").insert({
     ...values,
+    mitarbeiter_id: values.mitarbeiter_id ?? userData.user?.id,
     user_id: userData.user?.id,
   });
 

@@ -24,16 +24,20 @@ export default async function ZeiteintragDetailPage({
 
   if (!zeiteintrag) notFound();
 
-  const [{ data: projekte }, { data: dienstleistungen }] = await Promise.all([
-    supabase
-      .from("projekte")
-      .select("*, kunden(name, vorname)")
-      .order("bezeichnung"),
-    supabase
-      .from("dienstleistungen")
-      .select("id, bezeichnung, aktiv")
-      .order("bezeichnung"),
-  ]);
+  const { data: userData } = await supabase.auth.getUser();
+
+  const [{ data: projekte }, { data: dienstleistungen }, { data: mitarbeitende }] =
+    await Promise.all([
+      supabase
+        .from("projekte")
+        .select("*, kunden(name, vorname)")
+        .order("bezeichnung"),
+      supabase
+        .from("dienstleistungen")
+        .select("id, bezeichnung, aktiv")
+        .order("bezeichnung"),
+      supabase.from("profiles").select("id, name").order("name"),
+    ]);
 
   const istExportiert = Boolean(zeiteintrag.beleg_id);
   const updateAction = updateZeiteintrag.bind(null, id);
@@ -66,6 +70,8 @@ export default async function ZeiteintragDetailPage({
           zeiteintrag={zeiteintrag as Zeiteintrag}
           projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
+          mitarbeitende={mitarbeitende ?? []}
+          aktuellerUserId={userData.user?.id ?? ""}
           action={updateAction}
           error={error}
         />

@@ -3,6 +3,8 @@ export type Rolle = "admin" | "mitarbeiter";
 export type Profile = {
   id: string;
   name: string;
+  vorname: string | null;
+  nachname: string | null;
   role: Rolle;
 };
 
@@ -76,6 +78,7 @@ export type Zeiteintrag = {
   projekt_id: string;
   dienstleistung_id: string;
   user_id: string;
+  mitarbeiter_id: string;
   datum: string;
   start_zeit: string | null;
   end_zeit: string | null;

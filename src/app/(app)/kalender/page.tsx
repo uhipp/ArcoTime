@@ -15,7 +15,7 @@ type SearchParams = {
   kunde_id?: string;
   projekt_id?: string;
   klasse_id?: string;
-  user_id?: string;
+  mitarbeiter_id?: string;
 };
 
 function baueQuery(params: SearchParams, overrides: Partial<SearchParams>) {
@@ -65,7 +65,7 @@ export default async function KalenderPage({
   if (params.kunde_id) query = query.eq("kunde_id", params.kunde_id);
   if (params.projekt_id) query = query.eq("projekt_id", params.projekt_id);
   if (params.klasse_id) query = query.eq("klasse_id", params.klasse_id);
-  if (params.user_id) query = query.eq("user_id", params.user_id);
+  if (params.mitarbeiter_id) query = query.eq("mitarbeiter_id", params.mitarbeiter_id);
 
   const { data } = await query;
   const zeilen = (data as ZeiteintragMitDetails[] | null) ?? [];
@@ -169,8 +169,8 @@ export default async function KalenderPage({
           <div>
             <label className="block text-xs text-gray-500 mb-1">Mitarbeiter</label>
             <select
-              name="user_id"
-              defaultValue={params.user_id ?? ""}
+              name="mitarbeiter_id"
+              defaultValue={params.mitarbeiter_id ?? ""}
               className="rounded border border-gray-300 px-2 py-1.5 min-w-[10rem]"
             >
               <option value="">Alle</option>
