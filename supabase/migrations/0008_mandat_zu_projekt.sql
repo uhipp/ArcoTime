@@ -47,7 +47,11 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function erstelle_export(p_projekt_id uuid, p_von date, p_bis date)
+-- Parameternamen ändern sich (p_mandat_id -> p_projekt_id); Postgres
+-- erlaubt das bei CREATE OR REPLACE nicht, daher zuerst löschen.
+drop function if exists erstelle_export(uuid, date, date);
+
+create function erstelle_export(p_projekt_id uuid, p_von date, p_bis date)
 returns table(neue_belegnummer bigint, neuer_beleg_id uuid, anzahl int)
 as $$
 declare
@@ -99,6 +103,9 @@ begin
   return query select v_belegnummer, v_beleg_id, v_anzahl;
 end;
 $$ language plpgsql;
+
+-- DROP FUNCTION entfernt auch alle darauf erteilten Rechte -> neu vergeben
+grant execute on function erstelle_export(uuid, date, date) to authenticated;
 
 -- ---------------------------------------------------------
 -- 4) View neu anlegen: Spalten-Aliasse mandat_* -> projekt_*
