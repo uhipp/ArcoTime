@@ -17,6 +17,15 @@ async function nameFuer(
   return data?.name ?? null;
 }
 
+// Alle Namen aller Mitarbeitenden – dient mitNamePraefix() dazu, eine
+// bestehende Namenszeile in der Beschreibung zuverlässig zu erkennen (auch
+// wenn sie von einer anderen/früheren Zuweisung stammt) und zu ersetzen,
+// statt eine zweite Zeile darüberzustapeln.
+async function alleNamen(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string[]> {
+  const { data } = await supabase.from("profiles").select("name");
+  return data?.map((p) => p.name) ?? [];
+}
+
 function anfrageFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
     v && String(v).trim() !== "" ? String(v).trim() : null;
@@ -68,12 +77,12 @@ export async function updateAnfrage(id: string, formData: FormData) {
     .single();
 
   if (values.zugewiesen_an && values.zugewiesen_an !== bestehend?.zugewiesen_an) {
-    const [neuerName, alterName] = await Promise.all([
+    const [neuerName, bekannteNamen] = await Promise.all([
       nameFuer(supabase, values.zugewiesen_an),
-      nameFuer(supabase, bestehend?.zugewiesen_an ?? null),
+      alleNamen(supabase),
     ]);
     if (neuerName) {
-      values.beschreibung = mitNamePraefix(values.beschreibung, neuerName, alterName);
+      values.beschreibung = mitNamePraefix(values.beschreibung, neuerName, bekannteNamen);
     }
   }
 
@@ -180,13 +189,14 @@ export async function uebernehmeAnfrage(id: string) {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
-  const [{ data: bestehend }, name] = await Promise.all([
+  const [{ data: bestehend }, name, bekannteNamen] = await Promise.all([
     supabase.from("anfragen").select("beschreibung, zugewiesen_an").eq("id", id).single(),
     nameFuer(supabase, userData.user?.id ?? null),
+    alleNamen(supabase),
   ]);
 
   const beschreibung = name
-    ? mitNamePraefix(bestehend?.beschreibung ?? null, name, null)
+    ? mitNamePraefix(bestehend?.beschreibung ?? null, name, bekannteNamen)
     : bestehend?.beschreibung ?? null;
 
   const { error } = await supabase
