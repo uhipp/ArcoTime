@@ -1,10 +1,15 @@
 import type { Anfrage, Kunde, Projekt } from "@/lib/types";
 
+type AnfrageKanal = { id: string; wert: string; bezeichnung: string; symbol: string; aktiv: boolean };
+type AnfragePrioritaet = { id: string; wert: string; bezeichnung: string; aktiv: boolean };
+
 export function AnfrageForm({
   anfrage,
   kunden,
   projekte,
   mitarbeitende,
+  kanaele,
+  prioritaeten,
   action,
   error,
 }: {
@@ -12,6 +17,8 @@ export function AnfrageForm({
   kunden: Pick<Kunde, "id" | "name" | "vorname">[];
   projekte: (Pick<Projekt, "id" | "bezeichnung"> & { kunde_id: string })[];
   mitarbeitende: { id: string; name: string }[];
+  kanaele: AnfrageKanal[];
+  prioritaeten: AnfragePrioritaet[];
   action: (formData: FormData) => void;
   error?: string;
 }) {
@@ -99,15 +106,15 @@ export function AnfrageForm({
           <select
             id="kanal"
             name="kanal"
-            defaultValue={anfrage?.kanal ?? "sonstiges"}
+            defaultValue={anfrage?.kanal ?? kanaele.find((k) => k.wert === "sonstiges")?.wert ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
-            <option value="telefon">Telefon</option>
-            <option value="email">E-Mail</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="brief">Brief</option>
-            <option value="persoenlich">Persönlich</option>
-            <option value="sonstiges">Sonstiges</option>
+            {kanaele.map((k) => (
+              <option key={k.id} value={k.wert}>
+                {k.symbol} {k.bezeichnung}
+                {!k.aktiv ? " (inaktiv)" : ""}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -117,12 +124,17 @@ export function AnfrageForm({
           <select
             id="prioritaet"
             name="prioritaet"
-            defaultValue={anfrage?.prioritaet ?? "normal"}
+            defaultValue={
+              anfrage?.prioritaet ?? prioritaeten.find((p) => p.wert === "normal")?.wert ?? ""
+            }
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
-            <option value="tief">Tief</option>
-            <option value="normal">Normal</option>
-            <option value="hoch">Hoch</option>
+            {prioritaeten.map((p) => (
+              <option key={p.id} value={p.wert}>
+                {p.bezeichnung}
+                {!p.aktiv ? " (inaktiv)" : ""}
+              </option>
+            ))}
           </select>
         </div>
         <div>

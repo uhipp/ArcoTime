@@ -10,10 +10,18 @@ export default async function NeueAnfragePage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: kunden }, { data: projekte }, { data: mitarbeitende }] = await Promise.all([
+  const [
+    { data: kunden },
+    { data: projekte },
+    { data: mitarbeitende },
+    { data: kanaele },
+    { data: prioritaeten },
+  ] = await Promise.all([
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
+    supabase.from("anfrage_kanaele").select("*").order("sortierung"),
+    supabase.from("anfrage_prioritaeten").select("*").order("sortierung"),
   ]);
 
   return (
@@ -23,6 +31,8 @@ export default async function NeueAnfragePage({
         kunden={kunden ?? []}
         projekte={projekte ?? []}
         mitarbeitende={mitarbeitende ?? []}
+        kanaele={kanaele ?? []}
+        prioritaeten={prioritaeten ?? []}
         action={createAnfrage}
         error={error}
       />

@@ -24,6 +24,7 @@ export default async function ZeiterfassungPage({
     { data: projekte },
     { data: dienstleistungen },
     { data: mitarbeitende },
+    { data: rabattsaetze },
     { data: eintraege, error: listError },
   ] = await Promise.all([
     supabase
@@ -35,6 +36,7 @@ export default async function ZeiterfassungPage({
       .select("id, bezeichnung, aktiv")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
+    supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
     supabase
       .from("v_zeiteintraege")
       .select("*")
@@ -58,6 +60,7 @@ export default async function ZeiterfassungPage({
           projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
           mitarbeitende={mitarbeitende ?? []}
+          rabattsaetze={rabattsaetze ?? []}
           aktuellerUserId={aktuellerUserId}
           action={createZeiteintrag}
           starteTimerAction={starteTimer}

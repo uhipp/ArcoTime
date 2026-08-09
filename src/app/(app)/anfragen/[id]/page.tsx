@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { AnfrageForm } from "@/components/anfrage-form";
 import { DeleteButton } from "@/components/delete-button";
-import { RABATT_OPTIONEN, rabattLabel } from "@/lib/rabatt";
+import { rabattLabel } from "@/lib/rabatt";
 import {
   updateAnfrage,
   deleteAnfrage,
@@ -30,6 +30,9 @@ export default async function AnfrageDetailPage({
     { data: projekte },
     { data: mitarbeitende },
     { data: dienstleistungen },
+    { data: rabattsaetze },
+    { data: kanaele },
+    { data: prioritaeten },
   ] = await Promise.all([
     getCurrentProfile(),
     supabase.from("anfragen").select("*, kunden(id, name, vorname)").eq("id", id).single(),
@@ -37,6 +40,9 @@ export default async function AnfrageDetailPage({
     supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("dienstleistungen").select("id, bezeichnung, aktiv").eq("aktiv", true).order("bezeichnung"),
+    supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
+    supabase.from("anfrage_kanaele").select("*").order("sortierung"),
+    supabase.from("anfrage_prioritaeten").select("*").order("sortierung"),
   ]);
 
   if (!anfrage) notFound();
@@ -69,6 +75,8 @@ export default async function AnfrageDetailPage({
         kunden={kunden ?? []}
         projekte={projekte ?? []}
         mitarbeitende={mitarbeitende ?? []}
+        kanaele={kanaele ?? []}
+        prioritaeten={prioritaeten ?? []}
         action={updateAction}
         error={error}
       />
@@ -148,9 +156,10 @@ export default async function AnfrageDetailPage({
                   defaultValue={0}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                 >
-                  {RABATT_OPTIONEN.map((r) => (
-                    <option key={r} value={r}>
-                      {rabattLabel(r)}
+                  {rabattsaetze?.map((r) => (
+                    <option key={r.id} value={r.prozent}>
+                      {r.bezeichnung ?? rabattLabel(r.prozent)}
+                      {!r.aktiv ? " (inaktiv)" : ""}
                     </option>
                   ))}
                 </select>

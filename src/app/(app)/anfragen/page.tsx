@@ -6,15 +6,18 @@ import type { Anfrage } from "@/lib/types";
 
 export default async function AnfragenPage() {
   const supabase = await createClient();
-  const [user, { data: anfragen, error }] = await Promise.all([
-    getCurrentUser(),
-    supabase
-      .from("anfragen")
-      .select(
-        "*, kunden(id, name, vorname), projekte(id, bezeichnung), zugewiesen:profiles!zugewiesen_an(id, name)"
-      )
-      .order("created_at", { ascending: false }),
-  ]);
+  const [user, { data: anfragen, error }, { data: kanaele }, { data: prioritaeten }] =
+    await Promise.all([
+      getCurrentUser(),
+      supabase
+        .from("anfragen")
+        .select(
+          "*, kunden(id, name, vorname), projekte(id, bezeichnung), zugewiesen:profiles!zugewiesen_an(id, name)"
+        )
+        .order("created_at", { ascending: false }),
+      supabase.from("anfrage_kanaele").select("wert, symbol"),
+      supabase.from("anfrage_prioritaeten").select("wert, farbe"),
+    ]);
 
   return (
     <div>
@@ -37,6 +40,8 @@ export default async function AnfragenPage() {
       <AnfragenBoard
         initialAnfragen={(anfragen as Anfrage[] | null) ?? []}
         aktuellerUserId={user?.id ?? ""}
+        kanaele={kanaele ?? []}
+        prioritaeten={prioritaeten ?? []}
       />
     </div>
   );

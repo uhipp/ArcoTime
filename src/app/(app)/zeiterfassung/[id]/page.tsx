@@ -23,6 +23,7 @@ export default async function ZeiteintragDetailPage({
     { data: projekte },
     { data: dienstleistungen },
     { data: mitarbeitende },
+    { data: rabattsaetze },
   ] = await Promise.all([
     supabase.from("zeiteintraege").select("*").eq("id", id).single(),
     getCurrentUser(),
@@ -35,6 +36,7 @@ export default async function ZeiteintragDetailPage({
       .select("id, bezeichnung, aktiv")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
+    supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
   ]);
 
   if (!zeiteintrag) notFound();
@@ -72,6 +74,7 @@ export default async function ZeiteintragDetailPage({
           projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
           mitarbeitende={mitarbeitende ?? []}
+          rabattsaetze={rabattsaetze ?? []}
           aktuellerUserId={user?.id ?? ""}
           action={updateAction}
           stoppeTimerAction={stoppeAction}

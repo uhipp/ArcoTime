@@ -11,6 +11,9 @@ import {
 import { setzeStatus, uebernehmeAnfrage } from "@/app/actions/anfragen";
 import type { Anfrage, AnfrageStatus } from "@/lib/types";
 
+type AnfrageKanal = { wert: string; symbol: string };
+type AnfragePrioritaet = { wert: string; farbe: string };
+
 const SPALTEN: { key: AnfrageStatus; titel: string }[] = [
   { key: "neu", titel: "Neu" },
   { key: "in_bearbeitung", titel: "In Bearbeitung" },
@@ -18,33 +21,30 @@ const SPALTEN: { key: AnfrageStatus; titel: string }[] = [
   { key: "erledigt", titel: "Erledigt" },
 ];
 
-const KANAL_SYMBOL: Record<string, string> = {
-  telefon: "📞",
-  email: "📧",
-  whatsapp: "💬",
-  brief: "✉️",
-  persoenlich: "🤝",
-  sonstiges: "•",
-};
-
-const PRIORITAET_FARBE: Record<string, string> = {
-  hoch: "bg-red-500",
-  normal: "bg-gray-300",
-  tief: "bg-blue-300",
-};
-
 function heuteIso() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function AnfrageKarte({ anfrage, aktuellerUserId }: { anfrage: Anfrage; aktuellerUserId: string }) {
+function AnfrageKarte({
+  anfrage,
+  aktuellerUserId,
+  kanaele,
+  prioritaeten,
+}: {
+  anfrage: Anfrage;
+  aktuellerUserId: string;
+  kanaele: AnfrageKanal[];
+  prioritaeten: AnfragePrioritaet[];
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: anfrage.id,
   });
 
   const ueberfaellig =
     anfrage.wiedervorlage_am && anfrage.wiedervorlage_am < heuteIso() && anfrage.status !== "erledigt";
+  const symbol = kanaele.find((k) => k.wert === anfrage.kanal)?.symbol ?? "•";
+  const farbe = prioritaeten.find((p) => p.wert === anfrage.prioritaet)?.farbe ?? "bg-gray-300";
 
   return (
     <div
@@ -56,8 +56,8 @@ function AnfrageKarte({ anfrage, aktuellerUserId }: { anfrage: Anfrage; aktuelle
       } ${ueberfaellig ? "border-red-300" : "border-gray-200"}`}
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <span className="text-xs text-gray-400">{KANAL_SYMBOL[anfrage.kanal] ?? "•"}</span>
-        <span className={`w-2 h-2 rounded-full shrink-0 mt-1 ${PRIORITAET_FARBE[anfrage.prioritaet]}`} />
+        <span className="text-xs text-gray-400">{symbol}</span>
+        <span className={`w-2 h-2 rounded-full shrink-0 mt-1 ${farbe}`} />
       </div>
       <Link
         href={`/anfragen/${anfrage.id}`}
@@ -100,11 +100,15 @@ function Spalte({
   titel,
   anfragen,
   aktuellerUserId,
+  kanaele,
+  prioritaeten,
 }: {
   status: AnfrageStatus;
   titel: string;
   anfragen: Anfrage[];
   aktuellerUserId: string;
+  kanaele: AnfrageKanal[];
+  prioritaeten: AnfragePrioritaet[];
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -120,7 +124,13 @@ function Spalte({
         <span className="text-xs text-gray-400 font-normal">{anfragen.length}</span>
       </h3>
       {anfragen.map((a) => (
-        <AnfrageKarte key={a.id} anfrage={a} aktuellerUserId={aktuellerUserId} />
+        <AnfrageKarte
+          key={a.id}
+          anfrage={a}
+          aktuellerUserId={aktuellerUserId}
+          kanaele={kanaele}
+          prioritaeten={prioritaeten}
+        />
       ))}
       {anfragen.length === 0 && (
         <p className="text-xs text-gray-400 text-center mt-6">Keine Anfragen</p>
@@ -132,9 +142,13 @@ function Spalte({
 export function AnfragenBoard({
   initialAnfragen,
   aktuellerUserId,
+  kanaele,
+  prioritaeten,
 }: {
   initialAnfragen: Anfrage[];
   aktuellerUserId: string;
+  kanaele: AnfrageKanal[];
+  prioritaeten: AnfragePrioritaet[];
 }) {
   const [anfragen, setAnfragen] = useState(initialAnfragen);
 
@@ -171,6 +185,8 @@ export function AnfragenBoard({
             titel={spalte.titel}
             anfragen={anfragen.filter((a) => a.status === spalte.key)}
             aktuellerUserId={aktuellerUserId}
+            kanaele={kanaele}
+            prioritaeten={prioritaeten}
           />
         ))}
       </div>

@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
-import { RABATT_OPTIONEN, rabattLabel } from "@/lib/rabatt";
+import { rabattLabel } from "@/lib/rabatt";
 import type { Dienstleistung, Projekt, Zeiteintrag } from "@/lib/types";
+
+type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 
 function minutenZwischen(start: string, ende: string): number | null {
   const [sh, sm] = start.split(":").map(Number);
@@ -57,6 +59,7 @@ export function ZeiterfassungForm({
   projekte,
   dienstleistungen,
   mitarbeitende,
+  rabattsaetze,
   aktuellerUserId,
   action,
   starteTimerAction,
@@ -69,6 +72,7 @@ export function ZeiterfassungForm({
   })[];
   dienstleistungen: Pick<Dienstleistung, "id" | "bezeichnung" | "aktiv">[];
   mitarbeitende: { id: string; name: string }[];
+  rabattsaetze: Rabattsatz[];
   aktuellerUserId: string;
   action: (formData: FormData) => void;
   starteTimerAction?: (formData: FormData) => void;
@@ -335,9 +339,10 @@ export function ZeiterfassungForm({
               defaultValue={zeiteintrag?.rabatt_prozent ?? 0}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             >
-              {RABATT_OPTIONEN.map((r) => (
-                <option key={r} value={r}>
-                  {rabattLabel(r)}
+              {rabattsaetze.map((r) => (
+                <option key={r.id} value={r.prozent}>
+                  {r.bezeichnung ?? rabattLabel(r.prozent)}
+                  {!r.aktiv ? " (inaktiv)" : ""}
                 </option>
               ))}
             </select>
