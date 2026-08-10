@@ -115,7 +115,7 @@ function Spalte({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-lg border bg-gray-50 p-3 min-h-[20rem] flex-1 min-w-[15rem] ${
+      className={`rounded-lg border bg-gray-50 p-3 min-h-[20rem] flex-1 min-w-[13rem] ${
         isOver ? "ring-2 ring-arcos-steel" : ""
       }`}
     >
