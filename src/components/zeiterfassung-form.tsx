@@ -3,9 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
 import { rabattLabel } from "@/lib/rabatt";
-import type { Dienstleistung, Projekt, Zeiteintrag } from "@/lib/types";
+import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
+import type { Dienstleistung, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
+type KundeOption = Pick<Kunde, "id" | "name" | "vorname">;
+type ProjektOption = Pick<Projekt, "id" | "bezeichnung" | "status"> & {
+  kunden?: { name: string; vorname: string | null } | null;
+};
 
 function minutenZwischen(start: string, ende: string): number | null {
   const [sh, sm] = start.split(":").map(Number);
@@ -59,6 +64,7 @@ export function ZeiterfassungForm({
   projekte,
   dienstleistungen,
   mitarbeitende,
+  kunden,
   rabattsaetze,
   aktuellerUserId,
   action,
@@ -67,11 +73,10 @@ export function ZeiterfassungForm({
   error,
 }: {
   zeiteintrag?: Zeiteintrag;
-  projekte: (Pick<Projekt, "id" | "bezeichnung" | "status"> & {
-    kunden?: { name: string; vorname: string | null } | null;
-  })[];
+  projekte: ProjektOption[];
   dienstleistungen: Pick<Dienstleistung, "id" | "bezeichnung" | "aktiv">[];
   mitarbeitende: { id: string; name: string }[];
+  kunden: KundeOption[];
   rabattsaetze: Rabattsatz[];
   aktuellerUserId: string;
   action: (formData: FormData) => void;
@@ -81,6 +86,28 @@ export function ZeiterfassungForm({
 }) {
   const istNeu = !zeiteintrag;
   const laeuft = Boolean(zeiteintrag?.timer_gestartet_um);
+
+  const [projekteListe, setProjekteListe] = useState(projekte);
+  const [projektId, setProjektId] = useState(zeiteintrag?.projekt_id ?? "");
+
+  const projektHook = useProjektSchnellErstellen({
+    kunden,
+    onErstellt: (projekt) => {
+      const kunde = kunden.find((k) => k.id === projekt.kunde_id);
+      setProjekteListe((liste) =>
+        [
+          ...liste,
+          {
+            id: projekt.id,
+            bezeichnung: projekt.bezeichnung,
+            status: "aktiv" as const,
+            kunden: kunde ? { name: kunde.name, vorname: kunde.vorname } : null,
+          },
+        ].sort((a, b) => a.bezeichnung.localeCompare(b.bezeichnung, "de-CH"))
+      );
+      setProjektId(projekt.id);
+    },
+  });
 
   const [startZeit, setStartZeit] = useState(zeiteintrag?.start_zeit?.slice(0, 5) ?? "");
   const [endZeit, setEndZeit] = useState(zeiteintrag?.end_zeit?.slice(0, 5) ?? "");
@@ -133,6 +160,7 @@ export function ZeiterfassungForm({
   }
 
   return (
+    <>
     <form action={action} className="space-y-5 bg-white rounded-lg border p-5">
       {error && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
@@ -164,21 +192,25 @@ export function ZeiterfassungForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="projekt_id">
-            Projekt
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium" htmlFor="projekt_id">
+              Projekt
+            </label>
+            {!laeuft && projektHook.trigger}
+          </div>
           <select
             id="projekt_id"
             name="projekt_id"
             required
             disabled={laeuft}
-            defaultValue={zeiteintrag?.projekt_id ?? ""}
+            value={projektId}
+            onChange={(e) => setProjektId(e.target.value)}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
           >
             <option value="" disabled>
               Bitte wählen…
             </option>
-            {projekte.map((m) => (
+            {projekteListe.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.kunden?.vorname ? `${m.kunden.vorname} ` : ""}
                 {m.kunden?.name} – {m.bezeichnung}
@@ -386,5 +418,8 @@ export function ZeiterfassungForm({
         </a>
       </div>
     </form>
+
+    {projektHook.modal}
+    </>
   );
 }

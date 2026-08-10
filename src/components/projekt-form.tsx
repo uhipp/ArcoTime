@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
+import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import type { Kunde, Projekt } from "@/lib/types";
 
 export function ProjektForm({
@@ -12,7 +16,16 @@ export function ProjektForm({
   action: (formData: FormData) => void;
   error?: string;
 }) {
+  const [kundenListe, setKundenListe] = useState(kunden);
+  const [kundeId, setKundeId] = useState(projekt?.kunde_id ?? "");
+
+  const kundeHook = useKundeSchnellErstellen((kunde) => {
+    setKundenListe((liste) => [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH")));
+    setKundeId(kunde.id);
+  });
+
   return (
+    <>
     <form action={action} className="space-y-6 max-w-2xl">
       {error && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
@@ -21,20 +34,24 @@ export function ProjektForm({
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1" htmlFor="kunde_id">
-          Kunde
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium" htmlFor="kunde_id">
+            Kunde
+          </label>
+          {kundeHook.trigger}
+        </div>
         <select
           id="kunde_id"
           name="kunde_id"
           required
-          defaultValue={projekt?.kunde_id ?? ""}
+          value={kundeId}
+          onChange={(e) => setKundeId(e.target.value)}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         >
           <option value="" disabled>
             Bitte wählen…
           </option>
-          {kunden.map((k) => (
+          {kundenListe.map((k) => (
             <option key={k.id} value={k.id}>
               {k.vorname ? `${k.vorname} ` : ""}
               {k.name}
@@ -157,5 +174,8 @@ export function ProjektForm({
         </a>
       </div>
     </form>
+
+    {kundeHook.modal}
+    </>
   );
 }

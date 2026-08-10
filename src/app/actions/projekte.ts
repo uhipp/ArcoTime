@@ -62,3 +62,39 @@ export async function deleteProjekt(id: string) {
   revalidatePath("/projekte");
   redirect(mitErfolg("/projekte", "Projekt gelöscht."));
 }
+
+// Variante für die Schnellerfassung direkt aus anderen Formularen heraus
+// (z.B. beim Erfassen einer Anfrage oder eines Zeiteintrags, wenn das
+// Projekt noch fehlt) – bewusst OHNE redirect(), damit die aufrufende Seite
+// nicht verlassen wird. Alle anderen Felder haben passende DB-Defaults
+// (Status "aktiv", Startdatum heute, nächste Belegnummer 470000).
+export async function erstelleProjektSchnell(
+  formData: FormData
+): Promise<{
+  data: { id: string; bezeichnung: string; kunde_id: string } | null;
+  error: string | null;
+}> {
+  const supabase = await createClient();
+  const kunde_id = String(formData.get("kunde_id") ?? "").trim();
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+
+  if (!kunde_id) {
+    return { data: null, error: "Bitte einen Kunden wählen." };
+  }
+  if (!bezeichnung) {
+    return { data: null, error: "Bezeichnung ist ein Pflichtfeld." };
+  }
+
+  const { data, error } = await supabase
+    .from("projekte")
+    .insert({ kunde_id, bezeichnung })
+    .select("id, bezeichnung, kunde_id")
+    .single();
+
+  if (error) {
+    return { data: null, error: error.message };
+  }
+
+  revalidatePath("/projekte");
+  return { data, error: null };
+}

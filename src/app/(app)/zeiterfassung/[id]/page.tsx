@@ -25,6 +25,7 @@ export default async function ZeiteintragDetailPage({
     { data: projekte },
     { data: dienstleistungen },
     { data: mitarbeitende },
+    { data: kunden },
     { data: rabattsaetze },
     { dokumente, kategorien },
   ] = await Promise.all([
@@ -39,6 +40,7 @@ export default async function ZeiteintragDetailPage({
       .select("id, bezeichnung, aktiv")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
+    supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
     ladeDokumente(supabase, "zeiteintrag", id),
   ]);
@@ -78,6 +80,7 @@ export default async function ZeiteintragDetailPage({
           projekte={projekte ?? []}
           dienstleistungen={dienstleistungen ?? []}
           mitarbeitende={mitarbeitende ?? []}
+          kunden={kunden ?? []}
           rabattsaetze={rabattsaetze ?? []}
           aktuellerUserId={profile?.id ?? ""}
           action={updateAction}
