@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
   // Seiten, die ohne bestehende Session erreichbar sein müssen: Login und
   // die Passwort-vergessen-Anfrage. Bereits eingeloggte Nutzer werden von
   // hier weg auf die Übersicht geleitet.
-  const oeffentlichePfade = ["/login", "/passwort-vergessen"];
+  const oeffentlichePfade = ["/login", "/passwort-vergessen", "/link-bestaetigen"];
   const isLoginPage = oeffentlichePfade.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
