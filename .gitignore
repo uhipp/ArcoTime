@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# lokale Datenbank-Backups (siehe scripts/backup-datenbank.js) – enthalten
+# echte Kunden-/Geschäftsdaten, gehören nicht ins Git-Repo
+/backups
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
