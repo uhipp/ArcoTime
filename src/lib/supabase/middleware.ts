@@ -36,6 +36,13 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
+  // Cron-Routen werden von Vercel ohne Login-Cookie aufgerufen (nur mit dem
+  // eigenen CRON_SECRET im Authorization-Header) – die Absicherung
+  // übernimmt die Route selbst, nicht die Session-Prüfung hier.
+  if (request.nextUrl.pathname.startsWith("/api/cron/")) {
+    return response;
+  }
+
   // Seiten, die ohne bestehende Session erreichbar sein müssen: Login und
   // die Passwort-vergessen-Anfrage. Bereits eingeloggte Nutzer werden von
   // hier weg auf die Übersicht geleitet.

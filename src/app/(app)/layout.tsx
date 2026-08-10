@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
+import { createClient } from "@/lib/supabase/server";
+import { heuteIso } from "@/lib/date-utils";
 import { logout } from "@/app/actions/auth";
 import { Toast } from "@/components/toast";
 
@@ -15,6 +17,19 @@ export default async function AppLayout({
     getCurrentOrganisation(),
   ]);
   const isAdmin = profile?.role === "admin";
+
+  // Zähler für fällige Wiedervorlagen direkt in der Navigation, damit man
+  // sie sofort sieht statt sie nur auf der Übersichtsseite zu entdecken.
+  const supabase = await createClient();
+  const { count: faelligeWiedervorlagen } = profile
+    ? await supabase
+        .from("anfragen")
+        .select("id", { count: "exact", head: true })
+        .eq("zugewiesen_an", profile.id)
+        .neq("status", "erledigt")
+        .not("wiedervorlage_am", "is", null)
+        .lte("wiedervorlage_am", heuteIso())
+    : { count: 0 };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,8 +83,13 @@ export default async function AppLayout({
             <Link href="/zeiterfassung" className="hover:text-arcos-navy">
               Zeiterfassung
             </Link>
-            <Link href="/anfragen" className="hover:text-arcos-navy">
+            <Link href="/anfragen" className="hover:text-arcos-navy flex items-center gap-1.5">
               Anfragen
+              {Boolean(faelligeWiedervorlagen) && (
+                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium">
+                  {faelligeWiedervorlagen}
+                </span>
+              )}
             </Link>
             <Link href="/auswertungen" className="hover:text-arcos-navy">
               Auswertungen
