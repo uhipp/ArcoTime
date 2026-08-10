@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Modal } from "@/components/modal";
 import { useKundeSchnellErstellen, type NeuerKunde } from "@/components/kunde-schnell-erstellen";
 import { erstelleProjektSchnell } from "@/app/actions/projekte";
@@ -29,13 +29,29 @@ export function useProjektSchnellErstellen({
   const [modalOffen, setModalOffen] = useState(false);
   const [speichert, setSpeichert] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
-  const [kundenListe, setKundenListe] = useState(kunden);
+  const [warnung, setWarnung] = useState<NeuesProjekt | null>(null);
+  const [letzteFormData, setLetzteFormData] = useState<FormData | null>(null);
+  const [nestedNeueKunden, setNestedNeueKunden] = useState<NeuerKunde[]>([]);
   const [kundeId, setKundeId] = useState(vorausgewaehlterKunde ?? "");
 
-  function handleNeuerKunde(kunde: NeuerKunde) {
-    setKundenListe((liste) =>
-      [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH"))
+  // Nicht aus `kunden` per useState übernehmen (useState-Initialwerte werden
+  // nur beim allerersten Aufruf berücksichtigt) – sonst bleibt diese Liste
+  // "eingefroren", wenn z.B. ein anderer Teil desselben Formulars (etwa das
+  // separate "+ Neuer Kunde" neben dem Kunde-Feld einer Anfrage) zwischen-
+  // zeitlich einen neuen Kunden anlegt. Stattdessen bei jedem Rendern frisch
+  // aus der aktuellen `kunden`-Prop plus lokal (verschachtelt) angelegten
+  // Kunden zusammensetzen, die dort noch nicht enthalten sind.
+  const kundenListe = useMemo(() => {
+    const zusaetzliche = nestedNeueKunden.filter(
+      (n) => !kunden.some((k) => k.id === n.id)
     );
+    return [...kunden, ...zusaetzliche].sort((a, b) =>
+      a.name.localeCompare(b.name, "de-CH")
+    );
+  }, [kunden, nestedNeueKunden]);
+
+  function handleNeuerKunde(kunde: NeuerKunde) {
+    setNestedNeueKunden((liste) => [...liste, kunde]);
     setKundeId(kunde.id);
   }
 
@@ -43,21 +59,56 @@ export function useProjektSchnellErstellen({
 
   async function handleSubmit(formData: FormData) {
     setFehler(null);
+    setWarnung(null);
     setSpeichert(true);
-    const { data, error } = await erstelleProjektSchnell(formData);
+    const ergebnis = await erstelleProjektSchnell(formData);
     setSpeichert(false);
 
-    if (error || !data) {
-      setFehler(error ?? "Unbekannter Fehler.");
+    if (ergebnis.warnung) {
+      setLetzteFormData(formData);
+      setWarnung(ergebnis.warnung);
+      return;
+    }
+    if (ergebnis.error || !ergebnis.data) {
+      setFehler(ergebnis.error ?? "Unbekannter Fehler.");
       return;
     }
 
-    onErstellt(data);
+    onErstellt(ergebnis.data);
+    setModalOffen(false);
+  }
+
+  // Dubletten-Warnung wurde bestätigt: mit demselben FormData nochmals
+  // absenden, diesmal mit "erzwingen", damit die Server-Prüfung übersprungen
+  // wird.
+  async function handleTrotzdemAnlegen() {
+    if (!letzteFormData) return;
+    letzteFormData.set("erzwingen", "true");
+    setFehler(null);
+    setSpeichert(true);
+    const ergebnis = await erstelleProjektSchnell(letzteFormData);
+    setSpeichert(false);
+    setWarnung(null);
+
+    if (ergebnis.error || !ergebnis.data) {
+      setFehler(ergebnis.error ?? "Unbekannter Fehler.");
+      return;
+    }
+    onErstellt(ergebnis.data);
+    setModalOffen(false);
+  }
+
+  function handleBestehendesVerwenden() {
+    if (!warnung) return;
+    onErstellt(warnung);
+    setWarnung(null);
     setModalOffen(false);
   }
 
   function oeffnen() {
     setKundeId(vorausgewaehlterKunde ?? "");
+    setFehler(null);
+    setWarnung(null);
     setModalOffen(true);
   }
 
@@ -115,22 +166,58 @@ export function useProjektSchnellErstellen({
               Status, Startdatum und weitere Angaben können später unter
               "Projekte" ergänzt werden.
             </p>
-            <div className="flex gap-2 pt-1">
-              <button
-                type="submit"
-                disabled={speichert}
-                className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60"
-              >
-                {speichert ? "Speichert…" : "Projekt anlegen"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setModalOffen(false)}
-                className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
-              >
-                Abbrechen
-              </button>
-            </div>
+
+            {warnung && (
+              <div className="rounded bg-amber-50 text-amber-800 text-sm px-3 py-2 space-y-2">
+                <p>
+                  Ein Projekt namens "{warnung.bezeichnung}" existiert für
+                  diesen Kunden bereits.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleBestehendesVerwenden}
+                    className="rounded bg-arcos-steel text-white text-xs font-medium px-3 py-1.5 hover:bg-arcos-navy"
+                  >
+                    Bestehendes verwenden
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTrotzdemAnlegen}
+                    disabled={speichert}
+                    className="rounded border text-xs font-medium px-3 py-1.5 hover:bg-gray-50 disabled:opacity-60"
+                  >
+                    {speichert ? "Speichert…" : "Trotzdem neu anlegen"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWarnung(null)}
+                    className="text-xs text-gray-500 hover:underline px-1"
+                  >
+                    Zurück
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!warnung && (
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={speichert}
+                  className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60"
+                >
+                  {speichert ? "Speichert…" : "Projekt anlegen"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalOffen(false)}
+                  className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            )}
           </form>
         </Modal>
       )}

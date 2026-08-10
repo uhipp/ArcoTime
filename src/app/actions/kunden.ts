@@ -71,12 +71,34 @@ export async function deleteKunde(id: string) {
 // später unter "Kunden" ergänzt werden.
 export async function erstelleKundeSchnell(
   formData: FormData
-): Promise<{ data: { id: string; name: string; vorname: string | null } | null; error: string | null }> {
+): Promise<{
+  data: { id: string; name: string; vorname: string | null } | null;
+  error: string | null;
+  warnung?: { id: string; name: string; vorname: string | null };
+}> {
   const supabase = await createClient();
   const values = kundeFromForm(formData);
+  const erzwingen = formData.get("erzwingen") === "true";
 
   if (!values.name) {
     return { data: null, error: "Name ist ein Pflichtfeld." };
+  }
+
+  // Dubletten-Warnung: prüft gegen den aktuellen DB-Stand (nicht gegen eine
+  // lokal im Browser gehaltene Liste), damit das auch greift, wenn ein
+  // anderer Mitarbeiter den Kunden gerade eben erst angelegt hat. Wird über
+  // "erzwingen" übersprungen, wenn der Nutzer die Warnung bestätigt hat.
+  if (!erzwingen) {
+    const { data: vorhanden } = await supabase
+      .from("kunden")
+      .select("id, name, vorname")
+      .ilike("name", values.name)
+      .limit(1)
+      .maybeSingle();
+
+    if (vorhanden) {
+      return { data: null, error: null, warnung: vorhanden };
+    }
   }
 
   const { data, error } = await supabase

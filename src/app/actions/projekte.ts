@@ -73,16 +73,37 @@ export async function erstelleProjektSchnell(
 ): Promise<{
   data: { id: string; bezeichnung: string; kunde_id: string } | null;
   error: string | null;
+  warnung?: { id: string; bezeichnung: string; kunde_id: string };
 }> {
   const supabase = await createClient();
   const kunde_id = String(formData.get("kunde_id") ?? "").trim();
   const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  const erzwingen = formData.get("erzwingen") === "true";
 
   if (!kunde_id) {
     return { data: null, error: "Bitte einen Kunden wählen." };
   }
   if (!bezeichnung) {
     return { data: null, error: "Bezeichnung ist ein Pflichtfeld." };
+  }
+
+  // Dubletten-Warnung: prüft gegen den aktuellen DB-Stand (nicht gegen eine
+  // lokal im Browser gehaltene Liste), damit das auch greift, wenn ein
+  // anderer Mitarbeiter das Projekt für denselben Kunden gerade eben erst
+  // angelegt hat. Wird über "erzwingen" übersprungen, wenn der Nutzer die
+  // Warnung bestätigt hat.
+  if (!erzwingen) {
+    const { data: vorhanden } = await supabase
+      .from("projekte")
+      .select("id, bezeichnung, kunde_id")
+      .eq("kunde_id", kunde_id)
+      .ilike("bezeichnung", bezeichnung)
+      .limit(1)
+      .maybeSingle();
+
+    if (vorhanden) {
+      return { data: null, error: null, warnung: vorhanden };
+    }
   }
 
   const { data, error } = await supabase
