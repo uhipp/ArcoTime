@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { heuteIso } from "@/lib/date-utils";
 import { sendeMail } from "@/lib/email";
@@ -50,12 +51,14 @@ export async function GET(request: NextRequest) {
   const heute = heuteIso();
   const appUrl = process.env.APP_URL ?? "https://arco-time.vercel.app";
 
+  // Bewusst OHNE "zugewiesen_an is not null"-Filter: auch nicht zugewiesene
+  // Anfragen sollen bei Fälligkeit ins Kanban-Board-Spalte "Wiedervorlage"
+  // wandern, auch wenn dafür (mangels Zuständigem) keine Mail rausgeht.
   const { data: anfragen, error } = await supabase
     .from("anfragen")
-    .select("id, titel, wiedervorlage_am, zugewiesen_an, kunden(name, vorname), projekte(bezeichnung)")
+    .select("id, titel, status, wiedervorlage_am, zugewiesen_an, kunden(name, vorname), projekte(bezeichnung)")
     .neq("status", "erledigt")
     .not("wiedervorlage_am", "is", null)
-    .not("zugewiesen_an", "is", null)
     .lte("wiedervorlage_am", heute)
     .order("wiedervorlage_am", { ascending: true });
 
@@ -66,18 +69,33 @@ export async function GET(request: NextRequest) {
   type Zeile = {
     id: string;
     titel: string;
+    status: string;
     wiedervorlage_am: string;
-    zugewiesen_an: string;
+    zugewiesen_an: string | null;
     kunden: { name: string; vorname: string | null } | null;
     projekte: { bezeichnung: string } | null;
   };
 
   const zeilen = (anfragen ?? []) as unknown as Zeile[];
-  if (zeilen.length === 0) {
-    return NextResponse.json({ versendet: 0, mitarbeitendeOhneEmail: [] });
+
+  // Kanban-Board: eine fällige Wiedervorlage wandert automatisch in die
+  // Spalte "Wiedervorlage" – dieselbe Regel, die im Board für den roten
+  // Rahmen sorgt, wird hier einmal täglich in einen echten Status-Wechsel
+  // umgesetzt. Bereits dort liegende Anfragen werden nicht nochmals
+  // angefasst (kein unnötiges Update, kein Zurücksetzen einer manuellen
+  // Rückverschiebung durch die Mitarbeitenden).
+  const zuVerschieben = zeilen.filter((z) => z.status !== "wiedervorlage").map((z) => z.id);
+  if (zuVerschieben.length > 0) {
+    await supabase.from("anfragen").update({ status: "wiedervorlage" }).in("id", zuVerschieben);
+    revalidatePath("/anfragen");
   }
 
-  const mitarbeiterIds = [...new Set(zeilen.map((z) => z.zugewiesen_an))];
+  if (zeilen.length === 0) {
+    return NextResponse.json({ versendet: 0, verschoben: 0, mitarbeitendeOhneEmail: [] });
+  }
+
+  const zeilenMitZustaendigem = zeilen.filter((z) => z.zugewiesen_an);
+  const mitarbeiterIds = [...new Set(zeilenMitZustaendigem.map((z) => z.zugewiesen_an as string))];
   const { data: mitarbeitende } = await supabase
     .from("profiles")
     .select("id, name, email")
@@ -87,7 +105,7 @@ export async function GET(request: NextRequest) {
   const mitarbeitendeOhneEmail: string[] = [];
 
   for (const mitarbeiter of mitarbeitende ?? []) {
-    const eigene = zeilen.filter((z) => z.zugewiesen_an === mitarbeiter.id);
+    const eigene = zeilenMitZustaendigem.filter((z) => z.zugewiesen_an === mitarbeiter.id);
     if (eigene.length === 0) continue;
 
     if (!mitarbeiter.email) {
@@ -132,5 +150,5 @@ export async function GET(request: NextRequest) {
     versendet += 1;
   }
 
-  return NextResponse.json({ versendet, mitarbeitendeOhneEmail });
+  return NextResponse.json({ versendet, verschoben: zuVerschieben.length, mitarbeitendeOhneEmail });
 }
