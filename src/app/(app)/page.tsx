@@ -32,7 +32,12 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-medium mb-3">Meine Wiedervorlagen</h2>
           <div className="bg-white rounded-lg border divide-y">
             {offeneWiedervorlagen.map((a) => {
-              const ueberfaellig = (a.wiedervorlage_am ?? "") < heute;
+              // Bewusst "<=" statt "<": alle Einträge in dieser Liste sind
+              // bereits per .lte() gefiltert ("heute fällig oder früher") –
+              // dieselbe Schwelle muss auch für die rote Hervorhebung
+              // gelten, sonst wirkt eine heute fällige Wiedervorlage
+              // optisch wie jede andere, nicht besonders eilige.
+              const ueberfaellig = (a.wiedervorlage_am ?? "") <= heute;
               return (
                 <Link
                   key={a.id}
