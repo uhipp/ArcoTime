@@ -27,6 +27,8 @@ Jede Anfrage ist eine Karte in einer von vier Spalten: **Neu**, **In Bearbeitung
 
 Eine Karte mit **rotem Rahmen** hat eine fällige Wiedervorlage (heute oder früher) – unabhängig davon, in welcher Spalte sie gerade liegt.
 
+![Anfragen-Kanban-Board mit vier Spalten](/hilfe-bilder/anfragen-kanban-board.png)
+
 ## Neue Anfrage erfassen
 
 **"+ Neue Anfrage"** klicken. Pflichtfelder sind **Kunde** und **Titel**. Weitere Felder:
@@ -36,6 +38,8 @@ Eine Karte mit **rotem Rahmen** hat eine fällige Wiedervorlage (heute oder frü
 - **Priorität**: ebenfalls frei konfigurierbar.
 - **Zugewiesen an**: siehe unten.
 - **Wiedervorlage**: siehe unten.
+
+![Formular "Neue Anfrage" mit gesetzter Wiedervorlage](/hilfe-bilder/anfrage-neu-wiedervorlage.png)
 
 ## Durchgängige Schnellerfassung
 

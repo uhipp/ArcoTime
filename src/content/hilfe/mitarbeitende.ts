@@ -10,6 +10,8 @@ export const mitarbeitende: HilfeArtikel[] = [
     inhalt: `
 Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingeladen.
 
+![Mitarbeitende-Liste mit Farbfeldern](/hilfe-bilder/mitarbeitende-liste-farben.png)
+
 ## Neue Person einladen
 
 Vorname, Nachname und E-Mail-Adresse eingeben und auf **"Einladungslink senden"** klicken. Das legt sofort einen Login an und verschickt eine E-Mail mit einem Link, über den die Person selbst ihr Passwort festlegt – kein separates Konto-Setup nötig.

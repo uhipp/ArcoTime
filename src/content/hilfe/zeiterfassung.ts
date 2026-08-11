@@ -10,6 +10,8 @@ export const zeiterfassung: HilfeArtikel[] = [
     inhalt: `
 Auf dieser Seite erfasst du deine Arbeitszeit – entweder nachträglich mit fester Dauer, oder live per Timer.
 
+![Zeiterfassungsformular](/hilfe-bilder/zeiterfassung-formular.png)
+
 ## Zeit nachträglich erfassen
 
 1. **Projekt** wählen. Fehlt das Projekt noch? Über **"+ Neues Projekt"** direkt neben dem Feld kannst du es sofort anlegen, ohne die Seite zu verlassen (siehe [Durchgängige Schnellerfassung](/hilfe/anfragen)).

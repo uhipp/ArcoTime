@@ -10,6 +10,8 @@ export const kalender: HilfeArtikel[] = [
     inhalt: `
 Die Kalenderübersicht zeigt Zeiterfassung und Anfragen gemeinsam in einer Monatsansicht.
 
+![Kalenderübersicht mit farbigen Tageszellen](/hilfe-bilder/kalender-uebersicht.png)
+
 ## Wie die Tageszelle zu lesen ist
 
 Jeder Tag zeigt eine kleine farbige Liste:
