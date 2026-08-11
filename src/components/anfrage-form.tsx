@@ -182,9 +182,20 @@ export function AnfrageForm({
               id="wiedervorlage_am"
               name="wiedervorlage_am"
               type="date"
+              // autoComplete="off": ohne das füllen Browser (v.a. Safari) das
+              // Feld beim nächsten "Neue Anfrage"-Formular automatisch mit
+              // dem zuletzt hier eingetragenen Wert – unabhängig vom
+              // serverseitigen Default (""). Das führte dazu, dass ein
+              // einmal (versehentlich oder testweise) gesetztes Datum bei
+              // jeder späteren neuen Anfrage wieder auftauchte.
+              autoComplete="off"
               defaultValue={anfrage?.wiedervorlage_am ?? ""}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
+            <p className="text-xs text-gray-400 mt-1">
+              Nur ausfüllen, wenn diese Anfrage an einem bestimmten Datum
+              wieder aufgegriffen werden soll.
+            </p>
           </div>
         </div>
 
