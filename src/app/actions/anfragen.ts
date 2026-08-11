@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { heuteIso } from "@/lib/date-utils";
 import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
+import { benachrichtigeZuweisung } from "@/lib/anfrage-benachrichtigung";
 import type { AnfrageStatus } from "@/lib/types";
 
 async function nameFuer(
@@ -54,9 +55,24 @@ export async function createAnfrage(formData: FormData) {
     if (name) values.beschreibung = mitNamePraefix(values.beschreibung, name);
   }
 
-  const { error } = await supabase.from("anfragen").insert(values);
-  if (error) {
-    redirect(`/anfragen/neu?error=${encodeURIComponent(error.message)}`);
+  const { data: neue, error } = await supabase
+    .from("anfragen")
+    .insert(values)
+    .select("id")
+    .single();
+  if (error || !neue) {
+    redirect(`/anfragen/neu?error=${encodeURIComponent(error?.message ?? "Unbekannter Fehler.")}`);
+  }
+
+  if (values.zugewiesen_an) {
+    const { data: userData } = await supabase.auth.getUser();
+    await benachrichtigeZuweisung({
+      supabase,
+      anfrageId: neue.id,
+      titel: values.titel,
+      zugewiesenAnId: values.zugewiesen_an,
+      zugewiesenVonId: userData.user?.id ?? null,
+    });
   }
 
   revalidatePath("/anfragen");
@@ -76,7 +92,10 @@ export async function updateAnfrage(id: string, formData: FormData) {
     .eq("id", id)
     .single();
 
-  if (values.zugewiesen_an && values.zugewiesen_an !== bestehend?.zugewiesen_an) {
+  const zuweisungGeaendert =
+    values.zugewiesen_an && values.zugewiesen_an !== bestehend?.zugewiesen_an;
+
+  if (zuweisungGeaendert) {
     const [neuerName, bekannteNamen] = await Promise.all([
       nameFuer(supabase, values.zugewiesen_an),
       alleNamen(supabase),
@@ -89,6 +108,17 @@ export async function updateAnfrage(id: string, formData: FormData) {
   const { error } = await supabase.from("anfragen").update(values).eq("id", id);
   if (error) {
     redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (zuweisungGeaendert && values.zugewiesen_an) {
+    const { data: userData } = await supabase.auth.getUser();
+    await benachrichtigeZuweisung({
+      supabase,
+      anfrageId: id,
+      titel: values.titel,
+      zugewiesenAnId: values.zugewiesen_an,
+      zugewiesenVonId: userData.user?.id ?? null,
+    });
   }
 
   revalidatePath("/anfragen");
