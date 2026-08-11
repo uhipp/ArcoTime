@@ -7,6 +7,7 @@ export type Profile = {
   nachname: string | null;
   email: string | null;
   role: Rolle;
+  farbe: string;
 };
 
 export type Kunde = {

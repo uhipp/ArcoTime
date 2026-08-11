@@ -28,6 +28,11 @@ function baueQuery(params: SearchParams, overrides: Partial<SearchParams>) {
 }
 
 const WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const STANDARDFARBE = "#457B9D";
+const MAX_ZEILEN_JE_TAG = 4;
+
+type ZeitZeile = { mitarbeiterId: string; name: string; farbe: string; stunden: number };
+type AnfrageZeile = { id: string; titel: string; farbe: string };
 
 export default async function KalenderPage({
   searchParams,
@@ -57,37 +62,113 @@ export default async function KalenderPage({
   if (params.klasse_id) query = query.eq("klasse_id", params.klasse_id);
   if (params.mitarbeiter_id) query = query.eq("mitarbeiter_id", params.mitarbeiter_id);
 
+  // Anfragen erscheinen anhand ihres Wiedervorlage-Datums im Kalender – die
+  // Klasse-Filterung betrifft nur Zeiteinträge (Anfragen haben keine
+  // Dienstleistungsklasse), daher bei aktivem Klasse-Filter bewusst keine
+  // Anfragen anzeigen, statt unpassende Treffer zu zeigen.
+  let anfrageQuery = params.klasse_id
+    ? null
+    : supabase
+        .from("anfragen")
+        .select("id, titel, kunde_id, projekt_id, zugewiesen_an, wiedervorlage_am, status")
+        .gte("wiedervorlage_am", rasterVon)
+        .lte("wiedervorlage_am", rasterBis)
+        .neq("status", "erledigt");
+
+  if (anfrageQuery) {
+    if (params.kunde_id) anfrageQuery = anfrageQuery.eq("kunde_id", params.kunde_id);
+    if (params.projekt_id) anfrageQuery = anfrageQuery.eq("projekt_id", params.projekt_id);
+    if (params.mitarbeiter_id) anfrageQuery = anfrageQuery.eq("zugewiesen_an", params.mitarbeiter_id);
+  }
+
   // Alle Queries unabhängig voneinander gleichzeitig statt nacheinander
-  // abschicken (die Haupt-Query hängt nicht von den Filter-Listen ab).
+  // abschicken (die Haupt-Queries hängen nicht von den Filter-Listen ab).
   const [
     { data: kunden },
     { data: projekte },
     { data: klassen },
-    { data: mitarbeitende },
+    { data: alleMitarbeitende },
     { data },
+    anfrageErgebnis,
   ] = await Promise.all([
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
     supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
-    isAdmin
-      ? supabase.from("profiles").select("id, name").order("name")
-      : Promise.resolve({ data: null }),
+    // Farb-Zuordnung wird für ALLE gebraucht (auch nicht-Admins sehen im
+    // gemeinsamen Anfragen-Board Kolleg:innen-Zuweisungen), nicht nur für
+    // den Mitarbeitende-Filter, der weiterhin admin-exklusiv bleibt.
+    supabase.from("profiles").select("id, name, farbe").order("name"),
     query,
+    anfrageQuery ?? Promise.resolve({ data: [] as never[] }),
   ]);
   const zeilen = (data as ZeiteintragMitDetails[] | null) ?? [];
+  const anfragenRoh = (anfrageErgebnis.data as
+    | {
+        id: string;
+        titel: string;
+        kunde_id: string;
+        projekt_id: string | null;
+        zugewiesen_an: string | null;
+        wiedervorlage_am: string;
+        status: string;
+      }[]
+    | null) ?? [];
 
-  const proTag = new Map<string, { stunden: number; betrag: number; anzahl: number }>();
+  const farbeVon = (mitarbeiterId: string | null) =>
+    alleMitarbeitende?.find((m) => m.id === mitarbeiterId)?.farbe ?? STANDARDFARBE;
+
+  const proTag = new Map<
+    string,
+    { stunden: number; betrag: number; zeit: Map<string, ZeitZeile>; anfragen: AnfrageZeile[] }
+  >();
+  const tagEintrag = (datum: string) => {
+    let eintrag = proTag.get(datum);
+    if (!eintrag) {
+      eintrag = { stunden: 0, betrag: 0, zeit: new Map(), anfragen: [] };
+      proTag.set(datum, eintrag);
+    }
+    return eintrag;
+  };
+
   for (const z of zeilen) {
-    const eintrag = proTag.get(z.datum) ?? { stunden: 0, betrag: 0, anzahl: 0 };
+    const eintrag = tagEintrag(z.datum);
     eintrag.stunden += Number(z.menge_stunden);
     eintrag.betrag += Number(z.betrag);
-    eintrag.anzahl += 1;
-    proTag.set(z.datum, eintrag);
+
+    const zeile = eintrag.zeit.get(z.mitarbeiter_id) ?? {
+      mitarbeiterId: z.mitarbeiter_id,
+      name: z.mitarbeiter_name,
+      farbe: farbeVon(z.mitarbeiter_id),
+      stunden: 0,
+    };
+    zeile.stunden += Number(z.menge_stunden);
+    eintrag.zeit.set(z.mitarbeiter_id, zeile);
+  }
+
+  for (const a of anfragenRoh) {
+    const eintrag = tagEintrag(a.wiedervorlage_am);
+    eintrag.anfragen.push({
+      id: a.id,
+      titel: a.titel,
+      farbe: farbeVon(a.zugewiesen_an),
+    });
   }
 
   const monatStunden = [...proTag.entries()]
     .filter(([datum]) => datum >= monatVon && datum <= monatBis)
     .reduce((s, [, v]) => s + v.stunden, 0);
+
+  // Legende: nur Mitarbeitende, die im aktuell sichtbaren Monatsraster
+  // tatsächlich mit Zeit oder Anfrage auftauchen – vermeidet eine lange,
+  // wenig hilfreiche Liste bei vielen Mitarbeitenden.
+  const sichtbareMitarbeiterIds = new Set<string>();
+  for (const eintrag of proTag.values()) {
+    for (const id of eintrag.zeit.keys()) sichtbareMitarbeiterIds.add(id);
+  }
+  for (const a of anfragenRoh) {
+    if (a.zugewiesen_an) sichtbareMitarbeiterIds.add(a.zugewiesen_an);
+  }
+  const legende = (alleMitarbeitende ?? []).filter((m) => sichtbareMitarbeiterIds.has(m.id));
 
   return (
     <div>
@@ -180,7 +261,7 @@ export default async function KalenderPage({
               className="rounded border border-gray-300 px-2 py-1.5 min-w-[10rem]"
             >
               <option value="">Alle</option>
-              {mitarbeitende?.map((p) => (
+              {alleMitarbeitende?.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
@@ -192,6 +273,20 @@ export default async function KalenderPage({
           Filtern
         </button>
       </form>
+
+      {legende.length > 0 && (
+        <div className="flex flex-wrap gap-3 mb-3 text-xs text-gray-500">
+          {legende.map((m) => (
+            <span key={m.id} className="inline-flex items-center gap-1.5">
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: m.farbe ?? STANDARDFARBE }}
+              />
+              {m.name}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="bg-white rounded-lg border overflow-hidden overflow-x-auto">
         <div className="grid grid-cols-7 text-xs text-gray-500 border-b">
@@ -209,34 +304,74 @@ export default async function KalenderPage({
               const istHeute = tagIso === heute;
               const tagNr = Number(tagIso.slice(8, 10));
 
+              const zeitZeilen = werte ? [...werte.zeit.values()] : [];
+              const anfrageZeilen = werte?.anfragen ?? [];
+              const alleZeilen = [
+                ...zeitZeilen.map((z) => ({
+                  key: `z-${z.mitarbeiterId}`,
+                  farbe: z.farbe,
+                  label: `${z.name.split(" ")[0]} · ${z.stunden.toFixed(1)}h`,
+                  href: `/auswertungen?ansicht=tag&datum=${tagIso}`,
+                  titel: `${z.name}: ${z.stunden.toFixed(2)} h`,
+                })),
+                ...anfrageZeilen.map((a) => ({
+                  key: `a-${a.id}`,
+                  farbe: a.farbe,
+                  label: a.titel,
+                  href: `/anfragen/${a.id}`,
+                  titel: a.titel,
+                })),
+              ];
+              const sichtbar = alleZeilen.slice(0, MAX_ZEILEN_JE_TAG);
+              const rest = alleZeilen.length - sichtbar.length;
+
               return (
-                <Link
+                <div
                   key={tagIso}
-                  href={`/auswertungen?ansicht=tag&datum=${tagIso}`}
-                  className={`border-r last:border-r-0 px-2 py-2 min-h-[5.5rem] flex flex-col hover:bg-arcos-steel/5 ${
+                  className={`border-r last:border-r-0 px-1.5 py-1.5 min-h-[7.5rem] flex flex-col gap-1 ${
                     imMonat ? "" : "bg-gray-50 text-gray-400"
                   }`}
                 >
-                  <span
-                    className={`text-xs mb-1 ${
-                      istHeute
-                        ? "inline-flex items-center justify-center w-5 h-5 rounded-full bg-arcos-steel text-white"
-                        : ""
-                    }`}
-                  >
-                    {tagNr}
-                  </span>
-                  {werte && (
-                    <span className="text-xs">
-                      <span className="block font-medium text-arcos-navy">
-                        {werte.stunden.toFixed(2)} h
+                  <div className="flex items-center justify-between px-0.5">
+                    <Link
+                      href={`/auswertungen?ansicht=tag&datum=${tagIso}`}
+                      className={`text-xs rounded-full hover:bg-arcos-steel/10 ${
+                        istHeute
+                          ? "inline-flex items-center justify-center w-5 h-5 bg-arcos-steel text-white"
+                          : "px-1"
+                      }`}
+                    >
+                      {tagNr}
+                    </Link>
+                    {werte && werte.stunden > 0 && (
+                      <span className="text-[11px] text-gray-400">
+                        {werte.stunden.toFixed(1)}h
                       </span>
-                      <span className="block text-gray-400">
-                        CHF {werte.betrag.toFixed(0)}
-                      </span>
-                    </span>
-                  )}
-                </Link>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-0.5">
+                    {sichtbar.map((zeile) => (
+                      <Link
+                        key={zeile.key}
+                        href={zeile.href}
+                        title={zeile.titel}
+                        className="block text-[11px] leading-4 text-white rounded px-1 truncate hover:opacity-80"
+                        style={{ backgroundColor: zeile.farbe }}
+                      >
+                        {zeile.label}
+                      </Link>
+                    ))}
+                    {rest > 0 && (
+                      <Link
+                        href={`/auswertungen?ansicht=tag&datum=${tagIso}`}
+                        className="block text-[11px] leading-4 text-gray-400 hover:text-arcos-steel px-1"
+                      >
+                        +{rest} weitere
+                      </Link>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -244,7 +379,8 @@ export default async function KalenderPage({
       </div>
       {!isAdmin && (
         <p className="text-xs text-gray-400 mt-3">
-          Du siehst hier nur deine eigenen Zeiteinträge.
+          Zeiteinträge zeigen nur deine eigenen; Anfragen (Wiedervorlagen)
+          zeigen alle, die deiner Organisation zugeordnet sind.
         </p>
       )}
     </div>

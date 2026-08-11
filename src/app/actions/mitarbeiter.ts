@@ -14,10 +14,11 @@ export async function updateMitarbeiter(id: string, formData: FormData) {
   const vorname = String(formData.get("vorname") ?? "").trim() || null;
   const nachname = String(formData.get("nachname") ?? "").trim() || null;
   const role = String(formData.get("role") ?? "mitarbeiter");
+  const farbe = String(formData.get("farbe") ?? "").trim() || null;
 
   const { error } = await supabase
     .from("profiles")
-    .update({ vorname, nachname, role })
+    .update({ vorname, nachname, role, farbe })
     .eq("id", id);
 
   if (error) {

@@ -18,7 +18,7 @@ export default async function MitarbeitendePage({
 
   const { data: mitarbeitende } = await supabase
     .from("profiles")
-    .select("id, name, vorname, nachname, email, role")
+    .select("id, name, vorname, nachname, email, role, farbe")
     .order("nachname");
 
   return (
@@ -80,6 +80,7 @@ export default async function MitarbeitendePage({
               <th className="px-4 py-2">Nachname</th>
               <th className="px-4 py-2">E-Mail</th>
               <th className="px-4 py-2">Rolle</th>
+              <th className="px-4 py-2">Farbe</th>
               <th className="px-4 py-2"></th>
               <th className="px-4 py-2"></th>
             </tr>
@@ -121,6 +122,16 @@ export default async function MitarbeitendePage({
                       <option value="admin">Admin</option>
                     </select>
                   </td>
+                  <td className="px-2 py-2">
+                    <input
+                      type="color"
+                      name="farbe"
+                      defaultValue={m.farbe ?? "#457B9D"}
+                      form={`form-${m.id}`}
+                      title="Farbe im Kalender"
+                      className="h-9 w-12 rounded border border-gray-300 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-2 py-2 text-right">
                     <button
                       type="submit"
@@ -140,7 +151,7 @@ export default async function MitarbeitendePage({
             })}
             {(!mitarbeitende || mitarbeitende.length === 0) && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
                   Keine Mitarbeitenden gefunden.
                 </td>
               </tr>
