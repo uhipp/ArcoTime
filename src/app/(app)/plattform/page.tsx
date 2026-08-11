@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import { getCurrentProfile } from "@/lib/get-profile";
 import {
   erstelleOrganisation,
@@ -223,21 +224,17 @@ export default async function PlattformPage({
                     />
                   </td>
                   <td className="px-2 py-2">
-                    <input
+                    <OptionalesDatumFeld
                       name="test_endet_am"
-                      type="date"
-                      defaultValue={org.test_endet_am?.slice(0, 10) ?? ""}
-                      form={formId}
-                      className="rounded border border-gray-300 px-2 py-1.5"
+                      defaultValue={org.test_endet_am?.slice(0, 10) ?? null}
+                      formId={formId}
                     />
                   </td>
                   <td className="px-2 py-2">
-                    <input
+                    <OptionalesDatumFeld
                       name="naechster_zahltermin"
-                      type="date"
-                      defaultValue={org.naechster_zahltermin ?? ""}
-                      form={formId}
-                      className="rounded border border-gray-300 px-2 py-1.5"
+                      defaultValue={org.naechster_zahltermin ?? null}
+                      formId={formId}
                     />
                   </td>
                   <td className="px-2 py-2">

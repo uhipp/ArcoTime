@@ -7,6 +7,7 @@ import { KundeForm } from "@/components/kunde-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateKunde, deleteKunde } from "@/app/actions/kunden";
 import { DeleteButton } from "@/components/delete-button";
+import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import type { Kunde, ZeiteintragMitDetails } from "@/lib/types";
 
 type SearchParams = { error?: string; von?: string; bis?: string; projekt_id?: string };
@@ -88,19 +89,9 @@ export default async function KundeDetailPage({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium">Historie</h2>
           <form className="flex flex-wrap items-center gap-2 text-sm">
-            <input
-              type="date"
-              name="von"
-              defaultValue={von ?? ""}
-              className="rounded border border-gray-300 px-2 py-1.5"
-            />
+            <OptionalesDatumFeld name="von" defaultValue={von} />
             <span className="text-gray-400">bis</span>
-            <input
-              type="date"
-              name="bis"
-              defaultValue={bis ?? ""}
-              className="rounded border border-gray-300 px-2 py-1.5"
-            />
+            <OptionalesDatumFeld name="bis" defaultValue={bis} />
             <select
               name="projekt_id"
               defaultValue={projekt_id ?? ""}
