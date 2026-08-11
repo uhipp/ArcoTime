@@ -150,6 +150,139 @@ export async function alsBezahltMarkieren(id: string) {
   if (error) throw new Error(error.message);
 }
 
+const MAX_ADMINS_PRO_ORGANISATION = 2;
+
+// Bearbeitet eine beliebige Person in einer beliebigen Organisation –
+// Name, E-Mail (inkl. Login-E-Mail in auth.users, nicht nur die Anzeige in
+// profiles) und Rolle. Braucht den Service-Role-Client, weil die reguläre
+// Update-Policy ("profiles_update_own_or_admin") auf die eigene
+// Organisation beschränkt ist und Platform-Admins bewusst nicht einschliesst
+// (das wird hier stattdessen per Rollen-Prüfung im Code sichergestellt).
+export async function bearbeiteMitarbeiterPlattform(id: string, formData: FormData) {
+  await pruefePlatformAdmin();
+  const admin = createAdminClient();
+
+  const vorname = String(formData.get("vorname") ?? "").trim() || null;
+  const nachname = String(formData.get("nachname") ?? "").trim() || null;
+  const email = String(formData.get("email") ?? "").trim();
+  const role = String(formData.get("role") ?? "mitarbeiter");
+
+  const { data: bestehend } = await admin
+    .from("profiles")
+    .select("organisation_id, email")
+    .eq("id", id)
+    .single();
+
+  if (role === "admin" && bestehend?.organisation_id) {
+    const { count } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("organisation_id", bestehend.organisation_id)
+      .eq("role", "admin")
+      .neq("id", id);
+
+    if ((count ?? 0) >= MAX_ADMINS_PRO_ORGANISATION) {
+      redirect(
+        `/plattform?error=${encodeURIComponent(
+          `Maximal ${MAX_ADMINS_PRO_ORGANISATION} Admin-Konten pro Organisation erlaubt.`
+        )}`
+      );
+    }
+  }
+
+  // Login-E-Mail nur anfassen, wenn sie sich tatsächlich ändert – ein
+  // unveränderter, aber erneut übermittelter Wert soll keinen unnötigen
+  // Auth-API-Aufruf (und keine erneute Bestätigungs-Mail) auslösen.
+  if (email && email !== bestehend?.email) {
+    const { error: authError } = await admin.auth.admin.updateUserById(id, { email });
+    if (authError) {
+      redirect(`/plattform?error=${encodeURIComponent(`E-Mail konnte nicht geändert werden: ${authError.message}`)}`);
+    }
+  }
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ vorname, nachname, email: email || null, role })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/plattform?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/plattform");
+  redirect(mitErfolg("/plattform", "Person gespeichert."));
+}
+
+// Lädt eine neue Person direkt in eine BESTEHENDE Organisation ein (z.B.
+// wenn die bisherige Admin-Person eines Kunden wechselt und niemand
+// Passendes vorhanden ist). Prüft dieselben Regeln wie eine reguläre
+// Einladung durch den Kunden selbst (Lizenzlimit, max. 2 Admins).
+export async function ladePersonEinPlattform(organisationId: string, formData: FormData) {
+  await pruefePlatformAdmin();
+
+  const vorname = String(formData.get("vorname") ?? "").trim();
+  const nachname = String(formData.get("nachname") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  const role = String(formData.get("role") ?? "mitarbeiter");
+
+  if (!vorname || !nachname || !email) {
+    redirect(`/plattform?error=${encodeURIComponent("Bitte Vorname, Nachname und E-Mail ausfüllen.")}`);
+  }
+
+  const admin = createAdminClient();
+
+  const { data: organisation } = await admin
+    .from("organisationen")
+    .select("lizenzen_gebucht")
+    .eq("id", organisationId)
+    .single();
+
+  if (organisation?.lizenzen_gebucht != null) {
+    const { count } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("organisation_id", organisationId)
+      .is("deaktiviert_am", null);
+
+    if ((count ?? 0) >= organisation.lizenzen_gebucht) {
+      redirect(
+        `/plattform?error=${encodeURIComponent(
+          `Lizenzlimit dieser Organisation erreicht (${organisation.lizenzen_gebucht}).`
+        )}`
+      );
+    }
+  }
+
+  if (role === "admin") {
+    const { count } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("organisation_id", organisationId)
+      .eq("role", "admin");
+
+    if ((count ?? 0) >= MAX_ADMINS_PRO_ORGANISATION) {
+      redirect(
+        `/plattform?error=${encodeURIComponent(
+          `Maximal ${MAX_ADMINS_PRO_ORGANISATION} Admin-Konten pro Organisation erlaubt.`
+        )}`
+      );
+    }
+  }
+
+  const origin = await siteOrigin();
+  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${origin}/auth/confirm`,
+    data: { vorname, nachname, organisation_id: organisationId, rolle_bei_einladung: role },
+  });
+
+  if (error) {
+    redirect(`/plattform?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/plattform");
+  redirect(mitErfolg("/plattform", `Einladung an ${email} gesendet.`));
+}
+
 // Reaktiviert ein von einer Kundenorganisation selbst deaktiviertes Konto
 // (Lizenz wieder "belegt"). Bewusst NICHT über die reguläre, organisations-
 // beschränkte Update-Policy möglich – nur Platform-Admins, deshalb über den

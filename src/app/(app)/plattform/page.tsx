@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import {
@@ -167,8 +168,10 @@ export default async function PlattformPage({
               const ueberLimit = org.lizenzen_gebucht != null && genutzt > org.lizenzen_gebucht;
               return (
                 <tr key={org.id} className="border-t align-top">
-                  <td className="px-3 py-2 font-medium text-arcos-navy whitespace-nowrap">
-                    {org.name}
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <Link href={`/plattform/${org.id}`} className="font-medium text-arcos-navy hover:underline">
+                      {org.name}
+                    </Link>
                   </td>
                   <td className="px-2 py-2">
                     <form action={action} id={formId} className="contents">
@@ -279,7 +282,9 @@ export default async function PlattformPage({
         </table>
       </div>
       <p className="text-xs text-gray-400 mb-8">
-        Leeres Lizenzenfeld = unbegrenzt (für die eigene Organisation gedacht). Status
+        Auf den Namen klicken, um die Mitarbeitenden dieser Organisation zu verwalten
+        (Person bearbeiten, Admin-Rolle übertragen, neue Person einladen). Leeres
+        Lizenzenfeld = unbegrenzt (für die eigene Organisation gedacht). Status
         "Aktiv" setzt den Sperrgrund automatisch zurück.
       </p>
 
