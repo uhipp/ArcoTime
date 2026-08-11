@@ -33,7 +33,12 @@ export async function GET(request: NextRequest) {
   const minute = Number(zuercherZeit.find((t) => t.type === "minute")?.value ?? "0");
   const istZielzeit = stunde === 7 && minute >= 15 && minute <= 45;
 
-  if (!istZielzeit) {
+  // Manueller Test-Aufruf (z.B. zum Prüfen, ob SMTP-Variablen in der
+  // aktuellen Produktions-Version ankommen): überspringt NUR den
+  // Zeitfenster-Guard, nicht die Secret-Prüfung oben.
+  const erzwungen = request.nextUrl.searchParams.get("force") === "true";
+
+  if (!istZielzeit && !erzwungen) {
     return NextResponse.json({
       uebersprungen: true,
       grund: "Ausserhalb des 07:30-Zeitfensters (Sommer-/Winterzeit-Guard).",
