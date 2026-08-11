@@ -122,6 +122,11 @@ export default async function AppLayout({
                 Einstellungen
               </Link>
             )}
+            {profile?.ist_platform_admin && (
+              <Link href="/plattform" className="hover:text-arcos-navy text-red-600 font-medium">
+                Plattform
+              </Link>
+            )}
             <span className="ml-auto">
               <KontextHilfeLink />
             </span>

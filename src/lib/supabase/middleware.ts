@@ -63,5 +63,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Zugriffssperre für Organisationen mit Status != "aktiv" (Testphase
+  // abgelaufen, Zahlung fehlgeschlagen, gekündigt, manuell pausiert).
+  // Platform-Admins (Arcos selbst) sind bewusst ausgenommen, damit sie sich
+  // nie selbst aussperren können.
+  if (data.user && request.nextUrl.pathname !== "/gesperrt") {
+    const { data: profil } = await supabase
+      .from("profiles")
+      .select("ist_platform_admin, organisationen(status)")
+      .eq("id", data.user.id)
+      .single();
+
+    const organisation = profil?.organisationen as unknown as { status: string } | null;
+    if (!profil?.ist_platform_admin && organisation && organisation.status !== "aktiv") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/gesperrt";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return response;
 }

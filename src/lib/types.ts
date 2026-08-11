@@ -8,6 +8,7 @@ export type Profile = {
   email: string | null;
   role: Rolle;
   farbe: string;
+  ist_platform_admin: boolean;
 };
 
 export type Kunde = {
