@@ -33,12 +33,10 @@ export function AnfrageForm({
   const [kundeId, setKundeId] = useState(anfrage?.kunde_id ?? "");
   const [projekteListe, setProjekteListe] = useState(projekte);
   const [projektId, setProjektId] = useState(anfrage?.projekt_id ?? "");
-  // Als kontrolliertes Feld (statt defaultValue): Safari ignoriert bei
-  // <input type="date"> das Attribut autocomplete="off" und füllt das Feld
-  // trotzdem mit einem früher hier eingegebenen Wert. React erzwingt mit
-  // value+onChange bei jeder Anzeige den gewünschten Wert – das kann kein
-  // Browser-Autofill mehr überschreiben.
   const [wiedervorlageAm, setWiedervorlageAm] = useState(anfrage?.wiedervorlage_am ?? "");
+  // Steuert, ob das Datumsfeld überhaupt angezeigt wird (siehe Kommentar
+  // weiter unten beim Feld selbst – Safari-Rendering-Eigenart).
+  const [wiedervorlageAktiv, setWiedervorlageAktiv] = useState(Boolean(anfrage?.wiedervorlage_am));
 
   const kundeHook = useKundeSchnellErstellen((kunde) => {
     setKundenListe((liste) => [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH")));
@@ -181,27 +179,48 @@ export function AnfrageForm({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="wiedervorlage_am">
-              Wiedervorlage
-            </label>
-            {/* Sichtbares Feld bewusst OHNE "name": Safari matcht sein
-                Autofill anhand des name-Attributs gegen frühere Eingaben in
-                diesem Formular-Ursprung – ohne "name" hat es dafür keine
-                Grundlage mehr (autoComplete="off" allein reichte nicht, da
-                Safari das bei eigenen Heuristiken ignoriert). Der
-                tatsächlich abgesendete Wert kommt über das versteckte Feld
-                darunter. */}
-            <input
-              id="wiedervorlage_am"
-              type="date"
-              autoComplete="off"
-              value={wiedervorlageAm}
-              onChange={(e) => setWiedervorlageAm(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-            />
-            <input type="hidden" name="wiedervorlage_am" value={wiedervorlageAm} />
+            <label className="block text-sm font-medium mb-1">Wiedervorlage</label>
+            {/* Das native <input type="date"> wird bewusst NICHT dauerhaft
+                angezeigt: Safari rendert ein leeres Datumsfeld mit dem
+                heutigen Datum als optische Vorschau (kein echter Wert, aber
+                leicht mit einem gesetzten Datum zu verwechseln – lässt sich
+                über kein Attribut abstellen). Stattdessen erscheint das
+                Feld erst nach einem bewussten Klick, dann darf es ruhig
+                mit "heute" starten, weil dann klar ist, dass wirklich ein
+                Datum gewünscht ist. */}
+            {wiedervorlageAktiv ? (
+              <div className="flex items-center gap-2">
+                <input
+                  id="wiedervorlage_am"
+                  type="date"
+                  autoComplete="off"
+                  value={wiedervorlageAm}
+                  onChange={(e) => setWiedervorlageAm(e.target.value)}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWiedervorlageAktiv(false);
+                    setWiedervorlageAm("");
+                  }}
+                  className="text-xs text-gray-400 hover:text-red-600 shrink-0"
+                >
+                  Entfernen
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setWiedervorlageAktiv(true)}
+                className="text-sm text-arcos-steel hover:underline"
+              >
+                + Datum setzen
+              </button>
+            )}
+            <input type="hidden" name="wiedervorlage_am" value={wiedervorlageAktiv ? wiedervorlageAm : ""} />
             <p className="text-xs text-gray-400 mt-1">
-              Nur ausfüllen, wenn diese Anfrage an einem bestimmten Datum
+              Nur setzen, wenn diese Anfrage an einem bestimmten Datum
               wieder aufgegriffen werden soll.
             </p>
           </div>
