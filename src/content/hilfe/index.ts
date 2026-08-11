@@ -11,6 +11,7 @@ import { dokumente } from "./dokumente";
 import { mitarbeitende } from "./mitarbeitende";
 import { einstellungen } from "./einstellungen";
 import { benachrichtigungen } from "./benachrichtigungen";
+import { plattform } from "./plattform";
 
 export type { HilfeArtikel } from "./typen";
 
@@ -30,4 +31,5 @@ export const ALLE_HILFE_ARTIKEL = [
   ...mitarbeitende,
   ...einstellungen,
   ...exportArtikel,
+  ...plattform,
 ];
