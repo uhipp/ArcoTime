@@ -33,6 +33,12 @@ export function AnfrageForm({
   const [kundeId, setKundeId] = useState(anfrage?.kunde_id ?? "");
   const [projekteListe, setProjekteListe] = useState(projekte);
   const [projektId, setProjektId] = useState(anfrage?.projekt_id ?? "");
+  // Als kontrolliertes Feld (statt defaultValue): Safari ignoriert bei
+  // <input type="date"> das Attribut autocomplete="off" und füllt das Feld
+  // trotzdem mit einem früher hier eingegebenen Wert. React erzwingt mit
+  // value+onChange bei jeder Anzeige den gewünschten Wert – das kann kein
+  // Browser-Autofill mehr überschreiben.
+  const [wiedervorlageAm, setWiedervorlageAm] = useState(anfrage?.wiedervorlage_am ?? "");
 
   const kundeHook = useKundeSchnellErstellen((kunde) => {
     setKundenListe((liste) => [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH")));
@@ -182,14 +188,9 @@ export function AnfrageForm({
               id="wiedervorlage_am"
               name="wiedervorlage_am"
               type="date"
-              // autoComplete="off": ohne das füllen Browser (v.a. Safari) das
-              // Feld beim nächsten "Neue Anfrage"-Formular automatisch mit
-              // dem zuletzt hier eingetragenen Wert – unabhängig vom
-              // serverseitigen Default (""). Das führte dazu, dass ein
-              // einmal (versehentlich oder testweise) gesetztes Datum bei
-              // jeder späteren neuen Anfrage wieder auftauchte.
               autoComplete="off"
-              defaultValue={anfrage?.wiedervorlage_am ?? ""}
+              value={wiedervorlageAm}
+              onChange={(e) => setWiedervorlageAm(e.target.value)}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
             <p className="text-xs text-gray-400 mt-1">
