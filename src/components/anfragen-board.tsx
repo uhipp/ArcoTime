@@ -41,8 +41,12 @@ function AnfrageKarte({
     id: anfrage.id,
   });
 
+  // Bewusst "<=" statt "<": eine HEUTE fällige Wiedervorlage soll sich genauso
+  // melden wie eine bereits überfällige – sonst zeigt der Badge in der
+  // Navigation "2 fällig", aber im Board sieht man nicht, welche Karten das
+  // sind, weil die Markierung erst am Tag danach greift.
   const ueberfaellig =
-    anfrage.wiedervorlage_am && anfrage.wiedervorlage_am < heuteIso() && anfrage.status !== "erledigt";
+    anfrage.wiedervorlage_am && anfrage.wiedervorlage_am <= heuteIso() && anfrage.status !== "erledigt";
   const symbol = kanaele.find((k) => k.wert === anfrage.kanal)?.symbol ?? "•";
   const farbe = prioritaeten.find((p) => p.wert === anfrage.prioritaet)?.farbe ?? "bg-gray-300";
 
