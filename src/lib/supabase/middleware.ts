@@ -43,6 +43,20 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
+  // Stripe ruft den Webhook ohne jede Session auf – Absicherung läuft dort
+  // über die kryptografische Signatur, nicht über Login.
+  if (request.nextUrl.pathname.startsWith("/api/webhooks/")) {
+    return response;
+  }
+
+  // Die Selbstregistrierung ist die einzige Seite, die bewusst UNABHÄNGIG
+  // vom Session-Status erreichbar bleibt (kein Redirect weg vom Login wie
+  // bei /login, aber auch kein Zwang zum Login) – auch bereits eingeloggte
+  // Personen dürfen sich z.B. eine zweite Organisation registrieren.
+  if (request.nextUrl.pathname.startsWith("/registrieren")) {
+    return response;
+  }
+
   // Seiten, die ohne bestehende Session erreichbar sein müssen: Login und
   // die Passwort-vergessen-Anfrage. Bereits eingeloggte Nutzer werden von
   // hier weg auf die Übersicht geleitet.
