@@ -184,15 +184,22 @@ export function AnfrageForm({
             <label className="block text-sm font-medium mb-1" htmlFor="wiedervorlage_am">
               Wiedervorlage
             </label>
+            {/* Sichtbares Feld bewusst OHNE "name": Safari matcht sein
+                Autofill anhand des name-Attributs gegen frühere Eingaben in
+                diesem Formular-Ursprung – ohne "name" hat es dafür keine
+                Grundlage mehr (autoComplete="off" allein reichte nicht, da
+                Safari das bei eigenen Heuristiken ignoriert). Der
+                tatsächlich abgesendete Wert kommt über das versteckte Feld
+                darunter. */}
             <input
               id="wiedervorlage_am"
-              name="wiedervorlage_am"
               type="date"
               autoComplete="off"
               value={wiedervorlageAm}
               onChange={(e) => setWiedervorlageAm(e.target.value)}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
+            <input type="hidden" name="wiedervorlage_am" value={wiedervorlageAm} />
             <p className="text-xs text-gray-400 mt-1">
               Nur ausfüllen, wenn diese Anfrage an einem bestimmten Datum
               wieder aufgegriffen werden soll.
