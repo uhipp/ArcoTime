@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import { logout } from "@/app/actions/auth";
 import { Toast } from "@/components/toast";
+import { KontextHilfeLink } from "@/components/kontext-hilfe-link";
 
 export default async function AppLayout({
   children,
@@ -33,7 +34,7 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b-2 border-arcos-steel">
+      <header className="bg-white border-b-2 border-arcos-steel print:hidden">
         <div className="max-w-5xl mx-auto px-4 pt-3">
           {/* Erste Zeile: Mandant + Benutzer/Abmelden links, Logo rechts.
               Bewusst nur 2 Elemente in dieser Zeile (statt 3 mit der
@@ -121,12 +122,17 @@ export default async function AppLayout({
                 Einstellungen
               </Link>
             )}
+            <span className="ml-auto">
+              <KontextHilfeLink />
+            </span>
           </nav>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <main className="max-w-5xl mx-auto px-4 py-8 print:p-0 print:max-w-none">{children}</main>
       <Suspense fallback={null}>
-        <Toast />
+        <div className="print:hidden">
+          <Toast />
+        </div>
       </Suspense>
     </div>
   );
