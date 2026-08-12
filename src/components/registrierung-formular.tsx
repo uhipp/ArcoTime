@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { starteRegistrierung } from "@/app/actions/registrierung";
-import { preisProBenutzer, gesamtpreis } from "@/lib/lizenzpreise";
+import { preisProBenutzer, gesamtpreis, abgerechneteMenge } from "@/lib/lizenzpreise";
 
 export function RegistrierungFormular() {
   const [anzahl, setAnzahl] = useState(5);
@@ -11,10 +11,20 @@ export function RegistrierungFormular() {
   const [wirdGesendet, setWirdGesendet] = useState(false);
 
   const anzahlGueltig = Math.max(1, Math.floor(anzahl) || 1);
-  const proBenutzerMonat = preisProBenutzer(anzahlGueltig, "monatlich");
-  const proBenutzerJahr = preisProBenutzer(anzahlGueltig, "jaehrlich");
+
+  // Bestpreis-Garantie: An den Stufengrenzen wird auf die günstigere Menge
+  // aufgerundet. Der Satz "pro Benutzer" muss sich deshalb auf die
+  // abgerechnete Menge beziehen, sonst stünde neben einem Total von 80.–
+  // ein Satz von 9.– (siehe lizenzpreise.ts).
+  const mengeMonat = abgerechneteMenge(anzahlGueltig, "monatlich");
+  const mengeJahr = abgerechneteMenge(anzahlGueltig, "jaehrlich");
+  const proBenutzerMonat = preisProBenutzer(mengeMonat, "monatlich");
+  const proBenutzerJahr = preisProBenutzer(mengeJahr, "jaehrlich");
   const totalMonat = gesamtpreis(anzahlGueltig, "monatlich");
   const totalJahr = gesamtpreis(anzahlGueltig, "jaehrlich");
+
+  const abgerechneteAnzahl = zyklus === "monatlich" ? mengeMonat : mengeJahr;
+  const aufgerundet = abgerechneteAnzahl > anzahlGueltig;
 
   return (
     <form
@@ -92,9 +102,18 @@ export function RegistrierungFormular() {
             </div>
           </label>
         </div>
+        {aufgerundet && (
+          <p className="rounded bg-green-50 text-green-800 text-xs px-3 py-2 mt-2">
+            Gut zu wissen: <strong>{abgerechneteAnzahl} Lizenzen</strong> sind
+            günstiger als {anzahlGueltig}. Wir buchen dir deshalb{" "}
+            {abgerechneteAnzahl} – du zahlst weniger und kannst die zusätzlichen
+            Lizenzen sofort nutzen.
+          </p>
+        )}
         <p className="text-xs text-gray-400 mt-2">
           Ab 10 Benutzern CHF 8.–, ab 20 Benutzern CHF 7.– pro Benutzer und Monat
-          (bzw. CHF 80.– / CHF 70.– pro Jahr).
+          (bzw. CHF 80.– / CHF 70.– pro Jahr). Du zahlst nie mehr, als eine
+          grössere Anzahl kosten würde.
         </p>
       </div>
 

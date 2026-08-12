@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { stripe, STRIPE_PREIS_ID } from "@/lib/stripe";
+import { abgerechneteMenge } from "@/lib/lizenzpreise";
 
 // Öffentliche Aktion (kein Login nötig – das IST die Selbstregistrierung).
 // Erzeugt eine Stripe-Checkout-Session und leitet direkt dorthin weiter.
@@ -25,6 +26,13 @@ export async function starteRegistrierung(formData: FormData) {
     redirect(`/registrieren?error=${encodeURIComponent("Bitte alle Firmen- und Kontaktangaben ausfüllen.")}`);
   }
 
+  // Bestpreis-Garantie: An den Stufengrenzen ist eine grössere Menge
+  // günstiger (9 Benutzer = 81.–, 10 Benutzer = 80.–). Dann wird die
+  // günstigere Menge gebucht – die Kundin zahlt weniger UND bekommt die
+  // zusätzliche Lizenz. Bewusst hier und nicht erst im Webhook, damit schon
+  // der Stripe-Checkout den korrekten Betrag zeigt.
+  const abgerechnet = abgerechneteMenge(anzahlBenutzer, zyklus);
+
   const appUrl = process.env.APP_URL ?? "https://arco-time.vercel.app";
 
   // Gemeinsame Metadaten – landen auf der Session UND auf dem Abo selbst
@@ -36,13 +44,17 @@ export async function starteRegistrierung(formData: FormData) {
     admin_vorname: adminVorname,
     admin_nachname: adminNachname,
     admin_email: adminEmail,
-    anzahl_benutzer: String(anzahlBenutzer),
+    // Die gebuchte (ggf. aufgerundete) Menge – sie bestimmt später
+    // lizenzen_gebucht, muss also mit dem übereinstimmen, was Stripe
+    // verrechnet, sonst dürfte die Organisation weniger Konten anlegen als
+    // bezahlt.
+    anzahl_benutzer: String(abgerechnet),
     zyklus,
   };
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    line_items: [{ price: STRIPE_PREIS_ID[zyklus], quantity: anzahlBenutzer }],
+    line_items: [{ price: STRIPE_PREIS_ID[zyklus], quantity: abgerechnet }],
     customer_email: adminEmail,
     subscription_data: {
       ...(testphase ? { trial_period_days: 14 } : {}),
