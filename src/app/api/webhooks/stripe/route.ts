@@ -9,6 +9,50 @@ function unixZuDatum(unixSekunden: number | null | undefined): string | null {
   return unixSekunden ? new Date(unixSekunden * 1000).toISOString().slice(0, 10) : null;
 }
 
+// Eine bezahlte Registrierung ohne zustellbare Einladung ist der schlimmste
+// Zustand im Lizenzmodul (Kundin zahlt, kommt aber nicht rein) – darum geht
+// die Meldung an alle Platform-Admins, die die Einladung unter /plattform
+// -> "Nutzer einladen" manuell nachholen können.
+async function meldeGescheiterteEinladung({
+  admin,
+  firmenname,
+  adminEmail,
+  grund,
+}: {
+  admin: ReturnType<typeof createAdminClient>;
+  firmenname: string;
+  adminEmail: string;
+  grund: string;
+}) {
+  try {
+    const { data: platformAdmins } = await admin
+      .from("profiles")
+      .select("email")
+      .eq("ist_platform_admin", true);
+
+    for (const person of platformAdmins ?? []) {
+      if (!person.email) continue;
+      await sendeMail({
+        an: person.email,
+        betreff: `ArcoTime: Einladung für "${firmenname}" konnte nicht zugestellt werden`,
+        html: `
+          <div style="font-family:sans-serif;color:#111827;">
+            <p>Die Registrierung von <strong>${firmenname}</strong> wurde bezahlt und die
+            Organisation ist angelegt, aber die Einladung an <strong>${adminEmail}</strong>
+            konnte nicht versendet werden.</p>
+            <p><strong>Grund:</strong> ${grund}</p>
+            <p>Es existiert daher noch kein Admin-Konto für diese Organisation. Bitte die
+            Einladung unter <em>/plattform &rarr; Nutzer einladen</em> manuell nachholen.</p>
+          </div>`,
+      });
+    }
+  } catch (fehler) {
+    // Der Alarm selbst darf den Webhook nicht scheitern lassen – sonst
+    // wiederholt Stripe das Event und die Registrierung läuft doppelt.
+    console.error("Alarm über gescheiterte Einladung konnte nicht versendet werden:", fehler);
+  }
+}
+
 // Läuft ohne Nutzer-Session (Stripe ruft das direkt auf) – Absicherung über
 // die kryptografische Signatur (STRIPE_WEBHOOK_SECRET), nicht über Login.
 export async function POST(request: NextRequest) {
@@ -39,6 +83,17 @@ export async function POST(request: NextRequest) {
 
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
+        // Stripe stellt dasselbe Event erneut zu, wenn wir hier je einen
+        // Fehler zurückgeben oder zu langsam antworten. Ohne diese Prüfung
+        // entstünde dabei eine zweite Organisation zum selben Abo.
+        const { data: bereitsVorhanden } = await admin
+          .from("organisationen")
+          .select("id")
+          .eq("stripe_subscription_id", subscription.id)
+          .maybeSingle();
+
+        if (bereitsVorhanden) break;
+
         const { data: neueOrg, error } = await admin
           .from("organisationen")
           .insert({
@@ -61,15 +116,40 @@ export async function POST(request: NextRequest) {
         }
 
         const origin = await siteOrigin();
-        await admin.auth.admin.inviteUserByEmail(meta.admin_email, {
-          redirectTo: `${origin}/auth/confirm`,
-          data: {
-            vorname: meta.admin_vorname,
-            nachname: meta.admin_nachname,
-            organisation_id: neueOrg.id,
-            rolle_bei_einladung: "admin",
-          },
-        });
+        const { error: einladungsFehler } = await admin.auth.admin.inviteUserByEmail(
+          meta.admin_email,
+          {
+            redirectTo: `${origin}/auth/confirm`,
+            data: {
+              vorname: meta.admin_vorname,
+              nachname: meta.admin_nachname,
+              organisation_id: neueOrg.id,
+              rolle_bei_einladung: "admin",
+            },
+          }
+        );
+
+        // Scheitert der Mailversand (SMTP-Problem, Rate-Limit, Empfänger vom
+        // Zielserver abgelehnt), legt Supabase den Auth-Nutzer gar nicht erst
+        // an: Die Organisation existiert dann und wird bereits belastet, aber
+        // niemand kann sich jemals anmelden – und die Kundin sieht nur die
+        // Erfolgsseite mit "Du erhältst in Kürze eine E-Mail". Das darf nicht
+        // stillschweigend passieren, deshalb Log + Alarm an die Platform-
+        // Admins über den eigenen SMTP-Weg (unabhängig vom Supabase-Mailer).
+        // Bewusst KEIN Fehler-Status an Stripe: das Abo ist gültig zustande
+        // gekommen, ein Retry würde nur dieselbe Einladung erneut versenden.
+        if (einladungsFehler) {
+          console.error(
+            `Webhook checkout.session.completed: Einladung an ${meta.admin_email} fehlgeschlagen:`,
+            einladungsFehler.message
+          );
+          await meldeGescheiterteEinladung({
+            admin,
+            firmenname: meta.firmenname,
+            adminEmail: meta.admin_email,
+            grund: einladungsFehler.message,
+          });
+        }
         break;
       }
 
