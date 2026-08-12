@@ -1,0 +1,18 @@
+[
+  {
+    "version": "1.0.0",
+    "datum": "2026-08-12",
+    "titel": "ArcoTime 1.0 ist da",
+    "eintraege": [
+      { "typ": "neu", "text": "Zeiterfassung mit Timer – läuft im Hintergrund weiter, auch wenn der Browser geschlossen wird." },
+      { "typ": "neu", "text": "Kundenanfragen als Kanban-Board: von der ersten Anfrage bis zum erledigten Auftrag, per Drag & Drop." },
+      { "typ": "neu", "text": "Wiedervorlagen melden sich aktiv: Erinnerung per E-Mail sowie Anzeige in der Navigation, statt nur passiv auf einer Übersichtsseite." },
+      { "typ": "neu", "text": "Farbiger Kalender: Zeiten und Anfragen auf einen Blick, je nach zuständiger Person farblich unterschieden." },
+      { "typ": "neu", "text": "Kunden und Projekte lassen sich direkt aus jedem Formular heraus neu anlegen – inklusive Warnung vor versehentlichen Dubletten." },
+      { "typ": "neu", "text": "Auswertungen nach Tag, Woche oder Monat sowie ein Excel-Export im passenden Format für die Buchhaltung." },
+      { "typ": "neu", "text": "Dokumentenablage für Kunden, Projekte, Anfragen und Mitarbeitende." },
+      { "typ": "neu", "text": "Eine vollständige, durchsuchbare und druckbare Benutzeranleitung direkt in der Anwendung." },
+      { "typ": "neu", "text": "Online-Registrierung mit automatischer Lizenzverwaltung und Zahlungsabwicklung per Karte oder TWINT, inklusive 14 Tage kostenloser Testphase." }
+    ]
+  }
+]

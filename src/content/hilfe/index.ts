@@ -12,6 +12,7 @@ import { mitarbeitende } from "./mitarbeitende";
 import { einstellungen } from "./einstellungen";
 import { benachrichtigungen } from "./benachrichtigungen";
 import { plattform } from "./plattform";
+import { aenderungen } from "./aenderungen";
 
 export type { HilfeArtikel } from "./typen";
 
@@ -19,6 +20,7 @@ export type { HilfeArtikel } from "./typen";
 // (innerhalb der jeweiligen Kategorie).
 export const ALLE_HILFE_ARTIKEL = [
   ...ersteSchritte,
+  ...aenderungen,
   ...zeiterfassung,
   ...anfragen,
   ...kalender,

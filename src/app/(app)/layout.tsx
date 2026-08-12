@@ -127,7 +127,10 @@ export default async function AppLayout({
                 Plattform
               </Link>
             )}
-            <span className="ml-auto">
+            <span className="ml-auto flex items-center gap-4">
+              <Link href="/aenderungen" className="hover:text-arcos-navy">
+                🆕 Neuigkeiten
+              </Link>
               <KontextHilfeLink />
             </span>
           </nav>
