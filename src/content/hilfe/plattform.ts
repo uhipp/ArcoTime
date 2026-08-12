@@ -27,6 +27,14 @@ Diese Seite ist ausschliesslich für **Arcos-Mitarbeitende mit Platform-Admin-Re
 
 Meldet sich ein Kunde selbst über die öffentliche Seite **/registrieren** an und schliesst die Zahlung bei Stripe erfolgreich ab, legt das System die Organisation **automatisch** an (per Stripe-Webhook) – inklusive Einladung des ersten Admin-Kontos. Für Sonderfälle (z.B. eine Organisation ohne Online-Registrierung, oder ein weiterer interner Test-Mandant) lässt sich unter **"Neue Organisation anlegen"** auch manuell eine Organisation samt erstem Admin-Konto erstellen.
 
+### Bestpreis-Garantie bei der Selbstregistrierung
+
+Weil die Staffel (bis 9 Benutzer CHF 9.–, ab 10 CHF 8.–, ab 20 CHF 7.– pro Benutzer und Monat) für **alle** Lizenzen den Satz der erreichten Stufe verwendet, wären einzelne Mengen sonst teurer als grössere: 9 Benutzer kosteten 81.–, 10 Benutzer nur 80.–. Die Registrierung rundet deshalb automatisch auf die günstigere Menge auf.
+
+Konkret betrifft das die Bestellmengen **9** (wird zu 10 Lizenzen), **18** und **19** (werden zu 20). Steht bei einer selbst registrierten Organisation also ein höheres Kontingent als erwartet, ist das kein Fehler – die Kundin zahlt dafür weniger, als sie für die kleinere Menge bezahlt hätte, und darf die zusätzlichen Konten auch nutzen.
+
+Beim **manuellen** Anlegen einer Organisation hier im Plattform-Bereich greift diese Regel bewusst nicht – dort gilt, was du in "Lizenzen gebucht" und "Preis" einträgst.
+
 ## Die Organisations-Tabelle
 
 Pro Organisation lässt sich direkt in der Zeile bearbeiten und mit **"Speichern"** übernehmen:

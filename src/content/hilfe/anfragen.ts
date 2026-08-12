@@ -33,7 +33,7 @@ Eine Karte mit **rotem Rahmen** hat eine fällige Wiedervorlage (heute oder frü
 
 **"+ Neue Anfrage"** klicken. Pflichtfelder sind **Kunde** und **Titel**. Weitere Felder:
 
-- **Projekt** (optional): falls die Anfrage bereits einem bestehenden Projekt zugeordnet werden kann.
+- **Projekt** (optional): falls die Anfrage bereits einem bestehenden Projekt zugeordnet werden kann. Zur Auswahl stehen nur Projekte des gewählten Kunden – solange kein Kunde gewählt ist, bleibt das Feld leer. Wechselst du den Kunden nachträglich, wird eine nicht mehr passende Projektauswahl automatisch verworfen.
 - **Kanal**: wie die Anfrage eingegangen ist (Telefon, E-Mail, …) – frei konfigurierbar unter [Einstellungen](/hilfe/einstellungen).
 - **Priorität**: ebenfalls frei konfigurierbar.
 - **Zugewiesen an**: siehe unten.
@@ -70,6 +70,14 @@ Mehr dazu unter [Benachrichtigungen](/hilfe/benachrichtigungen).
 ## Anfrage erledigen
 
 Eine Anfrage abschliessen erzeugt **immer** einen Zeiteintrag – auch wenn nichts verrechnet wird (dann mit Rabatt 100%). So bleibt die tatsächlich aufgewendete Zeit vollständig erfasst. Dafür auf der Anfrage-Detailseite Projekt, Dienstleistung und Dauer angeben und auf "Erledigen" klicken.
+
+Drei Dinge passieren dabei automatisch:
+
+- **Änderungen oben werden mitgespeichert.** Du musst Titel, Beschreibung oder Zuweisung nicht separat über "Speichern" sichern, bevor du erledigst – ein Klick auf "Erledigen" übernimmt beides.
+- **Der Name der ausführenden Person kommt als erste Zeile in den Zeiteintrag.** Das ist die gleiche Konvention wie in der [Zeiterfassung](/hilfe/zeiterfassung) und für den Export nötig. Du musst den Namen also nicht selbst in die Beschreibung tippen.
+- **War die Anfrage niemandem zugewiesen**, übernimmt die ausführende Person automatisch die Zuständigkeit. Wer eine Anfrage erledigt, ist damit auch dafür verantwortlich – sonst stünde nur am Zeiteintrag, wer gearbeitet hat.
+
+Im Feld **"Mitarbeitende"** lässt sich eine andere Person als die zugewiesene wählen, wenn jemand anderes die Arbeit übernommen hat. Der Zeiteintrag läuft dann auf die ausführende Person, die Anfrage bleibt bei der zuständigen.
 
 Eine erledigte Anfrage lässt sich weiterhin einsehen, aber nicht mehr per Drag & Drop verschieben.
 `,
