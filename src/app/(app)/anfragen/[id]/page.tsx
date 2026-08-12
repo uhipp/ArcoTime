@@ -7,6 +7,7 @@ import { AnfrageForm } from "@/components/anfrage-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { DeleteButton } from "@/components/delete-button";
 import { rabattLabel } from "@/lib/rabatt";
+import { ohneNamenszeile } from "@/lib/mitarbeiter-praefix";
 import {
   updateAnfrage,
   deleteAnfrage,
@@ -57,6 +58,13 @@ export default async function AnfrageDetailPage({
 
   const bereitsVerrechnet = Boolean(anfrage.zeiteintrag_id);
 
+  // Reiner Sachtext der Anfrage, ohne die Namenszeile der zugewiesenen
+  // Person – Grundlage für den Vorschlag im Erledigen-Block.
+  const sachtext = ohneNamenszeile(
+    anfrage.beschreibung,
+    (mitarbeitende ?? []).map((m) => m.name)
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -83,23 +91,23 @@ export default async function AnfrageDetailPage({
         prioritaeten={prioritaeten ?? []}
         action={updateAction}
         error={error}
-      />
-
-      {!bereitsVerrechnet && (
-        <div className="bg-white rounded-lg border p-5 max-w-2xl">
-          <h2 className="text-lg font-medium mb-1">
-            {anfrage.status === "erledigt" ? "Nachträglich verrechnen" : "Anfrage erledigen"}
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Erzeugt beim Abschluss direkt einen Zeiteintrag, damit nichts vergessen wird.
-            Nicht verrechenbare Arbeit bitte über das interne Projekt mit Rabatt 100% erfassen.
-          </p>
-          <form action={erledigenAction} className="space-y-4">
+      >
+        {!bereitsVerrechnet && (
+          <div className="border-t pt-5">
+            <h2 className="text-lg font-medium mb-1">
+              {anfrage.status === "erledigt" ? "Nachträglich verrechnen" : "Anfrage erledigen"}
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Erzeugt beim Abschluss direkt einen Zeiteintrag, damit nichts vergessen wird.
+              Nicht verrechenbare Arbeit bitte über das interne Projekt mit Rabatt 100% erfassen.
+              Änderungen oben werden dabei mitgespeichert.
+            </p>
+            <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Projekt</label>
                 <select
-                  name="projekt_id"
+                  name="zeit_projekt_id"
                   defaultValue={anfrage.projekt_id ?? ""}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                 >
@@ -116,7 +124,7 @@ export default async function AnfrageDetailPage({
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Dienstleistung</label>
                 <select
-                  name="dienstleistung_id"
+                  name="zeit_dienstleistung_id"
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                 >
                   <option value="">Bitte wählen…</option>
@@ -132,7 +140,7 @@ export default async function AnfrageDetailPage({
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Dauer (Minuten)</label>
                 <input
-                  name="dauer_minuten"
+                  name="zeit_dauer_minuten"
                   type="number"
                   min={1}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
@@ -141,7 +149,7 @@ export default async function AnfrageDetailPage({
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Mitarbeitende</label>
                 <select
-                  name="mitarbeiter_id"
+                  name="zeit_mitarbeiter_id"
                   defaultValue={anfrage.zugewiesen_an ?? ""}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                 >
@@ -156,7 +164,7 @@ export default async function AnfrageDetailPage({
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Rabatt</label>
                 <select
-                  name="rabatt_prozent"
+                  name="zeit_rabatt_prozent"
                   defaultValue={0}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                 >
@@ -169,24 +177,37 @@ export default async function AnfrageDetailPage({
                 </select>
               </div>
             </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Beschreibung</label>
-              <textarea
-                name="beschreibung"
-                rows={2}
-                defaultValue={`${anfrage.titel}${anfrage.beschreibung ? " – " + anfrage.beschreibung : ""}`}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-              />
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Beschreibung des Zeiteintrags
+                </label>
+                {/* Ohne die führende Namenszeile zusammengesetzt – sonst
+                    stünde der Name mitten in Zeile 1 ("Titel – Peter Huber").
+                    Den Namen setzt erledigeAnfrage() serverseitig wieder als
+                    eigene erste Zeile davor, passend zur tatsächlich
+                    ausgewählten Person. */}
+                <textarea
+                  name="zeit_beschreibung"
+                  rows={2}
+                  defaultValue={`${anfrage.titel}${sachtext ? " – " + sachtext : ""}`}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Der Name der ausführenden Person wird beim Speichern
+                  automatisch als erste Zeile ergänzt.
+                </p>
+              </div>
+              <button
+                type="submit"
+                formAction={erledigenAction}
+                className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+              >
+                {anfrage.status === "erledigt" ? "Verrechnen" : "Erledigen"}
+              </button>
             </div>
-            <button
-              type="submit"
-              className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
-            >
-              {anfrage.status === "erledigt" ? "Verrechnen" : "Erledigen"}
-            </button>
-          </form>
-        </div>
-      )}
+          </div>
+        )}
+      </AnfrageForm>
 
       {bereitsVerrechnet && (
         <p className="text-sm text-gray-500">

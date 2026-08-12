@@ -33,3 +33,22 @@ export function mitNamePraefix(
   // davor als neue erste Zeile einfügen, bestehenden Text nicht überschreiben.
   return `${neuerName}\n${text}`;
 }
+
+// Gegenstück zu mitNamePraefix(): schneidet eine führende Namenszeile weg.
+// Nötig überall dort, wo der reine Sachtext gebraucht wird – z.B. wenn beim
+// Erledigen "Titel – Beschreibung" zusammengesetzt wird. Ohne das Abschneiden
+// landete der Name mitten in dieser Zeile ("Titel – Peter Huber"), und der
+// anschliessende Präfix-Aufruf würde ihn ein zweites Mal darübersetzen.
+export function ohneNamenszeile(
+  beschreibung: string | null,
+  bekannteNamen: string[] = []
+): string {
+  const text = beschreibung ?? "";
+  if (text === "") return "";
+
+  const zeilen = text.split("\n");
+  if (bekannteNamen.includes(zeilen[0])) {
+    return zeilen.slice(1).join("\n").trimStart();
+  }
+  return text;
+}

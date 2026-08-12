@@ -158,12 +158,17 @@ export async function setzeStatus(id: string, status: AnfrageStatus) {
 export async function erledigeAnfrage(id: string, formData: FormData) {
   const supabase = await createClient();
 
-  const projekt_id = String(formData.get("projekt_id") ?? "").trim();
-  const dienstleistung_id = String(formData.get("dienstleistung_id") ?? "").trim();
-  const dauer_minuten = Number(formData.get("dauer_minuten") ?? 0);
-  const beschreibung = String(formData.get("beschreibung") ?? "").trim() || null;
-  const mitarbeiter_id = String(formData.get("mitarbeiter_id") ?? "").trim();
-  const rabatt_prozent = Number(formData.get("rabatt_prozent") ?? 0);
+  // Die Zeiteintrags-Felder tragen bewusst das Präfix "zeit_": Sie stecken im
+  // selben Formular wie die Anfrage selbst (nur so gehen Änderungen an Titel
+  // und Beschreibung beim Erledigen nicht verloren), und ohne Präfix würden
+  // sich projekt_id und beschreibung der beiden Bereiche gegenseitig
+  // überschreiben.
+  const projekt_id = String(formData.get("zeit_projekt_id") ?? "").trim();
+  const dienstleistung_id = String(formData.get("zeit_dienstleistung_id") ?? "").trim();
+  const dauer_minuten = Number(formData.get("zeit_dauer_minuten") ?? 0);
+  const zeitText = String(formData.get("zeit_beschreibung") ?? "").trim();
+  const mitarbeiter_id = String(formData.get("zeit_mitarbeiter_id") ?? "").trim();
+  const rabatt_prozent = Number(formData.get("zeit_rabatt_prozent") ?? 0);
 
   if (!projekt_id || !dienstleistung_id || dauer_minuten <= 0) {
     redirect(
@@ -174,13 +179,26 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
   }
 
   const { data: userData } = await supabase.auth.getUser();
+  const ausfuehrendeId = mitarbeiter_id || userData.user?.id || null;
+
+  // Name der ausführenden Person als erste Zeile erzwingen – dieselbe
+  // Konvention wie in Zeiterfassung und updateAnfrage (der Comatic-Export
+  // kennt keine Mitarbeiter-Spalte). Bisher war das Erledigen die einzige
+  // Stelle, die den Text ungeprüft durchgereicht hat.
+  const [ausfuehrendeName, bekannteNamen] = await Promise.all([
+    nameFuer(supabase, ausfuehrendeId),
+    alleNamen(supabase),
+  ]);
+  const beschreibung = ausfuehrendeName
+    ? mitNamePraefix(zeitText || null, ausfuehrendeName, bekannteNamen)
+    : zeitText || null;
 
   const { data: neuerEintrag, error: zeitError } = await supabase
     .from("zeiteintraege")
     .insert({
       projekt_id,
       dienstleistung_id,
-      mitarbeiter_id: mitarbeiter_id || userData.user?.id,
+      mitarbeiter_id: ausfuehrendeId,
       user_id: userData.user?.id,
       datum: heuteIso(),
       beschreibung,
@@ -196,9 +214,43 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
     );
   }
 
+  // Die Anfrage-Felder kommen aus demselben Formular und werden hier
+  // mitgespeichert – sonst gingen Änderungen an Titel/Beschreibung/Zuweisung
+  // verloren, die jemand direkt vor dem Erledigen noch vorgenommen hat.
+  // Fehlt "titel", stammt der Aufruf nicht von der Detailseite; dann bleiben
+  // die Stammdaten der Anfrage unangetastet.
+  const kommtVonDetailseite = formData.get("titel") !== null;
+  let anfrageWerte: Record<string, unknown> = {};
+
+  if (kommtVonDetailseite) {
+    const werte = anfrageFromForm(formData);
+
+    // Eine erledigte Anfrage ohne zuständige Person ist ein Loch in der
+    // Nachvollziehbarkeit: Am Zeiteintrag steht dann zwar, wer gearbeitet
+    // hat, an der Anfrage selbst aber niemand. Wer erledigt, übernimmt
+    // deshalb automatisch die Zuständigkeit – bewusst kein Pflichtfeld, denn
+    // solange die Anfrage offen ist, darf sie unzugewiesen bleiben.
+    if (!werte.zugewiesen_an) werte.zugewiesen_an = ausfuehrendeId;
+
+    // Namenszeile in der Beschreibung nachziehen, gleiche Konvention wie in
+    // createAnfrage/updateAnfrage. Massgeblich ist die zuständige Person –
+    // sie kann von der ausführenden abweichen, wenn im Erledigen-Block
+    // jemand anderes ausgewählt wurde.
+    const zustaendigName =
+      werte.zugewiesen_an === ausfuehrendeId
+        ? ausfuehrendeName
+        : await nameFuer(supabase, werte.zugewiesen_an);
+    if (zustaendigName) {
+      werte.beschreibung = mitNamePraefix(werte.beschreibung, zustaendigName, bekannteNamen);
+    }
+
+    anfrageWerte = werte;
+  }
+
   const { error } = await supabase
     .from("anfragen")
     .update({
+      ...anfrageWerte,
       status: "erledigt",
       erledigt_am: new Date().toISOString(),
       zeiteintrag_id: neuerEintrag.id,

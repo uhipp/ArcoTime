@@ -19,6 +19,7 @@ export function AnfrageForm({
   prioritaeten,
   action,
   error,
+  children,
 }: {
   anfrage?: Anfrage;
   kunden: KundeOption[];
@@ -28,6 +29,12 @@ export function AnfrageForm({
   prioritaeten: AnfragePrioritaet[];
   action: (formData: FormData) => void;
   error?: string;
+  // Der Erledigen-Block der Detailseite. Er liegt bewusst INNERHALB dieses
+  // Formulars: als eigenes <form> daneben gingen Änderungen an Titel und
+  // Beschreibung beim Klick auf "Erledigen" verloren, weil der Browser nur
+  // das Formular des gedrückten Buttons abschickt. Sein Submit-Button
+  // überschreibt die Aktion per formAction.
+  children?: React.ReactNode;
 }) {
   const [kundenListe, setKundenListe] = useState(kunden);
   const [kundeId, setKundeId] = useState(anfrage?.kunde_id ?? "");
@@ -42,6 +49,24 @@ export function AnfrageForm({
     setKundenListe((liste) => [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH")));
     setKundeId(kunde.id);
   });
+
+  // Nur Projekte des gewählten Kunden zur Auswahl stellen. Ohne diesen Filter
+  // liesse sich eine Anfrage an ein Projekt einer fremden Kundin hängen –
+  // die Detailseite filtert im Erledigen-Block längst genauso.
+  const projekteDesKunden = kundeId
+    ? projekteListe.filter((p) => p.kunde_id === kundeId)
+    : [];
+
+  // Kundenwechsel: eine Projektauswahl, die nicht zum neuen Kunden gehört,
+  // verwerfen. Sonst bliebe sie unsichtbar im State stehen (die Option ist
+  // ja ausgeblendet) und würde beim Speichern mitgeschickt.
+  function waehleKunde(neuerKundeId: string) {
+    setKundeId(neuerKundeId);
+    setProjektId((aktuell) => {
+      const projekt = projekteListe.find((p) => p.id === aktuell);
+      return projekt?.kunde_id === neuerKundeId ? aktuell : "";
+    });
+  }
 
   const projektHook = useProjektSchnellErstellen({
     kunden: kundenListe,
@@ -74,7 +99,7 @@ export function AnfrageForm({
               name="kunde_id"
               required
               value={kundeId}
-              onChange={(e) => setKundeId(e.target.value)}
+              onChange={(e) => waehleKunde(e.target.value)}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             >
               <option value="" disabled>
@@ -103,12 +128,22 @@ export function AnfrageForm({
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             >
               <option value="">Kein Projekt</option>
-              {projekteListe.map((p) => (
+              {projekteDesKunden.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.bezeichnung}
                 </option>
               ))}
             </select>
+            {!kundeId && (
+              <p className="text-xs text-gray-400 mt-1">
+                Bitte zuerst den Kunden wählen.
+              </p>
+            )}
+            {kundeId && projekteDesKunden.length === 0 && (
+              <p className="text-xs text-gray-400 mt-1">
+                Für diesen Kunden ist noch kein Projekt erfasst.
+              </p>
+            )}
           </div>
         </div>
 
@@ -259,6 +294,8 @@ export function AnfrageForm({
             Abbrechen
           </a>
         </div>
+
+        {children}
       </form>
 
       {/* Bewusst ausserhalb des äusseren <form>: verschachtelte <form>-Elemente
