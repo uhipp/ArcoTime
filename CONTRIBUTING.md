@@ -12,7 +12,7 @@ Jeder gefundene Bug wird als **GitHub Issue** erfasst (dauerhafte, vom Chat-Verl
 2. **Fokus**: ein Bug pro Branch/Chat-Session, um den Kontext klein zu halten.
 3. **Lokal prüfen**: `npm run build` + manuelle Kontrolle im Browser (es gibt aktuell keine automatisierten Tests – das ist der Massstab, bis eine Testsuite existiert).
 4. **Pull Request** statt direktem Push auf `main`. Vercel erzeugt automatisch eine Preview-URL für den PR.
-5. **Preview-Check**: den Fix auf der Vercel-Preview-URL nochmal bestätigen.
+5. **Preview-Check durch dich**: die Preview-URLs sind per Vercel Deployment Protection geschützt (Login zu Vercel nötig) – Claude kann sie nicht selbst öffnen. Du bestätigst kurz auf der Preview-URL, dass der Fix passt.
 6. **Squash-Merge** nach `main`, Branch löschen. `main` deployt automatisch auf Produktion.
 
 ## 3. Commit-Konventionen (Conventional Commits)
