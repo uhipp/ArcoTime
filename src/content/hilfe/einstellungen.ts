@@ -21,6 +21,12 @@ Nur Admins sehen diese Seite – hier lassen sich Auswahllisten zentral konfigur
 
 Bei **allen** Listen gilt dasselbe Prinzip: Jeder Eintrag ist direkt in seiner Zeile bearbeitbar und wird mit **"speichern"** übernommen. Nicht mehr benötigte Einträge werden **deaktiviert** statt gelöscht – sie bleiben dadurch in bestehenden Datensätzen lesbar, verschwinden aber aus neuen Auswahllisten. Das Zahlenfeld ganz rechts ist die **Sortierung**: Sie bestimmt, in welcher Reihenfolge die Optionen in den Auswahlfeldern der App erscheinen (kleinere Zahl zuerst).
 
+## Einheiten
+
+Die Auswahl für das Feld „Einheit" im [Dienstleistungskatalog](/hilfe/dienstleistungen) – Stunde, Pauschale, Stück, km, und was ihr sonst braucht. Neue Einheiten legst du hier an, danach stehen sie beim Anlegen einer Dienstleistung zur Verfügung.
+
+Umbenennen ist gefahrlos: Die Dienstleistung speichert den Text der Einheit, keine Referenz. Bestehende Dienstleistungen behalten deshalb ihren bisherigen Wert – er erscheint dort dann als „nicht mehr in der Liste" und lässt sich bei Bedarf umstellen.
+
 ## MWSt-Codes
 
 Die Steuercodes aus eurem Buchhaltungssystem, bestehend aus **Code** (z.B. \`B81\`), **Bezeichnung** und **Satz in Prozent**. Sie hängen an den [Dienstleistungen](/hilfe/dienstleistungen) und landen über den [Export](/hilfe/export) in der Buchhaltung.

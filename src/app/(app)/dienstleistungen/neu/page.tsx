@@ -10,7 +10,7 @@ export default async function NeueDienstleistungPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: klassen }, { data: mwstCodes }] = await Promise.all([
+  const [{ data: klassen }, { data: mwstCodes }, { data: einheiten }] = await Promise.all([
     supabase
       .from("dienstleistungsklassen")
       .select("id, bezeichnung")
@@ -21,6 +21,11 @@ export default async function NeueDienstleistungPage({
       .select("id, code, bezeichnung")
       .eq("aktiv", true)
       .order("code"),
+    supabase
+      .from("einheiten")
+      .select("id, bezeichnung, aktiv")
+      .eq("aktiv", true)
+      .order("sortierung"),
   ]);
 
   return (
@@ -29,6 +34,7 @@ export default async function NeueDienstleistungPage({
       <DienstleistungForm
         klassen={klassen ?? []}
         mwstCodes={mwstCodes ?? []}
+        einheiten={einheiten ?? []}
         action={createDienstleistung}
         error={error}
       />

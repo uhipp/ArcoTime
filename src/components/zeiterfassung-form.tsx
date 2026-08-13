@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
 import { rabattLabel } from "@/lib/rabatt";
 import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
+import { holeTagesbelegung } from "@/app/actions/zeiteintraege";
+import { ZeitFeld } from "@/components/zeit-feld";
+import { minutenZwischen } from "@/lib/zeit";
+import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
 import type { Dienstleistung, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
@@ -30,14 +34,16 @@ type DienstleistungOption = Pick<
 // Rabatt eines Kunden auf eine ganze Dienstleistungsklasse.
 type KlassenRabatt = { kunde_id: string; klasse_id: string; rabatt_prozent: number };
 
-function minutenZwischen(start: string, ende: string): number | null {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = ende.split(":").map(Number);
-  if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return null;
-  // Bewusst auch 0/negativ zurückgeben (statt null), damit das Dauer-Feld
-  // den tatsächlichen Von/Bis-Wert transparent zeigt, statt auf einem alten
-  // Stand stehen zu bleiben, wenn z.B. Von = Bis eingegeben wird.
-  return Math.max(0, eh * 60 + em - (sh * 60 + sm));
+// Zahlenfelder sind mit 0 vorbelegt – wer hineinklickt, will die 0 ersetzen,
+// nicht dahinter weitertippen. Beim Tabben markiert der Browser den Inhalt
+// von selbst, beim Klicken nicht: Dort setzt "mousedown" den Fokus, und das
+// darauf folgende "mouseup" hebt die Auswahl sofort wieder auf. Deshalb erst
+// im nächsten Frame markieren, wenn der Klick abgeschlossen ist. Ein zweiter
+// Klick ins bereits fokussierte Feld löst kein focus-Ereignis mehr aus – dort
+// lässt sich der Cursor also weiterhin normal positionieren.
+function inhaltMarkieren(e: React.FocusEvent<HTMLInputElement>) {
+  const el = e.currentTarget;
+  requestAnimationFrame(() => el.select());
 }
 
 function formatDauer(minuten: number) {
@@ -157,6 +163,54 @@ export function ZeiterfassungForm({
 
   const [rabatt, setRabatt] = useState(String(zeiteintrag?.rabatt_prozent ?? 0));
 
+  const [mitarbeiterId, setMitarbeiterId] = useState(
+    zeiteintrag?.mitarbeiter_id ?? aktuellerUserId
+  );
+
+  // ---------------------------------------------------------------
+  // Tagesbelegung: Überschneidungen und Tagessumme live anzeigen
+  // ---------------------------------------------------------------
+  const [datum, setDatum] = useState(zeiteintrag?.datum ?? heuteIso());
+  const [belegung, setBelegung] = useState<Tagesbelegung | null>(null);
+
+  useEffect(() => {
+    // Mengenartikel haben weder Uhrzeit noch Arbeitszeit – für sie ist die
+    // Tagessumme bedeutungslos.
+    if (!mitarbeiterId || !datum || istMengenartikel) {
+      setBelegung(null);
+      return;
+    }
+
+    let abgebrochen = false;
+    holeTagesbelegung({
+      mitarbeiterId,
+      datum,
+      startZeit: startZeit || null,
+      endZeit: endZeit || null,
+      ohneEintragId: zeiteintrag?.id ?? null,
+    })
+      .then((ergebnis) => {
+        // Verwerfen, wenn inzwischen ein neuerer Aufruf unterwegs ist –
+        // sonst überschreibt eine langsame Antwort eine aktuellere.
+        if (!abgebrochen) setBelegung(ergebnis);
+      })
+      .catch(() => {
+        // Der Hinweis ist Komfort, kein Muss: Scheitert die Abfrage, bleibt
+        // das Formular benutzbar. Die harte Grenze prüft der Server ohnehin
+        // beim Speichern erneut.
+        if (!abgebrochen) setBelegung(null);
+      });
+
+    return () => {
+      abgebrochen = true;
+    };
+  }, [mitarbeiterId, datum, startZeit, endZeit, istMengenartikel, zeiteintrag?.id]);
+
+  const summeMitDiesem = (belegung?.summeMinuten ?? 0) + (istMengenartikel ? 0 : dauer);
+  const warnschwelle = belegung?.warnungAbMinuten ?? null;
+  const tagZuLang = warnschwelle != null && summeMitDiesem > warnschwelle;
+  const hatUeberschneidung = (belegung?.ueberschneidungen.length ?? 0) > 0;
+
   // Vorgeschlagener Rabatt aus den Stammdaten. Reihenfolge:
   //   1. Dienstleistung erlaubt keinen Teilrabatt -> 0
   //   2. Rabatt des Kunden auf die Klasse der Dienstleistung (spezifischer)
@@ -210,9 +264,6 @@ export function ZeiterfassungForm({
     }
   }
 
-  const [mitarbeiterId, setMitarbeiterId] = useState(
-    zeiteintrag?.mitarbeiter_id ?? aktuellerUserId
-  );
   const [beschreibung, setBeschreibung] = useState(zeiteintrag?.beschreibung ?? "");
   const beschreibungRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -354,7 +405,8 @@ export function ZeiterfassungForm({
           name="datum"
           type="date"
           disabled={laeuft}
-          defaultValue={zeiteintrag?.datum ?? heuteIso()}
+          value={datum}
+          onChange={(e) => setDatum(e.target.value)}
           required
           className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
         />
@@ -376,6 +428,7 @@ export function ZeiterfassungForm({
               required
               value={menge}
               onChange={(e) => setMenge(Number(e.target.value))}
+              onFocus={inhaltMarkieren}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
           </div>
@@ -416,26 +469,22 @@ export function ZeiterfassungForm({
               <label className="block text-xs text-gray-500 mb-1" htmlFor="start_zeit">
                 Von
               </label>
-              <input
+              <ZeitFeld
                 id="start_zeit"
                 name="start_zeit"
-                type="time"
-                value={startZeit}
-                onChange={(e) => onZeitChange(e.target.value, endZeit)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+                startwert={zeiteintrag?.start_zeit?.slice(0, 5) ?? ""}
+                onZeit={(zeit) => onZeitChange(zeit ?? "", endZeit)}
               />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1" htmlFor="end_zeit">
                 Bis
               </label>
-              <input
+              <ZeitFeld
                 id="end_zeit"
                 name="end_zeit"
-                type="time"
-                value={endZeit}
-                onChange={(e) => onZeitChange(startZeit, e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+                startwert={zeiteintrag?.end_zeit?.slice(0, 5) ?? ""}
+                onZeit={(zeit) => onZeitChange(startZeit, zeit ?? "")}
               />
             </div>
             <div>
@@ -449,6 +498,7 @@ export function ZeiterfassungForm({
                 min={0}
                 value={dauer}
                 onChange={(e) => setDauer(Number(e.target.value))}
+                onFocus={inhaltMarkieren}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
               />
               {/* Bewusst nicht "required"/min=1: beim Klick auf "Timer
@@ -461,6 +511,53 @@ export function ZeiterfassungForm({
           {dauer > 0 && (
             <p className="text-xs text-gray-400 mt-2">≈ {formatDauer(dauer)}</p>
           )}
+          {/* Früher wurde eine rückwärts laufende Zeitspanne stillschweigend
+              zu 0 Minuten – der Vertipper fiel erst beim Speichern auf, mit
+              einer Meldung, die den Grund nicht nannte. */}
+          {startZeit && endZeit && minutenZwischen(startZeit, endZeit) === null && (
+            <p className="text-xs text-red-600 mt-2">
+              „Bis" liegt vor oder auf „Von" – die Dauer wurde deshalb nicht
+              neu berechnet. Einsätze über Mitternacht bitte auf zwei Einträge
+              aufteilen.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Hinweis, kein Hindernis: Doppelt belegte Zeiten sind manchmal
+          gewollt (zwei Kunden parallel betreut). Die harte Grenze prüft der
+          Server beim Speichern, sie ist unter Einstellungen einstellbar. */}
+      {!laeuft && belegung && (hatUeberschneidung || tagZuLang) && (
+        <div
+          className={`rounded border px-3 py-2 text-sm ${
+            hatUeberschneidung
+              ? "border-amber-300 bg-amber-50 text-amber-900"
+              : "border-blue-200 bg-blue-50 text-blue-900"
+          }`}
+        >
+          {hatUeberschneidung && (
+            <div className="mb-1">
+              <strong>Zeitliche Überschneidung</strong> mit:
+              <ul className="list-disc ml-5 mt-1">
+                {belegung.ueberschneidungen.map((u) => (
+                  <li key={u.id}>
+                    {u.bezeichnung}
+                    {u.start_zeit && u.end_zeit ? ` – ${u.start_zeit}–${u.end_zeit}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div>
+            An diesem Tag bereits {stundenLabel(belegung.summeMinuten)} erfasst
+            {dauer > 0 ? `, mit diesem Eintrag ${stundenLabel(summeMitDiesem)}` : ""}.
+            {tagZuLang && warnschwelle != null && (
+              <> Das liegt über der eingestellten Schwelle von {stundenLabel(warnschwelle)}.</>
+            )}
+          </div>
+          <div className="text-xs mt-1 opacity-80">
+            Speichern ist weiterhin möglich – dies ist nur ein Hinweis.
+          </div>
         </div>
       )}
 

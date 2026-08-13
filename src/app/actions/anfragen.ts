@@ -7,6 +7,7 @@ import { mitErfolg } from "@/lib/erfolg";
 import { heuteIso } from "@/lib/date-utils";
 import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
 import { benachrichtigeZuweisung } from "@/lib/anfrage-benachrichtigung";
+import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import type { AnfrageStatus } from "@/lib/types";
 
 async function nameFuer(
@@ -202,6 +203,21 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
 
   const { data: userData } = await supabase.auth.getUser();
   const ausfuehrendeId = mitarbeiter_id || userData.user?.id || null;
+
+  // Tagesgrenze gilt auch hier – sonst liesse sich sie über das Erledigen
+  // von Anfragen umgehen, genau wie zuvor die Rabattsperre. Uhrzeiten gibt
+  // es auf diesem Weg keine, geprüft wird also nur die Tagessumme.
+  if (ausfuehrendeId) {
+    const grenze = await pruefeTagesgrenze({
+      supabase,
+      mitarbeiterId: ausfuehrendeId,
+      datum: heuteIso(),
+      neueMinuten: dauer_minuten,
+    });
+    if (grenze) {
+      redirect(`/anfragen/${id}?error=${encodeURIComponent(grenze)}`);
+    }
+  }
 
   // Name der ausführenden Person als erste Zeile erzwingen – dieselbe
   // Konvention wie in Zeiterfassung und updateAnfrage (der Comatic-Export

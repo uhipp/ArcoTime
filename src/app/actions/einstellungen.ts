@@ -33,6 +33,26 @@ function sortierungAus(formData: FormData): number | undefined {
   return Number.isFinite(zahl) ? zahl : undefined;
 }
 
+// Nächster freier Sortierwert: höchster vorhandener + 10.
+//
+// Der Spaltendefault 0 wäre falsch – ein neuer Eintrag landete damit ganz
+// oben, vor allen bestehenden. Erwartet wird aber, dass er hinten
+// angehängt wird. Der Abstand von 10 lässt Platz, um später etwas
+// dazwischenzuschieben, ohne die ganze Liste neu zu nummerieren.
+async function naechsteSortierung(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tabelle: string
+): Promise<number> {
+  const { data } = await supabase
+    .from(tabelle)
+    .select("sortierung")
+    .order("sortierung", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return (Number(data?.sortierung) || 0) + 10;
+}
+
 // ---------------------------------------------------------
 // Organisation (Mandant) – Titel, der im Header statt eines fixen
 // Kunden-Logos angezeigt wird.
@@ -50,9 +70,23 @@ export async function updateOrganisation(formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent("Organisation nicht gefunden.")}`);
   }
 
+  // Schwellen für die Tagesarbeitszeit. Leeres Feld = Schwelle aus.
+  const alsMinuten = (feld: string): number | null => {
+    const roh = String(formData.get(feld) ?? "").trim();
+    if (roh === "") return null;
+    const stunden = Number(roh);
+    if (!Number.isFinite(stunden) || stunden <= 0) return null;
+    return Math.round(stunden * 60);
+  };
+
   const { error } = await supabase
     .from("organisationen")
-    .update({ name, zeige_auf_login: zeigeAufLogin })
+    .update({
+      name,
+      zeige_auf_login: zeigeAufLogin,
+      warnung_ab_minuten_pro_tag: alsMinuten("warnung_ab_stunden"),
+      sperre_ab_minuten_pro_tag: alsMinuten("sperre_ab_stunden"),
+    })
     .eq("id", organisation.id);
 
   if (error) {
@@ -74,7 +108,10 @@ export async function createKlasse(formData: FormData) {
   const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
   if (!bezeichnung) return;
 
-  await supabase.from("dienstleistungsklassen").insert({ bezeichnung });
+  await supabase.from("dienstleistungsklassen").insert({
+    bezeichnung,
+    sortierung: await naechsteSortierung(supabase, "dienstleistungsklassen"),
+  });
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen", "Klasse hinzugefügt."));
 }
@@ -154,6 +191,48 @@ export async function toggleMwstCode(id: string, aktiv: boolean) {
 }
 
 // ---------------------------------------------------------
+// Einheiten (Auswahlliste für den Dienstleistungskatalog)
+// ---------------------------------------------------------
+export async function createEinheit(formData: FormData) {
+  const supabase = await createClient();
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) return;
+
+  const { error } = await supabase.from("einheiten").insert({
+    bezeichnung,
+    sortierung: await naechsteSortierung(supabase, "einheiten"),
+  });
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", "Einheit hinzugefügt."));
+}
+
+// Umbenennen ist gefahrlos: dienstleistungen.einheit speichert den Text,
+// nicht eine Referenz. Bestehende Dienstleistungen behalten also ihren
+// bisherigen Wert – er taucht dann nur nicht mehr in der Auswahl auf.
+export async function updateEinheit(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  await speichereListeneintrag(
+    "einheiten",
+    id,
+    { bezeichnung, sortierung: sortierungAus(formData) },
+    "Einheit gespeichert."
+  );
+}
+
+export async function toggleEinheit(id: string, aktiv: boolean) {
+  const supabase = await createClient();
+  await supabase.from("einheiten").update({ aktiv }).eq("id", id);
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", aktiv ? "Einheit aktiviert." : "Einheit deaktiviert."));
+}
+
+// ---------------------------------------------------------
 // Rabattsätze (Auswahlliste für Zeiterfassung & Anfrage-Erledigung)
 // ---------------------------------------------------------
 export async function createRabattsatz(formData: FormData) {
@@ -166,7 +245,11 @@ export async function createRabattsatz(formData: FormData) {
     );
   }
 
-  const { error } = await supabase.from("rabattsaetze").insert({ prozent, bezeichnung });
+  const { error } = await supabase.from("rabattsaetze").insert({
+    prozent,
+    bezeichnung,
+    sortierung: await naechsteSortierung(supabase, "rabattsaetze"),
+  });
   if (error) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
@@ -217,7 +300,12 @@ export async function createAnfrageKanal(formData: FormData) {
 
   const { error } = await supabase
     .from("anfrage_kanaele")
-    .insert({ wert: wert || bezeichnung, bezeichnung, symbol });
+    .insert({
+      wert: wert || bezeichnung,
+      bezeichnung,
+      symbol,
+      sortierung: await naechsteSortierung(supabase, "anfrage_kanaele"),
+    });
   if (error) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
@@ -268,7 +356,12 @@ export async function createAnfragePrioritaet(formData: FormData) {
 
   const { error } = await supabase
     .from("anfrage_prioritaeten")
-    .insert({ wert: wert || bezeichnung, bezeichnung, farbe });
+    .insert({
+      wert: wert || bezeichnung,
+      bezeichnung,
+      farbe,
+      sortierung: await naechsteSortierung(supabase, "anfrage_prioritaeten"),
+    });
   if (error) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
@@ -305,7 +398,10 @@ export async function createDokumentKategorie(formData: FormData) {
   const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
   if (!bezeichnung) return;
 
-  const { error } = await supabase.from("dokument_kategorien").insert({ bezeichnung });
+  const { error } = await supabase.from("dokument_kategorien").insert({
+    bezeichnung,
+    sortierung: await naechsteSortierung(supabase, "dokument_kategorien"),
+  });
   if (error) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }

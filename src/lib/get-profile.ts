@@ -36,19 +36,31 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 // Organisationen (Mandanten) vergeben werden kann und das Arcos-Group-Logo
 // dafür nicht (mehr) passend ist.
 export const getCurrentOrganisation = cache(
-  async (): Promise<{ id: string; name: string; zeige_auf_login: boolean } | null> => {
+  async (): Promise<{
+    id: string;
+    name: string;
+    zeige_auf_login: boolean;
+    warnung_ab_minuten_pro_tag: number | null;
+    sperre_ab_minuten_pro_tag: number | null;
+  } | null> => {
     const user = await getCurrentUser();
     if (!user) return null;
 
     const supabase = await createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("*, organisationen(id, name, zeige_auf_login)")
+      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag)")
       .eq("id", user.id)
       .single();
 
     return (
-      (data?.organisationen as { id: string; name: string; zeige_auf_login: boolean } | null) ?? null
+      (data?.organisationen as {
+    id: string;
+    name: string;
+    zeige_auf_login: boolean;
+    warnung_ab_minuten_pro_tag: number | null;
+    sperre_ab_minuten_pro_tag: number | null;
+  } | null) ?? null
     );
   }
 );

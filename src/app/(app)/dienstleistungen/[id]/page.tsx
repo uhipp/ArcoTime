@@ -24,7 +24,7 @@ export default async function DienstleistungDetailPage({
 
   if (!dienstleistung) notFound();
 
-  const [{ data: klassen }, { data: mwstCodes }] = await Promise.all([
+  const [{ data: klassen }, { data: mwstCodes }, { data: einheiten }] = await Promise.all([
     supabase
       .from("dienstleistungsklassen")
       .select("id, bezeichnung")
@@ -35,6 +35,11 @@ export default async function DienstleistungDetailPage({
       .select("id, code, bezeichnung")
       .eq("aktiv", true)
       .order("code"),
+    supabase
+      .from("einheiten")
+      .select("id, bezeichnung, aktiv")
+      .eq("aktiv", true)
+      .order("sortierung"),
   ]);
 
   const updateAction = updateDienstleistung.bind(null, id);
@@ -54,6 +59,7 @@ export default async function DienstleistungDetailPage({
         dienstleistung={dienstleistung as Dienstleistung}
         klassen={klassen ?? []}
         mwstCodes={mwstCodes ?? []}
+        einheiten={einheiten ?? []}
         action={updateAction}
         error={error}
       />

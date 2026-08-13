@@ -4,12 +4,14 @@ export function DienstleistungForm({
   dienstleistung,
   klassen,
   mwstCodes,
+  einheiten,
   action,
   error,
 }: {
   dienstleistung?: Dienstleistung;
   klassen: Pick<Dienstleistungsklasse, "id" | "bezeichnung">[];
   mwstCodes: Pick<MwstCode, "id" | "code" | "bezeichnung">[];
+  einheiten: { id: string; bezeichnung: string; aktiv: boolean }[];
   action: (formData: FormData) => void;
   error?: string;
 }) {
@@ -73,22 +75,32 @@ export function DienstleistungForm({
           <label className="block text-sm font-medium mb-1" htmlFor="einheit">
             Einheit
           </label>
-          {/* Freitext statt fester Auswahl: Welche Einheiten sinnvoll sind
-              (Stunde, Pauschale, Stück, km, kg …), weiss der Betrieb besser
-              als das Schema. Die Liste dient nur als Vorschlag. */}
-          <input
+          {/* Auswahl aus der unter Einstellungen gepflegten Liste. Ein
+              bereits gespeicherter Wert, der dort inzwischen fehlt (z.B.
+              deaktiviert), bleibt als Option erhalten – sonst würde er beim
+              nächsten Speichern still überschrieben. */}
+          <select
             id="einheit"
             name="einheit"
-            list="einheit-vorschlaege"
-            defaultValue={dienstleistung?.einheit ?? "Stunde"}
+            defaultValue={dienstleistung?.einheit ?? einheiten[0]?.bezeichnung ?? "Stunde"}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-          />
-          <datalist id="einheit-vorschlaege">
-            <option value="Stunde" />
-            <option value="Pauschale" />
-            <option value="Stück" />
-            <option value="km" />
-          </datalist>
+          >
+            {einheiten.map((e) => (
+              <option key={e.id} value={e.bezeichnung}>
+                {e.bezeichnung}
+                {!e.aktiv ? " (inaktiv)" : ""}
+              </option>
+            ))}
+            {dienstleistung?.einheit &&
+              !einheiten.some((e) => e.bezeichnung === dienstleistung.einheit) && (
+                <option value={dienstleistung.einheit}>
+                  {dienstleistung.einheit} (nicht mehr in der Liste)
+                </option>
+              )}
+          </select>
+          <p className="text-xs text-gray-400 mt-1">
+            Neue Einheiten legst du unter Einstellungen an.
+          </p>
         </div>
       </div>
 

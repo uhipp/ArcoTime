@@ -4,6 +4,9 @@ import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { FARBEN_OPTIONEN } from "@/lib/farben";
 import {
   updateOrganisation,
+  createEinheit,
+  toggleEinheit,
+  updateEinheit,
   createKlasse,
   toggleKlasse,
   updateKlasse,
@@ -37,6 +40,7 @@ export default async function EinstellungenPage({
   const supabase = await createClient();
   const [
     { data: klassen },
+    { data: einheiten },
     { data: mwstCodes },
     { data: rabattsaetze },
     { data: kanaele },
@@ -44,6 +48,7 @@ export default async function EinstellungenPage({
     { data: dokumentKategorien },
   ] = await Promise.all([
     supabase.from("dienstleistungsklassen").select("*").order("sortierung"),
+    supabase.from("einheiten").select("*").order("sortierung"),
     supabase.from("mwst_codes").select("*").order("code"),
     supabase.from("rabattsaetze").select("*").order("sortierung"),
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),
@@ -56,8 +61,17 @@ export default async function EinstellungenPage({
       <h1 className="text-2xl font-semibold">Einstellungen</h1>
       <p className="text-sm text-gray-500">
         Auswahllisten in der ganzen App sind hier frei verwaltbar – nichts
-        davon ist fix im Code. Bereits verwendete Werte lassen sich nur
-        deaktivieren statt löschen, damit bestehende Einträge lesbar bleiben.
+        davon ist fix im Code. Jeder Eintrag lässt sich direkt in seiner Zeile
+        bearbeiten und mit „speichern" übernehmen. Bereits verwendete Werte
+        lassen sich nur deaktivieren statt löschen, damit bestehende Einträge
+        lesbar bleiben.
+      </p>
+      <p className="text-sm text-gray-500">
+        Das schmale Zahlenfeld rechts in jeder Zeile ist die{" "}
+        <strong>Sortierung</strong>: Sie bestimmt die Reihenfolge in den
+        Auswahlfeldern der App, kleinere Zahl zuerst. Die Zehnerschritte sind
+        Absicht – so lässt sich später etwas dazwischenschieben, ohne alles neu
+        zu nummerieren. Neue Einträge werden automatisch hinten angehängt.
       </p>
 
       {error && (
@@ -85,6 +99,53 @@ export default async function EinstellungenPage({
               Speichern
             </button>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="warnung_ab_stunden">
+                Hinweis ab … Stunden pro Tag
+              </label>
+              <input
+                id="warnung_ab_stunden"
+                name="warnung_ab_stunden"
+                type="number"
+                step="0.5"
+                min={0}
+                defaultValue={
+                  organisation?.warnung_ab_minuten_pro_tag != null
+                    ? organisation.warnung_ab_minuten_pro_tag / 60
+                    : ""
+                }
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="sperre_ab_stunden">
+                Speichern sperren ab … Stunden pro Tag
+              </label>
+              <input
+                id="sperre_ab_stunden"
+                name="sperre_ab_stunden"
+                type="number"
+                step="0.5"
+                min={0}
+                defaultValue={
+                  organisation?.sperre_ab_minuten_pro_tag != null
+                    ? organisation.sperre_ab_minuten_pro_tag / 60
+                    : ""
+                }
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-gray-400">
+            Gilt je Mitarbeitendem und Tag, über alle Kunden hinweg. Der
+            Hinweis erscheint beim Erfassen und lässt sich übergehen; die
+            Sperre verweigert das Speichern und greift auch beim Erledigen von
+            Anfragen. Beide Felder leer lassen schaltet die jeweilige Prüfung
+            ab. 24 Stunden als Sperre fängt vor allem Tippfehler ab – 4800
+            Minuten statt 480.
+          </p>
+
           <label className="flex items-start gap-2 text-sm text-gray-600">
             <input
               type="checkbox"
@@ -147,6 +208,64 @@ export default async function EinstellungenPage({
             name="bezeichnung"
             required
             placeholder="Neue Klasse…"
+            className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Einheiten</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Auswahlliste für das Feld „Einheit" im Dienstleistungskatalog –
+          Stunde, Pauschale, Stück, km, was ihr braucht.
+        </p>
+        <ul className="bg-white rounded-lg border divide-y mb-4">
+          {einheiten?.map((e) => (
+            <li key={e.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateEinheit.bind(null, e.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={e.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[10rem] rounded border border-gray-300 px-2 py-1 ${
+                    e.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={e.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleEinheit.bind(null, e.id, !e.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
+                  {e.aktiv ? "deaktivieren" : "aktivieren"}
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <form action={createEinheit} className="flex gap-2">
+          <input
+            name="bezeichnung"
+            required
+            placeholder="Neue Einheit…"
             className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
           />
           <button

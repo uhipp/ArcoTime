@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import { mitErfolg } from "@/lib/erfolg";
+import { ladeTagesbelegung, pruefeTagesgrenze } from "@/lib/tagesbelegung";
+import { normalisiereZeit } from "@/lib/zeit";
 
 function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -17,8 +19,10 @@ function zeiteintragFromForm(formData: FormData) {
     dienstleistung_id: String(formData.get("dienstleistung_id")),
     mitarbeiter_id: str(formData.get("mitarbeiter_id")),
     datum: str(formData.get("datum")) ?? heuteIso(),
-    start_zeit: str(formData.get("start_zeit")),
-    end_zeit: str(formData.get("end_zeit")),
+    // Das Zeitfeld ist ein Textfeld (siehe lib/zeit.ts) – der Browser
+    // liefert also auch "1030" oder "10.30". Postgres will HH:MM.
+    start_zeit: normalisiereZeit(str(formData.get("start_zeit"))),
+    end_zeit: normalisiereZeit(str(formData.get("end_zeit"))),
     dauer_minuten: Number(formData.get("dauer_minuten") ?? 0),
     // Nur bei Mengenartikeln gesetzt – das Feld existiert im Formular sonst
     // gar nicht.
@@ -86,6 +90,16 @@ export async function createZeiteintrag(formData: FormData) {
     redirect(`/zeiterfassung?error=${encodeURIComponent(fehler)}`);
   }
 
+  const grenze = await pruefeTagesgrenze({
+    supabase,
+    mitarbeiterId: values.mitarbeiter_id ?? userData.user?.id ?? "",
+    datum: values.datum,
+    neueMinuten: values.menge === null ? values.dauer_minuten : 0,
+  });
+  if (grenze) {
+    redirect(`/zeiterfassung?error=${encodeURIComponent(grenze)}`);
+  }
+
   const { error } = await supabase.from("zeiteintraege").insert({
     ...mitPassenderMenge(values, values.menge === null),
     mitarbeiter_id: values.mitarbeiter_id ?? userData.user?.id,
@@ -107,6 +121,17 @@ export async function updateZeiteintrag(id: string, formData: FormData) {
   const fehler = await pruefeGegenDienstleistung(supabase, values);
   if (fehler) {
     redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(fehler)}`);
+  }
+
+  const grenze = await pruefeTagesgrenze({
+    supabase,
+    mitarbeiterId: values.mitarbeiter_id ?? "",
+    datum: values.datum,
+    neueMinuten: values.menge === null ? values.dauer_minuten : 0,
+    ohneEintragId: id,
+  });
+  if (grenze) {
+    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(grenze)}`);
   }
 
   const { error } = await supabase
@@ -227,4 +252,19 @@ export async function stoppeTimer(id: string, formData: FormData) {
 
   revalidatePath("/zeiterfassung");
   redirect(mitErfolg(`/zeiterfassung/${id}`, "Timer gestoppt. Bitte prüfen und speichern."));
+}
+
+// Liefert dem Erfassungsformular, was diese Person an diesem Tag schon
+// gebucht hat. Bewusst eine Aktion MIT Rückgabewert statt eines Redirects:
+// Der Hinweis soll beim Tippen erscheinen, nicht erst nach dem Speichern –
+// gewollte Überschneidungen kosten so keinen zusätzlichen Klick.
+export async function holeTagesbelegung(argumente: {
+  mitarbeiterId: string;
+  datum: string;
+  startZeit?: string | null;
+  endZeit?: string | null;
+  ohneEintragId?: string | null;
+}) {
+  const supabase = await createClient();
+  return ladeTagesbelegung({ supabase, ...argumente });
 }
