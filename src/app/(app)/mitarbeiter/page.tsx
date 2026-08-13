@@ -91,6 +91,11 @@ export default async function MitarbeitendePage({
         </form>
       </div>
 
+      <p className="text-sm text-gray-500 mb-3">
+        Vorname, Nachname, Rolle und Farbe lassen sich direkt in der Zeile
+        ändern – der Knopf „Speichern“ steht rechts in derselben Zeile. Unter
+        „Details“ liegen Dokumente und Abwesenheiten der Person.
+      </p>
       <div className="bg-white rounded-lg border overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
@@ -173,8 +178,11 @@ export default async function MitarbeitendePage({
                     </button>
                   </td>
                   <td className="px-2 py-2 text-right whitespace-nowrap">
+                    {/* Hinter der Detailseite liegen Dokumente UND
+                        Abwesenheiten – "Dokumente" als Linktext hat den
+                        Kalender unauffindbar gemacht. */}
                     <Link href={`/mitarbeiter/${m.id}`} className="text-arcos-steel hover:underline text-sm mr-3">
-                      Dokumente
+                      Details
                     </Link>
                     {!deaktiviert && m.id !== profile.id && (
                       <DeleteButton

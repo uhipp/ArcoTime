@@ -6,6 +6,7 @@ import { createZeiteintrag, starteTimer } from "@/app/actions/zeiteintraege";
 import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
+import { DatumFeld } from "@/components/datum-feld";
 
 export default async function ZeiterfassungPage({
   searchParams,
@@ -78,15 +79,13 @@ export default async function ZeiterfassungPage({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-medium">Meine Einträge</h2>
         <form className="flex items-center gap-2 text-sm">
-          <input
-            type="date"
+          <DatumFeld
             name="von"
             defaultValue={vonDatum}
             className="rounded border border-gray-300 px-2 py-1.5"
           />
           <span className="text-gray-400">bis</span>
-          <input
-            type="date"
+          <DatumFeld
             name="bis"
             defaultValue={bisDatum}
             className="rounded border border-gray-300 px-2 py-1.5"

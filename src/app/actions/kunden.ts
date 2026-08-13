@@ -153,7 +153,7 @@ export async function setzeKundenpreis(kundeId: string, formData: FormData) {
     redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}`, "Kundenpreis gespeichert."));
+  redirect(mitErfolg(`/kunden/${kundeId}?fokus=neuer_kundenpreis`, "Kundenpreis gespeichert."));
 }
 
 export async function loescheKundenpreis(kundeId: string, id: string) {
@@ -185,7 +185,7 @@ export async function setzeKundenrabatt(kundeId: string, formData: FormData) {
     redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}`, "Klassenrabatt gespeichert."));
+  redirect(mitErfolg(`/kunden/${kundeId}?fokus=neuer_klassenrabatt`, "Klassenrabatt gespeichert."));
 }
 
 export async function loescheKundenrabatt(kundeId: string, id: string) {

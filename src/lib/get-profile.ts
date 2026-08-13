@@ -42,6 +42,9 @@ export const getCurrentOrganisation = cache(
     zeige_auf_login: boolean;
     warnung_ab_minuten_pro_tag: number | null;
     sperre_ab_minuten_pro_tag: number | null;
+    modul_disposition: boolean;
+    arbeitstag_von_minuten: number;
+    arbeitstag_bis_minuten: number;
   } | null> => {
     const user = await getCurrentUser();
     if (!user) return null;
@@ -49,7 +52,7 @@ export const getCurrentOrganisation = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag)")
+      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag, modul_disposition, arbeitstag_von_minuten, arbeitstag_bis_minuten)")
       .eq("id", user.id)
       .single();
 
@@ -60,6 +63,9 @@ export const getCurrentOrganisation = cache(
     zeige_auf_login: boolean;
     warnung_ab_minuten_pro_tag: number | null;
     sperre_ab_minuten_pro_tag: number | null;
+    modul_disposition: boolean;
+    arbeitstag_von_minuten: number;
+    arbeitstag_bis_minuten: number;
   } | null) ?? null
     );
   }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
 import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import type { Kunde, Projekt } from "@/lib/types";
+import { DatumFeld } from "@/components/datum-feld";
 
 export function ProjektForm({
   projekt,
@@ -92,10 +93,9 @@ export function ProjektForm({
           <label className="block text-sm font-medium mb-1" htmlFor="startdatum">
             Startdatum
           </label>
-          <input
+          <DatumFeld
             id="startdatum"
             name="startdatum"
-            type="date"
             defaultValue={projekt?.startdatum ?? heuteIso()}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />

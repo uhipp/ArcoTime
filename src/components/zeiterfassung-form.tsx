@@ -9,6 +9,7 @@ import { ZeitFeld } from "@/components/zeit-feld";
 import { minutenZwischen } from "@/lib/zeit";
 import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
 import type { Dienstleistung, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
+import { DatumFeld } from "@/components/datum-feld";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 type KundeOption = Pick<Kunde, "id" | "name" | "vorname">;
@@ -413,10 +414,9 @@ export function ZeiterfassungForm({
         <label className="block text-sm font-medium mb-1" htmlFor="datum">
           Datum
         </label>
-        <input
+        <DatumFeld
           id="datum"
           name="datum"
-          type="date"
           disabled={laeuft}
           value={datum}
           onChange={(e) => setDatum(e.target.value)}

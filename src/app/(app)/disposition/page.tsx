@@ -1,0 +1,297 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrganisation } from "@/lib/get-profile";
+import {
+  heuteIso,
+  label,
+  verschieben,
+  zeitraumFuer,
+  formatDatumCH,
+  type Ansicht,
+} from "@/lib/date-utils";
+import { rapportNummer, type Rapport } from "@/lib/types";
+
+type SearchParams = {
+  ansicht?: string;
+  datum?: string;
+  mitarbeiter_id?: string;
+};
+
+// Alle Tage zwischen zwei ISO-Daten, einschliesslich. Bewusst hier und
+// nicht in date-utils: monatsRaster() dort liefert ein 7-spaltiges Gitter
+// mit Rand-Tagen, für eine Terminliste braucht es die schlichte Folge.
+function tageZwischen(von: string, bis: string): string[] {
+  const tage: string[] = [];
+  const d = new Date(`${von}T12:00:00`);
+  const ende = new Date(`${bis}T12:00:00`);
+  while (d <= ende) {
+    tage.push(d.toISOString().slice(0, 10));
+    d.setDate(d.getDate() + 1);
+  }
+  return tage;
+}
+
+function uhrzeit(zeitstempel: string | null): string {
+  if (!zeitstempel) return "";
+  return zeitstempel.slice(11, 16);
+}
+
+// Doppelbelegungen je Person und Tag ermitteln.
+//
+// Anders als bei der Zeiterfassung ist eine Überschneidung hier fast immer
+// ein Fehler – ein Monteur kann nicht an zwei Orten sein. Gesperrt wird
+// trotzdem nichts: Ein Disponent schiebt manchmal bewusst zwei Termine
+// ineinander und räumt sie später auseinander.
+//
+// Nur vergleichbar, wenn beide Termine eine Person UND beide Zeiten haben.
+// Ganztägige oder unzugewiesene Einträge kollidieren mit nichts.
+function minuten(zeitstempel: string | null): number | null {
+  if (!zeitstempel) return null;
+  const [h, m] = zeitstempel.slice(11, 16).split(":").map(Number);
+  return Number.isNaN(h) || Number.isNaN(m) ? null : h * 60 + m;
+}
+
+function konflikteFinden(eintraege: Rapport[]): Set<string> {
+  const konflikte = new Set<string>();
+
+  for (let i = 0; i < eintraege.length; i++) {
+    for (let j = i + 1; j < eintraege.length; j++) {
+      const a = eintraege[i];
+      const b = eintraege[j];
+      if (!a.geplant_fuer || a.geplant_fuer !== b.geplant_fuer) continue;
+
+      const aVon = minuten(a.geplant_von);
+      const aBis = minuten(a.geplant_bis);
+      const bVon = minuten(b.geplant_von);
+      const bBis = minuten(b.geplant_bis);
+      if (aVon == null || aBis == null || bVon == null || bBis == null) continue;
+
+      // Nahtloser Anschluss ist kein Konflikt: 08:00-10:00 und 10:00-12:00
+      // gehen ineinander über.
+      if (aVon < bBis && bVon < aBis) {
+        konflikte.add(a.id);
+        konflikte.add(b.id);
+      }
+    }
+  }
+
+  return konflikte;
+}
+
+export default async function DispositionPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  // Kostenpflichtiges Zusatzmodul: Ohne Buchung gibt es die Seite nicht.
+  // Geprüft wird zusätzlich serverseitig, nicht nur über die Navigation.
+  const organisation = await getCurrentOrganisation();
+  if (!organisation?.modul_disposition) redirect("/");
+
+  const params = await searchParams;
+  const ansicht: Ansicht =
+    params.ansicht === "tag" || params.ansicht === "monat"
+      ? (params.ansicht as Ansicht)
+      : "woche";
+  const bezugsdatum = params.datum ?? heuteIso();
+  const [von, bis] = zeitraumFuer(ansicht, bezugsdatum);
+
+  const supabase = await createClient();
+
+  let query = supabase
+    .from("rapporte")
+    .select("*, kunden(id, name, vorname), projekte(id, bezeichnung)")
+    .gte("datum", von)
+    .lte("datum", bis)
+    .neq("status", "storniert")
+    .order("geplant_von", { ascending: true, nullsFirst: false });
+
+  if (params.mitarbeiter_id) query = query.eq("geplant_fuer", params.mitarbeiter_id);
+
+  const [{ data: rapporteRoh }, { data: mitarbeitende }] = await Promise.all([
+    query,
+    supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
+  ]);
+
+  const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
+  const tage = tageZwischen(von, bis);
+
+  const proTag = new Map<string, Rapport[]>();
+  for (const r of rapporte) {
+    const liste = proTag.get(r.datum) ?? [];
+    liste.push(r);
+    proTag.set(r.datum, liste);
+  }
+
+  const query2 = (over: Partial<SearchParams>) => {
+    const qs = new URLSearchParams();
+    Object.entries({ ...params, ...over }).forEach(([k, v]) => {
+      if (v) qs.set(k, String(v));
+    });
+    return `/disposition?${qs.toString()}`;
+  };
+
+  const heute = heuteIso();
+
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold mb-6">Disposition</h1>
+
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex rounded border overflow-hidden text-sm">
+          {(["tag", "woche", "monat"] as Ansicht[]).map((a) => (
+            <Link
+              key={a}
+              href={query2({ ansicht: a, datum: heuteIso() })}
+              className={`px-4 py-1.5 ${
+                ansicht === a ? "bg-arcos-steel text-white" : "bg-white hover:bg-gray-50"
+              }`}
+            >
+              {a === "tag" ? "Tag" : a === "woche" ? "Woche" : "Monat"}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 text-sm">
+          <Link
+            href={query2({ datum: verschieben(ansicht, bezugsdatum, -1) })}
+            className="rounded border px-3 py-1.5 hover:bg-gray-50"
+          >
+            ← Zurück
+          </Link>
+          <span className="font-medium min-w-[10rem] text-center">
+            {label(ansicht, von, bis)}
+          </span>
+          <Link
+            href={query2({ datum: verschieben(ansicht, bezugsdatum, 1) })}
+            className="rounded border px-3 py-1.5 hover:bg-gray-50"
+          >
+            Weiter →
+          </Link>
+          <Link
+            href={query2({ datum: heuteIso() })}
+            className="rounded border px-3 py-1.5 hover:bg-gray-50"
+          >
+            Heute
+          </Link>
+        </div>
+      </div>
+
+      <form className="bg-white rounded-lg border p-4 mb-6 flex flex-wrap items-end gap-3 text-sm">
+        <input type="hidden" name="ansicht" value={ansicht} />
+        <input type="hidden" name="datum" value={bezugsdatum} />
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Monteur</label>
+          <select
+            name="mitarbeiter_id"
+            defaultValue={params.mitarbeiter_id ?? ""}
+            className="rounded border border-gray-300 px-2 py-1.5 min-w-[12rem]"
+          >
+            <option value="">Alle</option>
+            {mitarbeitende?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" className="rounded border px-3 py-1.5 hover:bg-gray-50">
+          Filtern
+        </button>
+        {params.mitarbeiter_id && (
+          <Link href={query2({ mitarbeiter_id: "" })} className="text-gray-500 hover:underline">
+            Filter zurücksetzen
+          </Link>
+        )}
+      </form>
+
+      <div className="space-y-3">
+        {tage.map((tag) => {
+          const eintraege = proTag.get(tag) ?? [];
+          const istHeute = tag === heute;
+          const konflikte = konflikteFinden(eintraege);
+
+          return (
+            <div
+              key={tag}
+              className={`bg-white rounded-lg border ${istHeute ? "border-arcos-steel" : ""}`}
+            >
+              <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+                <span className={`text-sm ${istHeute ? "font-semibold text-arcos-navy" : ""}`}>
+                  {new Date(`${tag}T12:00:00`).toLocaleDateString("de-CH", { weekday: "long" })},{" "}
+                  {formatDatumCH(tag)}
+                </span>
+                {/* Freie Zeit anklicken: legt einen Rapport mit vorbelegtem
+                    Datum und Monteur an – der Weg vom Plan zum Auftrag ohne
+                    Umweg über die Rapportliste. */}
+                <Link
+                  href={`/rapporte/neu?datum=${tag}${
+                    params.mitarbeiter_id ? `&mitarbeiter=${params.mitarbeiter_id}` : ""
+                  }`}
+                  className="text-xs text-arcos-steel hover:underline"
+                >
+                  + Einsatz planen
+                </Link>
+              </div>
+
+              {eintraege.length === 0 ? (
+                <p className="px-4 py-3 text-sm text-gray-400">Nichts eingeplant.</p>
+              ) : (
+                <ul className="divide-y">
+                  {eintraege.map((r) => {
+                    const zeit =
+                      r.geplant_von || r.geplant_bis
+                        ? `${uhrzeit(r.geplant_von) || "?"}–${uhrzeit(r.geplant_bis) || "?"}`
+                        : "ganztags";
+                    const person =
+                      mitarbeitende?.find((m) => m.id === r.geplant_fuer)?.name ?? "nicht zugewiesen";
+
+                    const imKonflikt = konflikte.has(r.id);
+
+                    return (
+                      <li
+                        key={r.id}
+                        className={`px-4 py-2 text-sm flex flex-wrap items-center gap-x-4 gap-y-1 ${
+                          imKonflikt ? "bg-red-50" : ""
+                        }`}
+                      >
+                        <span className="font-mono text-gray-500 w-24 shrink-0">{zeit}</span>
+                        <Link
+                          href={`/rapporte/${r.id}`}
+                          className="text-arcos-steel hover:underline"
+                        >
+                          {rapportNummer(r)}
+                        </Link>
+                        <span className="flex-1 min-w-[10rem]">
+                          {r.kunden?.vorname ? `${r.kunden.vorname} ` : ""}
+                          {r.kunden?.name}
+                          {r.projekte?.bezeichnung ? ` · ${r.projekte.bezeichnung}` : ""}
+                        </span>
+                        <span
+                          className={
+                            r.geplant_fuer ? "text-gray-600" : "text-amber-700 font-medium"
+                          }
+                        >
+                          {person}
+                        </span>
+                        {imKonflikt && (
+                          <span
+                            className="rounded bg-red-100 text-red-800 text-xs px-2 py-0.5"
+                            title="Diese Person ist im selben Zeitfenster mehrfach eingeplant."
+                          >
+                            Doppelt belegt
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

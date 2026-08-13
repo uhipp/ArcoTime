@@ -165,7 +165,46 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
   mwst_code: string | null;
 };
 
-export type AnfrageKanal = "telefon" | "email" | "whatsapp" | "brief" | "persoenlich" | "sonstiges";
+export type RapportStatus = "offen" | "signiert" | "abgeschlossen" | "storniert";
+
+// Klammer um die Positionen eines Kundeneinsatzes. Positionen sind
+// gewöhnliche Zeiteinträge mit gesetzter rapport_id – siehe
+// docs/phase8-arbeitsrapport-plan.md.
+export type Rapport = {
+  id: string;
+  jahr: number | null;
+  nummer: number | null;
+  kunde_id: string;
+  projekt_id: string | null;
+  datum: string;
+  mitarbeiter_id: string;
+  status: RapportStatus;
+  unterschrift_png: string | null;
+  unterzeichner_name: string | null;
+  signiert_am: string | null;
+  abschluss_vermerk: string | null;
+  versendet_an: string | null;
+  versendet_am: string | null;
+  bemerkung: string | null;
+  // Planung, nur mit Zusatzmodul Disposition genutzt (siehe 0029).
+  geplant_von: string | null;
+  geplant_bis: string | null;
+  geplant_fuer: string | null;
+  storniert_am: string | null;
+  storno_grund: string | null;
+  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "email"> | null;
+  projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
+  profiles?: { id: string; name: string } | null;
+};
+
+// Anzeigeform der Rapportnummer: 2026-0001. Vor dem Abschliessen gibt es
+// noch keine – dann steht "Entwurf".
+export function rapportNummer(r: Pick<Rapport, "jahr" | "nummer">): string {
+  if (r.jahr == null || r.nummer == null) return "Entwurf";
+  return `${r.jahr}-${String(r.nummer).padStart(4, "0")}`;
+}
+
+export type AnfrageKanal ="telefon" | "email" | "whatsapp" | "brief" | "persoenlich" | "sonstiges";
 export type AnfrageStatus = "neu" | "in_bearbeitung" | "wiedervorlage" | "erledigt";
 export type AnfragePrioritaet = "tief" | "normal" | "hoch";
 

@@ -23,8 +23,9 @@ export function ZeitFeld({
   name: string;
   startwert: string;
   // Bekommt die normalisierte Zeit ("10:30") oder null, wenn das Feld leer
-  // bzw. unbrauchbar ist.
-  onZeit: (zeit: string | null) => void;
+  // bzw. unbrauchbar ist. Optional: Wer den Wert nur beim Absenden braucht,
+  // verlässt sich auf das name-Attribut und übergibt nichts.
+  onZeit?: (zeit: string | null) => void;
   disabled?: boolean;
 }) {
   const [text, setText] = useState(startwert);
@@ -34,7 +35,7 @@ export function ZeitFeld({
     // Bei unbrauchbarer Eingabe das Feld leeren statt etwas zu erfinden –
     // "25:70" darf nicht stillschweigend zu einer gültigen Zeit werden.
     setText(normalisiert ?? "");
-    onZeit(normalisiert);
+    onZeit?.(normalisiert);
   }
 
   return (

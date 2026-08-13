@@ -2,8 +2,16 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { FARBEN_OPTIONEN } from "@/lib/farben";
+import { formatDatumCH } from "@/lib/date-utils";
+import { ZeitFeld } from "@/components/zeit-feld";
+import { DatumFeld } from "@/components/datum-feld";
 import {
   updateOrganisation,
+  createSchliesstag,
+  loescheSchliesstag,
+  createAbwesenheitsart,
+  updateAbwesenheitsart,
+  toggleAbwesenheitsart,
   createEinheit,
   toggleEinheit,
   updateEinheit,
@@ -27,6 +35,12 @@ import {
   updateDokumentKategorie,
 } from "@/app/actions/einstellungen";
 
+// Minuten seit Mitternacht als HH:MM, für die Anzeige der gespeicherten
+// Arbeitszeit. Gespeichert wird in Minuten, damit sich damit rechnen lässt.
+function minutenAlsUhrzeit(minuten: number): string {
+  return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(minuten % 60).padStart(2, "0")}`;
+}
+
 export default async function EinstellungenPage({
   searchParams,
 }: {
@@ -41,6 +55,8 @@ export default async function EinstellungenPage({
   const [
     { data: klassen },
     { data: einheiten },
+    { data: schliesstage },
+    { data: abwesenheitsarten },
     { data: mwstCodes },
     { data: rabattsaetze },
     { data: kanaele },
@@ -49,6 +65,8 @@ export default async function EinstellungenPage({
   ] = await Promise.all([
     supabase.from("dienstleistungsklassen").select("*").order("sortierung"),
     supabase.from("einheiten").select("*").order("sortierung"),
+    supabase.from("schliesstage").select("*").order("von"),
+    supabase.from("abwesenheitsarten").select("*").order("sortierung"),
     supabase.from("mwst_codes").select("*").order("code"),
     supabase.from("rabattsaetze").select("*").order("sortierung"),
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),
@@ -137,6 +155,33 @@ export default async function EinstellungenPage({
               />
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="arbeitstag_von">
+                Arbeitstag von
+              </label>
+              <ZeitFeld
+                id="arbeitstag_von"
+                name="arbeitstag_von"
+                startwert={minutenAlsUhrzeit(organisation?.arbeitstag_von_minuten ?? 420)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="arbeitstag_bis">
+                Arbeitstag bis
+              </label>
+              <ZeitFeld
+                id="arbeitstag_bis"
+                name="arbeitstag_bis"
+                startwert={minutenAlsUhrzeit(organisation?.arbeitstag_bis_minuten ?? 1080)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-gray-400">
+            Der Arbeitstag ist der Rahmen, in dem die Disposition freie Zeiten
+            vorschlägt. Termine ausserhalb bleiben von Hand erfassbar.
+          </p>
+
           <p className="text-xs text-gray-400">
             Gilt je Mitarbeitendem und Tag, über alle Kunden hinweg. Der
             Hinweis erscheint beim Erfassen und lässt sich übergehen; die
@@ -205,6 +250,7 @@ export default async function EinstellungenPage({
         </ul>
         <form action={createKlasse} className="flex gap-2">
           <input
+            id="neue_klasse"
             name="bezeichnung"
             required
             placeholder="Neue Klasse…"
@@ -263,11 +309,154 @@ export default async function EinstellungenPage({
         </ul>
         <form action={createEinheit} className="flex gap-2">
           <input
+            id="neue_einheit"
             name="bezeichnung"
             required
             placeholder="Neue Einheit…"
             className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
           />
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Schliesstage</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Feiertage, Betriebsferien und Brückentage. Die Disposition schlägt an
+          diesen Tagen keine Termine vor. Als Zeitraum erfasst – für einen
+          einzelnen Feiertag genügt das Startdatum.
+        </p>
+        <ul className="bg-white rounded-lg border divide-y mb-4">
+          {schliesstage?.length === 0 && (
+            <li className="px-4 py-3 text-sm text-gray-400">Keine Schliesstage erfasst.</li>
+          )}
+          {schliesstage?.map((t) => (
+            <li key={t.id} className="flex items-center justify-between px-4 py-2 text-sm">
+              <span>
+                <strong>{t.bezeichnung}</strong>
+                <span className="text-gray-500">
+                  {" "}
+                  · {formatDatumCH(t.von)}
+                  {t.bis !== t.von ? ` bis ${formatDatumCH(t.bis)}` : ""}
+                </span>
+              </span>
+              <form action={loescheSchliesstag.bind(null, t.id)}>
+                <button type="submit" className="text-xs text-gray-400 hover:text-red-600">
+                  entfernen
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <form action={createSchliesstag} className="flex flex-wrap items-end gap-2">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Von</label>
+            <DatumFeld id="neuer_schliesstag" name="von"  required className="rounded border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Bis (optional)</label>
+            <DatumFeld name="bis"  className="rounded border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <input
+            name="bezeichnung"
+            required
+            placeholder="z.B. Bundesfeier"
+            className="flex-1 min-w-[10rem] rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Abwesenheitsarten</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Auswahl beim Erfassen von Abwesenheiten bei den Mitarbeitenden. Die
+          Farbe erscheint im Kalender. Ist „blockiert“ nicht gesetzt, gilt die
+          Person trotzdem als einsatzfähig – etwa bei einer Weiterbildung im
+          Betrieb.
+        </p>
+        <ul className="bg-white rounded-lg border divide-y mb-4">
+          {abwesenheitsarten?.map((a) => (
+            <li key={a.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateAbwesenheitsart.bind(null, a.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${a.farbe}`} />
+                <select
+                  name="farbe"
+                  defaultValue={a.farbe}
+                  aria-label="Farbe"
+                  className="rounded border border-gray-300 px-2 py-1"
+                >
+                  {FARBEN_OPTIONEN.map((f) => (
+                    <option key={f.wert} value={f.wert}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={a.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 ${
+                    a.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <label className="flex items-center gap-1 text-xs whitespace-nowrap">
+                  <input type="checkbox" name="blockiert" defaultChecked={a.blockiert} />
+                  blockiert
+                </label>
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={a.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleAbwesenheitsart.bind(null, a.id, !a.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
+                  {a.aktiv ? "deaktivieren" : "aktivieren"}
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <form action={createAbwesenheitsart} className="flex flex-wrap items-end gap-2">
+          <input
+            id="neue_abwesenheitsart"
+            name="bezeichnung"
+            required
+            placeholder="Neue Art…"
+            className="flex-1 min-w-[10rem] rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <select name="farbe" defaultValue="bg-gray-300" className="rounded border border-gray-300 px-3 py-2 text-sm">
+            {FARBEN_OPTIONEN.map((f) => (
+              <option key={f.wert} value={f.wert}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-1 text-sm whitespace-nowrap pb-2">
+            <input type="checkbox" name="blockiert" defaultChecked />
+            blockiert
+          </label>
           <button
             type="submit"
             className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
@@ -344,6 +533,7 @@ export default async function EinstellungenPage({
         </ul>
         <form action={createMwstCode} className="flex gap-2">
           <input
+            id="neuer_mwst_code"
             name="code"
             required
             placeholder="Code (z.B. B81)"
@@ -429,6 +619,7 @@ export default async function EinstellungenPage({
         </ul>
         <form action={createRabattsatz} className="flex gap-2">
           <input
+            id="neuer_rabatt"
             name="prozent"
             type="number"
             min={0}
@@ -502,6 +693,7 @@ export default async function EinstellungenPage({
         </ul>
         <form action={createAnfrageKanal} className="flex gap-2">
           <input
+            id="neuer_kanal"
             name="symbol"
             placeholder="Symbol (z.B. 📞)"
             className="w-28 rounded border border-gray-300 px-3 py-2 text-sm"
@@ -589,6 +781,7 @@ export default async function EinstellungenPage({
             ))}
           </select>
           <input
+            id="neue_prioritaet"
             name="bezeichnung"
             required
             placeholder="Bezeichnung"
@@ -648,6 +841,7 @@ export default async function EinstellungenPage({
         </ul>
         <form action={createDokumentKategorie} className="flex gap-2">
           <input
+            id="neue_kategorie"
             name="bezeichnung"
             required
             placeholder="Neue Kategorie…"

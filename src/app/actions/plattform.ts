@@ -117,6 +117,9 @@ export async function aktualisiereOrganisation(id: string, formData: FormData) {
       abrechnungszyklus,
       preis_pro_zyklus: preisProZyklusRoh ? Number(preisProZyklusRoh) : null,
       test_endet_am: testEndetAmRoh || null,
+      // Kostenpflichtiges Zusatzmodul. Freischaltung vorerst nur hier durch
+      // Arcos – die Selbstbuchung über Stripe folgt als eigenes Paket.
+      modul_disposition: formData.get("modul_disposition") === "on",
       naechster_zahltermin: naechsterZahlterminRoh || null,
       // Ein manuelles Speichern im Platform-Admin-Bereich gilt als bewusste
       // Entscheidung – ein evtl. vorher gesetzter automatischer Sperrgrund

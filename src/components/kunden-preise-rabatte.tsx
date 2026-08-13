@@ -107,6 +107,7 @@ export function KundenPreiseRabatte({
             <div className="flex-1 min-w-[10rem]">
               <label className="block text-xs text-gray-500 mb-1">Dienstleistung</label>
               <select
+                id="neuer_kundenpreis"
                 name="dienstleistung_id"
                 required
                 defaultValue=""
@@ -185,6 +186,7 @@ export function KundenPreiseRabatte({
             <div className="flex-1 min-w-[10rem]">
               <label className="block text-xs text-gray-500 mb-1">Klasse</label>
               <select
+                id="neuer_klassenrabatt"
                 name="klasse_id"
                 required
                 defaultValue=""

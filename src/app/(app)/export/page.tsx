@@ -4,6 +4,7 @@ import { getCurrentProfile } from "@/lib/get-profile";
 import { heuteIso, formatDatumCH } from "@/lib/date-utils";
 import { erstelleExport } from "@/app/actions/export";
 import type { ZeiteintragMitDetails, BelegExport } from "@/lib/types";
+import { DatumFeld } from "@/components/datum-feld";
 
 export default async function ExportPage({
   searchParams,
@@ -134,8 +135,7 @@ export default async function ExportPage({
       <form className="bg-white rounded-lg border p-4 mb-4 flex items-end gap-3 text-sm">
         <div>
           <label className="block text-xs text-gray-500 mb-1">Von</label>
-          <input
-            type="date"
+          <DatumFeld
             name="von"
             defaultValue={von}
             className="rounded border border-gray-300 px-2 py-1.5"
@@ -143,8 +143,7 @@ export default async function ExportPage({
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Bis</label>
-          <input
-            type="date"
+          <DatumFeld
             name="bis"
             defaultValue={bis}
             className="rounded border border-gray-300 px-2 py-1.5"

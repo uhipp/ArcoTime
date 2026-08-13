@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { getCurrentOrganisation } from "@/lib/get-profile";
+import { normalisiereZeit } from "@/lib/zeit";
 
 // Gemeinsamer Nenner aller Auswahllisten: bearbeiten, speichern, zurück auf
 // die Einstellungsseite. Die Listen unterscheiden sich nur in ihren Feldern,
@@ -79,12 +80,24 @@ export async function updateOrganisation(formData: FormData) {
     return Math.round(stunden * 60);
   };
 
+  const uhrzeitAlsMinuten = (feld: string): number | null => {
+    const zeit = normalisiereZeit(String(formData.get(feld) ?? ""));
+    if (!zeit) return null;
+    const [h, m] = zeit.split(":").map(Number);
+    return h * 60 + m;
+  };
+
   const { error } = await supabase
     .from("organisationen")
     .update({
       name,
       zeige_auf_login: zeigeAufLogin,
       warnung_ab_minuten_pro_tag: alsMinuten("warnung_ab_stunden"),
+      // Arbeitszeitfenster: Rahmen für die Vorschläge freier Zeiten in der
+      // Disposition. Als Uhrzeit erfasst, in Minuten gespeichert – so lässt
+      // sich damit rechnen, ohne Text zu zerlegen.
+      arbeitstag_von_minuten: uhrzeitAlsMinuten("arbeitstag_von") ?? 420,
+      arbeitstag_bis_minuten: uhrzeitAlsMinuten("arbeitstag_bis") ?? 1080,
       sperre_ab_minuten_pro_tag: alsMinuten("sperre_ab_stunden"),
     })
     .eq("id", organisation.id);
@@ -113,7 +126,7 @@ export async function createKlasse(formData: FormData) {
     sortierung: await naechsteSortierung(supabase, "dienstleistungsklassen"),
   });
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "Klasse hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neue_klasse", "Klasse hinzugefügt."));
 }
 
 export async function updateKlasse(id: string, formData: FormData) {
@@ -145,7 +158,7 @@ export async function createMwstCode(formData: FormData) {
 
   await supabase.from("mwst_codes").insert({ code, bezeichnung, satz });
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "MWSt-Code hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neuer_mwst_code", "MWSt-Code hinzugefügt."));
 }
 
 // Korrigiert Code, Bezeichnung oder Satz eines bestehenden MWSt-Codes.
@@ -206,7 +219,7 @@ export async function createEinheit(formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "Einheit hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neue_einheit", "Einheit hinzugefügt."));
 }
 
 // Umbenennen ist gefahrlos: dienstleistungen.einheit speichert den Text,
@@ -254,7 +267,7 @@ export async function createRabattsatz(formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "Rabattsatz hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neuer_rabatt", "Rabattsatz hinzugefügt."));
 }
 
 export async function updateRabattsatz(id: string, formData: FormData) {
@@ -310,7 +323,7 @@ export async function createAnfrageKanal(formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "Kanal hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neuer_kanal", "Kanal hinzugefügt."));
 }
 
 // Bezeichnung und Symbol sind frei änderbar, der interne "wert" bewusst
@@ -366,7 +379,7 @@ export async function createAnfragePrioritaet(formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "Priorität hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neue_prioritaet", "Priorität hinzugefügt."));
 }
 
 export async function updateAnfragePrioritaet(id: string, formData: FormData) {
@@ -406,7 +419,7 @@ export async function createDokumentKategorie(formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath("/einstellungen");
-  redirect(mitErfolg("/einstellungen", "Kategorie hinzugefügt."));
+  redirect(mitErfolg("/einstellungen?fokus=neue_kategorie", "Kategorie hinzugefügt."));
 }
 
 export async function updateDokumentKategorie(id: string, formData: FormData) {
@@ -427,4 +440,104 @@ export async function toggleDokumentKategorie(id: string, aktiv: boolean) {
   await supabase.from("dokument_kategorien").update({ aktiv }).eq("id", id);
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen", aktiv ? "Kategorie aktiviert." : "Kategorie deaktiviert."));
+}
+
+
+// ---------------------------------------------------------
+// Schliesstage (Feiertage, Betriebsferien)
+// ---------------------------------------------------------
+// Als Zeitraum erfasst: Betriebsferien sind zwei Wochen, ein Feiertag der
+// Sonderfall von = bis. Das Formular füllt "bis" automatisch mit "von",
+// wenn es leer bleibt.
+export async function createSchliesstag(formData: FormData) {
+  const supabase = await createClient();
+  const von = String(formData.get("von") ?? "").trim();
+  const bis = String(formData.get("bis") ?? "").trim() || von;
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+
+  if (!von || !bezeichnung) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent("Bitte Datum und Bezeichnung angeben.")}`
+    );
+  }
+  if (bis < von) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent("Das Enddatum liegt vor dem Startdatum.")}`
+    );
+  }
+
+  const { error } = await supabase.from("schliesstage").insert({ von, bis, bezeichnung });
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen?fokus=neuer_schliesstag", "Schliesstag gespeichert."));
+}
+
+export async function loescheSchliesstag(id: string) {
+  const supabase = await createClient();
+  await supabase.from("schliesstage").delete().eq("id", id);
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", "Schliesstag entfernt."));
+}
+
+// ---------------------------------------------------------
+// Abwesenheitsarten
+// ---------------------------------------------------------
+export async function createAbwesenheitsart(formData: FormData) {
+  const supabase = await createClient();
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  const farbe = String(formData.get("farbe") ?? "").trim() || "bg-gray-300";
+  if (!bezeichnung) return;
+
+  // Interner Schlüssel wie bei Kanälen und Prioritäten: aus der Bezeichnung
+  // abgeleitet und danach unveränderlich, damit ein Umbenennen bestehende
+  // Abwesenheiten nicht von ihrer Art abschneidet.
+  const wert =
+    bezeichnung
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || bezeichnung;
+
+  const { error } = await supabase.from("abwesenheitsarten").insert({
+    wert,
+    bezeichnung,
+    farbe,
+    blockiert: formData.get("blockiert") === "on",
+    sortierung: await naechsteSortierung(supabase, "abwesenheitsarten"),
+  });
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen?fokus=neue_abwesenheitsart", "Abwesenheitsart hinzugefügt."));
+}
+
+export async function updateAbwesenheitsart(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  await speichereListeneintrag(
+    "abwesenheitsarten",
+    id,
+    {
+      bezeichnung,
+      farbe: String(formData.get("farbe") ?? "").trim() || "bg-gray-300",
+      blockiert: formData.get("blockiert") === "on",
+      sortierung: sortierungAus(formData),
+    },
+    "Abwesenheitsart gespeichert."
+  );
+}
+
+export async function toggleAbwesenheitsart(id: string, aktiv: boolean) {
+  const supabase = await createClient();
+  await supabase.from("abwesenheitsarten").update({ aktiv }).eq("id", id);
+  revalidatePath("/einstellungen");
+  redirect(
+    mitErfolg("/einstellungen", aktiv ? "Art aktiviert." : "Art deaktiviert.")
+  );
 }

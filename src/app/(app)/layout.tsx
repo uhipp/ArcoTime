@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import { logout } from "@/app/actions/auth";
 import { Toast } from "@/components/toast";
+import { AutoFokus } from "@/components/auto-fokus";
 import { KontextHilfeLink } from "@/components/kontext-hilfe-link";
 
 export default async function AppLayout({
@@ -92,6 +93,14 @@ export default async function AppLayout({
                 </span>
               )}
             </Link>
+            <Link href="/rapporte" className="hover:text-arcos-navy">
+              Rapporte
+            </Link>
+            {organisation?.modul_disposition && (
+              <Link href="/disposition" className="hover:text-arcos-navy">
+                Disposition
+              </Link>
+            )}
             <Link href="/auswertungen" className="hover:text-arcos-navy">
               Auswertungen
             </Link>
@@ -141,6 +150,9 @@ export default async function AppLayout({
         <div className="print:hidden">
           <Toast />
         </div>
+        {/* Gilt für die ganze Anwendung: Nach dem Speichern zurück ins
+            Erfassungsformular, siehe components/auto-fokus.tsx. */}
+        <AutoFokus />
       </Suspense>
     </div>
   );

@@ -46,13 +46,27 @@ export async function updateMitarbeiter(id: string, formData: FormData) {
     }
   }
 
-  const { error } = await supabase
+  // Bewusst mit .select(): Verweigert RLS das Update (fremde Organisation,
+  // fehlende Adminrolle), liefert Postgres KEINEN Fehler, sondern schlicht
+  // null betroffene Zeilen. Ohne diese Prüfung meldete die Seite dann
+  // "gespeichert", obwohl nichts geändert wurde – nicht unterscheidbar von
+  // "die Bearbeitung funktioniert nicht".
+  const { data: geaendert, error } = await supabase
     .from("profiles")
     .update({ vorname, nachname, role, farbe })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
 
   if (error) {
     redirect(`/mitarbeiter?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (!geaendert || geaendert.length === 0) {
+    redirect(
+      `/mitarbeiter?error=${encodeURIComponent(
+        "Änderung wurde nicht übernommen – für diese Person fehlen dir die Rechte. Nur Admins der eigenen Organisation dürfen Mitarbeitende bearbeiten."
+      )}`
+    );
   }
 
   revalidatePath("/mitarbeiter");
