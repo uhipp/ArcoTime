@@ -27,6 +27,26 @@ Legt jemand versehentlich zweimal denselben Kunden an (z.B. weil zwei Mitarbeite
 ## Kunden-Detailseite
 
 Auf der Detailseite eines Kunden siehst du dessen komplette Historie: alle Anfragen und alle Zeiterfassungen, filterbar nach Zeitraum und Status.
+
+## Preise & Rabatte (nur Admins)
+
+Unter den Stammdaten liegt der Block **"Preise & Rabatte"** mit zwei Listen. Beide wirken ausschliesslich auf **neu erfasste** Zeiteinträge – bestehende behalten Preis und Rabatt, die beim Erfassen galten. Eine Änderung rechnet also nie rückwirkend um.
+
+**Abweichende Preise** überschreiben den Katalogpreis einer Dienstleistung für diesen Kunden. Beim Erfassen eines Zeiteintrags wird dieser Preis eingefroren.
+
+**Rabatt je Dienstleistungsklasse** ist der bequemere Weg als Rabatte pro Dienstleistung: Gib dem Kunden z.B. 10% auf die ganze Klasse "Beratung", und jede Dienstleistung dieser Klasse erbt den Rabatt – auch die, die ihr erst später anlegt.
+
+Welcher Rabatt vorgeschlagen wird, entscheidet sich in dieser Reihenfolge:
+
+1. Die Dienstleistung erlaubt keinen Teilrabatt → **0%** (siehe [Dienstleistungen](/hilfe/dienstleistungen))
+2. Ein **Klassenrabatt** für diesen Kunden → dieser Wert
+3. Sonst der **Standardrabatt** aus den Stammdaten des Kunden
+
+Es ist immer nur ein Vorschlag: Beim Erfassen lässt sich der Rabatt überschreiben.
+
+## Standardrabatt
+
+Im Block "Rechnungswesen" der Stammdaten. Gilt für alle Dienstleistungen, für die kein Klassenrabatt hinterlegt ist.
 `,
   },
 ];

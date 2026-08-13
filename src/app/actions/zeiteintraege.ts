@@ -10,6 +10,8 @@ function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
     v && String(v).trim() !== "" ? String(v).trim() : null;
 
+  const mengeRoh = str(formData.get("menge"));
+
   return {
     projekt_id: String(formData.get("projekt_id")),
     dienstleistung_id: String(formData.get("dienstleistung_id")),
@@ -18,10 +20,60 @@ function zeiteintragFromForm(formData: FormData) {
     start_zeit: str(formData.get("start_zeit")),
     end_zeit: str(formData.get("end_zeit")),
     dauer_minuten: Number(formData.get("dauer_minuten") ?? 0),
+    // Nur bei Mengenartikeln gesetzt – das Feld existiert im Formular sonst
+    // gar nicht.
+    menge: mengeRoh === null ? null : Number(mengeRoh),
     beschreibung: str(formData.get("beschreibung")),
     rabatt_prozent: Number(formData.get("rabatt_prozent") ?? 0),
     referenz: str(formData.get("referenz")),
   };
+}
+
+// Prüft die Regeln, die nicht dem Browser überlassen werden dürfen: Art der
+// Menge und Zulässigkeit des Rabatts hängen an der Dienstleistung, nicht am
+// Formular. Gibt eine Fehlermeldung zurück oder null.
+async function pruefeGegenDienstleistung(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  werte: ReturnType<typeof zeiteintragFromForm>
+): Promise<string | null> {
+  const { data: dienstleistung } = await supabase
+    .from("dienstleistungen")
+    .select("bezeichnung, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt")
+    .eq("id", werte.dienstleistung_id)
+    .single();
+
+  if (!dienstleistung) return "Dienstleistung nicht gefunden.";
+
+  if (dienstleistung.zaehlt_als_arbeitszeit) {
+    if (!werte.dauer_minuten || werte.dauer_minuten <= 0) {
+      return "Bitte eine gültige Dauer angeben (mind. 1 Minute) – Von/Bis oder Dauer prüfen.";
+    }
+  } else if (!werte.menge || werte.menge <= 0) {
+    return `Bitte eine Menge in ${dienstleistung.einheit} angeben.`;
+  }
+
+  // 100% bleibt erlaubt: Das ist die Konvention für "nicht verrechnet",
+  // die auch bei Spesen möglich bleiben muss. Gesperrt sind Teilrabatte.
+  if (
+    !dienstleistung.rabatt_erlaubt &&
+    werte.rabatt_prozent > 0 &&
+    werte.rabatt_prozent < 100
+  ) {
+    return `Für "${dienstleistung.bezeichnung}" sind keine Teilrabatte zugelassen (nur 0% oder 100%).`;
+  }
+
+  return null;
+}
+
+// Genau eine der beiden Mengengrössen darf gesetzt sein – der
+// Datenbank-Check verlangt das ebenfalls.
+function mitPassenderMenge(
+  werte: ReturnType<typeof zeiteintragFromForm>,
+  istArbeitszeit: boolean
+) {
+  return istArbeitszeit
+    ? { ...werte, menge: null }
+    : { ...werte, dauer_minuten: null, start_zeit: null, end_zeit: null };
 }
 
 export async function createZeiteintrag(formData: FormData) {
@@ -29,16 +81,13 @@ export async function createZeiteintrag(formData: FormData) {
   const { data: userData } = await supabase.auth.getUser();
   const values = zeiteintragFromForm(formData);
 
-  if (!values.dauer_minuten || values.dauer_minuten <= 0) {
-    redirect(
-      `/zeiterfassung?error=${encodeURIComponent(
-        "Bitte eine gültige Dauer angeben (mind. 1 Minute) – Von/Bis oder Dauer prüfen."
-      )}`
-    );
+  const fehler = await pruefeGegenDienstleistung(supabase, values);
+  if (fehler) {
+    redirect(`/zeiterfassung?error=${encodeURIComponent(fehler)}`);
   }
 
   const { error } = await supabase.from("zeiteintraege").insert({
-    ...values,
+    ...mitPassenderMenge(values, values.menge === null),
     mitarbeiter_id: values.mitarbeiter_id ?? userData.user?.id,
     user_id: userData.user?.id,
   });
@@ -55,17 +104,14 @@ export async function updateZeiteintrag(id: string, formData: FormData) {
   const supabase = await createClient();
   const values = zeiteintragFromForm(formData);
 
-  if (!values.dauer_minuten || values.dauer_minuten <= 0) {
-    redirect(
-      `/zeiterfassung/${id}?error=${encodeURIComponent(
-        "Bitte eine gültige Dauer angeben (mind. 1 Minute) – Von/Bis oder Dauer prüfen."
-      )}`
-    );
+  const fehler = await pruefeGegenDienstleistung(supabase, values);
+  if (fehler) {
+    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(fehler)}`);
   }
 
   const { error } = await supabase
     .from("zeiteintraege")
-    .update(values)
+    .update(mitPassenderMenge(values, values.menge === null))
     .eq("id", id);
 
   if (error) {

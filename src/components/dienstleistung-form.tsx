@@ -73,16 +73,60 @@ export function DienstleistungForm({
           <label className="block text-sm font-medium mb-1" htmlFor="einheit">
             Einheit
           </label>
-          <select
+          {/* Freitext statt fester Auswahl: Welche Einheiten sinnvoll sind
+              (Stunde, Pauschale, Stück, km, kg …), weiss der Betrieb besser
+              als das Schema. Die Liste dient nur als Vorschlag. */}
+          <input
             id="einheit"
             name="einheit"
+            list="einheit-vorschlaege"
             defaultValue={dienstleistung?.einheit ?? "Stunde"}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
-          >
-            <option value="Stunde">Stunde</option>
-            <option value="Pauschale">Pauschale</option>
-          </select>
+          />
+          <datalist id="einheit-vorschlaege">
+            <option value="Stunde" />
+            <option value="Pauschale" />
+            <option value="Stück" />
+            <option value="km" />
+          </datalist>
         </div>
+      </div>
+
+      <div className="space-y-3 rounded border border-gray-200 bg-gray-50 p-4">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="zaehlt_als_arbeitszeit"
+            defaultChecked={dienstleistung?.zaehlt_als_arbeitszeit ?? true}
+            className="mt-0.5"
+          />
+          <span>
+            <span className="block text-sm font-medium">Zählt als Arbeitszeit</span>
+            <span className="block text-xs text-gray-500 mt-0.5">
+              Angehakt: Erfassung über Von/Bis bzw. Dauer, fliesst in
+              Stundenauswertungen ein. Nicht angehakt: Erfassung über eine
+              Menge (Kilometer, Spesen, Kleinmaterial) – wird verrechnet,
+              erscheint aber in keiner Stundenauswertung.
+            </span>
+          </span>
+        </label>
+
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="rabatt_erlaubt"
+            defaultChecked={dienstleistung?.rabatt_erlaubt ?? true}
+            className="mt-0.5"
+          />
+          <span>
+            <span className="block text-sm font-medium">Rabatt zulässig</span>
+            <span className="block text-xs text-gray-500 mt-0.5">
+              Nicht angehakt: Teilrabatte sind gesperrt (z.B. Reisespesen).
+              100% bleibt möglich, damit die Position weiterhin als nicht
+              verrechnet gebucht werden kann.
+            </span>
+          </span>
+        </label>
       </div>
 
       <div>

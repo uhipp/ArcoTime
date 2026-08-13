@@ -26,6 +26,11 @@ function kundeFromForm(formData: FormData) {
     telefon: str(formData.get("telefon")),
     waehrung: str(formData.get("waehrung")) ?? "CHF",
     zahlungskondition_tage: num(formData.get("zahlungskondition_tage")) ?? 30,
+    // Nur Vorbelegung für neue Zeiteinträge – siehe kunden.standard_rabatt_prozent.
+    standard_rabatt_prozent: Math.min(
+      100,
+      Math.max(0, num(formData.get("standard_rabatt_prozent")) ?? 0)
+    ),
     notizen: str(formData.get("notizen")),
   };
 }
@@ -113,4 +118,79 @@ export async function erstelleKundeSchnell(
 
   revalidatePath("/kunden");
   return { data, error: null };
+}
+
+// ---------------------------------------------------------
+// Preis- & Rabattblock auf der Kundendetailseite
+// ---------------------------------------------------------
+// Beide Listen sind reine Stammdaten: Sie bestimmen, was beim ERFASSEN
+// eines Zeiteintrags vorgeschlagen bzw. eingefroren wird. Änderungen hier
+// wirken deshalb nie auf bestehende Einträge zurück – gleiches Prinzip wie
+// bei Preis (0003), MWSt-Satz (0021) und Standardrabatt (0022).
+
+export async function setzeKundenpreis(kundeId: string, formData: FormData) {
+  const supabase = await createClient();
+  const dienstleistung_id = String(formData.get("dienstleistung_id") ?? "").trim();
+  const preis = Number(formData.get("preis") ?? NaN);
+
+  if (!dienstleistung_id) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte eine Dienstleistung wählen.")}`);
+  }
+  if (Number.isNaN(preis) || preis < 0) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte einen gültigen Preis angeben.")}`);
+  }
+
+  // ab_menge 0 = Grundpreis. Die Staffel-Spalte existiert bereits, wird
+  // aber noch nicht über die Oberfläche gepflegt (siehe 0022).
+  const { error } = await supabase
+    .from("kundenpreise")
+    .upsert(
+      { kunde_id: kundeId, dienstleistung_id, ab_menge: 0, preis },
+      { onConflict: "kunde_id,dienstleistung_id,ab_menge" }
+    );
+
+  if (error) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}`, "Kundenpreis gespeichert."));
+}
+
+export async function loescheKundenpreis(kundeId: string, id: string) {
+  const supabase = await createClient();
+  await supabase.from("kundenpreise").delete().eq("id", id);
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}`, "Kundenpreis entfernt."));
+}
+
+export async function setzeKundenrabatt(kundeId: string, formData: FormData) {
+  const supabase = await createClient();
+  const klasse_id = String(formData.get("klasse_id") ?? "").trim();
+  const rabatt_prozent = Number(formData.get("rabatt_prozent") ?? NaN);
+
+  if (!klasse_id) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte eine Klasse wählen.")}`);
+  }
+  if (Number.isNaN(rabatt_prozent) || rabatt_prozent < 0 || rabatt_prozent > 100) {
+    redirect(
+      `/kunden/${kundeId}?error=${encodeURIComponent("Rabatt muss zwischen 0 und 100% liegen.")}`
+    );
+  }
+
+  const { error } = await supabase
+    .from("kundenrabatte")
+    .upsert({ kunde_id: kundeId, klasse_id, rabatt_prozent }, { onConflict: "kunde_id,klasse_id" });
+
+  if (error) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}`, "Klassenrabatt gespeichert."));
+}
+
+export async function loescheKundenrabatt(kundeId: string, id: string) {
+  const supabase = await createClient();
+  await supabase.from("kundenrabatte").delete().eq("id", id);
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}`, "Klassenrabatt entfernt."));
 }

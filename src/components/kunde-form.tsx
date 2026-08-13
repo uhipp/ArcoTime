@@ -77,7 +77,18 @@ export function KundeForm({
             type="number"
             defaultValue={kunde?.zahlungskondition_tage ?? 30}
           />
+          <Field
+            label="Standardrabatt (%)"
+            name="standard_rabatt_prozent"
+            type="number"
+            defaultValue={kunde?.standard_rabatt_prozent ?? 0}
+          />
         </div>
+        <p className="text-xs text-gray-400 mt-2">
+          Der Standardrabatt wird bei neuen Zeiteinträgen dieses Kunden
+          vorgeschlagen und kann pro Eintrag überschrieben werden. Eine
+          spätere Änderung wirkt nicht auf bereits erfasste Einträge.
+        </p>
       </section>
 
       <section>

@@ -106,7 +106,10 @@ export async function GET(request: NextRequest) {
       z.beleg_id ? belegnummerVon.get(z.beleg_id) ?? null : null,
       z.waehrung,
       z.referenz ?? null,
-      z.menge_stunden,
+      // Verrechnete Menge: Stunden bei Arbeitszeit, sonst Stück/km. Bewusst
+      // NICHT menge_stunden – das ist seit den Mengenartikeln ausschliesslich
+      // Arbeitszeit und bei Spesen leer.
+      z.menge_verrechnet,
       z.dienstleistung_bezeichnung,
       z.beschreibung ?? null,
       z.konto ?? null,

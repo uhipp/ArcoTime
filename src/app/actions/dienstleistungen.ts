@@ -14,7 +14,11 @@ function dienstleistungFromForm(formData: FormData) {
     beschreibung: str(formData.get("beschreibung")),
     klasse_id: String(formData.get("klasse_id")),
     preis: Number(formData.get("preis") ?? 0),
-    einheit: String(formData.get("einheit") ?? "Stunde"),
+    einheit: String(formData.get("einheit") ?? "Stunde").trim() || "Stunde",
+    // Checkboxen liefern nur bei aktiviertem Zustand einen Wert – "nicht
+    // vorhanden" heisst hier also false.
+    zaehlt_als_arbeitszeit: formData.get("zaehlt_als_arbeitszeit") === "on",
+    rabatt_erlaubt: formData.get("rabatt_erlaubt") === "on",
     konto: str(formData.get("konto")),
     mwst_code_id: str(formData.get("mwst_code_id")),
     aktiv: formData.get("aktiv") === "on",

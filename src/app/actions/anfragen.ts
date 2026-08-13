@@ -178,6 +178,28 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
     );
   }
 
+  // Rabattsperre der Dienstleistung gilt auch hier – sonst liesse sich ein
+  // gesperrter Teilrabatt über den Umweg "Anfrage erledigen" doch vergeben.
+  // 100% bleibt zulässig (= nicht verrechnet), siehe 0022.
+  const { data: dienstleistung } = await supabase
+    .from("dienstleistungen")
+    .select("bezeichnung, rabatt_erlaubt")
+    .eq("id", dienstleistung_id)
+    .single();
+
+  if (
+    dienstleistung &&
+    !dienstleistung.rabatt_erlaubt &&
+    rabatt_prozent > 0 &&
+    rabatt_prozent < 100
+  ) {
+    redirect(
+      `/anfragen/${id}?error=${encodeURIComponent(
+        `Für "${dienstleistung.bezeichnung}" sind keine Teilrabatte zugelassen (nur 0% oder 100%).`
+      )}`
+    );
+  }
+
   const { data: userData } = await supabase.auth.getUser();
   const ausfuehrendeId = mitarbeiter_id || userData.user?.id || null;
 

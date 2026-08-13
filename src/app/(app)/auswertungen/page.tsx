@@ -10,6 +10,7 @@ import {
   type Ansicht,
 } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
+import { mengeLabel } from "@/lib/menge";
 
 type SearchParams = {
   ansicht?: string;
@@ -78,7 +79,12 @@ export default async function AuswertungenPage({
   ]);
   const zeilen = (data as ZeiteintragMitDetails[] | null) ?? [];
 
-  const summeStunden = zeilen.reduce((s, z) => s + Number(z.menge_stunden), 0);
+  // Mengenartikel (km, Spesen, Material) haben menge_stunden = null und
+  // dürfen nicht als Arbeitszeit gezählt werden – sie fliessen nur in den
+  // Betrag ein. Number(null) wäre 0, aber explizit ist es hier klarer.
+  const stundenVon = (z: ZeiteintragMitDetails) => Number(z.menge_stunden ?? 0);
+
+  const summeStunden = zeilen.reduce((s, z) => s + stundenVon(z), 0);
   const summeBetrag = zeilen.reduce((s, z) => s + Number(z.betrag), 0);
 
   // Gruppierung nach Kunde/Projekt (Client-seitig aggregiert, Datensatz pro
@@ -92,14 +98,14 @@ export default async function AuswertungenPage({
     const bestehend = gruppen.get(key);
     const kundeLabel = `${z.vorname ? `${z.vorname} ` : ""}${z.kunde_name}`;
     if (bestehend) {
-      bestehend.stunden += Number(z.menge_stunden);
+      bestehend.stunden += stundenVon(z);
       bestehend.betrag += Number(z.betrag);
       bestehend.anzahl += 1;
     } else {
       gruppen.set(key, {
         kunde: kundeLabel,
         projekt: z.projekt_bezeichnung,
-        stunden: Number(z.menge_stunden),
+        stunden: stundenVon(z),
         betrag: Number(z.betrag),
         anzahl: 1,
       });
@@ -303,7 +309,7 @@ export default async function AuswertungenPage({
                       {laeuft ? (
                         <span className="font-medium text-red-700">⏱ Timer aktiv</span>
                       ) : (
-                        `${z.menge_stunden} h`
+                        mengeLabel(z)
                       )}
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap">

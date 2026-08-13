@@ -28,6 +28,9 @@ export type Kunde = {
   waehrung: string;
   zahlungskondition_tage: number;
   notizen: string | null;
+  // Vorbelegung des Rabatts bei neuen Zeiteinträgen dieses Kunden. Wirkt
+  // nicht rückwirkend – der Rabatt wird pro Eintrag gespeichert.
+  standard_rabatt_prozent: number;
 };
 
 export type ProjektStatus = "aktiv" | "inaktiv";
@@ -60,7 +63,10 @@ export type MwstCode = {
   aktiv: boolean;
 };
 
-export type Einheit = "Stunde" | "Pauschale";
+// Frei wählbar (Stunde, Pauschale, Stück, km, …) – die Einheit ist nur
+// Beschriftung. Ob nach Dauer oder nach Menge erfasst wird, entscheidet
+// allein "zaehlt_als_arbeitszeit".
+export type Einheit = string;
 
 export type Dienstleistung = {
   id: string;
@@ -69,11 +75,37 @@ export type Dienstleistung = {
   klasse_id: string;
   preis: number;
   einheit: Einheit;
+  // true = Erfassung über Dauer, zählt in Stundenauswertungen.
+  // false = Mengenartikel (Stück, km, Spesen) – verrechenbar, aber nie
+  // Arbeitszeit.
+  zaehlt_als_arbeitszeit: boolean;
+  // false = kein Teilrabatt möglich (Reisespesen o.ä.). 100% bleibt
+  // erlaubt, damit nicht verrechnete Arbeit erfassbar bleibt.
+  rabatt_erlaubt: boolean;
   konto: string | null;
   mwst_code_id: string | null;
   aktiv: boolean;
   dienstleistungsklassen?: Pick<Dienstleistungsklasse, "id" | "bezeichnung">;
   mwst_codes?: Pick<MwstCode, "id" | "code">;
+};
+
+export type Kundenpreis = {
+  id: string;
+  kunde_id: string;
+  dienstleistung_id: string;
+  ab_menge: number;
+  preis: number;
+  dienstleistungen?: Pick<Dienstleistung, "id" | "bezeichnung" | "einheit">;
+};
+
+// Rabatt eines Kunden auf eine ganze Dienstleistungsklasse. Hat bei der
+// Vorbelegung Vorrang vor kunden.standard_rabatt_prozent.
+export type Kundenrabatt = {
+  id: string;
+  kunde_id: string;
+  klasse_id: string;
+  rabatt_prozent: number;
+  dienstleistungsklassen?: Pick<Dienstleistungsklasse, "id" | "bezeichnung">;
 };
 
 export type Zeiteintrag = {
@@ -86,6 +118,9 @@ export type Zeiteintrag = {
   start_zeit: string | null;
   end_zeit: string | null;
   dauer_minuten: number | null;
+  // Verrechnete Menge bei Mengenartikeln (Stück, km, …). Bei Zeit-Einträgen
+  // null – dort gilt dauer_minuten.
+  menge: number | null;
   timer_gestartet_um: string | null;
   beschreibung: string | null;
   rabatt_prozent: number;
@@ -96,7 +131,14 @@ export type Zeiteintrag = {
 
 // Zeile aus der View v_zeiteintraege (inkl. berechnetem Betrag & Stammdaten)
 export type ZeiteintragMitDetails = Zeiteintrag & {
+  // Nur Arbeitszeit – bei Mengenartikeln null, damit Auswertungen keine
+  // Kilometer zu Stunden addieren.
   menge_stunden: number | null;
+  // Die Grösse, mit der gerechnet und exportiert wird: Stunden ODER Menge.
+  menge_verrechnet: number | null;
+  einheit: string;
+  zaehlt_als_arbeitszeit: boolean;
+  rabatt_erlaubt: boolean;
   betrag: number | null;
   projekt_bezeichnung: string;
   kostenstelle: string | null;

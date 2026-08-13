@@ -5,6 +5,7 @@ import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
 import { createZeiteintrag, starteTimer } from "@/app/actions/zeiteintraege";
 import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
+import { mengeLabel } from "@/lib/menge";
 
 export default async function ZeiterfassungPage({
   searchParams,
@@ -26,19 +27,21 @@ export default async function ZeiterfassungPage({
     { data: mitarbeitende },
     { data: kunden },
     { data: rabattsaetze },
+    { data: klassenRabatte },
     { data: eintraege, error: listError },
   ] = await Promise.all([
     supabase
       .from("projekte")
-      .select("*, kunden(name, vorname)")
+      .select("*, kunden(name, vorname, standard_rabatt_prozent)")
       .order("bezeichnung"),
     supabase
       .from("dienstleistungen")
-      .select("id, bezeichnung, aktiv")
+      .select("id, bezeichnung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
+    supabase.from("kundenrabatte").select("kunde_id, klasse_id, rabatt_prozent"),
     supabase
       .from("v_zeiteintraege")
       .select("*")
@@ -64,6 +67,7 @@ export default async function ZeiterfassungPage({
           mitarbeitende={mitarbeitende ?? []}
           kunden={kunden ?? []}
           rabattsaetze={rabattsaetze ?? []}
+          klassenRabatte={klassenRabatte ?? []}
           aktuellerUserId={aktuellerUserId}
           action={createZeiteintrag}
           starteTimerAction={starteTimer}
@@ -131,7 +135,7 @@ export default async function ZeiterfassungPage({
                     {laeuft ? (
                       <span className="font-medium text-red-700">⏱ Timer aktiv</span>
                     ) : (
-                      `${z.menge_stunden} h`
+                      mengeLabel(z)
                     )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">

@@ -4,11 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { KundeForm } from "@/components/kunde-form";
+import { KundenPreiseRabatte } from "@/components/kunden-preise-rabatte";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateKunde, deleteKunde } from "@/app/actions/kunden";
 import { DeleteButton } from "@/components/delete-button";
 import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import type { Kunde, ZeiteintragMitDetails } from "@/lib/types";
+import { mengeLabel } from "@/lib/menge";
 
 type SearchParams = { error?: string; von?: string; bis?: string; projekt_id?: string };
 
@@ -52,6 +54,10 @@ export default async function KundeDetailPage({
     { data: anfragen },
     { data: zeiteintraege },
     { dokumente, kategorien },
+    { data: alleDienstleistungen },
+    { data: alleKlassen },
+    { data: kundenpreise },
+    { data: kundenrabatte },
   ] = await Promise.all([
     getCurrentProfile(),
     supabase.from("kunden").select("*").eq("id", id).single(),
@@ -59,6 +65,20 @@ export default async function KundeDetailPage({
     anfragenQuery,
     zeitQuery,
     ladeDokumente(supabase, "kunde", id),
+    supabase
+      .from("dienstleistungen")
+      .select("id, bezeichnung, einheit, preis")
+      .eq("aktiv", true)
+      .order("bezeichnung"),
+    supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
+    supabase
+      .from("kundenpreise")
+      .select("id, preis, dienstleistung_id, dienstleistungen(id, bezeichnung, einheit)")
+      .eq("kunde_id", id),
+    supabase
+      .from("kundenrabatte")
+      .select("id, rabatt_prozent, klasse_id, dienstleistungsklassen(id, bezeichnung)")
+      .eq("kunde_id", id),
   ]);
 
   if (!kunde) notFound();
@@ -84,6 +104,17 @@ export default async function KundeDetailPage({
         </div>
         <KundeForm kunde={kunde as Kunde} action={updateAction} error={error} />
       </div>
+
+      {profile?.role === "admin" && (
+        <KundenPreiseRabatte
+          kundeId={id}
+          dienstleistungen={alleDienstleistungen ?? []}
+          klassen={alleKlassen ?? []}
+          preise={(kundenpreise ?? []) as never[]}
+          rabatte={(kundenrabatte ?? []) as never[]}
+          standardRabatt={Number(kunde.standard_rabatt_prozent ?? 0)}
+        />
+      )}
 
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -197,7 +228,7 @@ export default async function KundeDetailPage({
                           {laeuft ? (
                             <span className="font-medium text-red-700">⏱ Timer aktiv</span>
                           ) : (
-                            `${z.menge_stunden} h`
+                            mengeLabel(z)
                           )}
                         </td>
                         <td className="px-4 py-2 text-right">

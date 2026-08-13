@@ -27,21 +27,23 @@ export default async function ZeiteintragDetailPage({
     { data: mitarbeitende },
     { data: kunden },
     { data: rabattsaetze },
+    { data: klassenRabatte },
     { dokumente, kategorien },
   ] = await Promise.all([
     supabase.from("zeiteintraege").select("*").eq("id", id).single(),
     getCurrentProfile(),
     supabase
       .from("projekte")
-      .select("*, kunden(name, vorname)")
+      .select("*, kunden(name, vorname, standard_rabatt_prozent)")
       .order("bezeichnung"),
     supabase
       .from("dienstleistungen")
-      .select("id, bezeichnung, aktiv")
+      .select("id, bezeichnung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
+    supabase.from("kundenrabatte").select("kunde_id, klasse_id, rabatt_prozent"),
     ladeDokumente(supabase, "zeiteintrag", id),
   ]);
 
@@ -82,6 +84,7 @@ export default async function ZeiteintragDetailPage({
           mitarbeitende={mitarbeitende ?? []}
           kunden={kunden ?? []}
           rabattsaetze={rabattsaetze ?? []}
+          klassenRabatte={klassenRabatte ?? []}
           aktuellerUserId={profile?.id ?? ""}
           action={updateAction}
           stoppeTimerAction={stoppeAction}
