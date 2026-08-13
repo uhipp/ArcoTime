@@ -295,7 +295,7 @@ export default async function PlattformPage({
         Auf den Namen klicken, um die Mitarbeitenden dieser Organisation zu verwalten
         (Person bearbeiten, Admin-Rolle übertragen, neue Person einladen). Leeres
         Lizenzenfeld = unbegrenzt (für die eigene Organisation gedacht). Status
-        "Aktiv" setzt den Sperrgrund automatisch zurück.
+        „Aktiv“ setzt den Sperrgrund automatisch zurück.
       </p>
 
       {/* --------------------------------------------------------------- */}

@@ -36,8 +36,7 @@ export function OptionalesDatumFeld({
 
   return (
     <span className="inline-flex items-center gap-1">
-      <input
-        type="date"
+      <DatumFeld
         name={name}
         value={wert}
         onChange={(e) => setWert(e.target.value)}

@@ -7,17 +7,28 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 // per ?erfolg=... in der Redirect-URL der Server Action mitgegeben wird.
 // Einmal im App-Layout eingebunden, wirkt global auf allen Seiten.
 export function Toast() {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const nachricht = searchParams.get("erfolg");
 
-  const [sichtbar, setSichtbar] = useState(false);
+  if (!nachricht) return null;
+
+  // Die eigentliche Meldung steckt in einer eigenen Komponente, die über
+  // den key an die Nachricht gebunden ist. Dadurch startet sie bei jeder
+  // neuen Meldung frisch mit sichtbar = true, statt den Zustand in einem
+  // Effect nachzuziehen. Zwei gleiche Meldungen hintereinander sind kein
+  // Problem: Zwischendurch wird ?erfolg= aus der URL entfernt, die
+  // Komponente verschwindet also und wird neu aufgebaut.
+  return <ToastMeldung key={nachricht} nachricht={nachricht} />;
+}
+
+function ToastMeldung({ nachricht }: { nachricht: string }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [sichtbar, setSichtbar] = useState(true);
 
   useEffect(() => {
-    if (!nachricht) return;
-    setSichtbar(true);
-
     // URL bereinigen, damit die Meldung bei Reload/Zurück nicht erneut
     // erscheint.
     const neueParams = new URLSearchParams(searchParams.toString());
@@ -29,8 +40,6 @@ export function Toast() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nachricht]);
-
-  if (!nachricht) return null;
 
   return (
     <div

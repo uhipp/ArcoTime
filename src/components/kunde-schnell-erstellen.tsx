@@ -129,14 +129,14 @@ export function useKundeSchnellErstellen(onErstellt: (kunde: NeuerKunde) => void
           </div>
         </div>
         <p className="text-xs text-gray-400">
-          Adresse & weitere Angaben können später unter "Kunden" ergänzt werden.
+          Adresse & weitere Angaben können später unter „Kunden“ ergänzt werden.
         </p>
 
         {warnung && (
           <div className="rounded bg-amber-50 text-amber-800 text-sm px-3 py-2 space-y-2">
             <p>
-              Ein Kunde namens "{warnung.vorname ? `${warnung.vorname} ` : ""}
-              {warnung.name}" existiert bereits.
+              Ein Kunde namens „{warnung.vorname ? `${warnung.vorname} ` : ""}
+              {warnung.name}“ existiert bereits.
             </p>
             <div className="flex flex-wrap gap-2">
               <button

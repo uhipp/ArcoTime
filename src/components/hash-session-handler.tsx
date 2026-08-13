@@ -19,6 +19,10 @@ export function HashSessionHandler() {
 
     if (!istRelevant) return;
 
+    // Hier ist setState im Effect nicht vermeidbar: window.location.hash
+    // steht erst im Browser zur Verfügung. Beim Rendern abzuleiten würde
+    // serverseitig scheitern und beim Hydrieren auseinanderlaufen.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPrueft(true);
 
     const params = new URLSearchParams(hash.slice(1));
@@ -36,7 +40,7 @@ export function HashSessionHandler() {
         setPrueft(false);
         return;
       }
-      window.location.href = "/passwort-setzen";
+      window.location.assign(new URL("/passwort-setzen", window.location.origin));
     });
   }, []);
 

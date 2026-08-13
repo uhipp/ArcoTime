@@ -164,13 +164,13 @@ export function useProjektSchnellErstellen({
             </div>
             <p className="text-xs text-gray-400">
               Status, Startdatum und weitere Angaben können später unter
-              "Projekte" ergänzt werden.
+              „Projekte“ ergänzt werden.
             </p>
 
             {warnung && (
               <div className="rounded bg-amber-50 text-amber-800 text-sm px-3 py-2 space-y-2">
                 <p>
-                  Ein Projekt namens "{warnung.bezeichnung}" existiert für
+                  Ein Projekt namens „{warnung.bezeichnung}“ existiert für
                   diesen Kunden bereits.
                 </p>
                 <div className="flex flex-wrap gap-2">

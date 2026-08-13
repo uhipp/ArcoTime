@@ -80,7 +80,7 @@ export default async function EinstellungenPage({
       <p className="text-sm text-gray-500">
         Auswahllisten in der ganzen App sind hier frei verwaltbar – nichts
         davon ist fix im Code. Jeder Eintrag lässt sich direkt in seiner Zeile
-        bearbeiten und mit „speichern" übernehmen. Bereits verwendete Werte
+        bearbeiten und mit „speichern“ übernehmen. Bereits verwendete Werte
         lassen sich nur deaktivieren statt löschen, damit bestehende Einträge
         lesbar bleiben.
       </p>
@@ -268,7 +268,7 @@ export default async function EinstellungenPage({
       <section>
         <h2 className="text-lg font-medium mb-3">Einheiten</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Auswahlliste für das Feld „Einheit" im Dienstleistungskatalog –
+          Auswahlliste für das Feld „Einheit“ im Dienstleistungskatalog –
           Stunde, Pauschale, Stück, km, was ihr braucht.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
@@ -646,7 +646,7 @@ export default async function EinstellungenPage({
       <section>
         <h2 className="text-lg font-medium mb-3">Anfrage-Kanäle</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Auswahlliste für "Wie kam die Anfrage rein?".
+          Auswahlliste für „Wie kam die Anfrage rein?“.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {kanaele?.map((k) => (

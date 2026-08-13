@@ -13,8 +13,17 @@ export function PlzOrtFields({
 }) {
   const [plz, setPlz] = useState(defaultPlz ?? "");
   const [ort, setOrt] = useState(defaultOrt ?? "");
-  const [plzAuswahl, setPlzAuswahl] = useState<PlzTreffer[]>([]);
-  const [ortAuswahl, setOrtAuswahl] = useState<PlzTreffer[]>([]);
+  const [plzAuswahlRoh, setPlzAuswahl] = useState<PlzTreffer[]>([]);
+  const [ortAuswahlRoh, setOrtAuswahl] = useState<PlzTreffer[]>([]);
+
+  // Ob eine Vorschlagsliste überhaupt gilt, wird beim Rendern abgeleitet
+  // statt im Effect zurückgesetzt: Sobald die Eingabe nicht mehr zur Liste
+  // passt, ist sie sofort weg – ohne zusätzlichen Renderdurchgang und ohne
+  // dass kurz Vorschläge zu einer alten Eingabe stehen bleiben.
+  const plzVollstaendig = /^\d{4}$/.test(plz);
+  const ortLangGenug = ort.trim().length >= 2;
+  const plzAuswahl = plzVollstaendig ? plzAuswahlRoh : [];
+  const ortAuswahl = ortLangGenug ? ortAuswahlRoh : [];
 
   // Merkt sich, welches Feld zuletzt von Hand geändert wurde – damit sich
   // die beiden Auto-Fill-Richtungen (PLZ→Ort und Ort→PLZ) nicht gegenseitig
@@ -28,10 +37,7 @@ export function PlzOrtFields({
     if (zuletztBearbeitet.current !== "plz") return;
     if (plzDebounce.current) clearTimeout(plzDebounce.current);
 
-    if (!/^\d{4}$/.test(plz)) {
-      setPlzAuswahl([]);
-      return;
-    }
+    if (!plzVollstaendig) return;
 
     plzDebounce.current = setTimeout(async () => {
       try {
@@ -55,17 +61,14 @@ export function PlzOrtFields({
     return () => {
       if (plzDebounce.current) clearTimeout(plzDebounce.current);
     };
-  }, [plz]);
+  }, [plz, plzVollstaendig]);
 
   // Ort eingegeben -> PLZ nachschlagen
   useEffect(() => {
     if (zuletztBearbeitet.current !== "ort") return;
     if (ortDebounce.current) clearTimeout(ortDebounce.current);
 
-    if (ort.trim().length < 2) {
-      setOrtAuswahl([]);
-      return;
-    }
+    if (!ortLangGenug) return;
 
     ortDebounce.current = setTimeout(async () => {
       try {
@@ -89,7 +92,7 @@ export function PlzOrtFields({
     return () => {
       if (ortDebounce.current) clearTimeout(ortDebounce.current);
     };
-  }, [ort]);
+  }, [ort, ortLangGenug]);
 
   return (
     <>

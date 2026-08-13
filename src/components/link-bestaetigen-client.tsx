@@ -41,7 +41,9 @@ export function LinkBestaetigenClient({
       return;
     }
 
-    window.location.href = "/passwort-setzen";
+    // Bewusst ein vollständiger Seitenaufbau statt router.push: Der Server
+    // muss das eben gesetzte Auth-Cookie sehen.
+    window.location.assign(new URL("/passwort-setzen", window.location.origin));
   }
 
   return (

@@ -10,6 +10,7 @@ import { minutenZwischen } from "@/lib/zeit";
 import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
 import type { Dienstleistung, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
+import Link from "next/link";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 type KundeOption = Pick<Kunde, "id" | "name" | "vorname">;
@@ -185,15 +186,18 @@ export function ZeiterfassungForm({
   // Tagesbelegung: Überschneidungen und Tagessumme live anzeigen
   // ---------------------------------------------------------------
   const [datum, setDatum] = useState(zeiteintrag?.datum ?? heuteIso());
-  const [belegung, setBelegung] = useState<Tagesbelegung | null>(null);
+  const [belegungRoh, setBelegungRoh] = useState<Tagesbelegung | null>(null);
+
+  // Mengenartikel haben weder Uhrzeit noch Arbeitszeit – für sie ist die
+  // Tagessumme bedeutungslos. Ob die Belegung überhaupt gilt, wird beim
+  // Rendern abgeleitet statt im Effect zurückgesetzt: So kann gar nicht
+  // erst ein veralteter Wert kurz sichtbar werden, und es entfällt ein
+  // zusätzlicher Renderdurchgang.
+  const belegungRelevant = Boolean(mitarbeiterId && datum && !istMengenartikel);
+  const belegung = belegungRelevant ? belegungRoh : null;
 
   useEffect(() => {
-    // Mengenartikel haben weder Uhrzeit noch Arbeitszeit – für sie ist die
-    // Tagessumme bedeutungslos.
-    if (!mitarbeiterId || !datum || istMengenartikel) {
-      setBelegung(null);
-      return;
-    }
+    if (!belegungRelevant) return;
 
     let abgebrochen = false;
     holeTagesbelegung({
@@ -206,19 +210,19 @@ export function ZeiterfassungForm({
       .then((ergebnis) => {
         // Verwerfen, wenn inzwischen ein neuerer Aufruf unterwegs ist –
         // sonst überschreibt eine langsame Antwort eine aktuellere.
-        if (!abgebrochen) setBelegung(ergebnis);
+        if (!abgebrochen) setBelegungRoh(ergebnis);
       })
       .catch(() => {
         // Der Hinweis ist Komfort, kein Muss: Scheitert die Abfrage, bleibt
         // das Formular benutzbar. Die harte Grenze prüft der Server ohnehin
         // beim Speichern erneut.
-        if (!abgebrochen) setBelegung(null);
+        if (!abgebrochen) setBelegungRoh(null);
       });
 
     return () => {
       abgebrochen = true;
     };
-  }, [mitarbeiterId, datum, startZeit, endZeit, istMengenartikel, zeiteintrag?.id]);
+  }, [belegungRelevant, mitarbeiterId, datum, startZeit, endZeit, zeiteintrag?.id]);
 
   const summeMitDiesem = (belegung?.summeMinuten ?? 0) + (istMengenartikel ? 0 : dauer);
   const warnschwelle = belegung?.warnungAbMinuten ?? null;
@@ -459,7 +463,7 @@ export function ZeiterfassungForm({
           <p className="text-xs text-red-600 mt-1">
             Gestartet um {formatUhrzeit(zeiteintrag!.timer_gestartet_um!)} — diese Seite
             kann verlassen werden, der Timer läuft im Hintergrund weiter. Unter
-            "Zeiterfassung" ist der Eintrag rot markiert.
+            „Zeiterfassung“ ist der Eintrag rot markiert.
           </p>
         </div>
       ) : (
@@ -557,7 +561,7 @@ export function ZeiterfassungForm({
               einer Meldung, die den Grund nicht nannte. */}
           {startZeit && endZeit && minutenZwischen(startZeit, endZeit) === null && (
             <p className="text-xs text-red-600 mt-2">
-              „Bis" liegt vor oder auf „Von" – die Dauer wurde deshalb nicht
+              „Bis“ liegt vor oder auf „Von“ – die Dauer wurde deshalb nicht
               neu berechnet. Einsätze über Mitternacht bitte auf zwei Einträge
               aufteilen.
             </p>
@@ -677,12 +681,12 @@ export function ZeiterfassungForm({
             Speichern
           </button>
         )}
-        <a
+        <Link
           href="/zeiterfassung"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
         >
           Abbrechen
-        </a>
+        </Link>
       </div>
     </form>
 

@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/get-profile";
 import { AnfragenBoard } from "@/components/anfragen-board";
 import type { Anfrage } from "@/lib/types";
 
 export default async function AnfragenPage() {
   const supabase = await createClient();
-  const [user, { data: anfragen, error }, { data: kanaele }, { data: prioritaeten }] =
+  const [{ data: anfragen, error }, { data: kanaele }, { data: prioritaeten }] =
     await Promise.all([
-      getCurrentUser(),
       supabase
         .from("anfragen")
         .select(
@@ -39,7 +37,6 @@ export default async function AnfragenPage() {
 
       <AnfragenBoard
         initialAnfragen={(anfragen as Anfrage[] | null) ?? []}
-        aktuellerUserId={user?.id ?? ""}
         kanaele={kanaele ?? []}
         prioritaeten={prioritaeten ?? []}
       />

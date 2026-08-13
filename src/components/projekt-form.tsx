@@ -5,6 +5,7 @@ import { heuteIso } from "@/lib/date-utils";
 import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import type { Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
+import Link from "next/link";
 
 export function ProjektForm({
   projekt,
@@ -166,12 +167,12 @@ export function ProjektForm({
         >
           Speichern
         </button>
-        <a
+        <Link
           href="/projekte"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
         >
           Abbrechen
-        </a>
+        </Link>
       </div>
     </form>
 

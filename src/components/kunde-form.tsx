@@ -1,5 +1,6 @@
 import type { Kunde } from "@/lib/types";
 import { PlzOrtFields } from "@/components/plz-ort-fields";
+import Link from "next/link";
 
 export function KundeForm({
   kunde,
@@ -108,12 +109,12 @@ export function KundeForm({
         >
           Speichern
         </button>
-        <a
+        <Link
           href="/kunden"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
         >
           Abbrechen
-        </a>
+        </Link>
       </div>
     </form>
   );

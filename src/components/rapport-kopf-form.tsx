@@ -53,7 +53,7 @@ export function RapportKopfForm({
   const [datum, setDatum] = useState(rapport?.datum ?? vorgabeDatum ?? heuteIso());
   const [planVon, setPlanVon] = useState(rapport?.geplant_von?.slice(11, 16) ?? "");
   const [planBis, setPlanBis] = useState(rapport?.geplant_bis?.slice(11, 16) ?? "");
-  const [belegung, setBelegung] = useState<{
+  const [belegungRoh, setBelegungRoh] = useState<{
     belegt: { von: string; bis: string; titel: string }[];
     frei: { von: string; bis: string }[];
     // Gesetzt bei Schliesstag oder ganztägiger Abwesenheit – dann gibt es
@@ -61,25 +61,28 @@ export function RapportKopfForm({
     gesperrt: string | null;
   } | null>(null);
 
+  // Ob die Belegung überhaupt gilt, wird beim Rendern abgeleitet statt im
+  // Effect zurückgesetzt: Damit kann kein veralteter Tagesplan der zuvor
+  // gewählten Person kurz stehen bleiben.
+  const belegungRelevant = Boolean(mitDisposition && geplantFuer && datum);
+  const belegung = belegungRelevant ? belegungRoh : null;
+
   useEffect(() => {
-    if (!mitDisposition || !geplantFuer || !datum) {
-      setBelegung(null);
-      return;
-    }
+    if (!belegungRelevant) return;
     let verworfen = false;
     freieZeitenAm({ mitarbeiterId: geplantFuer, datum, ohneRapportId: rapport?.id ?? null })
       .then((r) => {
-        if (!verworfen) setBelegung(r);
+        if (!verworfen) setBelegungRoh(r);
       })
       .catch(() => {
         // Nur ein Vorschlag – scheitert die Abfrage, bleibt das Formular
         // vollständig benutzbar.
-        if (!verworfen) setBelegung(null);
+        if (!verworfen) setBelegungRoh(null);
       });
     return () => {
       verworfen = true;
     };
-  }, [mitDisposition, geplantFuer, datum, rapport?.id]);
+  }, [belegungRelevant, geplantFuer, datum, rapport?.id]);
 
   function waehleKunde(neu: string) {
     setKundeId(neu);

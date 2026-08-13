@@ -28,12 +28,10 @@ function heuteIso() {
 
 function AnfrageKarte({
   anfrage,
-  aktuellerUserId,
   kanaele,
   prioritaeten,
 }: {
   anfrage: Anfrage;
-  aktuellerUserId: string;
   kanaele: AnfrageKanal[];
   prioritaeten: AnfragePrioritaet[];
 }) {
@@ -103,14 +101,12 @@ function Spalte({
   status,
   titel,
   anfragen,
-  aktuellerUserId,
   kanaele,
   prioritaeten,
 }: {
   status: AnfrageStatus;
   titel: string;
   anfragen: Anfrage[];
-  aktuellerUserId: string;
   kanaele: AnfrageKanal[];
   prioritaeten: AnfragePrioritaet[];
 }) {
@@ -131,7 +127,6 @@ function Spalte({
         <AnfrageKarte
           key={a.id}
           anfrage={a}
-          aktuellerUserId={aktuellerUserId}
           kanaele={kanaele}
           prioritaeten={prioritaeten}
         />
@@ -145,12 +140,10 @@ function Spalte({
 
 export function AnfragenBoard({
   initialAnfragen,
-  aktuellerUserId,
   kanaele,
   prioritaeten,
 }: {
   initialAnfragen: Anfrage[];
-  aktuellerUserId: string;
   kanaele: AnfrageKanal[];
   prioritaeten: AnfragePrioritaet[];
 }) {
@@ -188,7 +181,6 @@ export function AnfragenBoard({
             status={spalte.key}
             titel={spalte.titel}
             anfragen={anfragen.filter((a) => a.status === spalte.key)}
-            aktuellerUserId={aktuellerUserId}
             kanaele={kanaele}
             prioritaeten={prioritaeten}
           />

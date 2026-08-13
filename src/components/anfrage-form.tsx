@@ -5,6 +5,7 @@ import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
 import type { Anfrage, Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
+import Link from "next/link";
 
 type AnfrageKanal = { id: string; wert: string; bezeichnung: string; symbol: string; aktiv: boolean };
 type AnfragePrioritaet = { id: string; wert: string; bezeichnung: string; aktiv: boolean };
@@ -287,12 +288,12 @@ export function AnfrageForm({
           >
             Speichern
           </button>
-          <a
+          <Link
             href="/anfragen"
             className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
           >
             Abbrechen
-          </a>
+          </Link>
         </div>
 
         {children}
