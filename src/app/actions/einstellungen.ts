@@ -6,6 +6,33 @@ import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 
+// Gemeinsamer Nenner aller Auswahllisten: bearbeiten, speichern, zurück auf
+// die Einstellungsseite. Die Listen unterscheiden sich nur in ihren Feldern,
+// nicht im Ablauf – ohne diesen Helfer stünde derselbe Fünfzeiler fünfmal da.
+async function speichereListeneintrag(
+  tabelle: string,
+  id: string,
+  werte: Record<string, unknown>,
+  erfolgsmeldung: string
+) {
+  const supabase = await createClient();
+  const { error } = await supabase.from(tabelle).update(werte).eq("id", id);
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", erfolgsmeldung));
+}
+
+// Sortierung aus dem Formular lesen. Leer oder unsinnig -> unverändert
+// lassen, statt still auf 0 zu setzen.
+function sortierungAus(formData: FormData): number | undefined {
+  const roh = String(formData.get("sortierung") ?? "").trim();
+  if (roh === "") return undefined;
+  const zahl = Number(roh);
+  return Number.isFinite(zahl) ? zahl : undefined;
+}
+
 // ---------------------------------------------------------
 // Organisation (Mandant) – Titel, der im Header statt eines fixen
 // Kunden-Logos angezeigt wird.
@@ -52,6 +79,19 @@ export async function createKlasse(formData: FormData) {
   redirect(mitErfolg("/einstellungen", "Klasse hinzugefügt."));
 }
 
+export async function updateKlasse(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  await speichereListeneintrag(
+    "dienstleistungsklassen",
+    id,
+    { bezeichnung, sortierung: sortierungAus(formData) },
+    "Klasse gespeichert."
+  );
+}
+
 export async function toggleKlasse(id: string, aktiv: boolean) {
   const supabase = await createClient();
   await supabase.from("dienstleistungsklassen").update({ aktiv }).eq("id", id);
@@ -73,13 +113,10 @@ export async function createMwstCode(formData: FormData) {
 
 // Korrigiert Code, Bezeichnung oder Satz eines bestehenden MWSt-Codes.
 //
-// ACHTUNG bei echten Steuersatzänderungen: Zeiteinträge speichern zwar den
-// Preis als Snapshot (siehe 0003_zeiteintraege_preis_snapshot.sql), den
-// MWSt-Code aber nur als Referenz über die Dienstleistung. Wird der Satz
-// hier geändert, gilt der neue Wert deshalb rückwirkend auch für alte
-// Einträge und Exporte. Für eine gesetzliche Satzänderung gehört ein NEUER
-// Code angelegt und der alte deaktiviert – dieses Formular ist zum
-// Korrigieren von Tippfehlern gedacht.
+// Rückwirkungsfrei: Seit 0021_zeiteintraege_mwst_snapshot.sql frieren
+// Zeiteinträge Code und Satz beim Erfassen ein (analog zum Preis aus 0003).
+// Eine Änderung hier wirkt deshalb nur auf künftige Einträge – bestehende
+// behalten den Satz, der beim Erfassen galt.
 export async function updateMwstCode(id: string, formData: FormData) {
   const supabase = await createClient();
   const code = String(formData.get("code") ?? "").trim();
@@ -137,6 +174,22 @@ export async function createRabattsatz(formData: FormData) {
   redirect(mitErfolg("/einstellungen", "Rabattsatz hinzugefügt."));
 }
 
+export async function updateRabattsatz(id: string, formData: FormData) {
+  const prozent = Number(formData.get("prozent") ?? NaN);
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim() || null;
+  if (Number.isNaN(prozent) || prozent < 0 || prozent > 100) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent("Rabatt muss zwischen 0 und 100% liegen.")}`
+    );
+  }
+  await speichereListeneintrag(
+    "rabattsaetze",
+    id,
+    { prozent, bezeichnung, sortierung: sortierungAus(formData) },
+    "Rabattsatz gespeichert."
+  );
+}
+
 export async function toggleRabattsatz(id: string, aktiv: boolean) {
   const supabase = await createClient();
   await supabase.from("rabattsaetze").update({ aktiv }).eq("id", id);
@@ -172,6 +225,24 @@ export async function createAnfrageKanal(formData: FormData) {
   redirect(mitErfolg("/einstellungen", "Kanal hinzugefügt."));
 }
 
+// Bezeichnung und Symbol sind frei änderbar, der interne "wert" bewusst
+// NICHT: Er steht als Fremdschlüssel-Ersatz in anfragen.kanal. Würde er hier
+// mitgeändert, verlören alle bestehenden Anfragen ihren Kanal. Dasselbe gilt
+// für Prioritäten (anfragen.prioritaet).
+export async function updateAnfrageKanal(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  const symbol = String(formData.get("symbol") ?? "").trim() || "•";
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  await speichereListeneintrag(
+    "anfrage_kanaele",
+    id,
+    { bezeichnung, symbol, sortierung: sortierungAus(formData) },
+    "Kanal gespeichert."
+  );
+}
+
 export async function toggleAnfrageKanal(id: string, aktiv: boolean) {
   const supabase = await createClient();
   await supabase.from("anfrage_kanaele").update({ aktiv }).eq("id", id);
@@ -205,6 +276,20 @@ export async function createAnfragePrioritaet(formData: FormData) {
   redirect(mitErfolg("/einstellungen", "Priorität hinzugefügt."));
 }
 
+export async function updateAnfragePrioritaet(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  const farbe = String(formData.get("farbe") ?? "").trim() || "bg-gray-300";
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  await speichereListeneintrag(
+    "anfrage_prioritaeten",
+    id,
+    { bezeichnung, farbe, sortierung: sortierungAus(formData) },
+    "Priorität gespeichert."
+  );
+}
+
 export async function toggleAnfragePrioritaet(id: string, aktiv: boolean) {
   const supabase = await createClient();
   await supabase.from("anfrage_prioritaeten").update({ aktiv }).eq("id", id);
@@ -226,6 +311,19 @@ export async function createDokumentKategorie(formData: FormData) {
   }
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen", "Kategorie hinzugefügt."));
+}
+
+export async function updateDokumentKategorie(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  await speichereListeneintrag(
+    "dokument_kategorien",
+    id,
+    { bezeichnung, sortierung: sortierungAus(formData) },
+    "Kategorie gespeichert."
+  );
 }
 
 export async function toggleDokumentKategorie(id: string, aktiv: boolean) {

@@ -19,13 +19,15 @@ export const einstellungen: HilfeArtikel[] = [
     inhalt: `
 Nur Admins sehen diese Seite – hier lassen sich Auswahllisten zentral konfigurieren, ohne dass eine Programmänderung nötig wäre.
 
+Bei **allen** Listen gilt dasselbe Prinzip: Jeder Eintrag ist direkt in seiner Zeile bearbeitbar und wird mit **"speichern"** übernommen. Nicht mehr benötigte Einträge werden **deaktiviert** statt gelöscht – sie bleiben dadurch in bestehenden Datensätzen lesbar, verschwinden aber aus neuen Auswahllisten. Das Zahlenfeld ganz rechts ist die **Sortierung**: Sie bestimmt, in welcher Reihenfolge die Optionen in den Auswahlfeldern der App erscheinen (kleinere Zahl zuerst).
+
 ## MWSt-Codes
 
 Die Steuercodes aus eurem Buchhaltungssystem, bestehend aus **Code** (z.B. \`B81\`), **Bezeichnung** und **Satz in Prozent**. Sie hängen an den [Dienstleistungen](/hilfe/dienstleistungen) und landen über den [Export](/hilfe/export) in der Buchhaltung.
 
-Alle drei Felder lassen sich direkt in der Zeile ändern und mit **"speichern"** übernehmen. Nicht mehr benötigte Codes werden **deaktiviert** statt gelöscht – so bleiben sie in bestehenden Einträgen lesbar, verschwinden aber aus neuen Auswahllisten.
-
-> **Wichtig bei gesetzlichen Satzänderungen:** Lege einen **neuen Code** an und deaktiviere den alten, statt den Satz zu überschreiben. Der Satz wird nicht pro Zeiteintrag gespeichert, sondern über die Dienstleistung referenziert – eine Änderung wirkt deshalb rückwirkend auch auf bereits erfasste Einträge und auf Exporte, die du früher schon erzeugt hast. Zum Korrigieren eines Tippfehlers ist die Bearbeitung dagegen genau der richtige Weg.
+> **Satzänderungen wirken nicht rückwirkend.** Beim Erfassen eines Zeiteintrags werden Code und Satz eingefroren – genau wie der Preis der Dienstleistung. Änderst du hier den Satz, gilt der neue Wert nur für **ab jetzt** erfasste Einträge; alle bestehenden behalten den Satz, der beim Erfassen gültig war. Ein bereits erzeugter Export einer vergangenen Periode bleibt damit reproduzierbar.
+>
+> Bei einer gesetzlichen Satzänderung kannst du also einfach den Satz anpassen. Einen neuen Code brauchst du nur, wenn dein Buchhaltungssystem alt und neu getrennt sehen will.
 
 ## Dienstleistungsklassen
 
@@ -33,23 +35,23 @@ Gruppieren die [Dienstleistungen](/hilfe/dienstleistungen) für die [Auswertunge
 
 ## Rabattsätze
 
-Die zur Auswahl stehenden Rabatt-Prozentsätze in der Zeiterfassung. Sich lässt eine Bezeichnung, ein Prozentwert und ob der Satz aktiv ist festlegen; inaktive Sätze bleiben in alten Einträgen sichtbar, verschwinden aber aus neuen Auswahllisten.
+Die zur Auswahl stehenden Rabatt-Prozentsätze in der Zeiterfassung, mit optionaler Bezeichnung. Wie beim Preis wird der Rabatt pro Zeiteintrag gespeichert – eine spätere Änderung des Prozentsatzes verändert bestehende Einträge also nicht.
 
 ## Anfrage-Kanäle
 
-Über welche Wege Anfragen eingehen können (Telefon, E-Mail, …), inkl. eines kleinen Symbols, das im Kanban-Board angezeigt wird.
+Über welche Wege Anfragen eingehen können (Telefon, E-Mail, …), inkl. eines kleinen Symbols, das im Kanban-Board angezeigt wird. Symbol und Bezeichnung lassen sich jederzeit ändern – bestehende Anfragen behalten ihren Kanal, weil intern ein unveränderlicher Schlüssel verwendet wird und nicht die Bezeichnung.
 
 ## Anfrage-Prioritäten
 
-Die zur Auswahl stehenden Prioritätsstufen samt Farbe (erscheint als kleiner Punkt auf der Anfrage-Karte).
+Die zur Auswahl stehenden Prioritätsstufen samt Farbe (erscheint als kleiner Punkt auf der Anfrage-Karte). Farbe und Bezeichnung sind änderbar, ohne dass bestehende Anfragen ihre Priorität verlieren.
 
 ## Dokument-Kategorien
 
 Kategorien zur Einordnung hochgeladener Dokumente (z.B. "Vertrag", "Offerte") – erscheinen als Auswahl beim Hochladen an jeder Stelle, die eine Dokumentenablage hat (Kunden, Projekte, Anfragen, Zeiteinträge, Mitarbeitende).
 
-## Reihenfolge
+## Was sich nachträglich NICHT ändern lässt
 
-Bei allen Listen lässt sich eine Sortierreihenfolge angeben – bestimmt, in welcher Reihenfolge die Optionen in den jeweiligen Auswahlfeldern erscheinen.
+Bei Kanälen und Prioritäten wird intern ein **unveränderlicher Schlüssel** aus der ursprünglichen Bezeichnung abgeleitet (z.B. \`telefon\`). Genau dieser Schlüssel steht in den Anfragen, nicht die Bezeichnung – deshalb darfst du umbenennen, ohne dass bestehende Anfragen ihre Zuordnung verlieren. Der Schlüssel selbst bleibt allerdings auf dem alten Stand; sichtbar ist er nur im Export.
 `,
   },
 ];

@@ -6,17 +6,22 @@ import {
   updateOrganisation,
   createKlasse,
   toggleKlasse,
+  updateKlasse,
   createMwstCode,
   toggleMwstCode,
   updateMwstCode,
   createRabattsatz,
   toggleRabattsatz,
+  updateRabattsatz,
   createAnfrageKanal,
   toggleAnfrageKanal,
+  updateAnfrageKanal,
   createAnfragePrioritaet,
   toggleAnfragePrioritaet,
+  updateAnfragePrioritaet,
   createDokumentKategorie,
   toggleDokumentKategorie,
+  updateDokumentKategorie,
 } from "@/app/actions/einstellungen";
 
 export default async function EinstellungenPage({
@@ -103,12 +108,34 @@ export default async function EinstellungenPage({
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {klassen?.map((k) => (
-            <li key={k.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className={k.aktiv ? "" : "text-gray-400 line-through"}>
-                {k.bezeichnung}
-              </span>
-              <form action={toggleKlasse.bind(null, k.id, !k.aktiv)}>
+            <li key={k.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateKlasse.bind(null, k.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={k.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[10rem] rounded border border-gray-300 px-2 py-1 ${
+                    k.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={k.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleKlasse.bind(null, k.id, !k.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
                   {k.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
@@ -137,13 +164,10 @@ export default async function EinstellungenPage({
           Bitte an die effektiven Codes aus eurem Buchhaltungssystem anpassen.
           Bestehende Einträge lassen sich direkt in der Zeile korrigieren.
         </p>
-        <p className="rounded bg-amber-50 text-amber-800 text-xs px-3 py-2 mb-3">
-          Ändert der Gesetzgeber einen Steuersatz, bitte einen{" "}
-          <strong>neuen Code anlegen</strong> und den alten deaktivieren – nicht
-          den Satz hier überschreiben. Der Satz wird nicht pro Zeiteintrag
-          gespeichert, eine Änderung wirkt deshalb auch auf bereits erfasste
-          Einträge und Exporte zurück. Zum Korrigieren von Tippfehlern ist die
-          Bearbeitung dagegen genau richtig.
+        <p className="rounded bg-blue-50 text-blue-900 text-xs px-3 py-2 mb-3">
+          Eine Änderung am Satz gilt nur für <strong>künftige</strong>{" "}
+          Zeiteinträge. Bereits erfasste behalten den Satz, der beim Erfassen
+          gültig war – Exporte vergangener Perioden bleiben dadurch unverändert.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {mwstCodes?.map((m) => (
@@ -236,12 +260,48 @@ export default async function EinstellungenPage({
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {rabattsaetze?.map((r) => (
-            <li key={r.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className={r.aktiv ? "" : "text-gray-400 line-through"}>
-                {Number(r.prozent)}% {r.bezeichnung ? `– ${r.bezeichnung}` : ""}
-              </span>
-              <form action={toggleRabattsatz.bind(null, r.id, !r.aktiv)}>
+            <li key={r.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateRabattsatz.bind(null, r.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="prozent"
+                  type="number"
+                  step="0.1"
+                  min={0}
+                  max={100}
+                  required
+                  defaultValue={Number(r.prozent)}
+                  aria-label="Prozent"
+                  className={`w-20 rounded border border-gray-300 px-2 py-1 ${
+                    r.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <span className="text-xs text-gray-400">%</span>
+                <input
+                  name="bezeichnung"
+                  defaultValue={r.bezeichnung ?? ""}
+                  placeholder="Bezeichnung (optional)"
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 ${
+                    r.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={r.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleRabattsatz.bind(null, r.id, !r.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
                   {r.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
@@ -280,12 +340,41 @@ export default async function EinstellungenPage({
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {kanaele?.map((k) => (
-            <li key={k.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className={k.aktiv ? "" : "text-gray-400 line-through"}>
-                {k.symbol} {k.bezeichnung}
-              </span>
-              <form action={toggleAnfrageKanal.bind(null, k.id, !k.aktiv)}>
+            <li key={k.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateAnfrageKanal.bind(null, k.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="symbol"
+                  defaultValue={k.symbol}
+                  aria-label="Symbol"
+                  title="Symbol"
+                  className="w-14 rounded border border-gray-300 px-2 py-1 text-center"
+                />
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={k.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 ${
+                    k.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={k.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleAnfrageKanal.bind(null, k.id, !k.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
                   {k.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
@@ -321,13 +410,47 @@ export default async function EinstellungenPage({
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {prioritaeten?.map((p) => (
-            <li key={p.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className={`flex items-center gap-2 ${p.aktiv ? "" : "text-gray-400 line-through"}`}>
+            <li key={p.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateAnfragePrioritaet.bind(null, p.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${p.farbe}`} />
-                {p.bezeichnung}
-              </span>
-              <form action={toggleAnfragePrioritaet.bind(null, p.id, !p.aktiv)}>
+                <select
+                  name="farbe"
+                  defaultValue={p.farbe}
+                  aria-label="Farbe"
+                  className="rounded border border-gray-300 px-2 py-1"
+                >
+                  {FARBEN_OPTIONEN.map((f) => (
+                    <option key={f.wert} value={f.wert}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={p.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 ${
+                    p.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={p.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleAnfragePrioritaet.bind(null, p.id, !p.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
                   {p.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
@@ -370,12 +493,34 @@ export default async function EinstellungenPage({
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {dokumentKategorien?.map((k) => (
-            <li key={k.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className={k.aktiv ? "" : "text-gray-400 line-through"}>
-                {k.bezeichnung}
-              </span>
-              <form action={toggleDokumentKategorie.bind(null, k.id, !k.aktiv)}>
+            <li key={k.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateDokumentKategorie.bind(null, k.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={k.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[10rem] rounded border border-gray-300 px-2 py-1 ${
+                    k.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={k.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form action={toggleDokumentKategorie.bind(null, k.id, !k.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
                   {k.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>
