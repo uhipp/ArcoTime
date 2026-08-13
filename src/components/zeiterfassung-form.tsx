@@ -138,8 +138,21 @@ export function ZeiterfassungForm({
 
   const [startZeit, setStartZeit] = useState(zeiteintrag?.start_zeit?.slice(0, 5) ?? "");
   const [endZeit, setEndZeit] = useState(zeiteintrag?.end_zeit?.slice(0, 5) ?? "");
-  const [dauer, setDauer] = useState(zeiteintrag?.dauer_minuten ?? 0);
-  const [menge, setMenge] = useState(zeiteintrag?.menge ?? 0);
+  // Als Text statt Zahl: Number("") ergibt 0, das Feld liesse sich sonst
+  // nicht leeren – es spränge beim Löschen sofort auf 0 zurück.
+  const [dauerText, setDauerText] = useState(
+    zeiteintrag?.dauer_minuten != null ? String(zeiteintrag.dauer_minuten) : ""
+  );
+  const [mengeText, setMengeText] = useState(
+    zeiteintrag?.menge != null ? String(zeiteintrag.menge) : ""
+  );
+  const dauer = Number(dauerText) || 0;
+
+  // Sobald die Dauer von Hand gesetzt wurde, überschreibt Von/Bis sie nicht
+  // mehr. Typischer Fall: 08:00-17:00 ergibt 540 Minuten, davon geht die
+  // Mittagspause ab. Ohne diese Sperre wäre die Korrektur weg, sobald man
+  // eine der beiden Zeiten nochmal anfasst.
+  const [dauerManuell, setDauerManuell] = useState(false);
 
   const [dienstleistungId, setDienstleistungId] = useState(
     zeiteintrag?.dienstleistung_id ?? ""
@@ -301,9 +314,9 @@ export function ZeiterfassungForm({
   function onZeitChange(neueStart: string, neueEnde: string) {
     setStartZeit(neueStart);
     setEndZeit(neueEnde);
-    if (neueStart && neueEnde) {
+    if (neueStart && neueEnde && !dauerManuell) {
       const m = minutenZwischen(neueStart, neueEnde);
-      if (m !== null) setDauer(m);
+      if (m !== null) setDauerText(String(m));
     }
   }
 
@@ -426,8 +439,8 @@ export function ZeiterfassungForm({
               step="0.01"
               min={0}
               required
-              value={menge}
-              onChange={(e) => setMenge(Number(e.target.value))}
+              value={mengeText}
+              onChange={(e) => setMengeText(e.target.value)}
               onFocus={inhaltMarkieren}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
@@ -496,8 +509,11 @@ export function ZeiterfassungForm({
                 name="dauer_minuten"
                 type="number"
                 min={0}
-                value={dauer}
-                onChange={(e) => setDauer(Number(e.target.value))}
+                value={dauerText}
+                onChange={(e) => {
+                  setDauerText(e.target.value);
+                  setDauerManuell(true);
+                }}
                 onFocus={inhaltMarkieren}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
               />
@@ -511,6 +527,31 @@ export function ZeiterfassungForm({
           {dauer > 0 && (
             <p className="text-xs text-gray-400 mt-2">≈ {formatDauer(dauer)}</p>
           )}
+          {/* Abweichung sichtbar machen, statt sie stillschweigend
+              hinzunehmen – sonst fällt ein versehentlich stehengebliebener
+              Wert erst in der Abrechnung auf. */}
+          {dauerManuell &&
+            startZeit &&
+            endZeit &&
+            minutenZwischen(startZeit, endZeit) !== null &&
+            minutenZwischen(startZeit, endZeit) !== dauer && (
+              <p className="text-xs text-amber-700 mt-2">
+                Die Dauer weicht von der Zeitspanne ab
+                {` (${formatDauer(minutenZwischen(startZeit, endZeit)!)})`} – z.B.
+                wegen einer Pause. Sie bleibt so stehen.{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDauerManuell(false);
+                    const m = minutenZwischen(startZeit, endZeit);
+                    if (m !== null) setDauerText(String(m));
+                  }}
+                  className="underline hover:no-underline"
+                >
+                  Aus Zeitspanne neu berechnen
+                </button>
+              </p>
+            )}
           {/* Früher wurde eine rückwärts laufende Zeitspanne stillschweigend
               zu 0 Minuten – der Vertipper fiel erst beim Speichern auf, mit
               einer Meldung, die den Grund nicht nannte. */}
