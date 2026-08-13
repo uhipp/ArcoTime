@@ -5,7 +5,7 @@ export const mitarbeitende: HilfeArtikel[] = [
     slug: "mitarbeitende",
     titel: "Mitarbeitende",
     kategorie: "Verwaltung (Admin)",
-    stichworte: ["einladen", "rolle", "admin", "farbe", "dokumente je person", "login anlegen", "lizenz", "lizenzen", "deaktivieren", "reaktivieren", "abo", "abonnement"],
+    stichworte: ["einladen", "rolle", "admin", "farbe", "dokumente je person", "login anlegen", "lizenz", "lizenzen", "abwesenheit", "ferien", "krankheit", "kalender mitarbeiter", "deaktivieren", "reaktivieren", "abo", "abonnement"],
     routen: ["/mitarbeiter"],
     inhalt: `
 Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingeladen.
@@ -32,9 +32,20 @@ In der Liste lassen sich Vorname, Nachname, Rolle (Mitarbeitende/Admin) und die 
 
 Jede Person hat eine Farbe – wird bei der Einladung automatisch aus einer festen Palette vergeben (damit von Anfang an unterscheidbare Farben ohne Zutun vorhanden sind) und lässt sich hier per Farbfeld frei überschreiben. Diese Farbe erscheint im [Kalender](/hilfe/kalender) und macht dort sofort erkennbar, wessen Zeit oder Anfrage das ist.
 
-## Dokumente je Person
+## Details je Person: Dokumente und Abwesenheiten
 
-Über "Dokumente" bei einer Person gelangst du auf deren Detailseite mit einer eigenen Dokumentenablage (z.B. Vertragsunterlagen).
+Über **"Details"** in der Zeile einer Person öffnest du deren Detailseite. Dort liegen zwei Dinge:
+
+- **Dokumente** – eine eigene Ablage je Person (z.B. Vertragsunterlagen).
+- **Abwesenheiten** – Ferien, Krankheit, Militär, Kurs und alles Weitere, das ihr unter [Einstellungen](/hilfe/einstellungen) als Abwesenheitsart angelegt habt.
+
+## Abwesenheiten erfassen
+
+Eine Abwesenheit hat eine Art, ein Von- und ein Bis-Datum sowie optional eine Notiz. Für einen halben Tag ergänzt du zusätzlich eine Von- und eine Bis-Zeit – ohne Zeitangabe gilt der ganze Tag.
+
+Ist bei der Abwesenheitsart **"blockiert die Planung"** gesetzt, verschwindet der Zeitraum in der [Disposition](/hilfe/disposition) aus den freien Zeiten; die Person lässt sich dann für diese Tage nicht einplanen. Arten ohne dieses Häkchen (z.B. "Homeoffice") sind reine Information.
+
+Erfasst und gelöscht werden Abwesenheiten nur von Admins. Sehen kann sie das ganze Team – die Disposition braucht diese Information.
 `,
   },
 ];

@@ -1,18 +1,128 @@
 [
   {
+    "version": "1.1.0",
+    "datum": "2026-08-14",
+    "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
+    "eintraege": [
+      {
+        "typ": "neu",
+        "text": "Arbeitsrapporte: mehrere Leistungen eines Einsatzes unter einer Rapportnummer, als Nachweis für den Kunden. Preise stehen bewusst nicht darauf – der Rapport ist ein Leistungsnachweis, keine Rechnung."
+      },
+      {
+        "typ": "neu",
+        "text": "Disposition (kostenpflichtiges Zusatzmodul): Einsätze im Tages-, Wochen- oder Monatskalender planen, freie Zeiten je Person vorschlagen lassen und Doppelbelegungen erkennen."
+      },
+      {
+        "typ": "neu",
+        "text": "Abwesenheiten je Mitarbeitende – Ferien, Krankheit, Militär und weitere frei definierbare Arten, ganztägig oder halbtags. Zu finden unter Mitarbeitende → Details."
+      },
+      {
+        "typ": "neu",
+        "text": "Schliesstage und Betriebsferien sowie ein Arbeitstag-Rahmen unter Einstellungen. Beides steuert, welche Zeiten die Disposition als frei vorschlägt."
+      },
+      {
+        "typ": "neu",
+        "text": "Mengenartikel: Kilometer, Spesen und Material lassen sich als Menge erfassen, ohne als Arbeitszeit zu zählen."
+      },
+      {
+        "typ": "neu",
+        "text": "Kundenspezifische Preise, ein Standardrabatt je Kunde und Rabatte je Dienstleistungsklasse. Einzelne Leistungen lassen sich von jedem Rabatt ausnehmen."
+      },
+      {
+        "typ": "neu",
+        "text": "Kontrolle der Tagesarbeitszeit: ein Hinweis ab einer einstellbaren Stundenzahl pro Tag und optional eine harte Sperre."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Alle Auswahllisten unter Einstellungen sind jetzt direkt in der Zeile bearbeitbar, inklusive Sortierreihenfolge – nicht mehr nur anlegen und deaktivieren."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Eine Änderung am MWSt-Satz wirkt nur noch auf neue Zeiteinträge. Bestehende behalten den Satz, der beim Erfassen galt."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Nach dem Speichern eines Eintrags springt die Seite zurück zum leeren Formular – wer mehrere Einträge hintereinander erfasst, muss nicht mehr scrollen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Zeitfelder nehmen 1030, 10.30 und 10:30 gleichermassen entgegen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "In der Mitarbeitendenliste heisst der Link auf die Detailseite neu „Details“ statt „Dokumente“ – dort liegen jetzt auch die Abwesenheiten."
+      },
+      {
+        "typ": "fix",
+        "text": "Registrierung: Die Einladungs-E-Mail kam nicht an, die Kontoerstellung brach mit einem Datenbankfehler ab."
+      },
+      {
+        "typ": "fix",
+        "text": "Die Willkommensseite nach der Registrierung spricht jetzt die angegebene Person an, nicht die Firma."
+      },
+      {
+        "typ": "fix",
+        "text": "Änderungen an der Beschreibung einer Anfrage gingen verloren, wenn die Anfrage im selben Schritt erledigt wurde."
+      },
+      {
+        "typ": "fix",
+        "text": "Bei der Anfrage werden nur noch die Projekte des gewählten Kunden zur Auswahl gestellt."
+      },
+      {
+        "typ": "fix",
+        "text": "Neun Lizenzen kosteten mehr als zehn. Neu greift eine Bestpreis-Garantie: Es wird nie mehr als die nächstgünstigere Menge verrechnet."
+      },
+      {
+        "typ": "fix",
+        "text": "Datumsfelder schliessen ihren Kalender nach der Auswahl selbst – in Safari blieb er offen, bis man daneben klickte."
+      },
+      {
+        "typ": "fix",
+        "text": "Eine abgelehnte Änderung an Mitarbeitenden meldet jetzt den Grund, statt fälschlich „gespeichert“ zu melden."
+      }
+    ]
+  },
+  {
     "version": "1.0.0",
     "datum": "2026-08-12",
     "titel": "ArcoTime 1.0 ist da",
     "eintraege": [
-      { "typ": "neu", "text": "Zeiterfassung mit Timer – läuft im Hintergrund weiter, auch wenn der Browser geschlossen wird." },
-      { "typ": "neu", "text": "Kundenanfragen als Kanban-Board: von der ersten Anfrage bis zum erledigten Auftrag, per Drag & Drop." },
-      { "typ": "neu", "text": "Wiedervorlagen melden sich aktiv: Erinnerung per E-Mail sowie Anzeige in der Navigation, statt nur passiv auf einer Übersichtsseite." },
-      { "typ": "neu", "text": "Farbiger Kalender: Zeiten und Anfragen auf einen Blick, je nach zuständiger Person farblich unterschieden." },
-      { "typ": "neu", "text": "Kunden und Projekte lassen sich direkt aus jedem Formular heraus neu anlegen – inklusive Warnung vor versehentlichen Dubletten." },
-      { "typ": "neu", "text": "Auswertungen nach Tag, Woche oder Monat sowie ein Excel-Export im passenden Format für die Buchhaltung." },
-      { "typ": "neu", "text": "Dokumentenablage für Kunden, Projekte, Anfragen und Mitarbeitende." },
-      { "typ": "neu", "text": "Eine vollständige, durchsuchbare und druckbare Benutzeranleitung direkt in der Anwendung." },
-      { "typ": "neu", "text": "Online-Registrierung mit automatischer Lizenzverwaltung und Zahlungsabwicklung per Karte oder TWINT, inklusive 14 Tage kostenloser Testphase." }
+      {
+        "typ": "neu",
+        "text": "Zeiterfassung mit Timer – läuft im Hintergrund weiter, auch wenn der Browser geschlossen wird."
+      },
+      {
+        "typ": "neu",
+        "text": "Kundenanfragen als Kanban-Board: von der ersten Anfrage bis zum erledigten Auftrag, per Drag & Drop."
+      },
+      {
+        "typ": "neu",
+        "text": "Wiedervorlagen melden sich aktiv: Erinnerung per E-Mail sowie Anzeige in der Navigation, statt nur passiv auf einer Übersichtsseite."
+      },
+      {
+        "typ": "neu",
+        "text": "Farbiger Kalender: Zeiten und Anfragen auf einen Blick, je nach zuständiger Person farblich unterschieden."
+      },
+      {
+        "typ": "neu",
+        "text": "Kunden und Projekte lassen sich direkt aus jedem Formular heraus neu anlegen – inklusive Warnung vor versehentlichen Dubletten."
+      },
+      {
+        "typ": "neu",
+        "text": "Auswertungen nach Tag, Woche oder Monat sowie ein Excel-Export im passenden Format für die Buchhaltung."
+      },
+      {
+        "typ": "neu",
+        "text": "Dokumentenablage für Kunden, Projekte, Anfragen und Mitarbeitende."
+      },
+      {
+        "typ": "neu",
+        "text": "Eine vollständige, durchsuchbare und druckbare Benutzeranleitung direkt in der Anwendung."
+      },
+      {
+        "typ": "neu",
+        "text": "Online-Registrierung mit automatischer Lizenzverwaltung und Zahlungsabwicklung per Karte oder TWINT, inklusive 14 Tage kostenloser Testphase."
+      }
     ]
   }
 ]

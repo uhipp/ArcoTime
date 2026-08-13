@@ -4,6 +4,8 @@ import { kunden } from "./kunden";
 import { projekte } from "./projekte";
 import { dienstleistungen } from "./dienstleistungen";
 import { anfragen } from "./anfragen";
+import { rapporte } from "./rapporte";
+import { disposition } from "./disposition";
 import { kalender } from "./kalender";
 import { auswertungen } from "./auswertungen";
 import { exportArtikel } from "./export";
@@ -23,6 +25,8 @@ export const ALLE_HILFE_ARTIKEL = [
   ...aenderungen,
   ...zeiterfassung,
   ...anfragen,
+  ...rapporte,
+  ...disposition,
   ...kalender,
   ...auswertungen,
   ...kunden,

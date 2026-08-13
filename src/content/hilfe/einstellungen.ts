@@ -14,6 +14,12 @@ export const einstellungen: HilfeArtikel[] = [
       "mwst",
       "mehrwertsteuer",
       "steuersatz",
+      "arbeitstag",
+      "schliesstage",
+      "betriebsferien",
+      "feiertage",
+      "abwesenheitsarten",
+      "tagesgrenze",
     ],
     routen: ["/einstellungen"],
     inhalt: `
@@ -54,6 +60,26 @@ Die zur Auswahl stehenden Prioritätsstufen samt Farbe (erscheint als kleiner Pu
 ## Dokument-Kategorien
 
 Kategorien zur Einordnung hochgeladener Dokumente (z.B. "Vertrag", "Offerte") – erscheinen als Auswahl beim Hochladen an jeder Stelle, die eine Dokumentenablage hat (Kunden, Projekte, Anfragen, Zeiteinträge, Mitarbeitende).
+
+## Arbeitszeit-Grenzen
+
+**Hinweis ab … Stunden pro Tag** und **Speichern sperren ab … Stunden pro Tag** gelten je Mitarbeitendem und Tag, über alle Kunden hinweg. Der Hinweis erscheint beim Erfassen und lässt sich übergehen, die Sperre verweigert das Speichern – auch beim Erledigen einer Anfrage. Beide Felder leer lassen schaltet die jeweilige Prüfung ab.
+
+## Arbeitstag von / bis
+
+Der Rahmen, in dem die [Disposition](/hilfe/disposition) freie Zeiten vorschlägt – standardmässig 07:00 bis 18:00. Einsätze ausserhalb bleiben von Hand planbar; sie werden nur nicht automatisch vorgeschlagen.
+
+## Schliesstage
+
+Feiertage, Betriebsferien und alles andere, an dem die ganze Firma zu ist. Ein Schliesstag hat ein Von- und ein Bis-Datum – für einen einzelnen Tag trägst du beide gleich ein – und eine Bezeichnung. Die Disposition schlägt an diesen Tagen keine freien Zeiten vor.
+
+Schliesstage sperren die Zeiterfassung **nicht**: Wer am Feiertag arbeitet, kann seine Zeit ganz normal erfassen.
+
+## Abwesenheitsarten
+
+Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) → "Details" zur Verfügung steht – z.B. Ferien, Krankheit, Militär, Kurs, Homeoffice.
+
+Das Häkchen **"blockiert die Planung"** entscheidet, ob die Art in der Disposition wirkt: Ist es gesetzt, fällt der Zeitraum aus den freien Zeiten heraus. Ohne Häkchen ist die Abwesenheit reine Information und die Person bleibt einplanbar – gedacht für Fälle wie Homeoffice oder Aussendienst.
 
 ## Was sich nachträglich NICHT ändern lässt
 
