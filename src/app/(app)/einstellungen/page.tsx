@@ -8,6 +8,7 @@ import {
   toggleKlasse,
   createMwstCode,
   toggleMwstCode,
+  updateMwstCode,
   createRabattsatz,
   toggleRabattsatz,
   createAnfrageKanal,
@@ -134,15 +135,64 @@ export default async function EinstellungenPage({
         <h2 className="text-lg font-medium mb-3">MWSt-Codes</h2>
         <p className="text-sm text-gray-500 mb-3">
           Bitte an die effektiven Codes aus eurem Buchhaltungssystem anpassen.
+          Bestehende Einträge lassen sich direkt in der Zeile korrigieren.
+        </p>
+        <p className="rounded bg-amber-50 text-amber-800 text-xs px-3 py-2 mb-3">
+          Ändert der Gesetzgeber einen Steuersatz, bitte einen{" "}
+          <strong>neuen Code anlegen</strong> und den alten deaktivieren – nicht
+          den Satz hier überschreiben. Der Satz wird nicht pro Zeiteintrag
+          gespeichert, eine Änderung wirkt deshalb auch auf bereits erfasste
+          Einträge und Exporte zurück. Zum Korrigieren von Tippfehlern ist die
+          Bearbeitung dagegen genau richtig.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {mwstCodes?.map((m) => (
-            <li key={m.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className={m.aktiv ? "" : "text-gray-400 line-through"}>
-                {m.code} – {m.bezeichnung} ({Number(m.satz).toFixed(1)}%)
-              </span>
-              <form action={toggleMwstCode.bind(null, m.id, !m.aktiv)}>
+            <li key={m.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateMwstCode.bind(null, m.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="code"
+                  required
+                  defaultValue={m.code}
+                  aria-label="Code"
+                  className={`w-24 rounded border border-gray-300 px-2 py-1 ${
+                    m.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={m.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 ${
+                    m.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="satz"
+                  type="number"
+                  step="0.1"
+                  min={0}
+                  max={100}
+                  required
+                  defaultValue={Number(m.satz)}
+                  aria-label="Satz in Prozent"
+                  className={`w-20 rounded border border-gray-300 px-2 py-1 ${
+                    m.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <span className="text-xs text-gray-400">%</span>
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form
+                action={toggleMwstCode.bind(null, m.id, !m.aktiv)}
+                className="mt-1"
+              >
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
                   {m.aktiv ? "deaktivieren" : "aktivieren"}
                 </button>
               </form>

@@ -71,6 +71,44 @@ export async function createMwstCode(formData: FormData) {
   redirect(mitErfolg("/einstellungen", "MWSt-Code hinzugefügt."));
 }
 
+// Korrigiert Code, Bezeichnung oder Satz eines bestehenden MWSt-Codes.
+//
+// ACHTUNG bei echten Steuersatzänderungen: Zeiteinträge speichern zwar den
+// Preis als Snapshot (siehe 0003_zeiteintraege_preis_snapshot.sql), den
+// MWSt-Code aber nur als Referenz über die Dienstleistung. Wird der Satz
+// hier geändert, gilt der neue Wert deshalb rückwirkend auch für alte
+// Einträge und Exporte. Für eine gesetzliche Satzänderung gehört ein NEUER
+// Code angelegt und der alte deaktiviert – dieses Formular ist zum
+// Korrigieren von Tippfehlern gedacht.
+export async function updateMwstCode(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const code = String(formData.get("code") ?? "").trim();
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  const satz = Number(formData.get("satz") ?? NaN);
+
+  if (!code || !bezeichnung) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent("Code und Bezeichnung dürfen nicht leer sein.")}`
+    );
+  }
+  if (Number.isNaN(satz) || satz < 0 || satz > 100) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent("Der MWSt-Satz muss zwischen 0 und 100% liegen.")}`
+    );
+  }
+
+  const { error } = await supabase
+    .from("mwst_codes")
+    .update({ code, bezeichnung, satz })
+    .eq("id", id);
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", `MWSt-Code ${code} gespeichert.`));
+}
+
 export async function toggleMwstCode(id: string, aktiv: boolean) {
   const supabase = await createClient();
   await supabase.from("mwst_codes").update({ aktiv }).eq("id", id);
