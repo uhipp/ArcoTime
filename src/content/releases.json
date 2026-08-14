@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "verbessert",
+        "text": "Im Rapport springt die Seite nach dem Ändern, Entfernen und beim Bearbeiten einer Position zurück zum Positionsformular statt an den Seitenanfang. Dasselbe beim Entfernen und Ersetzen einer beteiligten Person."
+      },
+      {
         "typ": "fix",
         "text": "Abwesenheiten wirkten nirgends: Weder die Disposition noch das Rapportformular haben sie gefunden, ein Einsatz liess sich kommentarlos auf einen Ferientag schieben. Ursache war eine fehlerhafte Abfrage, deren Fehler stillschweigend als „keine Abwesenheit“ gelesen wurde."
       },

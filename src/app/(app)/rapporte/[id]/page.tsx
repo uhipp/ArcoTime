@@ -248,7 +248,10 @@ export default async function RapportDetailPage({
                       <td className="px-4 py-2 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-3">
                           <Link
-                            href={`/rapporte/${id}?bearbeiten=${z.id}`}
+                            // fokus: Das Bearbeitungsformular steht unter
+                            // der Tabelle – ohne den Parameter beginnt die
+                            // Seite oben und man scrollt erst einmal hin.
+                            href={`/rapporte/${id}?bearbeiten=${z.id}&fokus=pos_dienstleistung`}
                             className="text-xs text-arcos-steel hover:underline"
                           >
                             bearbeiten

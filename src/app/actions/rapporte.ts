@@ -433,7 +433,12 @@ export async function aktualisierePosition(
 
   revalidatePath(`/rapporte/${rapportId}`);
   revalidatePath("/zeiterfassung");
-  redirect(mitErfolg(`/rapporte/${rapportId}`, "Position gespeichert."));
+  // Zurück ins leere Positionsformular – dieselbe Regel wie beim
+  // Erfassen. Ohne den Parameter beginnt die Seite wieder oben, und wer
+  // eine Position korrigiert hat, scrollt jedes Mal von Hand zurück.
+  redirect(
+    mitErfolg(`/rapporte/${rapportId}?fokus=pos_dienstleistung`, "Position gespeichert.")
+  );
 }
 
 export async function loeschePosition(rapportId: string, zeiteintragId: string) {
@@ -449,7 +454,9 @@ export async function loeschePosition(rapportId: string, zeiteintragId: string) 
   }
 
   revalidatePath(`/rapporte/${rapportId}`);
-  redirect(mitErfolg(`/rapporte/${rapportId}`, "Position entfernt."));
+  redirect(
+    mitErfolg(`/rapporte/${rapportId}?fokus=pos_dienstleistung`, "Position entfernt.")
+  );
 }
 
 // ---------------------------------------------------------
@@ -985,7 +992,9 @@ export async function entferneBeteiligten(rapportId: string, mitarbeiterId: stri
   revalidatePath(`/rapporte/${rapportId}`);
   revalidatePath("/disposition");
   revalidatePath("/kalender");
-  redirect(mitErfolg(`/rapporte/${rapportId}`, "Aus dem Einsatz entfernt."));
+  redirect(
+    mitErfolg(`/rapporte/${rapportId}?fokus=neues_teammitglied`, "Aus dem Einsatz entfernt.")
+  );
 }
 
 // Person im ganzen Rapport ersetzen.
@@ -1082,7 +1091,7 @@ export async function ersetzeBeteiligten(
   const anzahl = umgehaengt?.length ?? 0;
   redirect(
     mitErfolg(
-      `/rapporte/${rapportId}`,
+      `/rapporte/${rapportId}?fokus=neues_teammitglied`,
       anzahl > 0
         ? `Person ersetzt, ${anzahl} ${anzahl === 1 ? "Position" : "Positionen"} umgehängt.`
         : "Person ersetzt."
