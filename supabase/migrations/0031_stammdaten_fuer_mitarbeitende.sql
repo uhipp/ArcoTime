@@ -3,8 +3,9 @@
 --       Löschen bleibt beim Admin
 -- =========================================================
 --
--- Ausgangslage: Seit 0001 war das Schreiben auf kunden, mandate
--- (= Projekte) und dienstleistungen per RLS auf Admins beschränkt. Die
+-- Ausgangslage: Seit 0001 war das Schreiben auf kunden, projekte
+-- (bis 0008 "mandate") und dienstleistungen per RLS auf Admins
+-- beschränkt. Die
 -- Oberfläche kannte diese Grenze nie – weder /kunden/neu noch
 -- /projekte/neu hatten eine Rollenprüfung, und die Schnellerfassung
 -- ("+ Neuer Kunde") sitzt mitten im Anfrage- und Zeiterfassungsformular,
@@ -77,70 +78,78 @@ $$;
 -- ---------------------------------------------------------
 drop policy if exists "kunden_write_admin" on kunden;
 
+drop policy if exists "kunden_insert" on kunden;
 create policy "kunden_insert" on kunden for insert with check (
   organisation_id = current_organisation_id()
 );
 
+drop policy if exists "kunden_update" on kunden;
 create policy "kunden_update" on kunden for update using (
   organisation_id = current_organisation_id()
 ) with check (
   organisation_id = current_organisation_id()
 );
 
+drop policy if exists "kunden_delete_admin" on kunden;
 create policy "kunden_delete_admin" on kunden for delete using (
   is_admin() and organisation_id = current_organisation_id()
 );
 
 -- ---------------------------------------------------------
--- 2) Projekte (Tabelle mandate)
+-- 2) Projekte (Tabelle projekte, bis 0008 "mandate")
 -- ---------------------------------------------------------
-drop policy if exists "mandate_write_admin" on mandate;
+-- Policy-Name stammt noch aus 0006, die Tabelle heisst seit 0008 projekte.
+drop policy if exists "mandate_write_admin" on projekte;
+drop policy if exists "projekte_insert" on projekte;
+drop policy if exists "projekte_update" on projekte;
+drop policy if exists "projekte_delete_admin" on projekte;
 
-create policy "mandate_insert" on mandate for insert with check (
+create policy "projekte_insert" on projekte for insert with check (
   organisation_id = current_organisation_id()
 );
 
 -- Ändern nur, was auch sichtbar ist: dieselbe Bedingung wie in
--- mandate_select. Ein nicht sichtbares Projekt soll man auch nicht
+-- projekte_select. Ein nicht sichtbares Projekt soll man auch nicht
 -- über einen direkten Aufruf bearbeiten können.
-create policy "mandate_update" on mandate for update using (
+create policy "projekte_update" on projekte for update using (
   organisation_id = current_organisation_id()
   and (
     is_admin()
     or sichtbar_fuer_alle
     or exists (
-      select 1 from mandat_mitarbeiter mm
-      where mm.mandat_id = mandate.id and mm.user_id = auth.uid()
+      select 1 from projekt_mitarbeiter mm
+      where mm.projekt_id = projekte.id and mm.user_id = auth.uid()
     )
   )
 ) with check (
   organisation_id = current_organisation_id()
 );
 
-create policy "mandate_delete_admin" on mandate for delete using (
+create policy "projekte_delete_admin" on projekte for delete using (
   is_admin() and organisation_id = current_organisation_id()
 );
 
 -- ---------------------------------------------------------
--- 3) Projektteam (mandat_mitarbeiter)
+-- 3) Projektteam (projekt_mitarbeiter)
 -- ---------------------------------------------------------
 -- Wer ein Projekt bearbeiten darf, darf auch sein Team pflegen. Die
--- Sichtbarkeitsprüfung läuft über die Unterabfrage auf mandate – deren
+-- Sichtbarkeitsprüfung läuft über die Unterabfrage auf projekte – deren
 -- eigene RLS greift dabei mit, ein unsichtbares Projekt liefert also
 -- keine Zeile und die Bedingung ist falsch.
-drop policy if exists "mandat_mitarbeiter_write_admin" on mandat_mitarbeiter;
+drop policy if exists "mandat_mitarbeiter_write_admin" on projekt_mitarbeiter;
+drop policy if exists "projekt_mitarbeiter_write" on projekt_mitarbeiter;
 
-create policy "mandat_mitarbeiter_write" on mandat_mitarbeiter for all using (
+create policy "projekt_mitarbeiter_write" on projekt_mitarbeiter for all using (
   exists (
-    select 1 from mandate m
-    where m.id = mandat_mitarbeiter.mandat_id
-      and m.organisation_id = current_organisation_id()
+    select 1 from projekte pr
+    where pr.id = projekt_mitarbeiter.projekt_id
+      and pr.organisation_id = current_organisation_id()
   )
 ) with check (
   exists (
-    select 1 from mandate m
-    where m.id = mandat_mitarbeiter.mandat_id
-      and m.organisation_id = current_organisation_id()
+    select 1 from projekte pr
+    where pr.id = projekt_mitarbeiter.projekt_id
+      and pr.organisation_id = current_organisation_id()
   )
 );
 
@@ -153,16 +162,19 @@ create policy "mandat_mitarbeiter_write" on mandat_mitarbeiter for all using (
 -- Deshalb hier dieselbe Trennung.
 drop policy if exists "dienstleistungen_write_admin" on dienstleistungen;
 
+drop policy if exists "dienstleistungen_insert" on dienstleistungen;
 create policy "dienstleistungen_insert" on dienstleistungen for insert with check (
   organisation_id = current_organisation_id()
 );
 
+drop policy if exists "dienstleistungen_update" on dienstleistungen;
 create policy "dienstleistungen_update" on dienstleistungen for update using (
   organisation_id = current_organisation_id()
 ) with check (
   organisation_id = current_organisation_id()
 );
 
+drop policy if exists "dienstleistungen_delete_admin" on dienstleistungen;
 create policy "dienstleistungen_delete_admin" on dienstleistungen for delete using (
   is_admin() and organisation_id = current_organisation_id()
 );
