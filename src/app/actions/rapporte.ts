@@ -10,6 +10,7 @@ import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
+import type { PositionsErgebnis } from "@/lib/positions-ergebnis";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -188,7 +189,11 @@ export async function loescheRapport(id: string) {
 // ---------------------------------------------------------
 // Positionen
 // ---------------------------------------------------------
-export async function fuegePositionHinzu(rapportId: string, formData: FormData) {
+export async function fuegePositionHinzu(
+  rapportId: string,
+  _bisher: PositionsErgebnis,
+  formData: FormData
+): Promise<PositionsErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -199,21 +204,13 @@ export async function fuegePositionHinzu(rapportId: string, formData: FormData) 
     .single();
 
   if (!rapport) {
-    redirect(`/rapporte?error=${encodeURIComponent("Rapport nicht gefunden.")}`);
+    return { fehler: "Rapport nicht gefunden." };
   }
   if (rapport.status !== "offen") {
-    redirect(
-      `/rapporte/${rapportId}?error=${encodeURIComponent(
-        "Dieser Rapport ist abgeschlossen und lässt sich nicht mehr ändern."
-      )}`
-    );
+    return { fehler: "Dieser Rapport ist abgeschlossen und lässt sich nicht mehr ändern." };
   }
   if (!rapport.projekt_id) {
-    redirect(
-      `/rapporte/${rapportId}?error=${encodeURIComponent(
-        "Bitte zuerst oben ein Projekt wählen – ohne Projekt lässt sich keine Leistung verrechnen."
-      )}`
-    );
+    return { fehler: "Bitte zuerst oben ein Projekt wählen – ohne Projekt lässt sich keine Leistung verrechnen." };
   }
 
   const str = (v: FormDataEntryValue | null) =>
@@ -237,7 +234,7 @@ export async function fuegePositionHinzu(rapportId: string, formData: FormData) 
 
   const fehler = await pruefeGegenDienstleistung(supabase, werte);
   if (fehler) {
-    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(fehler)}`);
+    return { fehler };
   }
 
   const istArbeitszeit = werte.menge === null;
@@ -250,7 +247,7 @@ export async function fuegePositionHinzu(rapportId: string, formData: FormData) 
       neueMinuten: werte.dauer_minuten,
     });
     if (grenze) {
-      redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(grenze)}`);
+      return { fehler: grenze };
     }
   }
 
@@ -265,7 +262,7 @@ export async function fuegePositionHinzu(rapportId: string, formData: FormData) 
   });
 
   if (error) {
-    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath(`/rapporte/${rapportId}`);
@@ -279,8 +276,9 @@ export async function fuegePositionHinzu(rapportId: string, formData: FormData) 
 export async function aktualisierePosition(
   rapportId: string,
   zeiteintragId: string,
+  _bisher: PositionsErgebnis,
   formData: FormData
-) {
+): Promise<PositionsErgebnis> {
   const supabase = await createClient();
 
   const { data: rapport } = await supabase
@@ -290,11 +288,7 @@ export async function aktualisierePosition(
     .single();
 
   if (!rapport || rapport.status !== "offen") {
-    redirect(
-      `/rapporte/${rapportId}?error=${encodeURIComponent(
-        "Dieser Rapport ist abgeschlossen und lässt sich nicht mehr ändern."
-      )}`
-    );
+    return { fehler: "Dieser Rapport ist abgeschlossen und lässt sich nicht mehr ändern." };
   }
 
   const str = (v: FormDataEntryValue | null) =>
@@ -313,9 +307,7 @@ export async function aktualisierePosition(
 
   const fehler = await pruefeGegenDienstleistung(supabase, werte);
   if (fehler) {
-    redirect(
-      `/rapporte/${rapportId}?bearbeiten=${zeiteintragId}&error=${encodeURIComponent(fehler)}`
-    );
+    return { fehler };
   }
 
   const istArbeitszeit = werte.menge === null;
@@ -330,9 +322,7 @@ export async function aktualisierePosition(
       ohneEintragId: zeiteintragId,
     });
     if (grenze) {
-      redirect(
-        `/rapporte/${rapportId}?bearbeiten=${zeiteintragId}&error=${encodeURIComponent(grenze)}`
-      );
+      return { fehler: grenze };
     }
   }
 
@@ -364,9 +354,7 @@ export async function aktualisierePosition(
     .eq("id", zeiteintragId);
 
   if (error) {
-    redirect(
-      `/rapporte/${rapportId}?bearbeiten=${zeiteintragId}&error=${encodeURIComponent(error.message)}`
-    );
+    return { fehler: error.message };
   }
 
   revalidatePath(`/rapporte/${rapportId}`);

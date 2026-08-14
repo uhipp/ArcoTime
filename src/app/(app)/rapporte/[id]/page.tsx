@@ -238,6 +238,8 @@ export default async function RapportDetailPage({
             rabattsaetze={rabattsaetze ?? []}
             action={aktualisierePosition.bind(null, id, inBearbeitung.id)}
             position={inBearbeitung}
+            mitarbeiterId={rapport.mitarbeiter_id}
+            datum={rapport.datum}
             abbrechenHref={`/rapporte/${id}`}
           />
         )}
@@ -246,6 +248,8 @@ export default async function RapportDetailPage({
             dienstleistungen={dienstleistungen ?? []}
             rabattsaetze={rabattsaetze ?? []}
             action={fuegePositionHinzu.bind(null, id)}
+            mitarbeiterId={rapport.mitarbeiter_id}
+            datum={rapport.datum}
           />
         )}
       </div>

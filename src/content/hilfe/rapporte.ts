@@ -52,6 +52,10 @@ Der zweite Weg führt über eine [Anfrage](/hilfe/anfragen): Dort schliesst **"E
 
 Zu jedem Rapport lassen sich Dokumente ablegen – Anweisungen, Pläne, Fotos, alles was die Person braucht, die rausfährt. Kommt der Rapport aus einer [Anfrage](/hilfe/anfragen), können deren Dokumente beim Abschliessen direkt mit übernommen werden.
 
+## Wenn eine Position abgelehnt wird
+
+Überschreitet eine Position die zulässige Tagesarbeitszeit, erscheint der Hinweis schon **während** du sie erfasst – nicht erst beim Speichern. Und falls der Server sie doch ablehnt, bleibt alles Eingetippte stehen: Die Meldung erscheint im Formular, die Beschreibung ist nicht verloren.
+
 ## Übersicht sortieren
 
 Ein Klick auf einen Spaltenkopf sortiert die Liste nach dieser Spalte, ein zweiter Klick dreht die Richtung um. Der kleine Pfeil zeigt, wonach gerade sortiert ist. Ein gesetzter Statusfilter bleibt dabei erhalten.

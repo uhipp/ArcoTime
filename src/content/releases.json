@@ -147,6 +147,10 @@
       {
         "typ": "verbessert",
         "text": "Beim Löschen eines Rapports werden seine Positionen jetzt mitgelöscht statt als Zeiteinträge stehen zu bleiben – ein verworfener Einsatz wurde nicht geleistet. Bereits exportierte Positionen verhindern das Löschen; dort ist die Stornierung vorgesehen."
+      },
+      {
+        "typ": "fix",
+        "text": "Wurde eine Rapport-Position wegen der Tagesarbeitszeit abgelehnt, war sie samt Beschreibung verloren. Der Hinweis erscheint jetzt bereits beim Erfassen, und eine Ablehnung lässt die Eingabe stehen."
       }
     ]
   },
