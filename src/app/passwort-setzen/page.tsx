@@ -2,6 +2,7 @@ import Image from "next/image";
 import { setzeNeuesPasswort } from "@/app/actions/auth";
 import { getLoginMandantName } from "@/lib/login-mandant";
 import { getCurrentUser } from "@/lib/get-profile";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 import { redirect } from "next/navigation";
 
 export default async function PasswortSetzenPage({
@@ -87,12 +88,7 @@ export default async function PasswortSetzenPage({
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded bg-arcos-steel text-white text-sm font-medium py-2 hover:bg-arcos-navy"
-          >
-            Passwort speichern
-          </button>
+          <AbsendeKnopf laufttext="Wird gespeichert…">Passwort speichern</AbsendeKnopf>
         </form>
       </div>
     </div>
