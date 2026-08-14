@@ -5,7 +5,7 @@ export const mitarbeitende: HilfeArtikel[] = [
     slug: "mitarbeitende",
     titel: "Mitarbeitende",
     kategorie: "Verwaltung (Admin)",
-    stichworte: ["einladen", "rolle", "admin", "farbe", "dokumente je person", "login anlegen", "lizenz", "lizenzen", "abwesenheit", "ferien", "krankheit", "kalender mitarbeiter", "deaktivieren", "reaktivieren", "abo", "abonnement"],
+    stichworte: ["einladen", "rolle", "admin", "farbe", "dokumente je person", "login anlegen", "lizenz", "lizenzen", "rolle", "rechte", "berechtigung", "was darf wer", "abwesenheit", "ferien", "krankheit", "kalender mitarbeiter", "deaktivieren", "reaktivieren", "abo", "abonnement"],
     routen: ["/mitarbeiter"],
     inhalt: `
 Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingeladen.
@@ -27,6 +27,14 @@ Oben auf der Seite steht, wie viele Lizenzen aktuell genutzt werden, z.B. "7 von
 ## Stammdaten bearbeiten
 
 In der Liste lassen sich Vorname, Nachname, Rolle (Mitarbeitende/Admin) und die **Farbe** direkt in der Zeile ändern, mit "Speichern" bestätigen.
+
+## Was darf wer?
+
+Es gibt zwei Rollen: **Mitarbeitende** und **Admin**.
+
+Mitarbeitende dürfen alles erfassen und bearbeiten, was ihnen die Anwendung zeigt – auch Kunden, Projekte und Dienstleistungen, und zwar direkt aus dem Formular heraus, in dem sie gerade stehen. Nicht löschen dürfen sie: **Kunden, Projekte, Dienstleistungen** und bereits **exportierte Zeiteinträge**. Diese Datensätze hängen an bestehenden Zeiteinträgen und Rapporten, ein Löschen wirkt also rückwärts. Der Löschknopf erscheint bei ihnen gar nicht erst.
+
+Nur Admins sehen zusätzlich: [Einstellungen](/hilfe/einstellungen), Mitarbeitende, [Export](/hilfe/export), die Abwesenheiten einer Person sowie Preise und Rabatte auf der Kundenseite.
 
 ## Farbe
 

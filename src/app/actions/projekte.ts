@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import { mitErfolg } from "@/lib/erfolg";
+import { loeschHinweis } from "@/lib/loeschen";
 
 function projektFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -58,7 +59,17 @@ export async function updateProjekt(id: string, formData: FormData) {
 
 export async function deleteProjekt(id: string) {
   const supabase = await createClient();
-  await supabase.from("projekte").delete().eq("id", id);
+  const { data, error } = await supabase
+    .from("projekte")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  const meldung = loeschHinweis(data, error, "Projekt", "Projekte");
+  if (meldung) {
+    redirect(`/projekte/${id}?error=${encodeURIComponent(meldung)}`);
+  }
+
   revalidatePath("/projekte");
   redirect(mitErfolg("/projekte", "Projekt gelöscht."));
 }

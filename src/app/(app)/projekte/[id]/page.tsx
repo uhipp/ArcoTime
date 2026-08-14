@@ -33,6 +33,8 @@ export default async function ProjektDetailPage({
 
   if (!projekt) notFound();
 
+  const istAdmin = profile?.role === "admin";
+
   const updateAction = updateProjekt.bind(null, id);
   const deleteAction = deleteProjekt.bind(null, id);
 
@@ -41,11 +43,14 @@ export default async function ProjektDetailPage({
       <div>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold">{projekt.bezeichnung}</h1>
-          <DeleteButton
-            action={deleteAction}
-            label="Projekt löschen"
-            confirmText="Projekt wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
-          />
+          {/* Löschen bleibt beim Admin – siehe 0031. */}
+          {istAdmin && (
+            <DeleteButton
+              action={deleteAction}
+              label="Projekt löschen"
+              confirmText="Projekt wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
+            />
+          )}
         </div>
         <ProjektForm
           projekt={projekt as Projekt}
@@ -63,7 +68,7 @@ export default async function ProjektDetailPage({
           initialDokumente={dokumente}
           kategorien={kategorien}
           aktuellerUserId={profile?.id ?? ""}
-          istAdmin={profile?.role === "admin"}
+          istAdmin={istAdmin}
         />
       </div>
     </div>

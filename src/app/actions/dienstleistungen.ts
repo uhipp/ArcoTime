@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
+import { loeschHinweis } from "@/lib/loeschen";
 
 function dienstleistungFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -56,7 +57,17 @@ export async function updateDienstleistung(id: string, formData: FormData) {
 
 export async function deleteDienstleistung(id: string) {
   const supabase = await createClient();
-  await supabase.from("dienstleistungen").delete().eq("id", id);
+  const { data, error } = await supabase
+    .from("dienstleistungen")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  const meldung = loeschHinweis(data, error, "Dienstleistung", "Dienstleistungen");
+  if (meldung) {
+    redirect(`/dienstleistungen/${id}?error=${encodeURIComponent(meldung)}`);
+  }
+
   revalidatePath("/dienstleistungen");
   redirect(mitErfolg("/dienstleistungen", "Dienstleistung gelöscht."));
 }

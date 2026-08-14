@@ -83,6 +83,8 @@ export default async function KundeDetailPage({
 
   if (!kunde) notFound();
 
+  const istAdmin = profile?.role === "admin";
+
   const updateAction = updateKunde.bind(null, id);
   const deleteAction = deleteKunde.bind(null, id);
   const zeilen = (zeiteintraege as ZeiteintragMitDetails[] | null) ?? [];
@@ -96,16 +98,21 @@ export default async function KundeDetailPage({
             {kunde.vorname ? `${kunde.vorname} ` : ""}
             {kunde.name}
           </h1>
-          <DeleteButton
-            action={deleteAction}
-            label="Kunde löschen"
-            confirmText="Kunde inkl. aller zugehörigen Projekte ohne Zeiteinträge wirklich löschen?"
-          />
+          {/* Löschen bleibt beim Admin (RLS seit 0031): Ein Kunde hängt an
+              bestehenden Zeiteinträgen und Rapporten. Erfassen und
+              Bearbeiten darf jeder. */}
+          {istAdmin && (
+            <DeleteButton
+              action={deleteAction}
+              label="Kunde löschen"
+              confirmText="Kunde inkl. aller zugehörigen Projekte ohne Zeiteinträge wirklich löschen?"
+            />
+          )}
         </div>
         <KundeForm kunde={kunde as Kunde} action={updateAction} error={error} />
       </div>
 
-      {profile?.role === "admin" && (
+      {istAdmin && (
         <KundenPreiseRabatte
           kundeId={id}
           dienstleistungen={alleDienstleistungen ?? []}
@@ -268,7 +275,7 @@ export default async function KundeDetailPage({
           initialDokumente={dokumente}
           kategorien={kategorien}
           aktuellerUserId={profile?.id ?? ""}
-          istAdmin={profile?.role === "admin"}
+          istAdmin={istAdmin}
         />
       </div>
     </div>

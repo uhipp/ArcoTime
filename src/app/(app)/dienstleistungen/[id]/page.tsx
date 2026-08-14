@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/get-profile";
 import { DienstleistungForm } from "@/components/dienstleistung-form";
 import { updateDienstleistung, deleteDienstleistung } from "@/app/actions/dienstleistungen";
 import { DeleteButton } from "@/components/delete-button";
@@ -42,6 +43,9 @@ export default async function DienstleistungDetailPage({
       .order("sortierung"),
   ]);
 
+  const profile = await getCurrentProfile();
+  const istAdmin = profile?.role === "admin";
+
   const updateAction = updateDienstleistung.bind(null, id);
   const deleteAction = deleteDienstleistung.bind(null, id);
 
@@ -49,11 +53,14 @@ export default async function DienstleistungDetailPage({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">{dienstleistung.bezeichnung}</h1>
-        <DeleteButton
-          action={deleteAction}
-          label="Dienstleistung löschen"
-          confirmText="Dienstleistung wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
-        />
+        {/* Löschen bleibt beim Admin – siehe 0031. */}
+        {istAdmin && (
+          <DeleteButton
+            action={deleteAction}
+            label="Dienstleistung löschen"
+            confirmText="Dienstleistung wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
+          />
+        )}
       </div>
       <DienstleistungForm
         dienstleistung={dienstleistung as Dienstleistung}

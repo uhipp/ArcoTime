@@ -79,6 +79,10 @@
       {
         "typ": "fix",
         "text": "Eine abgelehnte Änderung an Mitarbeitenden meldet jetzt den Grund, statt fälschlich „gespeichert“ zu melden."
+      },
+      {
+        "typ": "fix",
+        "text": "Mitarbeitende konnten weder Kunden noch Projekte oder Dienstleistungen anlegen – es erschien nur eine technische Fehlermeldung. Neu darf jede und jeder erfassen und bearbeiten, was die eigene Oberfläche zeigt. Löschen bleibt beim Admin."
       }
     ]
   },
