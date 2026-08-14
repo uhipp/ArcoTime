@@ -115,7 +115,7 @@ export default async function RapportDetailPage({
             <DeleteButton
               action={loescheRapport.bind(null, id)}
               label="Rapport löschen"
-              confirmText="Rapport wirklich löschen? Die erfassten Leistungen bleiben als Zeiteinträge bestehen."
+              confirmText="Rapport wirklich löschen? Die erfassten Positionen werden dabei mitgelöscht – sie gelten als nicht geleistet."
             />
           )}
         </div>

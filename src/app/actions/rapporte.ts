@@ -117,9 +117,41 @@ export async function aktualisiereRapport(id: string, formData: FormData) {
 export async function loescheRapport(id: string) {
   const supabase = await createClient();
 
-  // Die Positionen zuerst lösen statt mitzulöschen: Erfasste Leistungen
-  // bleiben verrechenbar, auch wenn das Dokument darüber verworfen wird.
-  await supabase.from("zeiteintraege").update({ rapport_id: null }).eq("rapport_id", id);
+  // Die Positionen gehen mit. Wer einen Rapport löscht, tut das, weil der
+  // Einsatz nicht stattfindet oder etwas schiefgelaufen ist – dann wurde
+  // die Leistung auch nicht erbracht, und sie darf nicht als
+  // verrechenbarer Zeiteintrag zurückbleiben. (Bis zu dieser Änderung
+  // wurden die Positionen nur gelöst; das hat verrechenbare Arbeit
+  // erfunden, die es nie gab.)
+  const { data: positionen } = await supabase
+    .from("zeiteintraege")
+    .select("id, beleg_id")
+    .eq("rapport_id", id);
+
+  // Ausnahme: Was bereits exportiert ist, liegt in der Buchhaltung. Solche
+  // Positionen wegzulöschen hiesse, eine Rechnung nachträglich um ihre
+  // Grundlage zu bringen. Dann lieber gar nicht löschen und den Weg über
+  // eine Stornierung gehen – ein halb geleerter Rapport wäre der
+  // schlechteste Zustand von allen.
+  const exportiert = (positionen ?? []).filter((p) => p.beleg_id).length;
+  if (exportiert > 0) {
+    redirect(
+      `/rapporte/${id}?error=${encodeURIComponent(
+        `Dieser Rapport lässt sich nicht löschen: ${exportiert} ${
+          exportiert === 1 ? "Position ist" : "Positionen sind"
+        } bereits exportiert und damit in der Buchhaltung. Bitte den Rapport stornieren.`
+      )}`
+    );
+  }
+
+  const { error: positionenFehler } = await supabase
+    .from("zeiteintraege")
+    .delete()
+    .eq("rapport_id", id);
+
+  if (positionenFehler) {
+    redirect(`/rapporte/${id}?error=${encodeURIComponent(positionenFehler.message)}`);
+  }
 
   // Vor dem Löschen: Stammt der Rapport aus einer Anfrage, war ER der
   // Grund für deren "erledigt". Fällt er weg, muss die Anfrage zurück –
@@ -137,9 +169,18 @@ export async function loescheRapport(id: string) {
   redirect(
     mitErfolg(
       "/rapporte",
-      anfrageGeoeffnet
-        ? "Rapport gelöscht – die erfassten Leistungen bleiben bestehen, die zugehörige Anfrage ist wieder offen."
-        : "Rapport gelöscht – die erfassten Leistungen bleiben bestehen."
+      [
+        `Rapport gelöscht${
+          positionen && positionen.length > 0
+            ? ` – samt ${positionen.length} ${
+                positionen.length === 1 ? "Position" : "Positionen"
+              }`
+            : ""
+        }.`,
+        anfrageGeoeffnet ? "Die zugehörige Anfrage ist wieder offen." : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
     )
   );
 }

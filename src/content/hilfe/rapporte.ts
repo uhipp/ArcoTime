@@ -64,7 +64,9 @@ Die Nummer im Format **2026-0001** wird erst beim Abschliessen vergeben, nicht b
 
 ## Löschen
 
-Solange ein Rapport im Status "Entwurf" ist, kannst du ihn löschen. Stammt er aus einer [Anfrage](/hilfe/anfragen), wird diese dabei wieder geöffnet. Die erfassten **Leistungen bleiben dabei bestehen** und sind weiterhin verrechenbar – nur das Dokument darüber verschwindet. Eine einzelne Position entfernst du über "entfernen" in der Zeile; die wird tatsächlich gelöscht, denn sie wurde ja im Rapport erfasst.
+Solange ein Rapport im Status "Entwurf" ist, kannst du ihn löschen. **Die erfassten Positionen werden dabei mitgelöscht.** Wer einen Rapport verwirft, tut das, weil der Einsatz nicht stattfindet oder etwas schiefgelaufen ist – dann wurde die Leistung auch nicht erbracht und darf nicht als verrechenbarer Zeiteintrag zurückbleiben. Stammt der Rapport aus einer [Anfrage](/hilfe/anfragen), wird diese dabei wieder geöffnet.
+
+Eine Ausnahme: Ist eine Position bereits **exportiert**, lässt sich der Rapport nicht mehr löschen – diese Leistung liegt schon in der Buchhaltung. Für solche Fälle ist die Stornierung vorgesehen. Eine einzelne Position entfernst du über "entfernen" in der Zeile.
 
 ## Was noch kommt
 

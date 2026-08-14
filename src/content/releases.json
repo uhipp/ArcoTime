@@ -143,6 +143,10 @@
       {
         "typ": "neu",
         "text": "Die Rapport-Übersicht lässt sich per Klick auf den Spaltenkopf sortieren, ein zweiter Klick dreht die Richtung. Weitere Listen folgen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Beim Löschen eines Rapports werden seine Positionen jetzt mitgelöscht statt als Zeiteinträge stehen zu bleiben – ein verworfener Einsatz wurde nicht geleistet. Bereits exportierte Positionen verhindern das Löschen; dort ist die Stornierung vorgesehen."
       }
     ]
   },
