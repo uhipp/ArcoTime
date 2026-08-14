@@ -338,6 +338,10 @@ export default async function RapportDetailPage({
           ohneUnterschriftAction={schliesseRapportAb.bind(null, id)}
           anzahlPositionen={positionen.length}
           datumInZukunft={rapport.datum > heuteIso()}
+          darfAbschliessen={
+            rapport.mitarbeiter_id === profile?.id || profile?.role === "admin"
+          }
+          verantwortlichName={rapport.profiles?.name ?? null}
         />
       )}
 

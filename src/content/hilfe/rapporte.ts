@@ -55,6 +55,14 @@ Ist niemand Unterschriftsberechtigtes mehr vor Ort, gibt es darunter **„Ohne U
 
 Zwei Fälle lassen keinen Abschluss zu: ein Rapport **ohne Positionen** und einer mit **Datum in der Zukunft**. Beim zweiten ist der Einsatz schlicht noch nicht geleistet.
 
+### Wer abschliesst
+
+Abschliessen darf die **verantwortliche Person** des Rapports – bei einem Einsatz mit mehreren Beteiligten also die Projektleitung. Sie war dabei, sie steht mit ihrem Namen auf dem Dokument, und sie beurteilt, ob alle Positionen erfasst sind. Wer nicht verantwortlich ist, sieht statt der Abschlussfelder einen Hinweis mit dem Namen der zuständigen Person.
+
+Soll jemand anders abschliessen, wird oben am Rapport die **verantwortliche Person geändert** – dann stimmt auch das Dokument. Zusätzlich darf ein **Administrator** jederzeit abschliessen, damit ein Einsatz nicht feststeckt, wenn die verantwortliche Person krank ist oder das Unternehmen verlassen hat.
+
+Das **Stornieren** ist bewusst nicht eingeschränkt: Es ist eine Korrektur des Büros und wird oft gerade dann gebraucht, wenn die verantwortliche Person nicht erreichbar ist.
+
 ## Beteiligte
 
 Ein Auftrag wird oft von mehreren Personen zusammen erledigt – etwa eine Projektleiterin mit zwei Monteuren. Unter **Beteiligte** legst du fest, wer bei diesem Einsatz dabei ist.

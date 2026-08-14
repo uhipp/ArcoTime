@@ -24,11 +24,17 @@ export function RapportAbschluss({
   ohneUnterschriftAction,
   anzahlPositionen,
   datumInZukunft,
+  darfAbschliessen,
+  verantwortlichName,
 }: {
   signierenAction: Aktion;
   ohneUnterschriftAction: Aktion;
   anzahlPositionen: number;
   datumInZukunft: boolean;
+  // Abschliessen darf die verantwortliche Person – oder ein Admin, damit
+  // ein Einsatz nicht feststeckt, wenn sie krank ist (0047).
+  darfAbschliessen: boolean;
+  verantwortlichName: string | null;
 }) {
   const [signErgebnis, signFormAction] = useActionState(signierenAction, null);
   const [ohneErgebnis, ohneFormAction] = useActionState(ohneUnterschriftAction, null);
@@ -36,8 +42,11 @@ export function RapportAbschluss({
 
   // Beide Fälle lehnt auch die Datenbank ab. Sie hier vorweg zu nehmen
   // erspart den Klick ins Leere und sagt, was zu tun ist.
-  const grund =
-    anzahlPositionen === 0
+  const grund = !darfAbschliessen
+    ? `Diesen Rapport schliesst ${
+        verantwortlichName ? `${verantwortlichName} ` : "die verantwortliche Person "
+      }ab. Wer das ändern will, trägt oben eine andere verantwortliche Person ein.`
+    : anzahlPositionen === 0
       ? "Ein Rapport ohne Positionen lässt sich nicht abschliessen – bitte zuerst die erbrachten Leistungen erfassen."
       : datumInZukunft
         ? "Dieser Rapport ist für die Zukunft geplant. Abschliessen lässt er sich erst, wenn der Einsatz stattgefunden hat."

@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "neu",
+        "text": "Abschliessen darf die verantwortliche Person eines Rapports – bei einem Einsatz mit mehreren also die Projektleitung. Wer nicht zuständig ist, sieht statt der Abschlussfelder einen Hinweis mit ihrem Namen. Administratoren dürfen ebenfalls abschliessen, damit ein Einsatz bei Krankheit nicht feststeckt. Das Stornieren bleibt bewusst offen."
+      },
+      {
         "typ": "fix",
         "text": "Eine Rapport-Position liess sich nur von der Person ändern, die sie erfasst hatte – die Ablehnung kam dabei lautlos und wurde als „gespeichert“ gemeldet. Jetzt darf sie jede und jeder im Betrieb bearbeiten, solange sie nicht exportiert ist."
       }

@@ -108,9 +108,9 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
         <View style={stil.kopf}>
           <View style={stil.absender}>
             {absender.logoAdresse && (
-              // eslint-disable-next-line jsx-a11y/alt-text -- Image stammt
-              // aus @react-pdf/renderer und kennt kein alt; ein PDF hat
-              // keine Vorlesehilfe, die es auswerten könnte.
+              // Image stammt aus @react-pdf/renderer und kennt kein alt;
+              // ein PDF hat keine Vorlesehilfe, die es auswerten könnte.
+              // eslint-disable-next-line jsx-a11y/alt-text
               <Image src={absender.logoAdresse} style={stil.logo} />
             )}
             {absender.name && <Text style={stil.absenderName}>{absender.name}</Text>}
