@@ -187,6 +187,14 @@
       {
         "typ": "fix",
         "text": "Ein abgeschlossener Rapport liess sich nicht exportieren: Die Sperre, die seine Positionen vor Änderungen schützt, verhinderte auch das Eintragen der Belegnummer."
+      },
+      {
+        "typ": "neu",
+        "text": "Der Kalender lässt sich auf „nur geplant“ oder „nur erfasst“ umschalten."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Geplante Einsätze zeigen im Kalender jetzt Uhrzeit, Kunde und Ort statt des Vornamens – die Person steht ohnehin in der Farbe."
       }
     ]
   },

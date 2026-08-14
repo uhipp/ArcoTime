@@ -12,11 +12,17 @@ Die Kalenderübersicht zeigt geplante Einsätze, erfasste Zeit und fällige Anfr
 
 ![Kalenderübersicht mit farbigen Tageszellen](/hilfe-bilder/kalender-uebersicht.png)
 
+## Alles, nur geplant, nur erfasst
+
+Über dem Kalender schaltest du um, was angezeigt wird. **Nur geplant** zeigt die offenen Einsätze aus den [Rapporten](/hilfe/rapporte) – die Sicht für die Planung. **Nur erfasst** zeigt ausschliesslich gebuchte Zeit. Die übrigen Filter bleiben dabei erhalten.
+
+Bei „nur geplant" entfällt die Stundensumme oben rechts: Geplantes ist noch keine erfasste Zeit, eine Summe wäre dort irreführend.
+
 ## Wie die Tageszelle zu lesen ist
 
 Jeder Tag zeigt eine kleine farbige Liste:
 
-- **Eine Zeile pro geplantem Einsatz** aus den [Rapporten](/hilfe/rapporte), mit Uhrzeit. Diese stehen zuoberst – die Frage „wer ist wann eingeteilt" ist meist die wichtigere. Klick öffnet den Rapport.
+- **Eine Zeile pro geplantem Einsatz** aus den [Rapporten](/hilfe/rapporte), mit Uhrzeit, Kunde und Ort. Der Name der Person steht bewusst **nicht** im Balken – Farbe und Legende sagen das ohnehin, und der Platz gehört der Frage, worum es geht. Wer den vollen Zusammenhang braucht, fährt mit der Maus darüber. Diese stehen zuoberst – die Frage „wer ist wann eingeteilt" ist meist die wichtigere. Klick öffnet den Rapport.
 - **Eine Zeile pro Mitarbeitendem** mit Zeiterfassung an diesem Tag, mit Stundensumme. Klick öffnet die Tagesauswertung.
 - **Eine Zeile pro fälliger Anfrage** (nach ihrem Wiedervorlage-Datum, siehe [Anfragen](/hilfe/anfragen)), farbig nach der zugewiesenen Person. Klick öffnet direkt die Anfrage.
 

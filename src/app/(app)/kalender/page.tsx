@@ -16,8 +16,14 @@ type SearchParams = {
   projekt_id?: string;
   klasse_id?: string;
   mitarbeiter_id?: string;
+  // alles | geplant | erfasst – bestimmt, welche Balken erscheinen.
+  zeigen?: string;
 };
 
+type Zeigen = "alles" | "geplant" | "erfasst";
+
+// undefined in den Überschreibungen entfernt den Parameter – so schaltet
+// "Alles" den Umschalter zurück, statt ?zeigen=alles anzuhängen.
 function baueQuery(params: SearchParams, overrides: Partial<SearchParams>) {
   const merged = { ...params, ...overrides };
   const qs = new URLSearchParams();
@@ -39,6 +45,9 @@ type PlanZeile = {
   farbe: string;
   von: string;
   bis: string;
+  kunde: string;
+  ort: string | null;
+  projekt: string | null;
 };
 type AnfrageZeile = { id: string; titel: string; farbe: string };
 
@@ -55,10 +64,18 @@ export default async function KalenderPage({
   const rasterVon = wochen[0][0];
   const rasterBis = wochen[wochen.length - 1][6];
 
+  const zeigen: Zeigen =
+    params.zeigen === "geplant" || params.zeigen === "erfasst"
+      ? (params.zeigen as Zeigen)
+      : "alles";
+
   const profile = await getCurrentProfile();
   const isAdmin = profile?.role === "admin";
   const supabase = await createClient();
 
+  // Bewusst die ABFRAGE abschalten und nicht erst die Anzeige filtern:
+  // Wer nur die Planung sehen will, soll dafür auch keine Zeiteinträge
+  // laden.
   let query = supabase
     .from("v_zeiteintraege")
     .select("*")
@@ -114,11 +131,11 @@ export default async function KalenderPage({
   // Gesucht wird über datum, nicht über geplant_von: Ein Rapport ohne
   // Planzeiten fiele sonst ganz aus dem Kalender – und wäre nirgends mehr
   // sichtbar, weil seine Positionen als vorläufig ausgeblendet sind.
-  const planQuery = params.klasse_id
+  const planQuery = params.klasse_id || zeigen === "erfasst"
     ? null
     : supabase
         .from("rapporte")
-        .select("id, datum, kunde_id, projekt_id, geplant_fuer, geplant_von, geplant_bis")
+        .select("id, datum, kunde_id, projekt_id, geplant_fuer, geplant_von, geplant_bis, kunden(name, vorname, ort), projekte(bezeichnung)")
         .eq("status", "offen")
         .gte("datum", rasterVon)
         .lte("datum", rasterBis)
@@ -126,6 +143,8 @@ export default async function KalenderPage({
 
   // Alle Queries unabhängig voneinander gleichzeitig statt nacheinander
   // abschicken (die Haupt-Queries hängen nicht von den Filter-Listen ab).
+  const zeitQuery = zeigen === "geplant" ? null : query;
+
   const [
     { data: kunden },
     { data: projekte },
@@ -142,7 +161,7 @@ export default async function KalenderPage({
     // gemeinsamen Anfragen-Board Kolleg:innen-Zuweisungen), nicht nur für
     // den Mitarbeitende-Filter, der weiterhin admin-exklusiv bleibt.
     supabase.from("profiles").select("id, name, farbe").order("name"),
-    query,
+    zeitQuery ?? Promise.resolve({ data: [] as never[] }),
     anfrageQuery ?? Promise.resolve({ data: [] as never[] }),
     planQuery ?? Promise.resolve({ data: [] as never[] }),
   ]);
@@ -166,6 +185,8 @@ export default async function KalenderPage({
         geplant_fuer: string | null;
         geplant_von: string | null;
         geplant_bis: string | null;
+        kunden?: { name: string; vorname: string | null; ort: string | null } | null;
+        projekte?: { bezeichnung: string } | null;
       }[]
     | null) ?? [];
 
@@ -209,6 +230,10 @@ export default async function KalenderPage({
       farbe: farbeVon(r.geplant_fuer),
       von: uhrzeit(r.geplant_von),
       bis: uhrzeit(r.geplant_bis),
+      kunde:
+        [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || "Ohne Kunde",
+      ort: r.kunden?.ort ?? null,
+      projekt: r.projekte?.bezeichnung ?? null,
     });
   }
 
@@ -283,13 +308,43 @@ export default async function KalenderPage({
             Heute
           </Link>
         </div>
-        <div className="text-sm text-gray-500">
-          Total {label("monat", monatVon, monatBis)}: <strong>{monatStunden.toFixed(2)} h</strong>
-        </div>
+        {/* Bei "nur geplant" gibt es keine erfassten Stunden – ein Total
+            von 0.00 h wäre dort keine Auskunft, sondern eine Irreführung. */}
+        {zeigen !== "geplant" && (
+          <div className="text-sm text-gray-500">
+            Total {label("monat", monatVon, monatBis)}:{" "}
+            <strong>{monatStunden.toFixed(2)} h</strong>
+          </div>
+        )}
+      </div>
+
+      {/* Umschalter statt Auswahlfeld: drei Zustände, die man im Blick
+          behalten will – als Feld im Filterformular bräuchte jeder Wechsel
+          einen zusätzlichen Klick auf "Filtern". */}
+      <div className="flex gap-2 mb-4 text-sm">
+        {(
+          [
+            ["alles", "Alles"],
+            ["geplant", "Nur geplant"],
+            ["erfasst", "Nur erfasst"],
+          ] as [Zeigen, string][]
+        ).map(([wert, text]) => (
+          <Link
+            key={wert}
+            href={baueQuery(params, { zeigen: wert === "alles" ? undefined : wert })}
+            className={`rounded border px-3 py-1.5 ${
+              zeigen === wert ? "bg-arcos-steel text-white" : "bg-white hover:bg-gray-50"
+            }`}
+          >
+            {text}
+          </Link>
+        ))}
       </div>
 
       <form className="bg-white rounded-lg border p-4 mb-6 flex flex-wrap items-end gap-3 text-sm">
         <input type="hidden" name="datum" value={bezugsdatum} />
+        {/* Der Umschalter oben darf beim Filtern nicht verlorengehen. */}
+        {zeigen !== "alles" && <input type="hidden" name="zeigen" value={zeigen} />}
         <div>
           <label className="block text-xs text-gray-500 mb-1">Kunde</label>
           <select
@@ -413,13 +468,20 @@ export default async function KalenderPage({
                   key: `p-${p.rapportId}`,
                   farbe: p.farbe,
                   schraffiert: false,
-                  label: `${p.von ? `${p.von}${p.bis ? `–${p.bis}` : ""} · ` : ""}${
-                    p.name.split(" ")[0]
-                  }`,
+                  // Ohne den Namen: Farbe und Legende sagen längst, wer es
+                  // ist. Der Platz gehört der Frage, um WAS es geht – bei
+                  // einem geplanten Einsatz also Uhrzeit, Kunde und Ort.
+                  label: `${p.von ? `${p.von} ` : ""}${p.kunde}${p.ort ? `, ${p.ort}` : ""}`,
+                  titel: [
+                    `Geplant für ${p.name}`,
+                    p.von ? `${p.von}${p.bis ? `–${p.bis}` : ""}` : null,
+                    p.kunde,
+                    p.ort,
+                    p.projekt,
+                  ]
+                    .filter(Boolean)
+                    .join(" · "),
                   href: `/rapporte/${p.rapportId}`,
-                  titel: `Geplant: ${p.name}${p.von ? `, ${p.von}` : ""}${
-                    p.bis ? `–${p.bis}` : ""
-                  }`,
                 })),
                 ...zeitZeilen.map((z) => ({
                   key: `z-${z.mitarbeiterId}`,
@@ -427,7 +489,7 @@ export default async function KalenderPage({
                   schraffiert: true,
                   label: `${z.name.split(" ")[0]} · ${z.stunden.toFixed(1)}h`,
                   href: `/auswertungen?ansicht=tag&datum=${tagIso}`,
-                  titel: `Erfasst – ${z.name}: ${z.stunden.toFixed(2)} h`,
+                  titel: `Erfasst – ${z.name}: ${z.stunden.toFixed(2)} h an diesem Tag`,
                 })),
                 ...anfrageZeilen.map((a) => ({
                   key: `a-${a.id}`,
