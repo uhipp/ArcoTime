@@ -99,6 +99,10 @@
       {
         "typ": "neu",
         "text": "Die Beschreibung einer Dienstleistung erscheint beim Erfassen eines Zeiteintrags automatisch als Vorschlag – unter der Namenszeile und jederzeit überschreibbar. Selbst getippter Text wird nie ersetzt."
+      },
+      {
+        "typ": "neu",
+        "text": "Projektteam: Auf der Projektdetailseite lässt sich festlegen, wer ein nicht öffentliches Projekt sehen darf. Wer ein Projekt anlegt, gehört automatisch dazu."
       }
     ]
   },

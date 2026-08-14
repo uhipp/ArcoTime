@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import { mitErfolg } from "@/lib/erfolg";
 import { loeschHinweis } from "@/lib/loeschen";
+import { getCurrentUser } from "@/lib/get-profile";
 
 function projektFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -35,10 +36,16 @@ export async function createProjekt(formData: FormData) {
   const supabase = await createClient();
   const values = projektFromForm(formData);
 
-  const { error } = await supabase.from("projekte").insert(values);
+  const { data: angelegt, error } = await supabase
+    .from("projekte")
+    .insert(values)
+    .select("id")
+    .single();
   if (error) {
     redirect(`/projekte/neu?error=${encodeURIComponent(error.message)}`);
   }
+
+  if (angelegt) await erstellerInsTeam(supabase, angelegt.id);
 
   revalidatePath("/projekte");
   redirect(mitErfolg("/projekte", "Projekt gespeichert."));
@@ -123,10 +130,81 @@ export async function erstelleProjektSchnell(
     .select("id, bezeichnung, kunde_id")
     .single();
 
+  if (data) await erstellerInsTeam(supabase, data.id);
+
   if (error) {
     return { data: null, error: error.message };
   }
 
   revalidatePath("/projekte");
   return { data, error: null };
+}
+
+// ---------------------------------------------------------
+// Projektteam
+// ---------------------------------------------------------
+// Die Tabelle projekt_mitarbeiter steuert, wer ein Projekt sieht, das
+// NICHT für alle sichtbar ist. Sie existierte von Anfang an, wurde aber
+// nie beschrieben – wer das Häkchen entfernte, verlor damit auch den
+// eigenen Zugriff, weil nur noch Admins übrig blieben.
+
+type Client = Awaited<ReturnType<typeof createClient>>;
+
+// Wer ein Projekt anlegt, gehört zum Team. Ohne das wäre ein Projekt
+// ohne "für alle sichtbar" für die erfassende Person sofort unsichtbar.
+// Bewusst ohne Fehlerbehandlung nach aussen: Das Projekt ist zu diesem
+// Zeitpunkt angelegt, und ein fehlgeschlagener Teameintrag darf das nicht
+// rückgängig machen – ein Admin kann ihn jederzeit nachtragen.
+async function erstellerInsTeam(supabase: Client, projektId: string) {
+  const user = await getCurrentUser();
+  if (!user) return;
+  await supabase
+    .from("projekt_mitarbeiter")
+    .upsert({ projekt_id: projektId, user_id: user.id }, { onConflict: "projekt_id,user_id" });
+}
+
+export async function fuegeProjektMitarbeiterHinzu(projektId: string, formData: FormData) {
+  const supabase = await createClient();
+  const userId = String(formData.get("user_id") ?? "").trim();
+
+  if (!userId) {
+    redirect(`/projekte/${projektId}?error=${encodeURIComponent("Bitte eine Person wählen.")}`);
+  }
+
+  const { error } = await supabase
+    .from("projekt_mitarbeiter")
+    .upsert({ projekt_id: projektId, user_id: userId }, { onConflict: "projekt_id,user_id" });
+
+  if (error) {
+    redirect(`/projekte/${projektId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/projekte/${projektId}`);
+  redirect(
+    mitErfolg(`/projekte/${projektId}?fokus=neues_teammitglied`, "Zum Projektteam hinzugefügt.")
+  );
+}
+
+export async function entferneProjektMitarbeiter(projektId: string, userId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projekt_mitarbeiter")
+    .delete()
+    .eq("projekt_id", projektId)
+    .eq("user_id", userId)
+    .select("user_id");
+
+  if (error) {
+    redirect(`/projekte/${projektId}?error=${encodeURIComponent(error.message)}`);
+  }
+  if (!data || data.length === 0) {
+    redirect(
+      `/projekte/${projektId}?error=${encodeURIComponent(
+        "Eintrag wurde nicht entfernt – dafür fehlen dir die Rechte."
+      )}`
+    );
+  }
+
+  revalidatePath(`/projekte/${projektId}`);
+  redirect(mitErfolg(`/projekte/${projektId}`, "Aus dem Projektteam entfernt."));
 }

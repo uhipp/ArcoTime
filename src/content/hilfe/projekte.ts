@@ -5,7 +5,7 @@ export const projekte: HilfeArtikel[] = [
     slug: "projekte",
     titel: "Projekte",
     kategorie: "Stammdaten",
-    stichworte: ["projekt anlegen", "kostenstelle", "belegnummer", "startdatum", "sichtbarkeit"],
+    stichworte: ["projekt anlegen", "kostenstelle", "belegnummer", "startdatum", "sichtbarkeit", "projektteam", "team", "zugriff", "zuweisen"],
     routen: ["/projekte"],
     inhalt: `
 Jedes Projekt gehört zu genau einem Kunden und ist die Grundlage für die Zeiterfassung.
@@ -20,7 +20,15 @@ Weitere Felder mit sinnvollen Standardwerten:
 - **Startdatum**: standardmässig heute.
 - **Kostenstelle**: wird bei jedem Zeiteintrag dieses Projekts automatisch in den Export übernommen.
 - **Nächste Belegnummer**: startet bei 470000 und erhöht sich nach jedem Export automatisch um 1. Nur ändern, wenn an eine bestehende Nummerierung im Buchhaltungssystem angeschlossen werden soll.
-- **Für alle Mitarbeitende sichtbar**: Mit Häkchen (Standard) sehen alle das Projekt und können darauf Zeit erfassen. Ohne Häkchen bleibt es den Admins vorbehalten.
+- **Für alle Mitarbeitende sichtbar**: Mit Häkchen (Standard) sehen alle das Projekt und können darauf Zeit erfassen. Ohne Häkchen sehen es nur die Personen im **Projektteam** sowie Admins.
+
+## Projektteam
+
+Auf der Detailseite eines Projekts steht unter **Projektteam**, wer darauf zugreifen darf. Wer ein Projekt anlegt, gehört automatisch dazu – sonst würde man sich mit dem Entfernen des Sichtbarkeits-Häkchens das eigene Projekt wegnehmen.
+
+Solange das Projekt für alle sichtbar ist, hat das Team keine Wirkung; es greift erst, wenn du das Häkchen entfernst. Deshalb lohnt es sich, das Team **vor** dem Abschotten zu füllen.
+
+Wird jemand aus dem Team entfernt, bleiben die von dieser Person bereits erfassten Zeiten unverändert bestehen – es geht nur um den Zugriff von hier an.
 
 ## Projekte schnell anlegen, ohne die Seite zu verlassen
 
