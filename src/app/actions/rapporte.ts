@@ -12,6 +12,13 @@ import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
+import { rapportNummer } from "@/lib/types";
+import { formatDatumCH } from "@/lib/date-utils";
+import { emailFehler } from "@/lib/email-pruefung";
+import { sendeMail } from "@/lib/email";
+import { ladeRapportDokument } from "@/lib/rapport-dokument-daten";
+import { RapportPdf } from "@/lib/rapport-pdf";
+import { renderToBuffer } from "@react-pdf/renderer";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -648,6 +655,144 @@ export async function signiereRapport(
     mitErfolg(
       `/rapporte/${rapportId}`,
       "Rapport signiert – die Positionen zählen ab jetzt als erfasste Zeit."
+    )
+  );
+}
+
+// Rapport als PDF an den Kunden senden.
+//
+// Erst nach dem Abschluss: Ein Entwurf ist noch keine Aussage über
+// geleistete Arbeit, und ein Kunde, der eine geänderte Fassung nachgereicht
+// bekommt, verliert das Vertrauen in beide.
+//
+// Das PDF wird beim Versand frisch erzeugt statt gespeichert. Ein
+// abgeschlossener Rapport ist unveränderlich – die Datei wäre also immer
+// dieselbe, und eine gespeicherte Kopie könnte nur veralten oder verwaisen.
+export async function versendeRapport(
+  rapportId: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  const empfaenger = String(formData.get("empfaenger") ?? "").trim();
+  const nachricht = String(formData.get("nachricht") ?? "").trim();
+
+  const adressFehler = emailFehler(empfaenger);
+  if (adressFehler) return { fehler: adressFehler };
+
+  const daten = await ladeRapportDokument(rapportId);
+  if (!daten) return { fehler: "Rapport nicht gefunden." };
+
+  if (daten.rapport.status === "offen") {
+    return {
+      fehler:
+        "Dieser Rapport ist noch ein Entwurf. Bitte zuerst abschliessen – erst dann steht fest, was der Kunde bekommt.",
+    };
+  }
+  if (daten.rapport.status === "storniert") {
+    return { fehler: "Ein stornierter Rapport lässt sich nicht versenden." };
+  }
+
+  const nummer = rapportNummer(daten.rapport);
+  let pdf: Buffer;
+  try {
+    pdf = await renderToBuffer(RapportPdf({ daten }));
+  } catch (fehler) {
+    console.error("PDF konnte nicht erzeugt werden", { rapportId, fehler });
+    return { fehler: "Das PDF konnte nicht erzeugt werden. Bitte Arcos melden." };
+  }
+
+  const absenderName = daten.absender.name ?? "Ihr Dienstleister";
+  const zeilen = [
+    `<p>Guten Tag${daten.kunde?.name ? ` ${daten.kunde.name}` : ""},</p>`,
+    nachricht
+      ? `<p style="white-space:pre-line">${nachricht.replace(/[<>&]/g, "")}</p>`
+      : `<p>im Anhang finden Sie den Arbeitsrapport ${nummer} vom ${formatDatumCH(daten.rapport.datum)}.</p>`,
+    `<p>Freundliche Grüsse<br>${absenderName}</p>`,
+  ];
+
+  try {
+    await sendeMail({
+      an: empfaenger,
+      // Antworten sollen bei der Firma landen, nicht im Systempostfach.
+      antwortAn: daten.absender.email,
+      betreff: `Arbeitsrapport ${nummer}`,
+      html: zeilen.join("\n"),
+      anhaenge: [
+        {
+          dateiname: `Arbeitsrapport ${nummer}.pdf`.replace(/[^\w\s.-]+/g, "_"),
+          inhalt: pdf,
+          typ: "application/pdf",
+        },
+      ],
+    });
+  } catch (fehler) {
+    console.error("Rapportversand fehlgeschlagen", { rapportId, empfaenger, fehler });
+    return {
+      fehler:
+        "Der Versand ist fehlgeschlagen. Bitte die Adresse prüfen und erneut versuchen; bleibt es dabei, liegt es am Mailserver.",
+    };
+  }
+
+  const supabase = await createClient();
+  await supabase
+    .from("rapporte")
+    .update({ versendet_an: empfaenger, versendet_am: new Date().toISOString() })
+    .eq("id", rapportId);
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  redirect(mitErfolg(`/rapporte/${rapportId}`, `Rapport an ${empfaenger} gesendet.`));
+}
+
+// Rapport stornieren.
+//
+// Der Weg für Korrekturen an einem abgeschlossenen Rapport: Er ist
+// unveränderlich, also wird er ungültig gestellt und neu erstellt. Löschen
+// wäre falsch – die Nummer wurde vergeben, der Kunde hat womöglich ein
+// PDF, und beides muss nachvollziehbar bleiben.
+//
+// Die Positionen bleiben stehen und gelten ab jetzt dauerhaft als
+// vorläufig (siehe 0036): Sie zählen nirgends mehr, verschwinden aber
+// nicht – man muss sehen können, was ursprünglich verrechnet werden
+// sollte.
+//
+// Bereits exportierte Positionen verhindern die Stornierung: Sie liegen in
+// der Buchhaltung, und sie stillschweigend aus jeder Auswertung zu nehmen
+// hiesse, eine Rechnung um ihre Grundlage zu bringen.
+export async function storniereRapport(
+  rapportId: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  const supabase = await createClient();
+  const grund = String(formData.get("storno_grund") ?? "").trim();
+
+  if (grund === "") {
+    return { fehler: "Bitte einen Grund angeben – er bleibt am Rapport vermerkt." };
+  }
+
+  // Über die Datenbankfunktion, nicht per Update: Die Regel
+  // rapporte_update_offen lässt Änderungen nur an offenen Rapporten zu,
+  // und das soll so bleiben. Alle Prüfungen – Status, bereits exportierte
+  // Positionen – stehen dort und werden nicht hier nachgebaut (0043).
+  const { error } = await supabase.rpc("storniere_rapport", {
+    p_rapport_id: rapportId,
+    p_grund: grund,
+  });
+
+  if (error) {
+    return { fehler: error.message };
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/rapporte");
+  // Die Positionen zählen ab jetzt nicht mehr – siehe 0036.
+  revalidatePath("/auswertungen");
+  revalidatePath("/zeiterfassung");
+  revalidatePath("/kalender");
+  redirect(
+    mitErfolg(
+      `/rapporte/${rapportId}`,
+      "Rapport storniert. Die Positionen zählen nicht mehr, bleiben aber zum Nachvollziehen erhalten."
     )
   );
 }

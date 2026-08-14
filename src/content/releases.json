@@ -235,6 +235,14 @@
       {
         "typ": "neu",
         "text": "Arbeitsrapporte lassen sich als PDF öffnen und ablegen – gleicher Aufbau wie die Druckansicht, inklusive Absender, Logo und Unterschrift."
+      },
+      {
+        "typ": "neu",
+        "text": "Abgeschlossene Rapporte lassen sich als PDF per Mail an den Kunden senden. Antworten gehen an eure Organisation, nicht an ArcoTime."
+      },
+      {
+        "typ": "neu",
+        "text": "Stornieren: Ein abgeschlossener Rapport lässt sich ungültig stellen statt löschen. Die Positionen bleiben sichtbar, zählen aber nicht mehr. Bereits exportierte Positionen verhindern das Stornieren."
       }
     ]
   },

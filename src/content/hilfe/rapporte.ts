@@ -90,6 +90,24 @@ Zu jedem Rapport lassen sich Dokumente ablegen – Anweisungen, Pläne, Fotos, a
 
 Überschreitet eine Position die zulässige Tagesarbeitszeit, erscheint der Hinweis schon **während** du sie erfasst – nicht erst beim Speichern. Und falls der Server sie doch ablehnt, bleibt alles Eingetippte stehen: Die Meldung erscheint im Formular, die Beschreibung ist nicht verloren.
 
+## An den Kunden senden
+
+Ist der Rapport abgeschlossen, lässt er sich als **PDF per Mail** verschicken. Die Adresse kommt vom Kunden, sofern dort eine hinterlegt ist, und ist vor dem Senden änderbar – ein Mail an den falschen Empfänger lässt sich nicht zurückholen. Optional kannst du eine kurze Nachricht mitgeben; ohne sie geht ein knapper Standardtext raus.
+
+Antworten des Kunden landen bei **eurer** Organisation, nicht bei ArcoTime – dafür sorgt die E-Mail-Adresse aus den [Einstellungen](/hilfe/einstellungen).
+
+Ein Entwurf lässt sich nicht versenden. Erst mit dem Abschluss steht fest, was der Kunde bekommt.
+
+## Stornieren
+
+Ein abgeschlossener Rapport ist unveränderlich. Stellt sich heraus, dass etwas falsch war, wird er **storniert** und neu erstellt – gelöscht wird er nicht, denn die Nummer ist vergeben und der Kunde hat womöglich schon ein PDF.
+
+Die erfassten Positionen bleiben erhalten, **zählen aber nicht mehr**: weder in den Auswertungen noch im Export. Man muss ja sehen können, was ursprünglich verrechnet werden sollte.
+
+Ein Grund ist Pflicht und bleibt am Rapport vermerkt.
+
+Sind Positionen bereits **exportiert**, lässt sich nicht mehr stornieren – sie liegen in der Buchhaltung, und die Korrektur muss dort erfolgen.
+
 ## Übersicht sortieren
 
 Ein Klick auf einen Spaltenkopf sortiert die Liste nach dieser Spalte, ein zweiter Klick dreht die Richtung um. Der kleine Pfeil zeigt, wonach gerade sortiert ist. Ein gesetzter Statusfilter bleibt dabei erhalten.

@@ -11,6 +11,8 @@ import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { RapportPositionForm } from "@/components/rapport-position-form";
 import { RapportAbschluss } from "@/components/rapport-abschluss";
+import { RapportVersand } from "@/components/rapport-versand";
+import { RapportStorno } from "@/components/rapport-storno";
 import {
   aktualisiereRapport,
   loescheRapport,
@@ -19,6 +21,8 @@ import {
   loeschePosition,
   schliesseRapportAb,
   signiereRapport,
+  versendeRapport,
+  storniereRapport,
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
@@ -143,10 +147,21 @@ export default async function RapportDetailPage({
 
       {error && <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
 
-      {!offen && (
+      {!offen && rapport.status !== "storniert" && (
         <div className="rounded bg-gray-100 text-gray-700 text-sm px-3 py-2">
           Dieser Rapport ist abgeschlossen und lässt sich nicht mehr ändern. Für
           Korrekturen bitte stornieren und neu erstellen.
+        </div>
+      )}
+
+      {rapport.status === "storniert" && (
+        <div className="rounded bg-red-50 text-red-800 text-sm px-3 py-2">
+          <strong>Storniert</strong>
+          {rapport.storniert_am
+            ? ` am ${new Date(rapport.storniert_am).toLocaleString("de-CH")}`
+            : ""}
+          {rapport.storno_grund ? ` · ${rapport.storno_grund}` : ""}. Die Positionen
+          zählen nicht mehr, bleiben aber zum Nachvollziehen erhalten.
         </div>
       )}
 
@@ -329,10 +344,22 @@ export default async function RapportDetailPage({
         </p>
       )}
 
-      <p className="text-sm text-gray-400">
-        PDF und Versand folgen als nächste Etappe – siehe
-        docs/phase8-arbeitsrapport-plan.md.
-      </p>
+      {/* Versand erst nach dem Abschluss: Ein Entwurf ist noch keine
+          Aussage über geleistete Arbeit. Storniert ebenfalls nicht. */}
+      {!offen && rapport.status !== "storniert" && (
+        <RapportVersand
+          action={versendeRapport.bind(null, id)}
+          vorgabeEmpfaenger={rapport.kunden?.email ?? null}
+          versendetAn={rapport.versendet_an ?? null}
+          versendetAm={rapport.versendet_am ?? null}
+        />
+      )}
+
+      {/* Storno erst nach dem Abschluss – ein Entwurf wird gelöscht, nicht
+          ungültig gestellt. */}
+      {!offen && rapport.status !== "storniert" && (
+        <RapportStorno action={storniereRapport.bind(null, id)} />
+      )}
     </div>
   );
 }

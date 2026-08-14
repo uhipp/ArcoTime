@@ -29,16 +29,29 @@ export async function sendeMail({
   an,
   betreff,
   html,
+  antwortAn,
+  anhaenge,
 }: {
   an: string;
   betreff: string;
   html: string;
+  // Antwortadresse der Organisation: Der Absender ist technisch immer
+  // dasselbe Postfach, aber antworten soll der Kunde der Firma, die den
+  // Rapport geschickt hat – nicht einem Systempostfach.
+  antwortAn?: string | null;
+  anhaenge?: { dateiname: string; inhalt: Buffer; typ?: string }[];
 }) {
   const absender = process.env.SMTP_FROM ?? process.env.SMTP_USER;
   await transporter().sendMail({
     from: absender,
     to: an,
+    replyTo: antwortAn ?? undefined,
     subject: betreff,
     html,
+    attachments: anhaenge?.map((a) => ({
+      filename: a.dateiname,
+      content: a.inhalt,
+      contentType: a.typ,
+    })),
   });
 }
