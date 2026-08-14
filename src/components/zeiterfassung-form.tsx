@@ -98,8 +98,7 @@ export function ZeiterfassungForm({
   klassenRabatte,
   aktuellerUserId,
   action,
-  starteTimerAction,
-  stoppeTimerAction,
+  timerMoeglich,
   error,
 }: {
   zeiteintrag?: Zeiteintrag;
@@ -111,8 +110,11 @@ export function ZeiterfassungForm({
   klassenRabatte: KlassenRabatt[];
   aktuellerUserId: string;
   action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
-  starteTimerAction?: (formData: FormData) => void;
-  stoppeTimerAction?: (formData: FormData) => void;
+  // Steuert nur die Anzeige der Timer-Knöpfe. Die Aktion ist dieselbe wie
+  // fürs Speichern – sie verzweigt über das Feld "absicht" (siehe
+  // erfasseZeiteintrag/bearbeiteZeiteintrag). Zwei getrennte Aktionen am
+  // Formular gingen nicht: useActionState kennt genau eine.
+  timerMoeglich?: boolean;
   error?: string;
 }) {
 
@@ -365,6 +367,11 @@ export function ZeiterfassungForm({
   return (
     <>
     <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5">
+      {/* Enter in einem Textfeld löst immer den ERSTEN Absendeknopf des
+          Formulars aus – und das wäre "Timer starten", der weiter oben
+          steht als "Speichern". Dieser unsichtbare Knopf steht davor und
+          trägt kein Absichtsfeld; Enter bedeutet damit speichern. */}
+      <button type="submit" className="hidden" tabIndex={-1} aria-hidden="true" />
       {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
           {meldung}
@@ -507,14 +514,15 @@ export function ZeiterfassungForm({
         <div className="rounded border border-gray-200 p-4 bg-gray-50">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium">Zeit erfassen</span>
-            {istNeu && starteTimerAction && (
-              <button
-                type="submit"
-                formAction={starteTimerAction}
-                className="text-sm rounded bg-green-600 text-white px-3 py-1.5 hover:bg-green-700"
+            {istNeu && timerMoeglich && (
+              <AbsendeKnopf
+                name="absicht"
+                value="timer_starten"
+                laufttext="Wird gestartet…"
+                className="text-sm rounded bg-green-600 text-white px-3 py-1.5 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 ▶ Timer starten
-              </button>
+              </AbsendeKnopf>
             )}
           </div>
 
@@ -702,14 +710,15 @@ export function ZeiterfassungForm({
       )}
 
       <div className="flex gap-3">
-        {laeuft && stoppeTimerAction ? (
-          <button
-            type="submit"
-            formAction={stoppeTimerAction}
-            className="rounded bg-red-600 text-white text-sm font-medium px-4 py-2 hover:bg-red-700"
+        {laeuft && timerMoeglich ? (
+          <AbsendeKnopf
+            name="absicht"
+            value="timer_stoppen"
+            laufttext="Wird gestoppt…"
+            className="rounded bg-red-600 text-white text-sm font-medium px-4 py-2 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             ⏹ Timer stoppen
-          </button>
+          </AbsendeKnopf>
         ) : (
           <AbsendeKnopf
             laufttext="Wird gespeichert…"

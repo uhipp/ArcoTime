@@ -165,7 +165,7 @@ export async function deleteZeiteintrag(id: string) {
 // Startet einen Timer: legt SOFORT einen echten (unfertigen) Zeiteintrag an,
 // statt den Fortschritt nur im Browser zu halten. So geht beim Verlassen
 // der Seite nichts verloren.
-export async function starteTimer(formData: FormData) {
+async function starteTimer(formData: FormData): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const values = zeiteintragFromForm(formData);
@@ -213,7 +213,7 @@ export async function starteTimer(formData: FormData) {
     .single();
 
   if (error || !neu) {
-    redirect(`/zeiterfassung?error=${encodeURIComponent(error?.message ?? "Unbekannter Fehler")}`);
+    return { fehler: error?.message ?? "Unbekannter Fehler" };
   }
 
   redirect(mitErfolg(`/zeiterfassung/${neu.id}`, "Timer gestartet."));
@@ -222,7 +222,7 @@ export async function starteTimer(formData: FormData) {
 // Stoppt einen laufenden Timer: Dauer wird server-seitig aus der
 // gespeicherten Startzeit berechnet (nicht aus dem Browser), damit sie auch
 // nach einem Neuladen/Gerätewechsel korrekt bleibt.
-export async function stoppeTimer(id: string, formData: FormData) {
+async function stoppeTimer(id: string, formData: FormData): Promise<FormularErgebnis> {
   const supabase = await createClient();
 
   const { data: bestehend } = await supabase
@@ -232,7 +232,7 @@ export async function stoppeTimer(id: string, formData: FormData) {
     .single();
 
   if (!bestehend?.timer_gestartet_um) {
-    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent("Timer läuft nicht (mehr).")}`);
+    return { fehler: "Timer läuft nicht (mehr)." };
   }
 
   const start = new Date(bestehend.timer_gestartet_um);
@@ -255,7 +255,7 @@ export async function stoppeTimer(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/zeiterfassung");
@@ -275,4 +275,39 @@ export async function holeTagesbelegung(argumente: {
 }) {
   const supabase = await createClient();
   return ladeTagesbelegung({ supabase, ...argumente });
+}
+
+// ---------------------------------------------------------
+// Eine Aktion je Formular
+// ---------------------------------------------------------
+// Am Erfassungsformular hängen zwei Absichten: speichern und den Timer
+// starten beziehungsweise stoppen. Mit je einer eigenen Aktion am Knopf
+// (formAction) liesse sich die Eingabe bei einer Ablehnung nicht bewahren –
+// useActionState kennt genau eine Aktion je Formular. Deshalb schickt der
+// gedrückte Knopf ein Feld "absicht" mit, und hier wird verzweigt. Das ist
+// der Standardweg in HTML, seit es Formulare gibt.
+//
+// Fehlt das Feld – Enter in einem Textfeld löst den ersten Knopf aus, und
+// der trägt keinen Wert –, gilt "speichern". Das ist das harmlose
+// Verhalten: Niemand startet versehentlich einen Timer.
+
+export async function erfasseZeiteintrag(
+  bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  if (String(formData.get("absicht") ?? "") === "timer_starten") {
+    return starteTimer(formData);
+  }
+  return createZeiteintrag(bisher, formData);
+}
+
+export async function bearbeiteZeiteintrag(
+  id: string,
+  bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  if (String(formData.get("absicht") ?? "") === "timer_stoppen") {
+    return stoppeTimer(id, formData);
+  }
+  return updateZeiteintrag(id, bisher, formData);
 }

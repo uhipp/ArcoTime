@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/get-profile";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
-import { createZeiteintrag, starteTimer } from "@/app/actions/zeiteintraege";
+import { erfasseZeiteintrag } from "@/app/actions/zeiteintraege";
 import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
@@ -96,8 +96,8 @@ export default async function ZeiterfassungPage({
           rabattsaetze={rabattsaetze ?? []}
           klassenRabatte={klassenRabatte ?? []}
           aktuellerUserId={aktuellerUserId}
-          action={createZeiteintrag}
-          starteTimerAction={starteTimer}
+          action={erfasseZeiteintrag}
+          timerMoeglich
           error={error}
         />
       </div>

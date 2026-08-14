@@ -4,7 +4,7 @@ import { getCurrentProfile } from "@/lib/get-profile";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
-import { updateZeiteintrag, deleteZeiteintrag, stoppeTimer } from "@/app/actions/zeiteintraege";
+import { bearbeiteZeiteintrag, deleteZeiteintrag } from "@/app/actions/zeiteintraege";
 import { DeleteButton } from "@/components/delete-button";
 import type { Zeiteintrag } from "@/lib/types";
 import Link from "next/link";
@@ -55,9 +55,8 @@ export default async function ZeiteintragDetailPage({
   if (!zeiteintrag) notFound();
 
   const istExportiert = Boolean(zeiteintrag.beleg_id);
-  const updateAction = updateZeiteintrag.bind(null, id);
+  const updateAction = bearbeiteZeiteintrag.bind(null, id);
   const deleteAction = deleteZeiteintrag.bind(null, id);
-  const stoppeAction = stoppeTimer.bind(null, id);
 
   return (
     <div>
@@ -105,7 +104,7 @@ export default async function ZeiteintragDetailPage({
           klassenRabatte={klassenRabatte ?? []}
           aktuellerUserId={profile?.id ?? ""}
           action={updateAction}
-          stoppeTimerAction={stoppeAction}
+          timerMoeglich
           error={error}
         />
       )}

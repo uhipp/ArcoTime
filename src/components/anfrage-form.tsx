@@ -36,8 +36,8 @@ export function AnfrageForm({
   // Der Erledigen-Block der Detailseite. Er liegt bewusst INNERHALB dieses
   // Formulars: als eigenes <form> daneben gingen Änderungen an Titel und
   // Beschreibung beim Klick auf "Erledigen" verloren, weil der Browser nur
-  // das Formular des gedrückten Buttons abschickt. Sein Submit-Button
-  // überschreibt die Aktion per formAction.
+  // das Formular des gedrückten Buttons abschickt. Seine Knöpfe schicken
+  // ein Feld "absicht" mit, über das die eine Aktion verzweigt.
   children?: React.ReactNode;
 }) {
   // Fehler kommt aus der Aktion zurück statt per Weiterleitung – so bleibt
