@@ -90,6 +90,8 @@ Eine erledigte Anfrage lässt sich weiterhin einsehen, aber nicht mehr per Drag 
 
 Ist eine Anfrage über einen Zeiteintrag oder einen Rapport abgeschlossen, führt ein Verweis am Ende der Seite direkt dorthin – und umgekehrt steht auf dem Zeiteintrag beziehungsweise dem Rapport, aus welcher Anfrage er entstanden ist. So bleibt der Weg von der Kundenanfrage bis zur verrechneten Leistung in beide Richtungen nachvollziehbar.
 
+Wird der Zeiteintrag oder der Rapport später **gelöscht**, geht die Anfrage automatisch wieder auf – zurück in den Status, in dem sie vor der Übergabe war. Der Grund für „erledigt" ist ja verschwunden, und ohne diesen Rückweg sässe der Vorgang fest.
+
 **Löschen** darf eine Anfrage weiterhin nur ein Admin. Erledigen und Löschen sind zwei verschiedene Dinge: Erledigtes bleibt nachvollziehbar, Gelöschtes ist weg.
 `,
   },

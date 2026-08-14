@@ -8,6 +8,7 @@ import { mitErfolg } from "@/lib/erfolg";
 import { ladeTagesbelegung, pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { normalisiereZeit } from "@/lib/zeit";
 import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
+import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
 
 function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -114,9 +115,43 @@ export async function updateZeiteintrag(id: string, formData: FormData) {
 
 export async function deleteZeiteintrag(id: string) {
   const supabase = await createClient();
-  await supabase.from("zeiteintraege").delete().eq("id", id);
+
+  // Wie beim Rapport: Stammt der Eintrag aus einer Anfrage, war er der
+  // Grund für deren "erledigt" – und muss sie beim Verschwinden wieder
+  // öffnen. Zwingend vor dem Löschen, der Verweis wird dabei geleert.
+  const anfrageGeoeffnet = await oeffneAnfrageWieder(supabase, "zeiteintrag_id", id);
+
+  // Ergebnis auswerten statt zu hoffen: Bisher meldete die Aktion
+  // "Eintrag gelöscht", auch wenn der Fremdschlüssel einer Anfrage das
+  // Löschen verhindert hat oder RLS es verweigerte – null betroffene
+  // Zeilen kommen ohne Fehler zurück.
+  const { data, error } = await supabase
+    .from("zeiteintraege")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  if (error) {
+    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+  if (!data || data.length === 0) {
+    redirect(
+      `/zeiterfassung/${id}?error=${encodeURIComponent(
+        "Eintrag wurde nicht gelöscht – entweder ist er bereits exportiert oder dir fehlen die Rechte."
+      )}`
+    );
+  }
+
   revalidatePath("/zeiterfassung");
-  redirect(mitErfolg("/zeiterfassung", "Eintrag gelöscht."));
+  revalidatePath("/anfragen");
+  redirect(
+    mitErfolg(
+      "/zeiterfassung",
+      anfrageGeoeffnet
+        ? "Eintrag gelöscht – die zugehörige Anfrage ist wieder offen."
+        : "Eintrag gelöscht."
+    )
+  );
 }
 
 // Startet einen Timer: legt SOFORT einen echten (unfertigen) Zeiteintrag an,

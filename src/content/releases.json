@@ -127,6 +127,14 @@
       {
         "typ": "fix",
         "text": "Eine Einladung an eine unvollständige E-Mail-Adresse scheiterte mit einer nichtssagenden Meldung, und das Konto wurde stillschweigend wieder verworfen. Die Adresse wird jetzt vorher geprüft und der Grund im Klartext genannt."
+      },
+      {
+        "typ": "fix",
+        "text": "Wurde ein Rapport oder Zeiteintrag gelöscht, der aus einer Anfrage entstanden ist, blieb die Anfrage auf „erledigt“ stehen – ohne Nachweis und ohne Weg zurück. Sie geht jetzt automatisch wieder auf, in den Status vor der Übergabe."
+      },
+      {
+        "typ": "fix",
+        "text": "Das Löschen eines Zeiteintrags meldete Erfolg, auch wenn es gar nicht möglich war. Jetzt wird der Grund genannt."
       }
     ]
   },

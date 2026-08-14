@@ -9,6 +9,7 @@ import { normalisiereZeit } from "@/lib/zeit";
 import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
+import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -120,13 +121,27 @@ export async function loescheRapport(id: string) {
   // bleiben verrechenbar, auch wenn das Dokument darüber verworfen wird.
   await supabase.from("zeiteintraege").update({ rapport_id: null }).eq("rapport_id", id);
 
+  // Vor dem Löschen: Stammt der Rapport aus einer Anfrage, war ER der
+  // Grund für deren "erledigt". Fällt er weg, muss die Anfrage zurück –
+  // sonst steht sie ohne Nachweis und ohne Weg zurück da (siehe 0035).
+  // Zwingend vorher, denn der Verweis wird beim Löschen geleert.
+  const anfrageGeoeffnet = await oeffneAnfrageWieder(supabase, "rapport_id", id);
+
   const { error } = await supabase.from("rapporte").delete().eq("id", id);
   if (error) {
     redirect(`/rapporte/${id}?error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath("/rapporte");
-  redirect(mitErfolg("/rapporte", "Rapport gelöscht – die erfassten Leistungen bleiben bestehen."));
+  revalidatePath("/anfragen");
+  redirect(
+    mitErfolg(
+      "/rapporte",
+      anfrageGeoeffnet
+        ? "Rapport gelöscht – die erfassten Leistungen bleiben bestehen, die zugehörige Anfrage ist wieder offen."
+        : "Rapport gelöscht – die erfassten Leistungen bleiben bestehen."
+    )
+  );
 }
 
 // ---------------------------------------------------------

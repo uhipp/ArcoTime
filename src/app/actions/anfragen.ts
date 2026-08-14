@@ -321,22 +321,47 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
 async function anfrageFelderFuerAbschluss(
   supabase: Awaited<ReturnType<typeof createClient>>,
   formData: FormData,
-  ausfuehrendeId: string | null
+  ausfuehrendeId: string | null,
+  anfrageId?: string
 ): Promise<Record<string, unknown>> {
-  // Fehlt "titel", stammt der Aufruf nicht von der Detailseite; dann
-  // bleiben die Stammdaten der Anfrage unangetastet.
-  if (formData.get("titel") === null) return {};
+  const werte: Record<string, unknown> =
+    // Fehlt "titel", stammt der Aufruf nicht von der Detailseite; dann
+    // bleiben die Stammdaten der Anfrage unangetastet.
+    formData.get("titel") === null ? {} : anfrageFromForm(formData);
 
-  const werte = anfrageFromForm(formData);
+  // Den Status vor dem Abschluss festhalten, damit die Anfrage dorthin
+  // zurückkehren kann, falls Zeiteintrag oder Rapport später gelöscht
+  // werden (siehe 0035). Nur beim ERSTEN Abschluss setzen – wer eine
+  // bereits erledigte Anfrage nachträglich verrechnet, soll den alten
+  // Merkposten nicht mit "erledigt" überschreiben.
+  if (anfrageId) {
+    const { data: bisher } = await supabase
+      .from("anfragen")
+      .select("status, status_vor_abschluss")
+      .eq("id", anfrageId)
+      .single();
+
+    if (bisher && bisher.status !== "erledigt") {
+      werte.status_vor_abschluss = bisher.status;
+    } else if (bisher?.status_vor_abschluss) {
+      werte.status_vor_abschluss = bisher.status_vor_abschluss;
+    }
+  }
+
+  if (formData.get("titel") === null) return werte;
 
   // Wer abschliesst, übernimmt die Zuständigkeit – eine erledigte Anfrage
   // ohne zuständige Person ist ein Loch in der Nachvollziehbarkeit.
   if (!werte.zugewiesen_an) werte.zugewiesen_an = ausfuehrendeId;
 
   const bekannteNamen = await alleNamen(supabase);
-  const zustaendigName = await nameFuer(supabase, werte.zugewiesen_an);
+  const zustaendigName = await nameFuer(supabase, (werte.zugewiesen_an as string | null) ?? null);
   if (zustaendigName) {
-    werte.beschreibung = mitNamePraefix(werte.beschreibung, zustaendigName, bekannteNamen);
+    werte.beschreibung = mitNamePraefix(
+      (werte.beschreibung as string | null) ?? null,
+      zustaendigName,
+      bekannteNamen
+    );
   }
   return werte;
 }
@@ -415,7 +440,7 @@ async function uebernehmeDokumente(
 export async function erledigeAnfrageOhneNachweis(id: string, formData: FormData) {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
-  const werte = await anfrageFelderFuerAbschluss(supabase, formData, userData.user?.id ?? null);
+  const werte = await anfrageFelderFuerAbschluss(supabase, formData, userData.user?.id ?? null, id);
 
   const { error } = await supabase
     .from("anfragen")
@@ -488,7 +513,7 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
     rapport.id
   );
 
-  const werte = await anfrageFelderFuerAbschluss(supabase, formData, mitarbeiter_id ?? null);
+  const werte = await anfrageFelderFuerAbschluss(supabase, formData, mitarbeiter_id ?? null, id);
 
   const { error } = await supabase
     .from("anfragen")

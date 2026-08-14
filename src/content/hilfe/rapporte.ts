@@ -58,7 +58,7 @@ Die Nummer im Format **2026-0001** wird erst beim Abschliessen vergeben, nicht b
 
 ## Löschen
 
-Solange ein Rapport im Status "Entwurf" ist, kannst du ihn löschen. Die erfassten **Leistungen bleiben dabei bestehen** und sind weiterhin verrechenbar – nur das Dokument darüber verschwindet. Eine einzelne Position entfernst du über "entfernen" in der Zeile; die wird tatsächlich gelöscht, denn sie wurde ja im Rapport erfasst.
+Solange ein Rapport im Status "Entwurf" ist, kannst du ihn löschen. Stammt er aus einer [Anfrage](/hilfe/anfragen), wird diese dabei wieder geöffnet. Die erfassten **Leistungen bleiben dabei bestehen** und sind weiterhin verrechenbar – nur das Dokument darüber verschwindet. Eine einzelne Position entfernst du über "entfernen" in der Zeile; die wird tatsächlich gelöscht, denn sie wurde ja im Rapport erfasst.
 
 ## Was noch kommt
 

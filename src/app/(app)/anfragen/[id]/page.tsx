@@ -61,6 +61,14 @@ export default async function AnfrageDetailPage({
   const ohneNachweisAction = erledigeAnfrageOhneNachweis.bind(null, id);
 
   const bereitsVerrechnet = Boolean(anfrage.zeiteintrag_id);
+  const hatRapport = Boolean(anfrage.rapport_id);
+
+  // Eine Anfrage kann auf "erledigt" stehen, ohne dass ein Nachweis
+  // existiert: entweder weil sie ohne Zeiteintrag und ohne Rapport
+  // geschlossen wurde, oder weil der Rapport später gelöscht wurde. In
+  // beiden Fällen muss der Weg zu einem Rapport offen bleiben – sonst
+  // sitzt der Vorgang in der Sackgasse.
+  const rapportMoeglich = !hatRapport;
 
   // Reiner Sachtext der Anfrage, ohne die Namenszeile der zugewiesenen
   // Person – Grundlage für den Vorschlag im Erledigen-Block.
@@ -202,7 +210,7 @@ export default async function AnfrageDetailPage({
                   automatisch als erste Zeile ergänzt.
                 </p>
               </div>
-              {anfrage.status !== "erledigt" && dokumente.length > 0 && (
+              {rapportMoeglich && dokumente.length > 0 && (
                 <div className="rounded border bg-gray-50 px-3 py-3">
                   <p className="text-xs font-medium text-gray-600 mb-2">
                     Dokumente in den Rapport übernehmen
@@ -246,7 +254,7 @@ export default async function AnfrageDetailPage({
                     : "Erledigen mit Zeiteintrag"}
                 </button>
 
-                {anfrage.status !== "erledigt" && (
+                {rapportMoeglich && (
                   <>
                     {/* Zweiter und dritter Weg. Die Felder des
                         Zeiteintrags-Blocks tragen kein required, die beiden
@@ -258,15 +266,19 @@ export default async function AnfrageDetailPage({
                       formAction={rapportAction}
                       className="rounded border border-arcos-steel text-arcos-steel text-sm font-medium px-4 py-2 hover:bg-gray-50"
                     >
-                      Erledigen mit Rapport
+                      {anfrage.status === "erledigt"
+                        ? "Rapport erstellen"
+                        : "Erledigen mit Rapport"}
                     </button>
-                    <button
-                      type="submit"
-                      formAction={ohneNachweisAction}
-                      className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
-                    >
-                      Nur als erledigt markieren
-                    </button>
+                    {anfrage.status !== "erledigt" && (
+                      <button
+                        type="submit"
+                        formAction={ohneNachweisAction}
+                        className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
+                      >
+                        Nur als erledigt markieren
+                      </button>
+                    )}
                   </>
                 )}
               </div>
