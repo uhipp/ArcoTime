@@ -53,6 +53,12 @@ export type RasterEintrag = {
 // geht.
 const STUNDE_PX = 56;
 
+// Mindestbreite einer Spalte. Darunter passt kein Kundenname mehr hinein,
+// und ein Raster, in dem man nichts lesen kann, ist keine Übersicht. Bei
+// vielen Personen wächst das Raster deshalb über die Fensterbreite hinaus
+// und wird seitlich gescrollt, statt die Spalten zusammenzuquetschen.
+const SPALTE_MIN = "9rem";
+
 function alsUhrzeit(minuten: number): string {
   return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(
     minuten % 60
@@ -158,13 +164,15 @@ export function DispoRaster({
           laeuft ? "opacity-60 pointer-events-none" : ""
         }`}
       >
-      <div className="min-w-[48rem]">
+      <div className="min-w-max">
         {/* Kopfzeile */}
         <div
           className="grid border-b"
-          style={{ gridTemplateColumns: `4rem repeat(${spalten.length}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `4rem repeat(${spalten.length}, minmax(${SPALTE_MIN}, 1fr))` }}
         >
-          <div />
+          {/* Bleibt beim seitlichen Scrollen stehen – ohne die Uhrzeiten
+              daneben ist ein Balken weit rechts nicht mehr einzuordnen. */}
+          <div className="sticky left-0 z-20 bg-white" />
           {spalten.map((s) => (
             <div
               key={s.key}
@@ -193,9 +201,11 @@ export function DispoRaster({
         {ohneZeit.length > 0 && (
           <div
             className="grid border-b bg-gray-50"
-            style={{ gridTemplateColumns: `4rem repeat(${spalten.length}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `4rem repeat(${spalten.length}, minmax(${SPALTE_MIN}, 1fr))` }}
           >
-            <div className="px-2 py-2 text-[11px] text-gray-400 text-right">ohne Zeit</div>
+            <div className="sticky left-0 z-20 bg-gray-50 px-2 py-2 text-[11px] text-gray-400 text-right">
+              ohne Zeit
+            </div>
             {spalten.map((s) => (
               <div key={s.key} className="border-l px-1 py-1 space-y-1">
                 {ohneZeit
@@ -219,10 +229,10 @@ export function DispoRaster({
         {/* Raster */}
         <div
           className="grid"
-          style={{ gridTemplateColumns: `4rem repeat(${spalten.length}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `4rem repeat(${spalten.length}, minmax(${SPALTE_MIN}, 1fr))` }}
         >
           {/* Stundenachse */}
-          <div className="relative" style={{ height: hoehe }}>
+          <div className="relative sticky left-0 z-20 bg-white" style={{ height: hoehe }}>
             {stunden.map((m, i) => (
               <div
                 key={m}

@@ -48,6 +48,8 @@ Der sichtbare Ausschnitt ist der **Arbeitstag** aus den [Einstellungen](/hilfe/e
 
 Über jeder Spalte steht **„+ planen"**: In der Woche legt das einen Einsatz an diesem Tag an, in der Tagesansicht gleich für diese Person. In der Tagesansicht gibt es zusätzlich die Spalte **„Nicht zugeteilt"** – dort sammeln sich die Einsätze, die noch niemandem gehören.
 
+Bei vielen Mitarbeitenden behalten die Spalten ihre Breite und das Raster wird seitlich gescrollt – zusammengequetschte Spalten, in denen kein Kundenname mehr steht, wären keine Übersicht. Die Uhrzeiten links bleiben dabei stehen.
+
 Der **Monat** bleibt eine Liste. Über dreissig Tage hinweg wäre ein Raster unleserlich, und dort will man ohnehin nur wissen, an welchen Tagen etwas liegt.
 
 ## Einsätze verschieben
