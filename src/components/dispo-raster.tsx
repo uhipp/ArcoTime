@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -443,6 +443,18 @@ function Balken({
     disabled: !eintrag.ziehbar,
   });
 
+  // Merken, ob dieser Balken gerade gezogen wurde.
+  //
+  // Der Balken folgt dem Zeiger, also liegt beim Loslassen der Link unter
+  // ihm – der Browser feuert ein click, und die Seite sprang zum Rapport.
+  // Damit war jedes Verschieben unsichtbar: Die Rückfrage wegen einer
+  // Abwesenheit erschien zwar, aber auf einer Seite, die es nicht mehr
+  // gab. Ein <a> navigiert von sich aus; dnd-kit unterdrückt das nicht.
+  const gezogen = useRef(false);
+  useEffect(() => {
+    if (isDragging) gezogen.current = true;
+  }, [isDragging]);
+
   // An den Rand klemmen statt abschneiden: Ein Einsatz, der vor dem
   // Arbeitstag beginnt, soll sichtbar bleiben.
   const von = Math.max(eintrag.vonMinuten as number, start);
@@ -460,6 +472,11 @@ function Balken({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      // Eigener Handler in der Capture-Phase, damit er die
+      // pointerdown-Behandlung von dnd-kit nicht ersetzt.
+      onPointerDownCapture={() => {
+        gezogen.current = false;
+      }}
       title={
         eintrag.ziehbar
           ? `${beschriftung} — zum Verschieben ziehen`
@@ -481,12 +498,19 @@ function Balken({
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
       }}
     >
-      {/* Der Link liegt im Balken, damit das Ziehen ihn nicht auslöst –
-          dnd-kit unterdrückt den Klick nach einer Bewegung selbst, ein
-          echtes <a> würde bei jedem Loslassen trotzdem navigieren. */}
+      {/* Ein Klick öffnet den Rapport – ausser der Balken wurde eben
+          gezogen. Unter der Aktivierungsschwelle von 6 Pixeln beginnt
+          gar kein Ziehen, ein gewöhnlicher Klick kommt also weiterhin
+          durch. */}
       <Link
         href={eintrag.href}
         draggable={false}
+        onClick={(e) => {
+          if (gezogen.current) {
+            e.preventDefault();
+            gezogen.current = false;
+          }
+        }}
         className="block px-1.5 py-0.5 text-[11px] leading-4 text-white h-full hover:opacity-90"
       >
         <div className="font-medium truncate">{eintrag.titelZeile}</div>

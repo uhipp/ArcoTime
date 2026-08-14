@@ -266,6 +266,10 @@
       },
       {
         "typ": "fix",
+        "text": "Beim Verschieben eines Einsatzes im Zeitraster sprang die Seite zum Rapport, sobald man den Balken losliess. Das Verschieben lief zwar, war aber nicht mehr zu sehen – und Rückfragen wegen einer Abwesenheit gingen dabei verloren."
+      },
+      {
+        "typ": "fix",
         "text": "Meldungen beim Verschieben in der Disposition standen über dem Zeitraster und waren beim Ziehen eines Nachmittagstermins ausserhalb des Bildes. Der Balken sprang kommentarlos zurück, als wäre nichts passiert. Sie erscheinen jetzt fest am unteren Rand."
       },
       {
