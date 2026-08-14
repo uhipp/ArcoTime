@@ -5,7 +5,7 @@ export const kunden: HilfeArtikel[] = [
     slug: "kunden",
     titel: "Kunden",
     kategorie: "Stammdaten",
-    stichworte: ["kunde anlegen", "adresse", "plz", "firma", "kontakt"],
+    stichworte: ["kunde anlegen", "adresse", "strasse", "hausnummer", "plz", "firma", "kontakt"],
     routen: ["/kunden"],
     inhalt: `
 Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfassung und Anfragen.
@@ -13,6 +13,8 @@ Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfas
 ## Neuen Kunden anlegen
 
 Auf **"+ Neuer Kunde"** klicken und die Felder ausfüllen. Pflichtfeld ist nur der **Name** (Nach- oder Firmenname); alles andere kann später ergänzt werden.
+
+**Strasse und Nummer** sind zwei getrennte Felder, ebenso **PLZ** und **Ort**. Das hält die Adresse auswertbar und sortierbar. Im Export erscheint die Strasse wieder als eine Angabe („Bahnhofstrasse 12"), weil das Comatic-Format eine einzige Spalte dafür vorsieht.
 
 **PLZ-Autofill**: Trägst du eine Schweizer Postleitzahl ein, schlägt ArcoTime automatisch den passenden Ort vor – spart Tipparbeit und vermeidet Tippfehler.
 

@@ -19,6 +19,7 @@ function kundeFromForm(formData: FormData) {
     name: String(formData.get("name") ?? "").trim(),
     adresse_zusatz: str(formData.get("adresse_zusatz")),
     strasse: str(formData.get("strasse")),
+    hausnummer: str(formData.get("hausnummer")),
     postfach: str(formData.get("postfach")),
     plz: str(formData.get("plz")),
     ort: str(formData.get("ort")),

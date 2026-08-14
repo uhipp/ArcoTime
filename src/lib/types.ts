@@ -19,6 +19,7 @@ export type Kunde = {
   name: string;
   adresse_zusatz: string | null;
   strasse: string | null;
+  hausnummer: string | null;
   postfach: string | null;
   plz: string | null;
   ort: string | null;

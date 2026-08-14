@@ -83,6 +83,18 @@
       {
         "typ": "fix",
         "text": "Mitarbeitende konnten weder Kunden noch Projekte oder Dienstleistungen anlegen – es erschien nur eine technische Fehlermeldung. Neu darf jede und jeder erfassen und bearbeiten, was die eigene Oberfläche zeigt. Löschen bleibt beim Admin."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Strukturierte Adresse: Strasse und Hausnummer sind neu zwei getrennte Felder. Bestehende Adressen wurden automatisch aufgeteilt; im Export bleibt es bei einer Spalte „Strasse“."
+      },
+      {
+        "typ": "fix",
+        "text": "Alle Seiten mit Projektbezug meldeten kurzzeitig einen Datenbankfehler („infinite recursion“). Behoben."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Preise und Rabatte auf der Kundenseite sind jetzt auch für Mitarbeitende sichtbar und bearbeitbar."
       }
     ]
   },

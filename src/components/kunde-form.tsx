@@ -44,12 +44,19 @@ export function KundeForm({
             defaultValue={kunde?.adresse_zusatz}
             className="col-span-2"
           />
-          <Field
-            label="Strasse"
-            name="strasse"
-            defaultValue={kunde?.strasse}
-            className="col-span-2"
-          />
+          {/* Strasse und Hausnummer getrennt (siehe 0033). Zusammen
+              belegen sie dieselbe Breite wie vorher das eine Feld; die
+              Nummer bekommt nur ein Drittel, das reicht auch für "12a"
+              oder "12-14". */}
+          <div className="col-span-2 grid grid-cols-3 gap-4">
+            <Field
+              label="Strasse"
+              name="strasse"
+              defaultValue={kunde?.strasse}
+              className="col-span-2"
+            />
+            <Field label="Nr." name="hausnummer" defaultValue={kunde?.hausnummer} />
+          </div>
           <Field label="Postfach" name="postfach" defaultValue={kunde?.postfach} />
           <PlzOrtFields defaultPlz={kunde?.plz} defaultOrt={kunde?.ort} />
           <Field
