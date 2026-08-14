@@ -438,9 +438,13 @@ function Balken({
   // waagrechte Lage des Balkens.
   lage: { spur: number; spuren: number };
 }) {
+  // Bewusst auch abgeschlossene Rapporte ziehbar: Ein gesperrter
+  // Draggable liefert überhaupt kein Ereignis, der Balken bewegte sich
+  // nicht, und beim Loslassen öffnete sich der Rapport – ohne einen
+  // Hinweis, warum. Jetzt lehnt die Aktion mit Begründung ab (sie prüft
+  // den Status ohnehin selbst, siehe verschiebeEinsatz).
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: eintrag.key,
-    disabled: !eintrag.ziehbar,
   });
 
   // Merken, ob dieser Balken gerade gezogen wurde.
@@ -472,10 +476,21 @@ function Balken({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      // Eigener Handler in der Capture-Phase, damit er die
-      // pointerdown-Behandlung von dnd-kit nicht ersetzt.
+      // Eigene Handler in der Capture-Phase, damit sie die
+      // pointerdown-Behandlung von dnd-kit nicht ersetzen.
       onPointerDownCapture={() => {
         gezogen.current = false;
+      }}
+      // Hier und nicht am Link: In der Capture-Phase läuft dieser Handler
+      // VOR dem des Links, und stopPropagation lässt ihn gar nicht erst
+      // ans Navigieren kommen. Auf preventDefault allein zu bauen hiesse
+      // sich darauf zu verlassen, dass next/link es beachtet.
+      onClickCapture={(e) => {
+        if (gezogen.current) {
+          e.preventDefault();
+          e.stopPropagation();
+          gezogen.current = false;
+        }
       }}
       title={
         eintrag.ziehbar
@@ -484,7 +499,7 @@ function Balken({
       }
       className={`absolute rounded overflow-hidden ${
         eintrag.konflikt ? "ring-2 ring-red-500" : ""
-      } ${eintrag.ziehbar ? "cursor-grab active:cursor-grabbing" : ""} ${
+      } cursor-grab active:cursor-grabbing ${
         isDragging ? "opacity-70 z-10 shadow-lg" : ""
       }`}
       style={{
@@ -505,12 +520,6 @@ function Balken({
       <Link
         href={eintrag.href}
         draggable={false}
-        onClick={(e) => {
-          if (gezogen.current) {
-            e.preventDefault();
-            gezogen.current = false;
-          }
-        }}
         className="block px-1.5 py-0.5 text-[11px] leading-4 text-white h-full hover:opacity-90"
       >
         <div className="font-medium truncate">{eintrag.titelZeile}</div>
