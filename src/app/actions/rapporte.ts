@@ -269,13 +269,21 @@ export async function fuegePositionHinzu(
     // Datum und ausführende Person kommen vom Rapport, nicht aus dem
     // Positionsformular – sie gelten für den ganzen Einsatz.
     datum: rapport.datum,
-    mitarbeiter_id: rapport.mitarbeiter_id,
+    // Person der Position: gewählt aus dem Team, sonst die
+    // verantwortliche Person des Rapports (0046).
+    mitarbeiter_id:
+      String(formData.get("mitarbeiter_id") ?? "").trim() || rapport.mitarbeiter_id,
     start_zeit: normalisiereZeit(str(formData.get("start_zeit"))),
     end_zeit: normalisiereZeit(str(formData.get("end_zeit"))),
     dauer_minuten: Number(formData.get("dauer_minuten") ?? 0),
     menge: mengeRoh === null ? null : Number(mengeRoh),
     beschreibung: str(formData.get("beschreibung")),
     rabatt_prozent: Number(formData.get("rabatt_prozent") ?? 0),
+    // Person der Position. Fehlt das Feld – kein Team, oder ein
+    // Mengenartikel –, bleibt sie, wie sie war (0046).
+    ...(formData.has("mitarbeiter_id")
+      ? { mitarbeiter_id: String(formData.get("mitarbeiter_id") ?? "").trim() }
+      : {}),
   };
 
   const fehler = await pruefeGegenDienstleistung(supabase, werte);
@@ -380,27 +388,45 @@ export async function aktualisierePosition(
   // füllt sie wieder.
   const { data: bisher } = await supabase
     .from("zeiteintraege")
-    .select("dienstleistung_id")
+    .select("dienstleistung_id, mitarbeiter_id")
     .eq("id", zeiteintragId)
     .single();
 
   const dienstleistungGewechselt =
     bisher != null && bisher.dienstleistung_id !== werte.dienstleistung_id;
 
-  const { error } = await supabase
+  // Namenszeile auf die Person der Position, nicht auf die des Kopfs: Bei
+  // einem Team leistet nicht die verantwortliche Person jede Stunde, und
+  // im Export ist die Namenszeile die einzige Spur, wem sie gehört.
+  const personDerPosition =
+    (werte as { mitarbeiter_id?: string }).mitarbeiter_id ||
+    bisher?.mitarbeiter_id ||
+    rapport.mitarbeiter_id;
+
+  const { data: geaendert, error } = await supabase
     .from("zeiteintraege")
     .update({
       ...werte,
-      beschreibung: await mitNamenszeile(supabase, rapport.mitarbeiter_id, werte.beschreibung),
+      beschreibung: await mitNamenszeile(supabase, personDerPosition, werte.beschreibung),
       ...(istArbeitszeit
         ? { menge: null }
         : { dauer_minuten: null, start_zeit: null, end_zeit: null }),
       ...(dienstleistungGewechselt ? { preis: null, mwst_code: null, mwst_satz: null } : {}),
     })
-    .eq("id", zeiteintragId);
+    .eq("id", zeiteintragId)
+    .select("id");
 
   if (error) {
     return { fehler: error.message };
+  }
+  // Null betroffene Zeilen kommen ohne Fehler zurück, wenn RLS ablehnt.
+  // Ohne diese Prüfung meldete die Seite "gespeichert", und die Korrektur
+  // war weg – dieselbe stille Falle wie bei Kunden und Projekten (0031).
+  if (!geaendert || geaendert.length === 0) {
+    return {
+      fehler:
+        "Die Änderung wurde nicht übernommen. Entweder ist die Position bereits exportiert, oder dir fehlen die Rechte.",
+    };
   }
 
   revalidatePath(`/rapporte/${rapportId}`);
@@ -891,4 +917,106 @@ export async function entferneBeteiligten(rapportId: string, mitarbeiterId: stri
   revalidatePath("/disposition");
   revalidatePath("/kalender");
   redirect(mitErfolg(`/rapporte/${rapportId}`, "Aus dem Einsatz entfernt."));
+}
+
+// Person im ganzen Rapport ersetzen.
+//
+// Der Praxisfall: Jemand fällt aus, ein anderer übernimmt. Ohne diese
+// Funktion müsste man die Teamzeile tauschen und danach jede einzelne
+// Position umhängen – und würde dabei welche vergessen.
+//
+// Bewusst eine eigene Funktion und kein Nebeneffekt des Ziehens in der
+// Disposition: Dort verschiebt man Zeit, hier wechselt man Verantwortung
+// samt bereits erfasster Stunden. Zwei verschiedene Absichten.
+export async function ersetzeBeteiligten(
+  rapportId: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  const supabase = await createClient();
+  const alt = String(formData.get("alt_id") ?? "").trim();
+  const neu = String(formData.get("neu_id") ?? "").trim();
+
+  if (!alt || !neu) return { fehler: "Bitte beide Personen wählen." };
+  if (alt === neu) return { fehler: "Das ist dieselbe Person." };
+
+  const { data: rapport } = await supabase
+    .from("rapporte")
+    .select("status, mitarbeiter_id")
+    .eq("id", rapportId)
+    .single();
+
+  if (!rapport) return { fehler: "Rapport nicht gefunden." };
+  if (rapport.status !== "offen") {
+    return {
+      fehler:
+        "Dieser Rapport ist abgeschlossen. Für Korrekturen bitte stornieren und neu erstellen.",
+    };
+  }
+
+  // Bereits exportierte Positionen bleiben, wo sie sind: Sie liegen in der
+  // Buchhaltung, und wessen Stunden dort verrechnet wurden, ändert man
+  // nicht nachträglich.
+  const { data: exportiert } = await supabase
+    .from("zeiteintraege")
+    .select("id")
+    .eq("rapport_id", rapportId)
+    .eq("mitarbeiter_id", alt)
+    .not("beleg_id", "is", null);
+
+  if (exportiert && exportiert.length > 0) {
+    return {
+      fehler: `Nicht möglich: ${exportiert.length} ${
+        exportiert.length === 1 ? "Position ist" : "Positionen sind"
+      } bereits exportiert. Wessen Stunden verrechnet wurden, lässt sich nicht nachträglich ändern.`,
+    };
+  }
+
+  // Erst die neue Person aufnehmen, dann die Stunden umhängen, dann die
+  // alte entfernen. In dieser Reihenfolge ist der Einsatz zu keinem
+  // Zeitpunkt ohne Zuständigen.
+  const { error: aufnahmeFehler } = await supabase
+    .from("rapport_beteiligte")
+    .upsert(
+      { rapport_id: rapportId, mitarbeiter_id: neu },
+      { onConflict: "rapport_id,mitarbeiter_id" }
+    );
+  if (aufnahmeFehler) return { fehler: aufnahmeFehler.message };
+
+  const { data: umgehaengt, error: stundenFehler } = await supabase
+    .from("zeiteintraege")
+    .update({ mitarbeiter_id: neu })
+    .eq("rapport_id", rapportId)
+    .eq("mitarbeiter_id", alt)
+    .is("beleg_id", null)
+    .select("id");
+
+  if (stundenFehler) return { fehler: stundenFehler.message };
+
+  // Die verantwortliche Person wird im Kopf geführt – wechselt sie, muss
+  // auch dort der neue Name stehen, sonst schliesst der Falsche ab.
+  if (rapport.mitarbeiter_id === alt) {
+    await supabase.from("rapporte").update({ mitarbeiter_id: neu }).eq("id", rapportId);
+  }
+
+  await supabase
+    .from("rapport_beteiligte")
+    .delete()
+    .eq("rapport_id", rapportId)
+    .eq("mitarbeiter_id", alt);
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/disposition");
+  revalidatePath("/kalender");
+  revalidatePath("/zeiterfassung");
+
+  const anzahl = umgehaengt?.length ?? 0;
+  redirect(
+    mitErfolg(
+      `/rapporte/${rapportId}`,
+      anzahl > 0
+        ? `Person ersetzt, ${anzahl} ${anzahl === 1 ? "Position" : "Positionen"} umgehängt.`
+        : "Person ersetzt."
+    )
+  );
 }

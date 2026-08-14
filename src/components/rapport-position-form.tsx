@@ -29,6 +29,7 @@ export function RapportPositionForm({
   abbrechenHref,
   mitarbeiterId,
   datum,
+  beteiligte,
 }: {
   dienstleistungen: DienstleistungOption[];
   rabattsaetze: Rabattsatz[];
@@ -40,6 +41,11 @@ export function RapportPositionForm({
   // für den ganzen Einsatz.
   mitarbeiterId: string;
   datum: string;
+  // Beteiligte des Einsatzes (0045). Bei mehreren wird die Person je
+  // Stundenposition gewählt – sonst laufen alle Stunden auf die
+  // verantwortliche Person und jede Auswertung je Mitarbeitendem
+  // stimmt nicht.
+  beteiligte: { id: string; name: string }[];
 }) {
   const bearbeiten = position != null;
 
@@ -211,6 +217,28 @@ export function RapportPositionForm({
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
           </div>
+        </div>
+      )}
+
+      {/* Nur bei einem Team und nur bei Arbeitszeit: Material und
+          Reisespesen gehören zum Auftrag, nicht zu einer Person. */}
+      {beteiligte.length > 1 && !istMengenartikel && (
+        <div>
+          <label className="block text-xs text-gray-500 mb-1" htmlFor="pos_mitarbeiter">
+            Geleistet von
+          </label>
+          <select
+            id="pos_mitarbeiter"
+            name="mitarbeiter_id"
+            defaultValue={position?.mitarbeiter_id ?? mitarbeiterId}
+            className="rounded border border-gray-300 px-3 py-2 text-sm min-w-[12rem]"
+          >
+            {beteiligte.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 

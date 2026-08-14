@@ -255,6 +255,18 @@
       {
         "typ": "verbessert",
         "text": "Beim Verschieben eines Einsatzes meldet ArcoTime, welche Person nicht kann und warum – und lässt dich entscheiden, statt zu blockieren."
+      },
+      {
+        "typ": "neu",
+        "text": "Bei mehreren Beteiligten lässt sich je Stundenposition wählen, wer sie geleistet hat. Material und Spesen brauchen keine Person."
+      },
+      {
+        "typ": "neu",
+        "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
+      },
+      {
+        "typ": "fix",
+        "text": "Eine Rapport-Position liess sich nur von der Person ändern, die sie erfasst hatte – die Ablehnung kam dabei lautlos und wurde als „gespeichert“ gemeldet. Jetzt darf sie jede und jeder im Betrieb bearbeiten, solange sie nicht exportiert ist."
       }
     ]
   },

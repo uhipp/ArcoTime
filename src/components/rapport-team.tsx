@@ -1,4 +1,9 @@
-import { fuegeBeteiligtenHinzu, entferneBeteiligten } from "@/app/actions/rapporte";
+"use client";
+
+import { useActionState, useState } from "react";
+import { fuegeBeteiligtenHinzu, entferneBeteiligten, ersetzeBeteiligten } from "@/app/actions/rapporte";
+import { AbsendeKnopf } from "@/components/absende-knopf";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { DeleteButton } from "@/components/delete-button";
 
 type Person = { id: string; name: string };
@@ -19,15 +24,19 @@ export function RapportTeam({
   alle,
   verantwortlichId,
   bearbeitbar,
+  ersetzenAction,
 }: {
   rapportId: string;
   beteiligte: Person[];
   alle: Person[];
   verantwortlichId: string | null;
   bearbeitbar: boolean;
+  ersetzenAction: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
 }) {
   const drin = new Set(beteiligte.map((p) => p.id));
   const waehlbar = alle.filter((p) => !drin.has(p.id));
+  const [ersetzenOffen, setErsetzenOffen] = useState(false);
+  const [ergebnis, formAction] = useActionState(ersetzenAction, null);
 
   return (
     <div className="bg-white rounded-lg border p-5 max-w-2xl">
@@ -107,6 +116,97 @@ export function RapportTeam({
             </button>
           </form>
         ))}
+
+      {/* Personentausch: Fällt jemand aus, übernimmt ein anderer – samt
+          der bereits erfassten Stunden. Ohne das müsste man die Teamzeile
+          tauschen und jede Position einzeln umhängen, und würde dabei
+          welche vergessen. */}
+      {bearbeitbar && beteiligte.length > 0 && waehlbar.length > 0 && (
+        <div className="border-t mt-5 pt-4">
+          {!ersetzenOffen ? (
+            <button
+              type="button"
+              onClick={() => setErsetzenOffen(true)}
+              className="text-sm text-arcos-steel hover:underline"
+            >
+              Person ersetzen
+            </button>
+          ) : (
+            <form action={formAction} className="space-y-3">
+              <p className="text-sm text-gray-500">
+                Die neue Person übernimmt alle noch nicht exportierten
+                Stundenpositionen der bisherigen.
+              </p>
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="flex-1 min-w-[10rem]">
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="alt_id">
+                    Bisher
+                  </label>
+                  <select
+                    id="alt_id"
+                    name="alt_id"
+                    required
+                    defaultValue=""
+                    className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                  >
+                    <option value="" disabled>
+                      Bitte wählen…
+                    </option>
+                    {beteiligte.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[10rem]">
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="neu_id">
+                    Neu
+                  </label>
+                  <select
+                    id="neu_id"
+                    name="neu_id"
+                    required
+                    defaultValue=""
+                    className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                  >
+                    <option value="" disabled>
+                      Bitte wählen…
+                    </option>
+                    {waehlbar.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {ergebnis?.fehler && (
+                <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
+                  {ergebnis.fehler}
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <AbsendeKnopf
+                  laufttext="Wird getauscht…"
+                  className="rounded bg-arcos-steel text-white text-sm font-medium px-3 py-1.5 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Ersetzen
+                </AbsendeKnopf>
+                <button
+                  type="button"
+                  onClick={() => setErsetzenOffen(false)}
+                  className="text-sm text-gray-500 hover:underline"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 }

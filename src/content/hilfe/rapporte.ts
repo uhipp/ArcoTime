@@ -65,6 +65,10 @@ Die **verantwortliche Person** aus dem Kopf ist immer dabei und lässt sich nich
 
 Die Beteiligten sind **reine Planung, keine Berechtigung**: Wer nicht dazugehört, darf trotzdem Positionen erfassen – die Disposition etwa fährt nie selbst mit.
 
+**Person ersetzen**: Fällt jemand aus, übernimmt eine andere Person – samt aller bereits erfassten Stundenpositionen. Ohne diese Funktion müsste man die Teamzeile tauschen und danach jede Position einzeln umhängen, und würde dabei welche vergessen. Bereits **exportierte** Positionen bleiben, wo sie sind: Wessen Stunden verrechnet wurden, ändert man nicht nachträglich.
+
+**Geleistet von**: Sind mehrere Personen beteiligt, wählst du bei jeder Stundenposition, wer sie geleistet hat. Material und Reisespesen brauchen das nicht – sie gehören zum Auftrag, nicht zu einer Person. Der Name landet auch in der ersten Zeile der Beschreibung, denn im Export ist das die einzige Spur, wem die Stunde gehört.
+
 ## Wann eine Position zählt
 
 Ein Rapport wird meist **vorbereitet**: Die Disposition legt die Aufträge der kommenden Woche an, oft schon mit bekannten Positionen – Reisespesen, angenommene Stunden – und mit einer Beschreibung dessen, was zu tun ist. Der Monteur passt vor Ort die Werte an und schliesst ab.

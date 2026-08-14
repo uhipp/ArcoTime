@@ -24,6 +24,7 @@ import {
   signiereRapport,
   versendeRapport,
   storniereRapport,
+  ersetzeBeteiligten,
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
@@ -290,6 +291,7 @@ export default async function RapportDetailPage({
             position={inBearbeitung}
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
+            beteiligte={beteiligte}
             abbrechenHref={`/rapporte/${id}`}
           />
         )}
@@ -300,6 +302,7 @@ export default async function RapportDetailPage({
             action={fuegePositionHinzu.bind(null, id)}
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
+            beteiligte={beteiligte}
           />
         )}
       </div>
@@ -326,6 +329,7 @@ export default async function RapportDetailPage({
         alle={mitarbeitende ?? []}
         verantwortlichId={rapport.mitarbeiter_id ?? null}
         bearbeitbar={offen}
+        ersetzenAction={ersetzeBeteiligten.bind(null, id)}
       />
 
       {offen && (
