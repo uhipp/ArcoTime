@@ -155,6 +155,10 @@
       {
         "typ": "fix",
         "text": "Wird eine Eingabe vom Server abgelehnt – etwa wegen der Tagesarbeitszeit oder einer fehlenden Angabe –, bleibt das Formular jetzt ausgefüllt. Bisher war alles Getippte weg. Betrifft Kunden, Projekte, Dienstleistungen, Zeiterfassung, Rapporte und Anfragen."
+      },
+      {
+        "typ": "fix",
+        "text": "Bei jedem Speichern einer Anfrage stapelte sich der Name der zuständigen Person als weitere Zeile in der Beschreibung. Behoben – bestehende Mehrfachzeilen räumt ArcoTime beim nächsten Speichern selbst auf."
       }
     ]
   },

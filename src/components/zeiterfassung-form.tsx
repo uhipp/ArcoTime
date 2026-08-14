@@ -169,7 +169,13 @@ export function ZeiterfassungForm({
   const [dienstleistungId, setDienstleistungId] = useState(
     zeiteintrag?.dienstleistung_id ?? ""
   );
-  const [beschreibung, setBeschreibung] = useState(zeiteintrag?.beschreibung ?? "");
+  // Zeilenenden vereinheitlichen: Ein <textarea> schickt CRLF ab, in der
+  // Datenbank kann also beides stehen. Alles Weitere hier zerlegt an "\n"
+  // und vergleicht erste Zeilen mit Namen – mit einem Wagenrücklauf am
+  // Ende schlägt jeder dieser Vergleiche fehl (siehe mitarbeiter-praefix).
+  const [beschreibung, setBeschreibung] = useState(
+    (zeiteintrag?.beschreibung ?? "").replace(/\r\n?/g, "\n")
+  );
   const beschreibungRef = useRef<HTMLTextAreaElement | null>(null);
   const gewaehlteDienstleistung = dienstleistungen.find((d) => d.id === dienstleistungId);
 
