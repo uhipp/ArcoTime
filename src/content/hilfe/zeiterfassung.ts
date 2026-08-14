@@ -17,7 +17,7 @@ Auf dieser Seite erfasst du deine Arbeitszeit – entweder nachträglich mit fes
 1. **Projekt** wählen. Fehlt das Projekt noch? Über **"+ Neues Projekt"** direkt neben dem Feld kannst du es sofort anlegen, ohne die Seite zu verlassen (siehe [Durchgängige Schnellerfassung](/hilfe/anfragen)).
 2. **Dienstleistung** wählen – bestimmt den Stundenansatz.
 3. **Datum** und **Dauer** (in Minuten oder Stunden, je nach Eingabefeld) angeben.
-4. Optional eine **Beschreibung** ergänzen und einen **Rabatt** wählen, falls die Leistung vergünstigt oder nicht verrechnet wird.
+4. Optional eine **Beschreibung** ergänzen und einen **Rabatt** wählen, falls die Leistung vergünstigt oder nicht verrechnet wird. Hat die gewählte Leistung im [Dienstleistungskatalog](/hilfe/dienstleistungen) eine Beschreibung hinterlegt, steht diese hier bereits als Vorschlag – unter der Namenszeile und jederzeit überschreibbar. Eigener Text wird dabei nie ersetzt.
 5. **Speichern**.
 
 ## Zeit per Timer erfassen

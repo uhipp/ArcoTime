@@ -95,6 +95,10 @@
       {
         "typ": "verbessert",
         "text": "Preise und Rabatte auf der Kundenseite sind jetzt auch für Mitarbeitende sichtbar und bearbeitbar."
+      },
+      {
+        "typ": "neu",
+        "text": "Die Beschreibung einer Dienstleistung erscheint beim Erfassen eines Zeiteintrags automatisch als Vorschlag – unter der Namenszeile und jederzeit überschreibbar. Selbst getippter Text wird nie ersetzt."
       }
     ]
   },

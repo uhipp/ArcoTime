@@ -37,7 +37,7 @@ export default async function ZeiterfassungPage({
       .order("bezeichnung"),
     supabase
       .from("dienstleistungen")
-      .select("id, bezeichnung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id")
+      .select("id, bezeichnung, beschreibung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("kunden").select("id, name, vorname").order("name"),

@@ -144,7 +144,7 @@ export function ProjektForm({
           name="sichtbar_fuer_alle"
           defaultChecked={projekt?.sichtbar_fuer_alle ?? true}
         />
-        Für alle Mitarbeitenden sichtbar
+        Für alle Mitarbeitende sichtbar
       </label>
 
       <div>

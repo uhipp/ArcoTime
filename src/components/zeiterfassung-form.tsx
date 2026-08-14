@@ -26,6 +26,7 @@ type DienstleistungOption = Pick<
   Dienstleistung,
   | "id"
   | "bezeichnung"
+  | "beschreibung"
   | "aktiv"
   | "einheit"
   | "zaehlt_als_arbeitszeit"
@@ -159,6 +160,8 @@ export function ZeiterfassungForm({
   const [dienstleistungId, setDienstleistungId] = useState(
     zeiteintrag?.dienstleistung_id ?? ""
   );
+  const [beschreibung, setBeschreibung] = useState(zeiteintrag?.beschreibung ?? "");
+  const beschreibungRef = useRef<HTMLTextAreaElement | null>(null);
   const gewaehlteDienstleistung = dienstleistungen.find((d) => d.id === dienstleistungId);
 
   // Mengenartikel (km, Spesen, Kleinmaterial) werden über eine Stückzahl
@@ -261,8 +264,38 @@ export function ZeiterfassungForm({
     if (vorschlag != null) setRabatt(vorschlag);
   }
 
+  // Die Beschreibung einer Dienstleistung ist eine Vorgabe für den
+  // Beschreibungstext des Zeiteintrags – sie landet unter der Namenszeile
+  // der/des Mitarbeitenden. Übernommen wird sie nur, solange dort nichts
+  // Eigenes steht: entweder ist das Feld leer, oder es enthält nur die
+  // Namenszeile, oder darunter steht noch unverändert die Vorgabe der
+  // zuvor gewählten Dienstleistung. Selbst getippter Text bleibt in jedem
+  // Fall stehen – eine Vorgabe darf niemals Arbeit überschreiben.
+  function mitVorgabe(aktuell: string, alteId: string, neueId: string): string {
+    const alteVorgabe = dienstleistungen.find((d) => d.id === alteId)?.beschreibung ?? "";
+    const neueVorgabe = dienstleistungen.find((d) => d.id === neueId)?.beschreibung ?? "";
+
+    const zeilen = aktuell === "" ? [] : aktuell.split("\n");
+    const name = nameFuer(mitarbeiterId);
+    const hatNamenszeile = zeilen.length > 0 && zeilen[0] === name;
+    const kopf = hatNamenszeile ? zeilen[0] : null;
+    const rest = (hatNamenszeile ? zeilen.slice(1) : zeilen).join("\n").trim();
+
+    if (rest !== "" && rest !== alteVorgabe.trim()) return aktuell;
+
+    const teile = [];
+    if (kopf !== null) teile.push(kopf);
+    else if (name !== "" && aktuell === "") teile.push(name);
+    teile.push(neueVorgabe);
+    // Abschliessendes \n auch ohne Vorgabe, damit der Cursor wie bisher
+    // unter der Namenszeile beginnt.
+    return teile.join("\n") + (neueVorgabe === "" ? "" : "\n");
+  }
+
   function onDienstleistungChange(neueId: string) {
+    const alteId = dienstleistungId;
     setDienstleistungId(neueId);
+    setBeschreibung((aktuell) => mitVorgabe(aktuell, alteId, neueId));
 
     if (istNeu) {
       const vorschlag = vorschlagFuer(projektId, neueId);
@@ -281,9 +314,6 @@ export function ZeiterfassungForm({
       if (aktuell !== 0 && aktuell !== 100) setRabatt("0");
     }
   }
-
-  const [beschreibung, setBeschreibung] = useState(zeiteintrag?.beschreibung ?? "");
-  const beschreibungRef = useRef<HTMLTextAreaElement | null>(null);
 
   const nameFuer = (id: string) => mitarbeitende.find((m) => m.id === id)?.name ?? "";
 

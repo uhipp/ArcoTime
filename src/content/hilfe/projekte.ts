@@ -20,7 +20,7 @@ Weitere Felder mit sinnvollen Standardwerten:
 - **Startdatum**: standardmässig heute.
 - **Kostenstelle**: wird bei jedem Zeiteintrag dieses Projekts automatisch in den Export übernommen.
 - **Nächste Belegnummer**: startet bei 470000 und erhöht sich nach jedem Export automatisch um 1. Nur ändern, wenn an eine bestehende Nummerierung im Buchhaltungssystem angeschlossen werden soll.
-- **Für alle Mitarbeitenden sichtbar**: steuert, ob auch andere Mitarbeitende (nicht nur Ersteller:in) auf dieses Projekt Zeit erfassen können.
+- **Für alle Mitarbeitende sichtbar**: Mit Häkchen (Standard) sehen alle das Projekt und können darauf Zeit erfassen. Ohne Häkchen bleibt es den Admins vorbehalten.
 
 ## Projekte schnell anlegen, ohne die Seite zu verlassen
 

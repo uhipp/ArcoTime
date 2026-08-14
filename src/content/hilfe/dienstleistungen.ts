@@ -25,6 +25,8 @@ Der Dienstleistungskatalog ist die Preisliste eurer angebotenen Leistungen – G
 
 **"+ Neue Dienstleistung"** klicken, Bezeichnung und Preis (pro Stunde) angeben. Zusätzlich lässt sich eine **Dienstleistungsklasse** zuordnen (z.B. zur Gruppierung in Auswertungen) und ein **MwSt-Code**.
 
+Die **Beschreibung** einer Dienstleistung ist mehr als eine Notiz: Sie erscheint beim Erfassen eines Zeiteintrags automatisch als Vorschlag im Beschreibungsfeld, unter der Namenszeile. Wer immer denselben Satz tippt – „Fahrzeugreinigung aussen und innen, Innenraum gesaugt“ – hinterlegt ihn hier einmal.
+
 ## Spesen, Kilometer und Material – "Zählt als Arbeitszeit"
 
 Nicht jede Position ist Arbeitszeit. Kilometergeld, Reisespesen oder Kleinmaterial werden nach **Menge** abgerechnet, nicht nach Dauer – und dürfen die Stundenauswertung der Mitarbeitenden nicht verfälschen.
