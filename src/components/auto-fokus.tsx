@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Springt nach dem Speichern zurück ins Erfassungsformular.
 //
@@ -13,9 +13,22 @@ import { useSearchParams } from "next/navigation";
 // "?fokus=<element-id>" an ihre Redirect-URL, das Zielfeld braucht nur eine
 // id. Damit gilt die Regel überall gleich, auch für Formulare, die es noch
 // nicht gibt.
+// Wichtig: Der Parameter muss nach dem Anspringen wieder aus der Adresse
+// verschwinden. Sonst trägt die zweite gespeicherte Position denselben
+// Wert wie die erste, der Effekt sieht keine Änderung und springt nicht –
+// genau das ist passiert.
+//
+// Zuständig fürs Aufräumen ist der Toast, solange auch "erfolg" in der
+// Adresse steht: Beide Komponenten hängen im selben Layout, und wenn beide
+// unabhängig die Adresse neu schreiben, setzt die spätere den Parameter
+// der früheren wieder ein. Steht "fokus" ausnahmsweise allein, räumt diese
+// Komponente selbst auf.
 export function AutoFokus() {
   const params = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const ziel = params.get("fokus");
+  const alleine = ziel != null && params.get("erfolg") == null;
 
   useEffect(() => {
     if (!ziel) return;
@@ -31,7 +44,17 @@ export function AutoFokus() {
     (el as HTMLElement & { focus?: (o?: FocusOptions) => void }).focus?.({
       preventScroll: true,
     });
-  }, [ziel]);
+
+    if (alleine) {
+      const rest = new URLSearchParams(params.toString());
+      rest.delete("fokus");
+      const query = rest.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    }
+    // params/router/pathname bewusst nicht in der Liste: Sie ändern sich
+    // beim Aufräumen selbst und würden den Effekt sonst erneut auslösen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ziel, alleine]);
 
   return null;
 }

@@ -171,6 +171,10 @@
       {
         "typ": "neu",
         "text": "Ein Zeiteintrag kann nicht mehr in der Zukunft liegen, und ein Rapport mit Datum in der Zukunft lässt sich nicht abschliessen."
+      },
+      {
+        "typ": "fix",
+        "text": "Beim Erfassen mehrerer Positionen sprang ArcoTime nur nach der ersten zurück ins leere Formular, danach blieb die Seite oben stehen. Behoben – die Regel gilt jetzt bei jedem Speichern, auch in allen anderen Erfassungslisten."
       }
     ]
   },

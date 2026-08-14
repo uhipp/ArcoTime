@@ -31,8 +31,17 @@ function ToastMeldung({ nachricht }: { nachricht: string }) {
   useEffect(() => {
     // URL bereinigen, damit die Meldung bei Reload/Zurück nicht erneut
     // erscheint.
+    //
+    // "fokus" geht mit weg, obwohl es dieser Komponente nicht gehört:
+    // AutoFokus liest den Wert schon beim Rendern, also vor diesem Effekt,
+    // und braucht ihn danach nicht mehr. Bleibt er stehen, sieht AutoFokus
+    // beim nächsten Speichern denselben Wert und springt nicht mehr – die
+    // zweite Position landete ohne das wieder am Seitenanfang. Beide
+    // Parameter hier zu entfernen ist sicherer, als zwei Komponenten
+    // unabhängig an derselben Adresse schreiben zu lassen.
     const neueParams = new URLSearchParams(searchParams.toString());
     neueParams.delete("erfolg");
+    neueParams.delete("fokus");
     const query = neueParams.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
 
