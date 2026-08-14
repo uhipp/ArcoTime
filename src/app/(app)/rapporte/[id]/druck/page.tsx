@@ -69,12 +69,25 @@ export default async function RapportDruckPage({
     .join(" ");
   const logoAdresse = logoAdresseVon(organisation?.logo_pfad);
 
+  // Absenderzeile fürs Fensterkuvert: Name – Strasse Nr – PLZ Ort, in
+  // einer Zeile. Fehlt ein Teil, fällt er samt Trennstrich weg, statt
+  // eine Lücke zu hinterlassen.
+  const absenderZeile = [
+    organisation?.name,
+    absenderStrasse || null,
+    [organisation?.plz, organisation?.ort].filter(Boolean).join(" ") || null,
+  ]
+    .filter(Boolean)
+    .join(" – ");
+
   // Nur Arbeitszeit summieren – Mengenartikel wie Kilometer oder Material
   // haben keine Dauer und dürfen die Stundensumme nicht aufblähen.
   const summeStunden = positionen.reduce((s, z) => s + Number(z.menge_stunden ?? 0), 0);
 
   return (
-    <div className="max-w-2xl">
+    // Zusätzlicher linker Rand im Druck: Der Standardrand des Browsers
+    // ist knapp, und ein gelochtes Blatt verliert links weitere Millimeter.
+    <div className="max-w-2xl print:pl-[0.5cm]">
       <div className="flex items-center justify-between mb-6 print:hidden">
         <Link href={`/rapporte/${id}`} className="text-sm text-arcos-steel hover:underline">
           ← Zurück zum Rapport
@@ -82,13 +95,7 @@ export default async function RapportDruckPage({
         <HilfeDruckenButton label="Rapport drucken" />
       </div>
 
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-arcos-navy">Arbeitsrapport</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {rapportNummer(rapport)} · {formatDatumCH(rapport.datum)}
-          </p>
-        </div>
+      <div className="flex items-start justify-end mb-8">
         {/* Absender: Logo und Anschrift der eigenen Organisation. Das
             Dokument bleibt beim Kunden – ohne Absender ist es wertlos.
             Gepflegt wird das unter Einstellungen (0042). */}
@@ -116,26 +123,38 @@ export default async function RapportDruckPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-8 mb-8 text-sm">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Kunde</p>
-          <p className="font-medium">
-            {kunde?.vorname ? `${kunde.vorname} ` : ""}
-            {kunde?.name}
+      {/* Empfängerblock. Darüber die Absenderzeile in 7 Punkt und
+          unterstrichen – die Zeile, die im Fensterkuvert über der Anschrift
+          steht. Der Abstand nach oben schafft dafür Platz. */}
+      <div className="mt-[0.5cm] mb-8 text-sm">
+        {absenderZeile && (
+          <p className="text-[7pt] underline mb-1 text-gray-700">{absenderZeile}</p>
+        )}
+        <p className="font-medium">
+          {kunde?.vorname ? `${kunde.vorname} ` : ""}
+          {kunde?.name}
+        </p>
+        {kunde?.adresse_zusatz && <p>{kunde.adresse_zusatz}</p>}
+        {strasse && <p>{strasse}</p>}
+        {(kunde?.plz || kunde?.ort) && (
+          <p>
+            {kunde?.plz} {kunde?.ort}
           </p>
-          {kunde?.adresse_zusatz && <p>{kunde.adresse_zusatz}</p>}
-          {strasse && <p>{strasse}</p>}
-          {(kunde?.plz || kunde?.ort) && (
-            <p>
-              {kunde?.plz} {kunde?.ort}
-            </p>
-          )}
-        </div>
-        <div>
-          <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Einsatz</p>
-          {rapport.projekte?.bezeichnung && <p>{rapport.projekte.bezeichnung}</p>}
-          {rapport.profiles?.name && <p>Ausgeführt von {rapport.profiles.name}</p>}
-        </div>
+        )}
+      </div>
+
+      {/* Titel zentriert über dem Projektblock. */}
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-semibold text-arcos-navy">Arbeitsrapport</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          {rapportNummer(rapport)} · {formatDatumCH(rapport.datum)}
+        </p>
+      </div>
+
+      <div className="mb-8 text-sm">
+        <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Projekt</p>
+        {rapport.projekte?.bezeichnung && <p>{rapport.projekte.bezeichnung}</p>}
+        {rapport.profiles?.name && <p>Ausgeführt von {rapport.profiles.name}</p>}
       </div>
 
       {rapport.bemerkung && (
