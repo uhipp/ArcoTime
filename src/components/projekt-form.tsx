@@ -13,11 +13,13 @@ import { STAND_FELD } from "@/lib/konflikt";
 export function ProjektForm({
   projekt,
   kunden,
+  mitarbeitende,
   action,
   error,
 }: {
   projekt?: Projekt;
   kunden: Pick<Kunde, "id" | "name" | "vorname">[];
+  mitarbeitende: { id: string; name: string }[];
   action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
 }) {
@@ -114,6 +116,29 @@ export function ProjektForm({
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1" htmlFor="projektleiter_id">
+          Projektleitung
+        </label>
+        <select
+          id="projektleiter_id"
+          name="projektleiter_id"
+          defaultValue={projekt?.projektleiter_id ?? ""}
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+        >
+          <option value="">Niemand zugewiesen</option>
+          {mitarbeitende.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400 mt-1">
+          Verantwortet das Projekt. Wird beim Anlegen eines Rapports
+          vorgeschlagen.
+        </p>
       </div>
 
       <div>

@@ -64,7 +64,7 @@ export default async function RapportDetailPage({
       .eq("rapport_id", id)
       .order("start_zeit", { ascending: true, nullsFirst: false }),
     supabase.from("kunden").select("id, name, vorname").order("name"),
-    supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
+    supabase.from("projekte").select("id, bezeichnung, kunde_id, projektleiter_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
     supabase
       .from("dienstleistungen")

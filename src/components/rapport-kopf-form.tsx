@@ -11,7 +11,12 @@ import { AbsendeKnopf } from "@/components/absende-knopf";
 import { STAND_FELD } from "@/lib/konflikt";
 
 type KundeOption = { id: string; name: string; vorname: string | null };
-type ProjektOption = { id: string; bezeichnung: string; kunde_id: string };
+type ProjektOption = {
+  id: string;
+  bezeichnung: string;
+  kunde_id: string;
+  projektleiter_id?: string | null;
+};
 
 // Kopfdaten eines Rapports. Datum und ausführende Person gelten für den
 // ganzen Einsatz und werden deshalb hier gesetzt, nicht je Position.
@@ -49,6 +54,16 @@ export function RapportKopfForm({
   const meldung = ergebnis?.fehler ?? error;
   const [kundeId, setKundeId] = useState(rapport?.kunde_id ?? "");
   const [projektId, setProjektId] = useState(rapport?.projekt_id ?? "");
+
+  // Verantwortliche Person: gespeicherter Wert, sonst die Projektleitung
+  // des gewählten Projekts, sonst man selbst. Nur bei einem NEUEN Rapport
+  // nachgeführt – an einem bestehenden hat jemand bewusst gewählt, und
+  // ein Projektwechsel darf diese Wahl nicht stillschweigend überschreiben.
+  const [mitarbeiterId, setMitarbeiterId] = useState(
+    rapport?.mitarbeiter_id ??
+      projekte.find((p) => p.id === (rapport?.projekt_id ?? ""))?.projektleiter_id ??
+      aktuellerUserId
+  );
 
   // Nur Projekte des gewählten Kunden – dieselbe Regel wie im
   // Anfrage-Formular (Bug0005).
@@ -145,7 +160,12 @@ export function RapportKopfForm({
             name="projekt_id"
             disabled={gesperrt}
             value={projektId}
-            onChange={(e) => setProjektId(e.target.value)}
+            onChange={(e) => {
+              setProjektId(e.target.value);
+              // Projektleitung übernehmen, solange der Rapport neu ist.
+              const leitung = projekte.find((p) => p.id === e.target.value)?.projektleiter_id;
+              if (!rapport && leitung) setMitarbeiterId(leitung);
+            }}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
           >
             <option value="">Kein Projekt</option>
@@ -189,7 +209,8 @@ export function RapportKopfForm({
             id="mitarbeiter_id"
             name="mitarbeiter_id"
             disabled={gesperrt}
-            defaultValue={rapport?.mitarbeiter_id ?? aktuellerUserId}
+            value={mitarbeiterId}
+            onChange={(e) => setMitarbeiterId(e.target.value)}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
           >
             {mitarbeitende.map((m) => (

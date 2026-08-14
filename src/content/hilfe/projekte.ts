@@ -5,7 +5,7 @@ export const projekte: HilfeArtikel[] = [
     slug: "projekte",
     titel: "Projekte",
     kategorie: "Stammdaten",
-    stichworte: ["projekt anlegen", "kostenstelle", "belegnummer", "startdatum", "sichtbarkeit", "projektteam", "team", "zugriff", "zuweisen"],
+    stichworte: ["projekt anlegen", "kostenstelle", "belegnummer", "startdatum", "sichtbarkeit", "projektleitung", "projektleiter", "projektteam", "team", "zugriff", "zuweisen"],
     routen: ["/projekte"],
     inhalt: `
 Jedes Projekt gehört zu genau einem Kunden und ist die Grundlage für die Zeiterfassung.
@@ -20,6 +20,7 @@ Weitere Felder mit sinnvollen Standardwerten:
 
 - **Status**: Aktiv/Inaktiv – nur aktive Projekte erscheinen standardmässig in Auswahllisten.
 - **Startdatum**: standardmässig heute.
+- **Projektleitung**: die verantwortliche Person. Sie wird beim Anlegen eines [Rapports](/hilfe/rapporte) für dieses Projekt automatisch als ausführende Person vorgeschlagen – änderbar bleibt das. Bei einem bestehenden Rapport wird nichts überschrieben, dort hat ja jemand bewusst gewählt.
 - **Kostenstelle**: wird bei jedem Zeiteintrag dieses Projekts automatisch in den Export übernommen.
 - **Nächste Belegnummer**: startet bei 470000 und erhöht sich nach jedem Export automatisch um 1. Nur ändern, wenn an eine bestehende Nummerierung im Buchhaltungssystem angeschlossen werden soll.
 - **Für alle Mitarbeitende sichtbar**: Mit Häkchen (Standard) sehen alle das Projekt und können darauf Zeit erfassen. Ohne Häkchen sehen es nur die Personen im **Projektteam** sowie Admins.

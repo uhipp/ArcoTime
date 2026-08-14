@@ -72,6 +72,7 @@ export default async function ProjektDetailPage({
           <ProjektForm
             projekt={projekt as Projekt}
             kunden={kunden ?? []}
+            mitarbeitende={mitarbeitende ?? []}
             action={updateAction}
             error={error}
           />

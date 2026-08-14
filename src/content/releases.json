@@ -243,6 +243,10 @@
       {
         "typ": "neu",
         "text": "Stornieren: Ein abgeschlossener Rapport lässt sich ungültig stellen statt löschen. Die Positionen bleiben sichtbar, zählen aber nicht mehr. Bereits exportierte Positionen verhindern das Stornieren."
+      },
+      {
+        "typ": "neu",
+        "text": "Projekte haben eine Projektleitung. Sie erscheint in der Projektliste und wird beim Anlegen eines Rapports als ausführende Person vorgeschlagen."
       }
     ]
   },

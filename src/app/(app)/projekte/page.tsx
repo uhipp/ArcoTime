@@ -9,12 +9,14 @@ type ProjektZeile = {
   kostenstelle: string | null;
   status: string;
   kunden?: { name: string; vorname: string | null } | null;
+  projektleiter?: { name: string } | null;
 };
 
 const SORTIERWERT: Record<string, (p: ProjektZeile) => unknown> = {
   projekt: (p) => p.bezeichnung,
   kunde: (p) => [p.kunden?.vorname, p.kunden?.name].filter(Boolean).join(" ") || null,
   kostenstelle: (p) => p.kostenstelle,
+  projektleitung: (p) => p.projektleiter?.name ?? null,
   status: (p) => p.status,
 };
 
@@ -34,7 +36,7 @@ export default async function ProjektePage({
 
   let query = supabase
     .from("projekte")
-    .select("*, kunden(id, name, vorname)")
+    .select("*, kunden(id, name, vorname), projektleiter:profiles!projektleiter_id(name)")
     .order("bezeichnung", { ascending: true });
 
   if (status) query = query.eq("status", status);
@@ -115,6 +117,9 @@ export default async function ProjektePage({
               <SortierKopf spalte="kunde" basis="/projekte" params={params}>
                 Kunde
               </SortierKopf>
+              <SortierKopf spalte="projektleitung" basis="/projekte" params={params}>
+                Projektleitung
+              </SortierKopf>
               <SortierKopf spalte="kostenstelle" basis="/projekte" params={params}>
                 Kostenstelle
               </SortierKopf>
@@ -135,6 +140,7 @@ export default async function ProjektePage({
                   {m.kunden?.vorname ? `${m.kunden.vorname} ` : ""}
                   {m.kunden?.name}
                 </td>
+                <td className="px-4 py-2">{m.projektleiter?.name ?? "–"}</td>
                 <td className="px-4 py-2">{m.kostenstelle ?? "–"}</td>
                 <td className="px-4 py-2">
                   <span

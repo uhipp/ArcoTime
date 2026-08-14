@@ -19,6 +19,7 @@ function projektFromForm(formData: FormData) {
     bezeichnung: String(formData.get("bezeichnung") ?? "").trim(),
     status: String(formData.get("status") ?? "aktiv"),
     kostenstelle: str(formData.get("kostenstelle")),
+    projektleiter_id: str(formData.get("projektleiter_id")),
     startdatum: str(formData.get("startdatum")) ?? heuteIso(),
     notizen: str(formData.get("notizen")),
     sichtbar_fuer_alle: formData.get("sichtbar_fuer_alle") === "on",

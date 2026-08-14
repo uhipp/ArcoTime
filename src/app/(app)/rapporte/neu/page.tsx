@@ -17,7 +17,7 @@ export default async function NeuerRapportPage({
 
   const [{ data: kunden }, { data: projekte }, { data: mitarbeitende }] = await Promise.all([
     supabase.from("kunden").select("id, name, vorname").order("name"),
-    supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
+    supabase.from("projekte").select("id, bezeichnung, kunde_id, projektleiter_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
   ]);
 

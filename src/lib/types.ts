@@ -51,6 +51,8 @@ export type Projekt = {
   kunden?: Pick<Kunde, "id" | "name" | "vorname">;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;
+  // Verantwortliche Person des Projekts (0044).
+  projektleiter_id: string | null;
 };
 
 export type Dienstleistungsklasse = {

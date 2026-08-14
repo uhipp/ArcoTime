@@ -9,15 +9,20 @@ export default async function NeuesProjektPage({
 }) {
   const { error } = await searchParams;
   const supabase = await createClient();
-  const { data: kunden } = await supabase
-    .from("kunden")
-    .select("id, name, vorname")
-    .order("name");
+  const [{ data: kunden }, { data: mitarbeitende }] = await Promise.all([
+    supabase.from("kunden").select("id, name, vorname").order("name"),
+    supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
+  ]);
 
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-6">Neues Projekt</h1>
-      <ProjektForm kunden={kunden ?? []} action={createProjekt} error={error} />
+      <ProjektForm
+        kunden={kunden ?? []}
+        mitarbeitende={mitarbeitende ?? []}
+        action={createProjekt}
+        error={error}
+      />
     </div>
   );
 }
