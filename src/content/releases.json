@@ -203,6 +203,10 @@
       {
         "typ": "neu",
         "text": "Geplante Einsätze lassen sich in der Disposition mit der Maus verschieben – auf eine andere Uhrzeit, einen anderen Tag oder eine andere Person. Auf dem Tablet mit dem Finger, kurz halten und ziehen. Abgeschlossene Rapporte bleiben unbeweglich."
+      },
+      {
+        "typ": "fix",
+        "text": "Gleichzeitige Einsätze lagen im Dispo-Raster übereinander, der hintere war unsichtbar. Sie stehen jetzt nebeneinander und teilen sich die Breite."
       }
     ]
   },

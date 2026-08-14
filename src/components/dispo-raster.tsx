@@ -59,6 +59,69 @@ const STUNDE_PX = 56;
 // und wird seitlich gescrollt, statt die Spalten zusammenzuquetschen.
 const SPALTE_MIN = "9rem";
 
+// Überlappende Einsätze nebeneinander legen, wie man es aus Outlook kennt.
+//
+// Ohne das liegen zwei gleichzeitige Termine übereinander und der hintere
+// ist unsichtbar – man plant an ihm vorbei. Gesucht sind zusammenhängende
+// Gruppen: Termine, die sich direkt oder über einen dritten überschneiden,
+// teilen sich die Breite. Sobald eine Lücke kommt, beginnt eine neue
+// Gruppe und der nächste Balken ist wieder voll breit.
+//
+// Innerhalb einer Gruppe bekommt jeder Termin die erste Spur, die zu
+// seiner Startzeit frei ist – dieselbe Greedy-Zuteilung wie in gängigen
+// Kalendern. Sie ist nicht immer die schmalste Lösung, aber sie ist
+// stabil: Ein Termin wandert nicht in eine andere Spur, nur weil weiter
+// unten etwas dazukommt.
+function spurenVerteilen(
+  eintraege: RasterEintrag[]
+): Map<string, { spur: number; spuren: number }> {
+  const ergebnis = new Map<string, { spur: number; spuren: number }>();
+
+  const sortiert = [...eintraege].sort(
+    (a, b) => (a.vonMinuten ?? 0) - (b.vonMinuten ?? 0)
+  );
+
+  let gruppe: RasterEintrag[] = [];
+  let gruppenEnde = -1;
+
+  const gruppeAbschliessen = () => {
+    if (gruppe.length === 0) return;
+    // Endzeit je Spur, um die erste freie zu finden.
+    const spurEnde: number[] = [];
+    const zuteilung = new Map<string, number>();
+
+    for (const e of gruppe) {
+      const von = e.vonMinuten ?? 0;
+      const bis = e.bisMinuten ?? von + 60;
+      let spur = spurEnde.findIndex((ende) => ende <= von);
+      if (spur === -1) {
+        spur = spurEnde.length;
+        spurEnde.push(bis);
+      } else {
+        spurEnde[spur] = bis;
+      }
+      zuteilung.set(e.key, spur);
+    }
+
+    for (const e of gruppe) {
+      ergebnis.set(e.key, { spur: zuteilung.get(e.key) ?? 0, spuren: spurEnde.length });
+    }
+    gruppe = [];
+    gruppenEnde = -1;
+  };
+
+  for (const e of sortiert) {
+    const von = e.vonMinuten ?? 0;
+    const bis = e.bisMinuten ?? von + 60;
+    if (gruppe.length > 0 && von >= gruppenEnde) gruppeAbschliessen();
+    gruppe.push(e);
+    gruppenEnde = Math.max(gruppenEnde, bis);
+  }
+  gruppeAbschliessen();
+
+  return ergebnis;
+}
+
 function alsUhrzeit(minuten: number): string {
   return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(
     minuten % 60
@@ -255,11 +318,19 @@ export function DispoRaster({
                 />
               ))}
 
-              {imRaster
-                .filter((e) => e.spalte === s.key)
-                .map((e) => (
-                  <Balken key={e.key} eintrag={e} start={start} ende={ende} />
-                ))}
+              {(() => {
+                const eigene = imRaster.filter((e) => e.spalte === s.key);
+                const spuren = spurenVerteilen(eigene);
+                return eigene.map((e) => (
+                  <Balken
+                    key={e.key}
+                    eintrag={e}
+                    start={start}
+                    ende={ende}
+                    lage={spuren.get(e.key) ?? { spur: 0, spuren: 1 }}
+                  />
+                ));
+              })()}
             </Spalte>
           ))}
         </div>
@@ -299,10 +370,14 @@ function Balken({
   eintrag,
   start,
   ende,
+  lage,
 }: {
   eintrag: RasterEintrag;
   start: number;
   ende: number;
+  // Spur und Anzahl Spuren der Überlappungsgruppe – bestimmt Breite und
+  // waagrechte Lage des Balkens.
+  lage: { spur: number; spuren: number };
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: eintrag.key,
@@ -331,7 +406,7 @@ function Balken({
           ? `${beschriftung} — zum Verschieben ziehen`
           : `${beschriftung} — abgeschlossen, nicht verschiebbar`
       }
-      className={`absolute left-0.5 right-0.5 rounded overflow-hidden ${
+      className={`absolute rounded overflow-hidden ${
         eintrag.konflikt ? "ring-2 ring-red-500" : ""
       } ${eintrag.ziehbar ? "cursor-grab active:cursor-grabbing" : ""} ${
         isDragging ? "opacity-70 z-10 shadow-lg" : ""
@@ -339,6 +414,10 @@ function Balken({
       style={{
         top,
         height: hoehe,
+        // Bei Überlappung teilen sich die Balken die Breite; allein
+        // stehend nimmt einer die ganze Spalte ein.
+        left: `calc(${(lage.spur / lage.spuren) * 100}% + 2px)`,
+        width: `calc(${100 / lage.spuren}% - 4px)`,
         backgroundColor: eintrag.farbe,
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
       }}

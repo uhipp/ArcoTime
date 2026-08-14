@@ -44,6 +44,8 @@ Ist der Tag gesperrt, sagt der Tagesplan auch warum ("Betriebsferien", "Ferien")
 
 **Tag** und **Woche** zeigen ein Zeitraster: Stunden senkrecht, und waagrecht in der Wochenansicht die Tage, in der Tagesansicht die **Personen**. Damit beantwortet die Ansicht nicht nur „was ist geplant", sondern vor allem „wo ist noch Platz" – die Frage, die man beim Disponieren den ganzen Tag stellt.
 
+Überschneiden sich zwei Einsätze in derselben Spalte, stehen sie **nebeneinander** und teilen sich die Breite – wie in einem Kalenderprogramm. Wird einer davon umgeplant, nimmt der andere wieder die ganze Spalte ein.
+
 Der sichtbare Ausschnitt ist der **Arbeitstag** aus den [Einstellungen](/hilfe/einstellungen). Einsätze ausserhalb verschwinden nicht, sie werden an den Rand geklemmt. Einsätze **ohne Planzeit** stehen in einer eigenen Zeile über dem Raster – sonst würde man an ihnen vorbeiplanen.
 
 Über jeder Spalte steht **„+ planen"**: In der Woche legt das einen Einsatz an diesem Tag an, in der Tagesansicht gleich für diese Person. In der Tagesansicht gibt es zusätzlich die Spalte **„Nicht zugeteilt"** – dort sammeln sich die Einsätze, die noch niemandem gehören.
