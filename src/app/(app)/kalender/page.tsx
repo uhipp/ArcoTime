@@ -365,7 +365,7 @@ export default async function KalenderPage({
               className="inline-block w-2.5 h-2.5 rounded-full bg-gray-400 ml-2"
               style={{
                 backgroundImage:
-                  "repeating-linear-gradient(135deg, rgba(255,255,255,.45) 0 2px, transparent 2px 4px)",
+                  "repeating-linear-gradient(135deg, rgba(255,255,255,.75) 0 2px, rgba(255,255,255,.25) 2px 4px)",
               }}
             />
             erfasst
@@ -458,18 +458,26 @@ export default async function KalenderPage({
                         key={zeile.key}
                         href={zeile.href}
                         title={zeile.titel}
-                        className="block text-[11px] leading-4 text-white rounded px-1 truncate hover:opacity-80"
+                        className={`block text-[11px] leading-4 rounded px-1 truncate hover:opacity-80 ${
+                          zeile.schraffiert ? "text-gray-900" : "text-white"
+                        }`}
                         style={
                           // Gleiche Farbe je Person, damit die Zuordnung auf
                           // einen Blick stimmt. Erfasste Zeit bekommt eine
                           // Schraffur darüber, geplante Zeit bleibt deckend –
                           // so sind beide unterscheidbar, ohne dass eine
                           // zweite Farbskala nötig wird.
+                          //
+                          // Auf der Schraffur steht die Schrift schwarz: Die
+                          // hellen Streifen brechen den Untergrund so weit
+                          // auf, dass Weiss darauf ausfranst. Deshalb sind
+                          // die Streifen hier auch kräftiger als in der
+                          // Legende – sie müssen Text tragen.
                           zeile.schraffiert
                             ? {
                                 backgroundColor: zeile.farbe,
                                 backgroundImage:
-                                  "repeating-linear-gradient(135deg, rgba(255,255,255,.45) 0 3px, transparent 3px 7px)",
+                                  "repeating-linear-gradient(135deg, rgba(255,255,255,.75) 0 4px, rgba(255,255,255,.25) 4px 8px)",
                               }
                             : { backgroundColor: zeile.farbe }
                         }
