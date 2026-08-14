@@ -16,7 +16,7 @@ Bearbeiten zwei Personen denselben Kunden, dasselbe Projekt oder denselben Rappo
 
 Hat jemand anders in der Zwischenzeit gespeichert, wird **nicht überschrieben**. Stattdessen erscheint eine Meldung, wer den Datensatz geändert hat und wann. Deine Eingaben bleiben dabei im Formular stehen: Lade die Seite in einem zweiten Fenster, sieh dir die Änderung an und übertrage deine Anpassung.
 
-Damit es gar nicht erst so weit kommt, erscheint beim Öffnen ein Hinweis, wenn jemand anders denselben Datensatz gerade offen hat – mit Namen. Solange das der Fall ist, lässt sich nicht speichern.
+Damit es gar nicht erst so weit kommt, erscheint beim Öffnen ein Hinweis, wenn jemand anders denselben Datensatz gerade offen hat – mit Namen. **Wer zuerst da war, darf speichern**; wer später dazukommt, kann alles ansehen, aber nicht speichern. Ohne diese Reihenfolge würden sich zwei Personen gegenseitig blockieren.
 
 Diese Anwesenheit **läuft von selbst ab**: Kommt zwei Minuten lang kein Lebenszeichen aus dem Browser, ist der Datensatz wieder frei. Wer den Laptop zuklappt oder den Tab schliesst, sperrt also niemanden aus – und es muss auch niemand eine Sperre von Hand aufheben.
 

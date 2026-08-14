@@ -214,7 +214,7 @@
       },
       {
         "typ": "neu",
-        "text": "Hat jemand anders einen Datensatz gerade offen, erscheint beim Öffnen ein Hinweis mit Namen und das Speichern ist gesperrt. Die Anwesenheit läuft nach zwei Minuten ohne Lebenszeichen von selbst ab – niemand bleibt ausgesperrt."
+        "text": "Hat jemand anders einen Datensatz gerade offen, erscheint beim Öffnen ein Hinweis mit Namen. Wer zuerst da war, darf speichern; wer später dazukommt, kann nur lesen. Die Anwesenheit läuft nach zwei Minuten ohne Lebenszeichen von selbst ab – niemand bleibt ausgesperrt."
       }
     ]
   },

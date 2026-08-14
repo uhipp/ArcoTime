@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { beendePraesenz, meldePraesenz, type Anwesende } from "@/app/actions/praesenz";
+import { beendePraesenz, meldePraesenz, type Praesenz } from "@/app/actions/praesenz";
 
 // Takt der Lebenszeichen. Deutlich kürzer als die Verfallszeit von zwei
 // Minuten, damit ein einzelner Aussetzer niemanden verdrängt.
@@ -28,6 +28,11 @@ export function useGesperrt(): boolean {
 // Anwesenheit nach zwei Minuten ohne Lebenszeichen von selbst abläuft,
 // bleibt dabei niemand dauerhaft ausgesperrt – anders als bei einer
 // echten Sperre, die jemand von Hand aufheben müsste.
+//
+// Gesperrt wird immer nur, WER SPÄTER DAZUKAM. Die erste Person behält
+// ihr Recht zu speichern und sieht bloss einen Hinweis, dass jemand
+// mitliest. Ohne diese Reihenfolge sperren sich zwei Personen
+// gegenseitig und niemand kommt mehr durch.
 export function PraesenzSperre({
   bereich,
   bezugId,
@@ -37,15 +42,15 @@ export function PraesenzSperre({
   bezugId: string;
   children: React.ReactNode;
 }) {
-  const [andere, setAndere] = useState<Anwesende>([]);
+  const [praesenz, setPraesenz] = useState<Praesenz>({ andere: [], darfSpeichern: true });
 
   useEffect(() => {
     let beendet = false;
 
     const melden = async () => {
       try {
-        const liste = await meldePraesenz(bereich, bezugId);
-        if (!beendet) setAndere(liste);
+        const stand = await meldePraesenz(bereich, bezugId);
+        if (!beendet) setPraesenz(stand);
       } catch {
         // Der Hinweis ist Komfort. Scheitert die Meldung, bleibt das
         // Formular benutzbar – die Konfliktprüfung beim Speichern greift
@@ -66,25 +71,39 @@ export function PraesenzSperre({
     };
   }, [bereich, bezugId]);
 
-  const gesperrt = andere.length > 0;
-  const namen = andere.map((a) => a.name);
+  const gesperrt = !praesenz.darfSpeichern;
+  const namen = praesenz.andere.map((a) => a.name);
+  const aufzaehlung =
+    namen.length === 1
+      ? namen[0]
+      : `${namen.slice(0, -1).join(", ")} und ${namen[namen.length - 1]}`;
 
   return (
     <SperrKontext.Provider value={gesperrt}>
-      {gesperrt && (
+      {namen.length > 0 && (
         <div
           role="status"
-          className="rounded bg-amber-50 text-amber-900 text-sm px-3 py-2 mb-4"
+          className={`rounded text-sm px-3 py-2 mb-4 ${
+            gesperrt ? "bg-amber-50 text-amber-900" : "bg-gray-100 text-gray-600"
+          }`}
         >
-          <strong>
-            {namen.length === 1
-              ? `${namen[0]} bearbeitet diesen Datensatz gerade.`
-              : `${namen.slice(0, -1).join(", ")} und ${namen[namen.length - 1]} bearbeiten diesen Datensatz gerade.`}
-          </strong>{" "}
-          Änderungen lassen sich im Moment nicht speichern. Sobald
-          {namen.length === 1 ? " die Bearbeitung" : " die Bearbeitungen"} beendet
-          {namen.length === 1 ? " ist" : " sind"}, gibt ArcoTime das Formular von
-          selbst wieder frei.
+          {gesperrt ? (
+            <>
+              <strong>
+                {aufzaehlung} {namen.length === 1 ? "bearbeitet" : "bearbeiten"} diesen
+                Datensatz und {namen.length === 1 ? "war" : "waren"} zuerst da.
+              </strong>{" "}
+              Du kannst alles ansehen, aber im Moment nicht speichern. Sobald{" "}
+              {namen.length === 1 ? "die Bearbeitung" : "die Bearbeitungen"} beendet{" "}
+              {namen.length === 1 ? "ist" : "sind"}, gibt ArcoTime das Formular von
+              selbst wieder frei.
+            </>
+          ) : (
+            <>
+              {aufzaehlung} {namen.length === 1 ? "schaut" : "schauen"} sich diesen
+              Datensatz ebenfalls an. Speichern kannst du – du warst zuerst da.
+            </>
+          )}
         </div>
       )}
       {children}
