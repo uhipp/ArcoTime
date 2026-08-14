@@ -12,6 +12,8 @@ Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfas
 
 **Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
 
+**Spalten wählen**: Über „Spalten“ oben rechts stellst du ein, welche Angaben die Liste zeigt – etwa Telefon, Strasse, PLZ oder den Standardrabatt. Die Auswahl gilt nur für deine Anmeldung, folgt dir aber auf jedes Gerät. „Zurücksetzen“ stellt die Standardspalten wieder her. Die Namensspalte bleibt immer sichtbar, weil sie den Datensatz öffnet.
+
 ## Neuen Kunden anlegen
 
 Auf **"+ Neuer Kunde"** klicken und die Felder ausfüllen. Pflichtfeld ist nur der **Name** (Nach- oder Firmenname); alles andere kann später ergänzt werden.

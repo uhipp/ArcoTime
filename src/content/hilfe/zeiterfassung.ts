@@ -14,6 +14,8 @@ Auf dieser Seite erfasst du deine Arbeitszeit – entweder nachträglich mit fes
 
 **Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
 
+**Spalten wählen**: Über „Spalten“ oben rechts stellst du ein, welche Angaben die Liste zeigt – zusätzlich stehen Von–bis, Kostenstelle, Beschreibung und Rabatt zur Verfügung. Die Auswahl gilt nur für deine Anmeldung, folgt dir aber auf jedes Gerät. Summen zeigt die Fusszeile nur für die eingeblendeten Spalten.
+
 Ein Zeiteintrag kann **nicht in der Zukunft liegen** – die Arbeit muss zuerst getan sein. Geprüft wird das Datum, nicht die Uhrzeit: Wer um 16:55 den Block bis 17:00 erfasst, wird nicht ausgebremst.
 
 Positionen eines noch offenen [Rapports](/hilfe/rapporte) erscheinen hier bewusst nicht. Sie sind Auftragsinhalt und werden im Rapport bearbeitet; erst mit dem Abschluss werden sie zu erfasster Zeit.

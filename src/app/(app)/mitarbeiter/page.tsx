@@ -5,21 +5,150 @@ import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { updateMitarbeiter, ladeMitarbeitendeEin, deaktiviereMitarbeiter } from "@/app/actions/mitarbeiter";
 import { DeleteButton } from "@/components/delete-button";
 import type { Profile } from "@/lib/types";
-import { SortierKopf } from "@/components/sortier-kopf";
-import { vergleiche } from "@/lib/sortierung";
+import { ListenTabelle } from "@/components/listen-tabelle";
+import { SpaltenWahl } from "@/components/spalten-wahl";
+import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
+import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
 
 type MitarbeiterZeile = Profile & { deaktiviert_am: string | null };
 
-const SORTIERWERT: Record<string, (m: MitarbeiterZeile) => unknown> = {
-  vorname: (m) => m.vorname,
-  nachname: (m) => m.nachname,
-  email: (m) => m.email,
-  rolle: (m) => m.role,
-  // Aktive zuerst: "aktiv" vor "deaktiviert" ist auch alphabetisch die
-  // gewünschte Reihenfolge, hier aber bewusst über das Datum, damit
-  // zuletzt deaktivierte Konten beieinander stehen.
-  status: (m) => m.deaktiviert_am ?? "",
-};
+// Diese Liste ist zugleich das Bearbeitungsformular: Jede Zeile trägt ein
+// eigenes <form>, die Felder der übrigen Zellen hängen über form={id}
+// daran. Deshalb steht das Formular in der ersten Spalte, und diese ist
+// nicht abwählbar – ohne sie hätten die Felder kein Formular mehr.
+function spalten(eigeneId: string): Spalte<MitarbeiterZeile>[] {
+  return [
+    {
+      key: "vorname",
+      titel: "Vorname",
+      fest: true,
+      wert: (m) => m.vorname,
+      klasse: "px-2 py-2",
+      zelle: (m) => (
+        <form action={updateMitarbeiter.bind(null, m.id)} id={`form-${m.id}`} className="contents">
+          <input
+            name="vorname"
+            defaultValue={m.vorname ?? ""}
+            placeholder="Vorname"
+            form={`form-${m.id}`}
+            className="w-full rounded border border-gray-300 px-2 py-1.5"
+          />
+        </form>
+      ),
+    },
+    {
+      key: "nachname",
+      titel: "Nachname",
+      wert: (m) => m.nachname,
+      klasse: "px-2 py-2",
+      zelle: (m) => (
+        <input
+          name="nachname"
+          defaultValue={m.nachname ?? ""}
+          placeholder="Nachname"
+          form={`form-${m.id}`}
+          className="w-full rounded border border-gray-300 px-2 py-1.5"
+        />
+      ),
+    },
+    {
+      key: "email",
+      titel: "E-Mail",
+      wert: (m) => m.email,
+      klasse: "px-2 py-2 text-gray-500",
+      zelle: (m) => m.email ?? "–",
+    },
+    {
+      key: "rolle",
+      titel: "Rolle",
+      wert: (m) => m.role,
+      klasse: "px-2 py-2",
+      zelle: (m) => (
+        <select
+          name="role"
+          defaultValue={m.role}
+          form={`form-${m.id}`}
+          className="rounded border border-gray-300 px-2 py-1.5"
+        >
+          <option value="mitarbeiter">Mitarbeitende</option>
+          <option value="admin">Admin</option>
+        </select>
+      ),
+    },
+    {
+      // Farbe hat keine sinnvolle Reihenfolge, deshalb ohne Sortierwert.
+      key: "farbe",
+      titel: "Farbe",
+      klasse: "px-2 py-2",
+      zelle: (m) => (
+        <input
+          type="color"
+          name="farbe"
+          defaultValue={m.farbe ?? "#457B9D"}
+          form={`form-${m.id}`}
+          title="Farbe im Kalender"
+          className="h-9 w-12 rounded border border-gray-300 cursor-pointer"
+        />
+      ),
+    },
+    {
+      key: "status",
+      titel: "Status",
+      // Aktive zuerst: "aktiv" vor "deaktiviert" ist auch alphabetisch die
+      // gewünschte Reihenfolge, hier aber bewusst über das Datum, damit
+      // zuletzt deaktivierte Konten beieinander stehen.
+      wert: (m) => m.deaktiviert_am ?? "",
+      klasse: "px-2 py-2 whitespace-nowrap text-xs",
+      zelle: (m) =>
+        m.deaktiviert_am ? (
+          <span title="Nur durch Arcos reaktivierbar">
+            Deaktiviert seit {new Date(m.deaktiviert_am).toLocaleDateString("de-CH")}
+          </span>
+        ) : (
+          <span className="text-green-700">Aktiv</span>
+        ),
+    },
+    {
+      key: "speichern",
+      titel: "",
+      fest: true,
+      klasse: "px-2 py-2 text-right",
+      zelle: (m) => (
+        <button
+          type="submit"
+          form={`form-${m.id}`}
+          disabled={Boolean(m.deaktiviert_am)}
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-3 py-1.5 hover:bg-arcos-navy disabled:opacity-40"
+        >
+          Speichern
+        </button>
+      ),
+    },
+    {
+      key: "details",
+      titel: "",
+      fest: true,
+      klasse: "px-2 py-2 text-right whitespace-nowrap",
+      zelle: (m) => (
+        <>
+          {/* Hinter der Detailseite liegen Dokumente UND Abwesenheiten –
+              "Dokumente" als Linktext hat den Kalender unauffindbar
+              gemacht. */}
+          <Link href={`/mitarbeiter/${m.id}`} className="text-arcos-steel hover:underline text-sm mr-3">
+            Details
+          </Link>
+          {!m.deaktiviert_am && m.id !== eigeneId && (
+            <DeleteButton
+              action={deaktiviereMitarbeiter.bind(null, m.id)}
+              label="Deaktivieren"
+              confirmText={`"${m.name}" deaktivieren? Die Lizenz wird frei, das Konto kann danach nur noch von Arcos reaktiviert werden.`}
+            />
+          )}
+        </>
+      ),
+    },
+  ];
+}
 
 export default async function MitarbeitendePage({
   searchParams,
@@ -41,14 +170,15 @@ export default async function MitarbeitendePage({
     getCurrentOrganisation(),
   ]);
 
-  const sortierteMitarbeitende = (mitarbeitende as MitarbeiterZeile[] | null) ?? [];
-  const werteVon = sort ? SORTIERWERT[sort] : undefined;
-  if (werteVon) {
-    const richtungsfaktor = richtung === "ab" ? -1 : 1;
-    sortierteMitarbeitende.sort(
-      (a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b))
-    );
-  }
+  const SPALTEN = spalten(profile.id);
+  const sortierteMitarbeitende = sortiere(
+    (mitarbeitende as MitarbeiterZeile[] | null) ?? [],
+    SPALTEN,
+    sort,
+    richtung
+  );
+
+  const { sichtbar, gewaehlt } = await sichtbareSpalten("mitarbeiter", SPALTEN);
 
   const { data: lizenzInfo } = organisation
     ? await supabase.from("organisationen").select("lizenzen_gebucht").eq("id", organisation.id).single()
@@ -114,131 +244,30 @@ export default async function MitarbeitendePage({
         </form>
       </div>
 
-      <p className="text-sm text-gray-500 mb-3">
-        Vorname, Nachname, Rolle und Farbe lassen sich direkt in der Zeile
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p className="text-sm text-gray-500">
+          Vorname, Nachname, Rolle und Farbe lassen sich direkt in der Zeile
         ändern – der Knopf „Speichern“ steht rechts in derselben Zeile. Unter
         „Details“ liegen Dokumente und Abwesenheiten der Person.
-      </p>
-      <div className="bg-white rounded-lg border overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-gray-500">
-            <tr>
-              <SortierKopf spalte="vorname" basis="/mitarbeiter" params={params}>
-                Vorname
-              </SortierKopf>
-              <SortierKopf spalte="nachname" basis="/mitarbeiter" params={params}>
-                Nachname
-              </SortierKopf>
-              <SortierKopf spalte="email" basis="/mitarbeiter" params={params}>
-                E-Mail
-              </SortierKopf>
-              <SortierKopf spalte="rolle" basis="/mitarbeiter" params={params}>
-                Rolle
-              </SortierKopf>
-              {/* Farbe hat keine sinnvolle Reihenfolge. */}
-              <th className="px-4 py-2">Farbe</th>
-              <SortierKopf spalte="status" basis="/mitarbeiter" params={params}>
-                Status
-              </SortierKopf>
-              <th className="px-4 py-2"></th>
-              <th className="px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortierteMitarbeitende.map((m) => {
-              const action = updateMitarbeiter.bind(null, m.id);
-              const deaktiviert = Boolean(m.deaktiviert_am);
-              return (
-                <tr key={m.id} className={`border-t ${deaktiviert ? "bg-gray-50 text-gray-400" : ""}`}>
-                  <td className="px-2 py-2">
-                    <form action={action} id={`form-${m.id}`} className="contents">
-                      <input
-                        name="vorname"
-                        defaultValue={m.vorname ?? ""}
-                        placeholder="Vorname"
-                        form={`form-${m.id}`}
-                        className="w-full rounded border border-gray-300 px-2 py-1.5"
-                      />
-                    </form>
-                  </td>
-                  <td className="px-2 py-2">
-                    <input
-                      name="nachname"
-                      defaultValue={m.nachname ?? ""}
-                      placeholder="Nachname"
-                      form={`form-${m.id}`}
-                      className="w-full rounded border border-gray-300 px-2 py-1.5"
-                    />
-                  </td>
-                  <td className="px-2 py-2 text-gray-500">{m.email ?? "–"}</td>
-                  <td className="px-2 py-2">
-                    <select
-                      name="role"
-                      defaultValue={m.role}
-                      form={`form-${m.id}`}
-                      className="rounded border border-gray-300 px-2 py-1.5"
-                    >
-                      <option value="mitarbeiter">Mitarbeitende</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="color"
-                      name="farbe"
-                      defaultValue={m.farbe ?? "#457B9D"}
-                      form={`form-${m.id}`}
-                      title="Farbe im Kalender"
-                      className="h-9 w-12 rounded border border-gray-300 cursor-pointer"
-                    />
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs">
-                    {deaktiviert ? (
-                      <span title="Nur durch Arcos reaktivierbar">
-                        Deaktiviert seit {new Date(m.deaktiviert_am!).toLocaleDateString("de-CH")}
-                      </span>
-                    ) : (
-                      <span className="text-green-700">Aktiv</span>
-                    )}
-                  </td>
-                  <td className="px-2 py-2 text-right">
-                    <button
-                      type="submit"
-                      form={`form-${m.id}`}
-                      disabled={deaktiviert}
-                      className="rounded bg-arcos-steel text-white text-sm font-medium px-3 py-1.5 hover:bg-arcos-navy disabled:opacity-40"
-                    >
-                      Speichern
-                    </button>
-                  </td>
-                  <td className="px-2 py-2 text-right whitespace-nowrap">
-                    {/* Hinter der Detailseite liegen Dokumente UND
-                        Abwesenheiten – "Dokumente" als Linktext hat den
-                        Kalender unauffindbar gemacht. */}
-                    <Link href={`/mitarbeiter/${m.id}`} className="text-arcos-steel hover:underline text-sm mr-3">
-                      Details
-                    </Link>
-                    {!deaktiviert && m.id !== profile.id && (
-                      <DeleteButton
-                        action={deaktiviereMitarbeiter.bind(null, m.id)}
-                        label="Deaktivieren"
-                        confirmText={`"${m.name}" deaktivieren? Die Lizenz wird frei, das Konto kann danach nur noch von Arcos reaktiviert werden.`}
-                      />
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {(!mitarbeitende || mitarbeitende.length === 0) && (
-              <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
-                  Keine Mitarbeitenden gefunden.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        </p>
+        <SpaltenWahl
+          alle={SPALTEN.map(({ key, titel, fest }) => ({
+            key,
+            titel: titel || "Aktionen",
+            fest,
+          }))}
+          gewaehlt={gewaehlt}
+          action={speichereSpaltenwahl.bind(null, "mitarbeiter", "/mitarbeiter")}
+        />
       </div>
+      <ListenTabelle
+        spalten={sichtbar}
+        zeilen={sortierteMitarbeitende}
+        basis="/mitarbeiter"
+        params={params}
+        leerText="Keine Mitarbeitenden gefunden."
+        zeilenKlasse={(m) => (m.deaktiviert_am ? "bg-gray-50 text-gray-400" : "")}
+      />
     </div>
   );
 }

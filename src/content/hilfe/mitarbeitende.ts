@@ -14,6 +14,8 @@ Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingela
 
 **Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
 
+**Spalten wählen**: Über „Spalten“ oben rechts blendest du nicht benötigte Angaben aus. Die Auswahl gilt nur für deine Anmeldung. Vorname und die beiden Spalten ganz rechts bleiben sichtbar – dort hängen das Bearbeitungsformular und die Knöpfe.
+
 ## Neue Person einladen
 
 Vorname, Nachname und E-Mail-Adresse eingeben und auf **"Einladungslink senden"** klicken. Die Adresse wird vorher geprüft – fehlt etwa die Endung (name@firma statt name@firma.ch), sagt ArcoTime das sofort, statt dass die Einladung stillschweigend beim Mailserver hängen bleibt. Das legt sofort einen Login an und verschickt eine E-Mail mit einem Link, über den die Person selbst ihr Passwort festlegt – kein separates Konto-Setup nötig.

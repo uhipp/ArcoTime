@@ -136,6 +136,8 @@ Ein Klick auf einen Spaltenkopf sortiert die Liste nach dieser Spalte, ein zweit
 
 Die Sortierung steht in der Adresse – die Ansicht überlebt also ein Neuladen und lässt sich als Lesezeichen ablegen oder weitergeben.
 
+**Spalten wählen**: Über „Spalten“ oben rechts stellst du ein, welche Angaben die Liste zeigt. Zusätzlich verfügbar sind die geplante Zeit, die Bemerkung, wer unterzeichnet hat – bei einem Abschluss ohne Unterschrift steht dort der Vermerk – und das Versanddatum. Die Auswahl gilt nur für deine Anmeldung, folgt dir aber auf jedes Gerät; „Zurücksetzen“ stellt den Standard wieder her.
+
 ## Rapportnummer
 
 Die Nummer im Format **2026-0001** wird erst beim Abschliessen vergeben, nicht beim Anlegen. Ein verworfener Entwurf reisst dadurch keine Lücke in die Nummernfolge. Bis dahin steht in der Übersicht "Entwurf". Die Zählung beginnt in jedem Jahr neu.

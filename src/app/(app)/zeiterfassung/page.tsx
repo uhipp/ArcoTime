@@ -7,19 +7,114 @@ import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
 import { DatumFeld } from "@/components/datum-feld";
-import { SortierKopf } from "@/components/sortier-kopf";
-import { vergleiche } from "@/lib/sortierung";
+import { ListenTabelle } from "@/components/listen-tabelle";
+import { SpaltenWahl } from "@/components/spalten-wahl";
+import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
+import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
 
-const SORTIERWERT: Record<string, (z: ZeiteintragMitDetails) => unknown> = {
-  datum: (z) => z.datum,
-  kunde: (z) =>
-    [z.vorname, z.kunde_name, z.projekt_bezeichnung].filter(Boolean).join(" ") || null,
-  dienstleistung: (z) => z.dienstleistung_bezeichnung,
-  // Nach der verrechneten Menge, nicht nach dem angezeigten Text: "45 min"
-  // und "2 Stk" liessen sich als Zeichenkette nicht sinnvoll vergleichen.
-  menge: (z) => Number(z.menge_verrechnet ?? 0),
-  betrag: (z) => Number(z.betrag ?? 0),
-};
+const SPALTEN: Spalte<ZeiteintragMitDetails>[] = [
+  {
+    key: "datum",
+    titel: "Datum",
+    fest: true,
+    wert: (z) => z.datum,
+    klasse: "px-4 py-2 whitespace-nowrap",
+    zelle: (z) => new Date(z.datum).toLocaleDateString("de-CH"),
+  },
+  {
+    key: "zeit",
+    titel: "Von–bis",
+    aus: true,
+    wert: (z) => z.start_zeit,
+    klasse: "px-4 py-2 whitespace-nowrap",
+    zelle: (z) =>
+      z.start_zeit ? `${z.start_zeit.slice(0, 5)}–${z.end_zeit?.slice(0, 5) ?? ""}` : "–",
+  },
+  {
+    key: "kunde",
+    titel: "Kunde / Projekt",
+    wert: (z) =>
+      [z.vorname, z.kunde_name, z.projekt_bezeichnung].filter(Boolean).join(" ") || null,
+    zelle: (z) =>
+      `${z.vorname ? `${z.vorname} ` : ""}${z.kunde_name} – ${z.projekt_bezeichnung}`,
+  },
+  {
+    key: "kostenstelle",
+    titel: "Kostenstelle",
+    aus: true,
+    wert: (z) => z.kostenstelle,
+    zelle: (z) => z.kostenstelle ?? "–",
+  },
+  {
+    key: "dienstleistung",
+    titel: "Dienstleistung",
+    wert: (z) => z.dienstleistung_bezeichnung,
+    zelle: (z) => z.dienstleistung_bezeichnung,
+  },
+  {
+    key: "beschreibung",
+    titel: "Beschreibung",
+    aus: true,
+    wert: (z) => z.beschreibung,
+    zelle: (z) => z.beschreibung ?? "–",
+  },
+  {
+    key: "menge",
+    titel: "Dauer",
+    // Nach der verrechneten Menge, nicht nach dem angezeigten Text: "45 min"
+    // und "2 Stk" liessen sich als Zeichenkette nicht sinnvoll vergleichen.
+    wert: (z) => Number(z.menge_verrechnet ?? 0),
+    klasse: "px-4 py-2 whitespace-nowrap",
+    zelle: (z) =>
+      z.timer_gestartet_um ? (
+        <span className="font-medium text-red-700">⏱ Timer aktiv</span>
+      ) : (
+        mengeLabel(z)
+      ),
+    // Nur Arbeitszeit summieren – Kilometer und Stück gehören nicht dazu.
+    fuss: (zeilen) =>
+      `${zeilen.reduce((s, z) => s + Number(z.menge_stunden ?? 0), 0).toFixed(2)} h`,
+  },
+  {
+    key: "rabatt",
+    titel: "Rabatt",
+    aus: true,
+    wert: (z) => Number(z.rabatt_prozent ?? 0),
+    klasse: "px-4 py-2 whitespace-nowrap",
+    zelle: (z) => (z.rabatt_prozent ? `${z.rabatt_prozent} %` : "–"),
+  },
+  {
+    key: "betrag",
+    titel: "Betrag",
+    wert: (z) => Number(z.betrag ?? 0),
+    klasse: "px-4 py-2 whitespace-nowrap",
+    zelle: (z) =>
+      z.timer_gestartet_um ? "–" : `CHF ${Number(z.betrag).toFixed(2)}`,
+    fuss: (zeilen) =>
+      `CHF ${zeilen.reduce((s, z) => s + Number(z.betrag ?? 0), 0).toFixed(2)}`,
+  },
+  {
+    key: "aktion",
+    titel: "",
+    fest: true,
+    klasse: "px-4 py-2 text-right",
+    zelle: (z) =>
+      z.beleg_id ? (
+        <span className="text-xs text-gray-400">exportiert</span>
+      ) : (
+        <Link
+          href={`/zeiterfassung/${z.id}`}
+          className={
+            z.timer_gestartet_um
+              ? "font-medium text-red-700 hover:underline"
+              : "text-arcos-steel hover:underline"
+          }
+        >
+          {z.timer_gestartet_um ? "Stoppen" : "Bearbeiten"}
+        </Link>
+      ),
+  },
+];
 
 export default async function ZeiterfassungPage({
   searchParams,
@@ -78,15 +173,14 @@ export default async function ZeiterfassungPage({
       .order("start_zeit", { ascending: false }),
   ]);
 
-  const zeilen = (eintraege as ZeiteintragMitDetails[] | null) ?? [];
+  const zeilen = sortiere(
+    (eintraege as ZeiteintragMitDetails[] | null) ?? [],
+    SPALTEN,
+    sort,
+    richtung
+  );
 
-  const werteVon = sort ? SORTIERWERT[sort] : undefined;
-  if (werteVon) {
-    const richtungsfaktor = richtung === "ab" ? -1 : 1;
-    zeilen.sort((a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b)));
-  }
-  const summeStunden = zeilen.reduce((s, z) => s + Number(z.menge_stunden), 0);
-  const summeBetrag = zeilen.reduce((s, z) => s + Number(z.betrag), 0);
+  const { sichtbar, gewaehlt } = await sichtbareSpalten("zeiterfassung", SPALTEN);
 
   return (
     <div>
@@ -127,6 +221,11 @@ export default async function ZeiterfassungPage({
           <button type="submit" className="rounded border px-3 py-1.5 hover:bg-gray-50">
             Filtern
           </button>
+          <SpaltenWahl
+            alle={SPALTEN.map(({ key, titel, fest }) => ({ key, titel, fest }))}
+            gewaehlt={gewaehlt}
+            action={speichereSpaltenwahl.bind(null, "zeiterfassung", "/zeiterfassung")}
+          />
         </form>
       </div>
 
@@ -136,94 +235,18 @@ export default async function ZeiterfassungPage({
         </div>
       )}
 
-      <div className="bg-white rounded-lg border overflow-hidden mb-3 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-gray-500">
-            <tr>
-              <SortierKopf spalte="datum" basis="/zeiterfassung" params={params}>
-                Datum
-              </SortierKopf>
-              <SortierKopf spalte="kunde" basis="/zeiterfassung" params={params}>
-                Kunde / Projekt
-              </SortierKopf>
-              <SortierKopf spalte="dienstleistung" basis="/zeiterfassung" params={params}>
-                Dienstleistung
-              </SortierKopf>
-              <SortierKopf spalte="menge" basis="/zeiterfassung" params={params}>
-                Dauer
-              </SortierKopf>
-              <SortierKopf spalte="betrag" basis="/zeiterfassung" params={params}>
-                Betrag
-              </SortierKopf>
-              <th className="px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {zeilen.map((z) => {
-              const laeuft = Boolean(z.timer_gestartet_um);
-              return (
-                <tr
-                  key={z.id}
-                  className={`border-t ${laeuft ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"}`}
-                >
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {new Date(z.datum).toLocaleDateString("de-CH")}
-                  </td>
-                  <td className="px-4 py-2">
-                    {z.vorname ? `${z.vorname} ` : ""}
-                    {z.kunde_name} – {z.projekt_bezeichnung}
-                  </td>
-                  <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {laeuft ? (
-                      <span className="font-medium text-red-700">⏱ Timer aktiv</span>
-                    ) : (
-                      mengeLabel(z)
-                    )}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    {laeuft ? "–" : `CHF ${Number(z.betrag).toFixed(2)}`}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    {z.beleg_id ? (
-                      <span className="text-xs text-gray-400">exportiert</span>
-                    ) : (
-                      <Link
-                        href={`/zeiterfassung/${z.id}`}
-                        className={laeuft ? "font-medium text-red-700 hover:underline" : "text-arcos-steel hover:underline"}
-                      >
-                        {laeuft ? "Stoppen" : "Bearbeiten"}
-                      </Link>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {zeilen.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
-                  Keine Einträge im gewählten Zeitraum.
-                </td>
-              </tr>
-            )}
-          </tbody>
-          {zeilen.length > 0 && (
-            <tfoot>
-              <tr className="border-t bg-gray-50 font-medium">
-                <td className="px-4 py-2" colSpan={3}>
-                  Summe
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  {summeStunden.toFixed(2)} h
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  CHF {summeBetrag.toFixed(2)}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
+      <div className="mb-3">
+        <ListenTabelle
+          spalten={sichtbar}
+          zeilen={zeilen}
+          basis="/zeiterfassung"
+          params={params}
+          leerText="Keine Einträge im gewählten Zeitraum."
+          fussTitel="Summe"
+          zeilenKlasse={(z) =>
+            z.timer_gestartet_um ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"
+          }
+        />
       </div>
       <p className="text-xs text-gray-400">
         Zeigt Einträge, die dir zugeordnet sind — auch wenn jemand anders sie
