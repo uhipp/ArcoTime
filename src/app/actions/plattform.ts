@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { mitErfolg } from "@/lib/erfolg";
 import { siteOrigin } from "@/lib/site-origin";
+import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 
 // Alle Aktionen hier sind ausschliesslich Platform-Admins vorbehalten
 // (Arcos Group selbst) – nicht den Admins einzelner Kunden-Organisationen.
@@ -43,6 +44,13 @@ export async function erstelleOrganisation(formData: FormData) {
     );
   }
 
+  // Vor dem Anlegen prüfen, nicht danach: Scheitert die Einladung, steht
+  // sonst eine Organisation ohne Admin-Konto da.
+  const adminAdressFehler = emailFehler(adminEmail);
+  if (adminAdressFehler) {
+    redirect(`/plattform?error=${encodeURIComponent(adminAdressFehler)}`);
+  }
+
   const supabase = await createClient();
   const { data: neueOrg, error } = await supabase
     .from("organisationen")
@@ -77,9 +85,11 @@ export async function erstelleOrganisation(formData: FormData) {
   });
 
   if (inviteError) {
+    console.error("Einladung fehlgeschlagen", { email: adminEmail, fehler: inviteError.message });
     redirect(
       `/plattform?error=${encodeURIComponent(
-        `Organisation "${name}" angelegt, aber Einladung fehlgeschlagen: ${inviteError.message}`
+        `Organisation "${name}" angelegt, aber ` +
+          versandFehlerText(inviteError.message, adminEmail)
       )}`
     );
   }
@@ -270,6 +280,11 @@ export async function ladePersonEinPlattform(organisationId: string, formData: F
         )}`
       );
     }
+  }
+
+  const adressFehler = emailFehler(email);
+  if (adressFehler) {
+    redirect(`/plattform/${organisationId}?error=${encodeURIComponent(adressFehler)}`);
   }
 
   const origin = await siteOrigin();

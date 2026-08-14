@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mitErfolg } from "@/lib/erfolg";
 import { siteOrigin } from "@/lib/site-origin";
+import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 import { getCurrentProfile } from "@/lib/get-profile";
 
 // Maximal erlaubte Admin-Konten je Organisation (Geschäftsregel, nicht
@@ -93,6 +94,14 @@ export async function ladeMitarbeitendeEin(formData: FormData) {
     );
   }
 
+  // Vor dem Aufruf prüfen statt den Mailserver ablehnen zu lassen: Supabase
+  // legt das Konto an, scheitert am Versand und verwirft es wieder – zurück
+  // kommt nur "Error sending invite email".
+  const adressFehler = emailFehler(email);
+  if (adressFehler) {
+    redirect(`/mitarbeiter?error=${encodeURIComponent(adressFehler)}`);
+  }
+
   const supabase = await createClient();
   const { data: eigenesProfil } = await supabase
     .from("profiles")
@@ -143,7 +152,12 @@ export async function ladeMitarbeitendeEin(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/mitarbeiter?error=${encodeURIComponent(error.message)}`);
+    // Die Originalmeldung ins Serverlog, damit sie beim Nachforschen da
+    // ist – der Anwender bekommt den verständlichen Text.
+    console.error("Einladung fehlgeschlagen", { email, fehler: error.message });
+    redirect(
+      `/mitarbeiter?error=${encodeURIComponent(versandFehlerText(error.message, email))}`
+    );
   }
 
   revalidatePath("/mitarbeiter");

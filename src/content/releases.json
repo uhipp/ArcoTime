@@ -123,6 +123,10 @@
       {
         "typ": "neu",
         "text": "Zeiteintrag und Rapport zeigen an, aus welcher Anfrage sie entstanden sind – und die Anfrage verweist zurück. Der Weg von der Kundenanfrage bis zur verrechneten Leistung ist damit in beide Richtungen nachvollziehbar."
+      },
+      {
+        "typ": "fix",
+        "text": "Eine Einladung an eine unvollständige E-Mail-Adresse scheiterte mit einer nichtssagenden Meldung, und das Konto wurde stillschweigend wieder verworfen. Die Adresse wird jetzt vorher geprüft und der Grund im Klartext genannt."
       }
     ]
   },
