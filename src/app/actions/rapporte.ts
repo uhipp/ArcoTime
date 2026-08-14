@@ -71,12 +71,12 @@ function planzeitenAus(formData: FormData) {
     return zeit ? `${datum}T${zeit}:00` : null;
   };
 
-  const gefuerRoh = String(formData.get("geplant_fuer") ?? "").trim();
-
+  // geplant_fuer wird seit 0045 nicht mehr geschrieben: Wer eingeplant
+  // ist, steht in rapport_beteiligte. Zwei Quellen für dieselbe Aussage
+  // laufen auseinander.
   return {
     geplant_von: zeitstempel("geplant_von_zeit"),
     geplant_bis: zeitstempel("geplant_bis_zeit"),
-    geplant_fuer: gefuerRoh === "" ? null : gefuerRoh,
   };
 }
 
@@ -104,6 +104,15 @@ export async function erstelleRapport(
   if (error || !neuer) {
     return { fehler: error?.message ?? "Unbekannter Fehler." };
   }
+
+  // Die verantwortliche Person gehört zum Einsatz – ohne sie stünde ein
+  // frisch angelegter Rapport in der Disposition in keiner Spalte.
+  await supabase
+    .from("rapport_beteiligte")
+    .upsert(
+      { rapport_id: neuer.id, mitarbeiter_id: werte.mitarbeiter_id ?? userData.user?.id },
+      { onConflict: "rapport_id,mitarbeiter_id" }
+    );
 
   revalidatePath("/rapporte");
   // Direkt auf die Detailseite: Ohne Positionen ist ein Rapport nutzlos,
@@ -135,7 +144,20 @@ export async function aktualisiereRapport(
     return { fehler: await konfliktMeldung(supabase, "rapporte", id, stand) };
   }
 
+  // Verantwortliche Person immer im Team führen – auch nach einem Wechsel
+  // im Kopf. Die alte bleibt drin: Sie war eingeplant, und ob sie weiter
+  // mitfährt, entscheidet die Disposition, nicht ein Nebeneffekt.
+  if (werte.mitarbeiter_id) {
+    await supabase
+      .from("rapport_beteiligte")
+      .upsert(
+        { rapport_id: id, mitarbeiter_id: werte.mitarbeiter_id },
+        { onConflict: "rapport_id,mitarbeiter_id" }
+      );
+  }
+
   revalidatePath(`/rapporte/${id}`);
+  revalidatePath("/disposition");
   redirect(mitErfolg(`/rapporte/${id}`, "Rapport gespeichert."));
 }
 
@@ -495,10 +517,12 @@ export async function freieZeitenAm(argumente: {
     gesperrt: null,
   };
 
+  // Belegung über die Beteiligten (0045): Eine Person ist belegt, sobald
+  // sie an einem Einsatz teilnimmt – nicht nur, wenn sie ihn verantwortet.
   const { data } = await supabase
     .from("rapporte")
-    .select("id, geplant_von, geplant_bis, kunden(name, vorname)")
-    .eq("geplant_fuer", mitarbeiterId)
+    .select("id, geplant_von, geplant_bis, kunden(name, vorname), rapport_beteiligte!inner(mitarbeiter_id)")
+    .eq("rapport_beteiligte.mitarbeiter_id", mitarbeiterId)
     .eq("datum", datum)
     .neq("status", "storniert")
     .not("geplant_von", "is", null)
@@ -795,4 +819,76 @@ export async function storniereRapport(
       "Rapport storniert. Die Positionen zählen nicht mehr, bleiben aber zum Nachvollziehen erhalten."
     )
   );
+}
+
+// ---------------------------------------------------------
+// Team am Rapport (0045)
+// ---------------------------------------------------------
+// Das Team ist reine Planung, keine Berechtigung: Wer nicht dazugehört,
+// darf trotzdem Positionen erfassen – die Disposition etwa fährt nie
+// selbst mit. Eingeschränkt wird später über das Berechtigungssystem.
+
+export async function fuegeBeteiligtenHinzu(
+  rapportId: string,
+  formData: FormData
+) {
+  const supabase = await createClient();
+  const mitarbeiterId = String(formData.get("mitarbeiter_id") ?? "").trim();
+
+  if (!mitarbeiterId) {
+    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent("Bitte eine Person wählen.")}`);
+  }
+
+  const { error } = await supabase
+    .from("rapport_beteiligte")
+    .upsert(
+      { rapport_id: rapportId, mitarbeiter_id: mitarbeiterId },
+      { onConflict: "rapport_id,mitarbeiter_id" }
+    );
+
+  if (error) {
+    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/disposition");
+  revalidatePath("/kalender");
+  redirect(
+    mitErfolg(`/rapporte/${rapportId}?fokus=neues_teammitglied`, "Zum Einsatz hinzugefügt.")
+  );
+}
+
+export async function entferneBeteiligten(rapportId: string, mitarbeiterId: string) {
+  const supabase = await createClient();
+
+  const { data: rapport } = await supabase
+    .from("rapporte")
+    .select("mitarbeiter_id")
+    .eq("id", rapportId)
+    .single();
+
+  // Die verantwortliche Person bleibt drin: Sie schliesst den Rapport ab
+  // und trägt ihn. Wer sie wechseln will, ändert das Feld im Kopf.
+  if (rapport?.mitarbeiter_id === mitarbeiterId) {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent(
+        "Die verantwortliche Person lässt sich nicht aus dem Einsatz entfernen. Bitte oben eine andere wählen."
+      )}`
+    );
+  }
+
+  const { error } = await supabase
+    .from("rapport_beteiligte")
+    .delete()
+    .eq("rapport_id", rapportId)
+    .eq("mitarbeiter_id", mitarbeiterId);
+
+  if (error) {
+    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/disposition");
+  revalidatePath("/kalender");
+  redirect(mitErfolg(`/rapporte/${rapportId}`, "Aus dem Einsatz entfernt."));
 }

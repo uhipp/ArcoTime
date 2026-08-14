@@ -60,9 +60,11 @@ Im Zeitraster lassen sich geplante Einsätze mit der Maus ziehen – nach oben o
 
 Auf Tablet und Smartphone dasselbe mit dem Finger: kurz halten, dann ziehen. Das kurze Halten ist nötig, damit sich die Ansicht weiterhin normal scrollen lässt.
 
+Bei einem Einsatz mit mehreren [Beteiligten](/hilfe/rapporte) erscheint derselbe Balken in jeder ihrer Spalten – verschoben wird er trotzdem als Ganzes. Ziehst du ihn in die Spalte einer weiteren Person, kommt sie zum Einsatz dazu.
+
 **Nicht verschiebbar sind abgeschlossene Rapporte.** Sie halten fest, was geleistet wurde – daran zieht niemand mehr. Für Korrekturen ist die Stornierung vorgesehen.
 
-Fällt das Ziel auf einen **Schliesstag** oder in eine **Abwesenheit**, die die Planung blockiert, wird nicht verschoben und der Grund erscheint über dem Raster. Eine **Doppelbelegung** wird dagegen zugelassen und nur rot markiert – siehe unten.
+Fällt das Ziel auf einen **Schliesstag** oder in eine **Abwesenheit**, die die Planung blockiert, erscheint eine Rückfrage mit dem Namen der betroffenen Person – du kannst trotzdem verschieben. Blockiert wird nicht: Bei einem Team würde eine einzige Abwesenheit sonst den ganzen Einsatz festsetzen, und die Person wird ohnehin ersetzt. Eine **Doppelbelegung** wird dagegen zugelassen und nur rot markiert – siehe unten.
 
 ## Überschneidungen
 

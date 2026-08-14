@@ -42,6 +42,8 @@ type PlanZeile = {
   rapportId: string;
   mitarbeiterId: string | null;
   name: string;
+  // Weitere Beteiligte – erscheinen im Tooltip, nicht im Balken.
+  weitere: string[];
   farbe: string;
   von: string;
   bis: string;
@@ -121,7 +123,11 @@ export default async function KalenderPage({
   const planFilter: Record<string, string> = {};
   if (params.kunde_id) planFilter.kunde_id = params.kunde_id;
   if (params.projekt_id) planFilter.projekt_id = params.projekt_id;
-  if (params.mitarbeiter_id) planFilter.geplant_fuer = params.mitarbeiter_id;
+  // Beteiligte seit 0045: Der Filter läuft über den eingebetteten
+  // Verbund, nicht mehr über geplant_fuer.
+  if (params.mitarbeiter_id) {
+    planFilter["rapport_beteiligte.mitarbeiter_id"] = params.mitarbeiter_id;
+  }
 
   // Nur OFFENE Rapporte: Ein abgeschlossener zeigt seine tatsächlich
   // geleistete Zeit über die Zeiteinträge. So bleibt es bei einem Balken
@@ -135,7 +141,13 @@ export default async function KalenderPage({
     ? null
     : supabase
         .from("rapporte")
-        .select("id, datum, kunde_id, projekt_id, geplant_fuer, geplant_von, geplant_bis, kunden(name, vorname, ort), projekte(bezeichnung)")
+        .select(
+          `id, datum, kunde_id, projekt_id, mitarbeiter_id, geplant_von, geplant_bis, kunden(name, vorname, ort), projekte(bezeichnung), ${
+            params.mitarbeiter_id
+              ? "rapport_beteiligte!inner(mitarbeiter_id)"
+              : "rapport_beteiligte(mitarbeiter_id)"
+          }`
+        )
         .eq("status", "offen")
         .gte("datum", rasterVon)
         .lte("datum", rasterBis)
@@ -182,7 +194,8 @@ export default async function KalenderPage({
     | {
         id: string;
         datum: string;
-        geplant_fuer: string | null;
+        mitarbeiter_id: string | null;
+        rapport_beteiligte?: { mitarbeiter_id: string }[];
         geplant_von: string | null;
         geplant_bis: string | null;
         kunden?: { name: string; vorname: string | null; ort: string | null } | null;
@@ -225,9 +238,15 @@ export default async function KalenderPage({
     const eintrag = tagEintrag(r.geplant_von ? r.geplant_von.slice(0, 10) : r.datum);
     eintrag.plan.push({
       rapportId: r.id,
-      mitarbeiterId: r.geplant_fuer,
-      name: nameVon(r.geplant_fuer),
-      farbe: farbeVon(r.geplant_fuer),
+      mitarbeiterId: r.mitarbeiter_id,
+      // Farbe und Name der verantwortlichen Person; bei mehreren
+      // Beteiligten kann die Farbe nicht "die Person" bedeuten.
+      name: nameVon(r.mitarbeiter_id),
+      farbe: farbeVon(r.mitarbeiter_id),
+      weitere: (r.rapport_beteiligte ?? [])
+        .map((b) => b.mitarbeiter_id)
+        .filter((id) => id !== r.mitarbeiter_id)
+        .map(nameVon),
       von: uhrzeit(r.geplant_von),
       bis: uhrzeit(r.geplant_bis),
       kunde:
@@ -276,7 +295,8 @@ export default async function KalenderPage({
     if (a.zugewiesen_an) sichtbareMitarbeiterIds.add(a.zugewiesen_an);
   }
   for (const p of planungRoh) {
-    if (p.geplant_fuer) sichtbareMitarbeiterIds.add(p.geplant_fuer);
+    if (p.mitarbeiter_id) sichtbareMitarbeiterIds.add(p.mitarbeiter_id);
+    for (const b of p.rapport_beteiligte ?? []) sichtbareMitarbeiterIds.add(b.mitarbeiter_id);
   }
   const legende = (alleMitarbeitende ?? []).filter((m) => sichtbareMitarbeiterIds.has(m.id));
 
@@ -473,7 +493,7 @@ export default async function KalenderPage({
                   // einem geplanten Einsatz also Uhrzeit, Kunde und Ort.
                   label: `${p.von ? `${p.von} ` : ""}${p.kunde}${p.ort ? `, ${p.ort}` : ""}`,
                   titel: [
-                    `Geplant für ${p.name}`,
+                    `Geplant für ${[p.name, ...p.weitere].filter(Boolean).join(", ")}`,
                     p.von ? `${p.von}${p.bis ? `–${p.bis}` : ""}` : null,
                     p.kunde,
                     p.ort,

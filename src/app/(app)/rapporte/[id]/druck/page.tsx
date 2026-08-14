@@ -4,7 +4,7 @@ import { ladeRapportDokument } from "@/lib/rapport-dokument-daten";
 import { formatDatumCH } from "@/lib/date-utils";
 import { mengeLabel } from "@/lib/menge";
 import { HilfeDruckenButton } from "@/components/hilfe-drucken-button";
-import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
+import { rapportNummer } from "@/lib/types";
 
 // Druckansicht eines Rapports – die Fassung, die der Kunde bekommt.
 //

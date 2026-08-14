@@ -55,6 +55,16 @@ Ist niemand Unterschriftsberechtigtes mehr vor Ort, gibt es darunter **„Ohne U
 
 Zwei Fälle lassen keinen Abschluss zu: ein Rapport **ohne Positionen** und einer mit **Datum in der Zukunft**. Beim zweiten ist der Einsatz schlicht noch nicht geleistet.
 
+## Beteiligte
+
+Ein Auftrag wird oft von mehreren Personen zusammen erledigt – etwa eine Projektleiterin mit zwei Monteuren. Unter **Beteiligte** legst du fest, wer bei diesem Einsatz dabei ist.
+
+In der [Disposition](/hilfe/disposition) erscheint der Einsatz dadurch in **jeder ihrer Spalten**, bleibt aber ein einziger Balken: Verschieben bewegt ihn für alle. Passt es bei einer Person nicht – Ferien, Betriebsferien –, meldet ArcoTime beim Verschieben, **wer** nicht kann, und du entscheidest, ob du es trotzdem tust.
+
+Die **verantwortliche Person** aus dem Kopf ist immer dabei und lässt sich nicht entfernen; sie schliesst den Rapport ab. Wer sie wechseln will, ändert das Feld oben.
+
+Die Beteiligten sind **reine Planung, keine Berechtigung**: Wer nicht dazugehört, darf trotzdem Positionen erfassen – die Disposition etwa fährt nie selbst mit.
+
 ## Wann eine Position zählt
 
 Ein Rapport wird meist **vorbereitet**: Die Disposition legt die Aufträge der kommenden Woche an, oft schon mit bekannten Positionen – Reisespesen, angenommene Stunden – und mit einer Beschreibung dessen, was zu tun ist. Der Monteur passt vor Ort die Werte an und schliesst ab.

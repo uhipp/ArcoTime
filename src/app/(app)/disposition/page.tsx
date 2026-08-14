@@ -53,14 +53,21 @@ function minuten(zeitstempel: string | null): number | null {
   return Number.isNaN(h) || Number.isNaN(m) ? null : h * 60 + m;
 }
 
-function konflikteFinden(eintraege: Rapport[]): Set<string> {
+// Seit 0045 hat ein Einsatz mehrere Beteiligte. Ein Konflikt entsteht,
+// sobald sich zwei Einsätze bei EINER Person überschneiden – auch wenn
+// die übrigen Beteiligten verschieden sind.
+function konflikteFinden(
+  eintraege: Rapport[],
+  beteiligteVon: (rapportId: string) => string[]
+): Set<string> {
   const konflikte = new Set<string>();
 
   for (let i = 0; i < eintraege.length; i++) {
     for (let j = i + 1; j < eintraege.length; j++) {
       const a = eintraege[i];
       const b = eintraege[j];
-      if (!a.geplant_fuer || a.geplant_fuer !== b.geplant_fuer) continue;
+      const gemeinsam = beteiligteVon(a.id).some((id) => beteiligteVon(b.id).includes(id));
+      if (!gemeinsam) continue;
 
       const aVon = minuten(a.geplant_von);
       const aBis = minuten(a.geplant_bis);
@@ -100,15 +107,24 @@ export default async function DispositionPage({
 
   const supabase = await createClient();
 
+  // !inner beim Filtern auf eine Person: So liefert die Abfrage nur
+  // Rapporte, an denen sie beteiligt ist – ohne den Umweg über eine
+  // zweite Abfrage nach ihren Rapport-Kennungen.
+  const einbettung = params.mitarbeiter_id
+    ? "rapport_beteiligte!inner(mitarbeiter_id)"
+    : "rapport_beteiligte(mitarbeiter_id)";
+
   let query = supabase
     .from("rapporte")
-    .select("*, kunden(id, name, vorname), projekte(id, bezeichnung)")
+    .select(`*, kunden(id, name, vorname), projekte(id, bezeichnung), ${einbettung}`)
     .gte("datum", von)
     .lte("datum", bis)
     .neq("status", "storniert")
     .order("geplant_von", { ascending: true, nullsFirst: false });
 
-  if (params.mitarbeiter_id) query = query.eq("geplant_fuer", params.mitarbeiter_id);
+  if (params.mitarbeiter_id) {
+    query = query.eq("rapport_beteiligte.mitarbeiter_id", params.mitarbeiter_id);
+  }
 
   const [{ data: rapporteRoh }, { data: mitarbeitende }] = await Promise.all([
     query,
@@ -116,6 +132,28 @@ export default async function DispositionPage({
   ]);
 
   const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
+
+  // Beteiligte je Rapport. Beim Filtern auf eine Person liefert der
+  // !inner-Verbund nur diese eine Zeile zurück – die vollständige Liste
+  // kommt dann aus einer eigenen Abfrage, sonst zeigte die Tagesansicht
+  // den Einsatz nur in einer Spalte.
+  const beteiligtePro = new Map<string, string[]>();
+  if (params.mitarbeiter_id && rapporte.length > 0) {
+    const { data: alle } = await supabase
+      .from("rapport_beteiligte")
+      .select("rapport_id, mitarbeiter_id")
+      .in("rapport_id", rapporte.map((r) => r.id));
+    for (const z of alle ?? []) {
+      beteiligtePro.set(z.rapport_id, [...(beteiligtePro.get(z.rapport_id) ?? []), z.mitarbeiter_id]);
+    }
+  } else {
+    for (const r of rapporte) {
+      const eingebettet = (r as unknown as { rapport_beteiligte?: { mitarbeiter_id: string }[] })
+        .rapport_beteiligte;
+      beteiligtePro.set(r.id, (eingebettet ?? []).map((b) => b.mitarbeiter_id));
+    }
+  }
+  const beteiligteVon = (id: string) => beteiligtePro.get(id) ?? [];
   const tage = tageZwischen(von, bis);
 
   const proTag = new Map<string, Rapport[]>();
@@ -145,7 +183,7 @@ export default async function DispositionPage({
   // Alle Konflikte des sichtbaren Zeitraums, tagweise ermittelt.
   const alleKonflikte = new Set<string>();
   for (const tag of tage) {
-    for (const id of konflikteFinden(proTag.get(tag) ?? [])) alleKonflikte.add(id);
+    for (const id of konflikteFinden(proTag.get(tag) ?? [], beteiligteVon)) alleKonflikte.add(id);
   }
 
   // In der Wochenansicht sind die Spalten die Tage, in der Tagesansicht die
@@ -179,26 +217,56 @@ export default async function DispositionPage({
           },
         ];
 
-  const rasterEintraege: RasterEintrag[] = rapporte
-    .filter((r) => ansicht !== "tag" || r.datum === bezugsdatum)
-    .map((r) => ({
-      key: r.id,
-      spalte: ansicht === "woche" ? r.datum : (r.geplant_fuer ?? "ohne"),
+  // In der Tagesansicht erscheint ein Einsatz in JEDER Spalte seiner
+  // Beteiligten – aber es bleibt ein Einsatz: Ziehen bewegt ihn für alle
+  // (siehe verschiebeEinsatz). In der Wochenansicht steht er einmal am Tag.
+  const sichtbar = rapporte.filter((r) => ansicht !== "tag" || r.datum === bezugsdatum);
+
+  const rasterEintraege: RasterEintrag[] = sichtbar.flatMap((r) => {
+    const beteiligte = beteiligteVon(r.id);
+    const namen = beteiligte.map(nameVon).filter(Boolean);
+    const kunde = [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || "Ohne Kunde";
+
+    const gemeinsam = {
       vonMinuten: minuten(r.geplant_von),
       bisMinuten: minuten(r.geplant_bis),
-      farbe: farbeVon(r.geplant_fuer),
-      titelZeile: [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || "Ohne Kunde",
-      zweiteZeile:
-        ansicht === "woche"
-          ? [nameVon(r.geplant_fuer), r.projekte?.bezeichnung].filter(Boolean).join(" · ")
-          : r.projekte?.bezeichnung ?? null,
+      // Farbe der verantwortlichen Person: Bei mehreren Beteiligten kann
+      // die Farbe nicht mehr "die Person" bedeuten – die übrigen Namen
+      // stehen im Tooltip.
+      farbe: farbeVon(r.mitarbeiter_id ?? null),
+      titelZeile: kunde,
       href: `/rapporte/${r.id}`,
       konflikt: alleKonflikte.has(r.id),
       datum: r.datum,
       // Nur offene Rapporte lassen sich verschieben. Ein abgeschlossener
       // hält fest, was geleistet wurde – daran zieht niemand mehr.
       ziehbar: r.status === "offen",
+    };
+
+    const zweiteZeile =
+      ansicht === "woche"
+        ? [namen.join(", "), r.projekte?.bezeichnung].filter(Boolean).join(" · ")
+        : r.projekte?.bezeichnung ?? null;
+
+    if (ansicht === "woche") {
+      return [{ ...gemeinsam, key: r.id, spalte: r.datum, zweiteZeile }];
+    }
+
+    const spalten = beteiligte.length > 0 ? beteiligte : ["ohne"];
+    return spalten.map((spalte) => ({
+      ...gemeinsam,
+      // Eigener Schlüssel je Spalte, damit React die Balken auseinander
+      // hält – verschoben wird trotzdem der ganze Einsatz.
+      key: beteiligte.length > 1 ? `${r.id}::${spalte}` : r.id,
+      spalte,
+      zweiteZeile:
+        beteiligte.length > 1
+          ? [`mit ${namen.length - 1} weiteren`, r.projekte?.bezeichnung]
+              .filter(Boolean)
+              .join(" · ")
+          : zweiteZeile,
     }));
+  });
 
   const rasterMoeglich = ansicht !== "monat";
 
@@ -303,7 +371,7 @@ export default async function DispositionPage({
         {tage.map((tag) => {
           const eintraege = proTag.get(tag) ?? [];
           const istHeute = tag === heute;
-          const konflikte = konflikteFinden(eintraege);
+          const konflikte = konflikteFinden(eintraege, beteiligteVon);
 
           return (
             <div
@@ -337,8 +405,9 @@ export default async function DispositionPage({
                       r.geplant_von || r.geplant_bis
                         ? `${uhrzeit(r.geplant_von) || "?"}–${uhrzeit(r.geplant_bis) || "?"}`
                         : "ganztags";
+                    const beteiligte = beteiligteVon(r.id).map(nameVon).filter(Boolean);
                     const person =
-                      mitarbeitende?.find((m) => m.id === r.geplant_fuer)?.name ?? "nicht zugewiesen";
+                      beteiligte.length > 0 ? beteiligte.join(", ") : "nicht zugewiesen";
 
                     const imKonflikt = konflikte.has(r.id);
 
@@ -363,7 +432,9 @@ export default async function DispositionPage({
                         </span>
                         <span
                           className={
-                            r.geplant_fuer ? "text-gray-600" : "text-amber-700 font-medium"
+                            beteiligte.length > 0
+                              ? "text-gray-600"
+                              : "text-amber-700 font-medium"
                           }
                         >
                           {person}

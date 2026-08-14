@@ -107,7 +107,12 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
       <Page size="A4" style={stil.seite}>
         <View style={stil.kopf}>
           <View style={stil.absender}>
-            {absender.logoAdresse && <Image src={absender.logoAdresse} style={stil.logo} />}
+            {absender.logoAdresse && (
+              // eslint-disable-next-line jsx-a11y/alt-text -- Image stammt
+              // aus @react-pdf/renderer und kennt kein alt; ein PDF hat
+              // keine Vorlesehilfe, die es auswerten könnte.
+              <Image src={absender.logoAdresse} style={stil.logo} />
+            )}
             {absender.name && <Text style={stil.absenderName}>{absender.name}</Text>}
             {absender.strasse && <Text style={stil.absenderZeile}>{absender.strasse}</Text>}
             {(absender.plz || absender.ort) && (
@@ -189,6 +194,7 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
 
           {rapport.unterschrift_png ? (
             <>
+              {/* eslint-disable-next-line jsx-a11y/alt-text -- siehe oben */}
               <Image src={rapport.unterschrift_png} style={stil.unterschriftBild} />
               <Text style={stil.linie}>
                 {[

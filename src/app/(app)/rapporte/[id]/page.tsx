@@ -13,6 +13,7 @@ import { RapportPositionForm } from "@/components/rapport-position-form";
 import { RapportAbschluss } from "@/components/rapport-abschluss";
 import { RapportVersand } from "@/components/rapport-versand";
 import { RapportStorno } from "@/components/rapport-storno";
+import { RapportTeam } from "@/components/rapport-team";
 import {
   aktualisiereRapport,
   loescheRapport,
@@ -49,6 +50,7 @@ export default async function RapportDetailPage({
     { data: dienstleistungen },
     { data: rabattsaetze },
     { data: herkunft },
+    { data: beteiligteRoh },
     { dokumente, kategorien },
   ] = await Promise.all([
     getCurrentProfile(),
@@ -75,6 +77,10 @@ export default async function RapportDetailPage({
     // Rückrichtung der Verknüpfung: Die Anfrage hält rapport_id, hier wird
     // danach gesucht. Bewusst keine zweite Spalte am Rapport – siehe 0034.
     supabase.from("anfragen").select("id, titel").eq("rapport_id", id).maybeSingle(),
+    supabase
+      .from("rapport_beteiligte")
+      .select("mitarbeiter_id, profiles(id, name)")
+      .eq("rapport_id", id),
     ladeDokumente(supabase, "rapport", id),
   ]);
 
@@ -83,6 +89,13 @@ export default async function RapportDetailPage({
   const rapport = rapportRoh as Rapport;
   const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
   const offen = rapport.status === "offen";
+
+  // PostgREST liefert die eingebettete Zeile je nach Beziehung als Objekt
+  // oder Liste – beides abfangen und vereinheitlichen.
+  const beteiligte = ((beteiligteRoh ?? []) as { profiles: unknown }[])
+    .flatMap((z) => (Array.isArray(z.profiles) ? z.profiles : z.profiles ? [z.profiles] : []))
+    .map((p) => p as { id: string; name: string })
+    .sort((a, b) => a.name.localeCompare(b.name, "de-CH"));
 
   // Bearbeiten läuft über einen Query-Parameter statt über Client-State:
   // Die Seite ist serverseitig gerendert, und so bleibt ein angefangenes
@@ -306,6 +319,14 @@ export default async function RapportDetailPage({
           istAdmin={profile?.role === "admin"}
         />
       </div>
+
+      <RapportTeam
+        rapportId={id}
+        beteiligte={beteiligte}
+        alle={mitarbeitende ?? []}
+        verantwortlichId={rapport.mitarbeiter_id ?? null}
+        bearbeitbar={offen}
+      />
 
       {offen && (
         <RapportAbschluss

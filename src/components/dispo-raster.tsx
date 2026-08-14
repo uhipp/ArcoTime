@@ -162,6 +162,13 @@ export function DispoRaster({
   const router = useRouter();
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, setLaeuft] = useState(false);
+  // Ein Verschieben, das an einer Abwesenheit hängt: Der Vorgang wird
+  // gemeldet, nicht verworfen – bestätigt man ihn, läuft er unverändert
+  // durch. Bei einem Team wäre Blockieren falsch, weil eine einzige
+  // abwesende Person sonst den ganzen Einsatz festsetzt.
+  const [nachfrage, setNachfrage] = useState<
+    { text: string; ausfuehren: () => Promise<void> } | null
+  >(null);
 
   // Touch mit Verzögerung: Ohne das liesse sich im Raster nicht mehr
   // scrollen, weil jede Berührung sofort als Ziehen gälte.
@@ -185,26 +192,41 @@ export function DispoRaster({
 
     if (zielSpalte === eintrag.spalte && neuVon === eintrag.vonMinuten) return;
 
-    setFehler(null);
-    setLaeuft(true);
-    const ergebnis = await verschiebeEinsatz(eintrag.key, {
-      datum: spaltenBedeutung === "tag" ? zielSpalte : eintrag.datum,
-      vonMinuten: neuVon,
-      bisMinuten: neuVon + dauer,
-      mitarbeiterId:
-        spaltenBedeutung === "person"
-          ? zielSpalte === "ohne"
-            ? null
-            : zielSpalte
-          : undefined,
-    });
-    setLaeuft(false);
+    // Der Schlüssel trägt in der Tagesansicht die Spalte mit, damit React
+    // mehrere Balken desselben Einsatzes auseinanderhält – für den Server
+    // zählt nur die Kennung davor.
+    const rapportId = eintrag.key.split("::")[0];
 
-    if (ergebnis?.fehler) {
-      setFehler(ergebnis.fehler);
-      return;
-    }
-    router.refresh();
+    const senden = async (trotzdem: boolean) => {
+      setFehler(null);
+      setNachfrage(null);
+      setLaeuft(true);
+      const ergebnis = await verschiebeEinsatz(rapportId, {
+        datum: spaltenBedeutung === "tag" ? zielSpalte : eintrag.datum,
+        vonMinuten: neuVon,
+        bisMinuten: neuVon + dauer,
+        mitarbeiterId:
+          spaltenBedeutung === "person"
+            ? zielSpalte === "ohne"
+              ? null
+              : zielSpalte
+            : undefined,
+        trotzdem,
+      });
+      setLaeuft(false);
+
+      if (ergebnis && "fehler" in ergebnis) {
+        setFehler(ergebnis.fehler);
+        return;
+      }
+      if (ergebnis && "warnung" in ergebnis) {
+        setNachfrage({ text: ergebnis.warnung, ausfuehren: () => senden(true) });
+        return;
+      }
+      router.refresh();
+    };
+
+    await senden(false);
   }
 
   // Auf volle Stunden erweitern, damit die Beschriftung aufgeht.
@@ -221,6 +243,25 @@ export function DispoRaster({
     <DndContext sensors={sensoren} onDragEnd={beimAblegen}>
       {fehler && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2 mb-2">{fehler}</div>
+      )}
+      {nachfrage && (
+        <div className="rounded bg-amber-50 text-amber-900 text-sm px-3 py-2 mb-2 flex flex-wrap items-center gap-3">
+          <span className="flex-1 min-w-[14rem]">{nachfrage.text}</span>
+          <button
+            type="button"
+            onClick={() => void nachfrage.ausfuehren()}
+            className="rounded bg-amber-600 text-white text-sm px-3 py-1 hover:bg-amber-700"
+          >
+            Trotzdem verschieben
+          </button>
+          <button
+            type="button"
+            onClick={() => setNachfrage(null)}
+            className="text-sm text-gray-600 hover:underline"
+          >
+            Abbrechen
+          </button>
+        </div>
       )}
       <div
         className={`bg-white rounded-lg border overflow-x-auto ${

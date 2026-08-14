@@ -247,6 +247,14 @@
       {
         "typ": "neu",
         "text": "Projekte haben eine Projektleitung. Sie erscheint in der Projektliste und wird beim Anlegen eines Rapports als ausführende Person vorgeschlagen."
+      },
+      {
+        "typ": "neu",
+        "text": "Ein Rapport kann mehrere Beteiligte haben. In der Disposition erscheint der Einsatz in jeder ihrer Spalten, bleibt aber ein Balken – verschoben wird er als Ganzes."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Beim Verschieben eines Einsatzes meldet ArcoTime, welche Person nicht kann und warum – und lässt dich entscheiden, statt zu blockieren."
       }
     ]
   },
