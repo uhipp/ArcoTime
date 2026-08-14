@@ -68,7 +68,21 @@ export async function setzeNeuesPasswort(formData: FormData) {
   const { error } = await supabase.auth.updateUser({ password: passwort });
 
   if (error) {
-    redirect(`/passwort-setzen?error=${encodeURIComponent(error.message)}`);
+    console.error("Passwort setzen fehlgeschlagen", {
+      code: (error as { code?: string }).code,
+      meldung: error.message,
+    });
+
+    // Supabase antwortet hier auf Englisch. "same_password" ist dabei die
+    // einzige Meldung, die einen Anwender ratlos zurücklässt: Wer gerade
+    // erst eingeladen wurde, hat aus seiner Sicht gar kein altes Passwort.
+    const code = (error as { code?: string }).code;
+    const text =
+      code === "same_password"
+        ? "Dieses Passwort ist für dein Konto bereits hinterlegt. Wähle bitte ein anderes – oder melde dich direkt damit an, falls du es zuvor schon gesetzt hast."
+        : error.message;
+
+    redirect(`/passwort-setzen?error=${encodeURIComponent(text)}`);
   }
 
   redirect(mitErfolg("/", "Passwort erfolgreich geändert."));

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { setzeNeuesPasswort } from "@/app/actions/auth";
 import { getLoginMandantName } from "@/lib/login-mandant";
+import { getCurrentUser } from "@/lib/get-profile";
+import { redirect } from "next/navigation";
 
 export default async function PasswortSetzenPage({
   searchParams,
@@ -8,7 +10,18 @@ export default async function PasswortSetzenPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const mandantName = await getLoginMandantName();
+  const [mandantName, user] = await Promise.all([getLoginMandantName(), getCurrentUser()]);
+
+  // Ohne gueltige Sitzung fuehrt das Formular ins Leere: updateUser braucht
+  // eine angemeldete Person. Bisher landete man hier auch mit abgelaufenem
+  // Link und bekam erst nach dem Absenden eine unverstaendliche Meldung.
+  if (!user) {
+    redirect(
+      `/login?error=${encodeURIComponent(
+        "Der Link ist abgelaufen oder wurde bereits verwendet. Bitte eine neue Einladung anfordern."
+      )}`
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -29,7 +42,12 @@ export default async function PasswortSetzenPage({
         <h1 className="font-heading font-bold text-xl text-arcos-navy mb-1">
           Neues Passwort setzen
         </h1>
-        <p className="text-sm text-gray-500 mb-6">Mindestens 8 Zeichen.</p>
+        {/* Zeigt, um welches Konto es geht. Wer den Link in einem Browser
+            oeffnet, in dem schon jemand angemeldet ist, sieht sonst nicht,
+            wessen Passwort er gerade setzt. */}
+        <p className="text-sm text-gray-500 mb-6">
+          Für <strong>{user.email}</strong>. Mindestens 8 Zeichen.
+        </p>
 
         {error && (
           <div className="mb-4 rounded bg-red-50 text-red-700 text-sm px-3 py-2">
