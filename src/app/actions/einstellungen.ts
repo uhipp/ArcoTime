@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { mitErfolg } from "@/lib/erfolg";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 import { normalisiereZeit } from "@/lib/zeit";
@@ -80,6 +81,9 @@ export async function updateOrganisation(formData: FormData) {
     return Math.round(stunden * 60);
   };
 
+  const text = (feld: string): string | null =>
+    String(formData.get(feld) ?? "").trim() || null;
+
   const uhrzeitAlsMinuten = (feld: string): number | null => {
     const zeit = normalisiereZeit(String(formData.get(feld) ?? ""));
     if (!zeit) return null;
@@ -99,6 +103,14 @@ export async function updateOrganisation(formData: FormData) {
       arbeitstag_von_minuten: uhrzeitAlsMinuten("arbeitstag_von") ?? 420,
       arbeitstag_bis_minuten: uhrzeitAlsMinuten("arbeitstag_bis") ?? 1080,
       sperre_ab_minuten_pro_tag: alsMinuten("sperre_ab_stunden"),
+      // Absenderangaben für Dokumente, die beim Kunden bleiben (0042).
+      strasse: text("strasse"),
+      hausnummer: text("hausnummer"),
+      plz: text("plz"),
+      ort: text("ort"),
+      telefon: text("telefon"),
+      email: text("email"),
+      webseite: text("webseite"),
     })
     .eq("id", organisation.id);
 
@@ -540,4 +552,87 @@ export async function toggleAbwesenheitsart(id: string, aktiv: boolean) {
   redirect(
     mitErfolg("/einstellungen", aktiv ? "Art aktiviert." : "Art deaktiviert.")
   );
+}
+
+// Logo der Organisation hochladen.
+//
+// Bewusst als Server Action mit der Datei im Formular statt über eine
+// signierte Upload-Adresse wie bei den Dokumenten: Ein Logo ist klein und
+// wird einmal im Jahr gewechselt. Der aufwendigere Weg lohnt dort, wo
+// grosse Dateien häufig hochgeladen werden – hier wäre er nur mehr
+// Bauteile für denselben Zweck.
+export async function ladeLogoHoch(formData: FormData) {
+  const datei = formData.get("logo");
+  if (!(datei instanceof File) || datei.size === 0) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Bitte eine Datei auswählen.")}`);
+  }
+  if (datei.size > 1_000_000) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent(
+        "Das Logo ist zu gross (maximal 1 MB). Ein Bild mit 400 Pixel Breite genügt für Druck und PDF."
+      )}`
+    );
+  }
+
+  const endung = (datei.name.split(".").pop() ?? "").toLowerCase();
+  if (!["png", "jpg", "jpeg", "svg", "webp"].includes(endung)) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent(
+        "Nur PNG, JPG, SVG oder WebP. PNG mit durchsichtigem Hintergrund sieht auf dem Rapport am besten aus."
+      )}`
+    );
+  }
+
+  const organisation = await getCurrentOrganisation();
+  if (!organisation) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Organisation nicht gefunden.")}`);
+  }
+
+  const admin = createAdminClient();
+  // Zeitstempel im Namen, damit ein neues Logo nicht am zwischengespeicherten
+  // alten Bild hängen bleibt.
+  const pfad = `${organisation.id}/logo-${Date.now()}.${endung}`;
+
+  const { error: uploadFehler } = await admin.storage
+    .from("logos")
+    .upload(pfad, datei, { upsert: true, contentType: datei.type || undefined });
+
+  if (uploadFehler) {
+    redirect(`/einstellungen?error=${encodeURIComponent(uploadFehler.message)}`);
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("organisationen")
+    .update({ logo_pfad: pfad })
+    .eq("id", organisation.id);
+
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Das alte Bild erst jetzt wegräumen: Wäre es vorher weg und der neue
+  // Eintrag scheiterte, stünde die Organisation ganz ohne Logo da.
+  if (organisation.logo_pfad && organisation.logo_pfad !== pfad) {
+    await admin.storage.from("logos").remove([organisation.logo_pfad]);
+  }
+
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", "Logo gespeichert."));
+}
+
+export async function entferneLogo() {
+  const organisation = await getCurrentOrganisation();
+  if (!organisation?.logo_pfad) {
+    redirect("/einstellungen");
+  }
+
+  const supabase = await createClient();
+  await supabase.from("organisationen").update({ logo_pfad: null }).eq("id", organisation.id);
+
+  const admin = createAdminClient();
+  await admin.storage.from("logos").remove([organisation.logo_pfad]);
+
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", "Logo entfernt."));
 }

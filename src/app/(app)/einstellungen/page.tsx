@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { logoAdresseVon } from "@/lib/logo-adresse";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { FARBEN_OPTIONEN } from "@/lib/farben";
@@ -7,6 +8,8 @@ import { ZeitFeld } from "@/components/zeit-feld";
 import { DatumFeld } from "@/components/datum-feld";
 import {
   updateOrganisation,
+  ladeLogoHoch,
+  entferneLogo,
   createSchliesstag,
   loescheSchliesstag,
   createAbwesenheitsart,
@@ -51,6 +54,7 @@ export default async function EinstellungenPage({
 
   const { error } = await searchParams;
   const organisation = await getCurrentOrganisation();
+  const logoAdresse = logoAdresseVon(organisation?.logo_pfad);
   const supabase = await createClient();
   const [
     { data: klassen },
@@ -182,6 +186,96 @@ export default async function EinstellungenPage({
             vorschlägt. Termine ausserhalb bleiben von Hand erfassbar.
           </p>
 
+          {/* Absenderangaben. Sie erscheinen auf der Druckansicht eines
+              Rapports und später im PDF und im Begleitmail – deshalb an
+              einer Stelle gepflegt und nicht je Dokument. */}
+          <div className="border-t pt-4">
+            <p className="text-sm font-medium mb-1">Absenderangaben</p>
+            <p className="text-xs text-gray-400 mb-3">
+              Erscheinen auf dem Arbeitsrapport, den der Kunde erhält.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="strasse">
+                  Strasse
+                </label>
+                <input
+                  id="strasse"
+                  name="strasse"
+                  defaultValue={organisation?.strasse ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="hausnummer">
+                  Nr.
+                </label>
+                <input
+                  id="hausnummer"
+                  name="hausnummer"
+                  defaultValue={organisation?.hausnummer ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="plz">
+                  PLZ
+                </label>
+                <input
+                  id="plz"
+                  name="plz"
+                  defaultValue={organisation?.plz ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="ort">
+                  Ort
+                </label>
+                <input
+                  id="ort"
+                  name="ort"
+                  defaultValue={organisation?.ort ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="telefon">
+                  Telefon
+                </label>
+                <input
+                  id="telefon"
+                  name="telefon"
+                  defaultValue={organisation?.telefon ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="org_email">
+                  E-Mail
+                </label>
+                <input
+                  id="org_email"
+                  name="email"
+                  type="email"
+                  defaultValue={organisation?.email ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="webseite">
+                  Webseite
+                </label>
+                <input
+                  id="webseite"
+                  name="webseite"
+                  defaultValue={organisation?.webseite ?? ""}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
           <p className="text-xs text-gray-400">
             Gilt je Mitarbeitendem und Tag, über alle Kunden hinweg. Der
             Hinweis erscheint beim Erfassen und lässt sich übergehen; die
@@ -205,6 +299,49 @@ export default async function EinstellungenPage({
             </span>
           </label>
         </form>
+
+        {/* Eigenes Formular: Ein Datei-Upload gehört nicht in dasselbe
+            Formular wie die Textfelder – sonst lädt jedes Speichern der
+            Adresse die Datei erneut hoch. */}
+        <div className="border-t mt-5 pt-4">
+          <p className="text-sm font-medium mb-1">Logo</p>
+          <p className="text-xs text-gray-400 mb-3">
+            Erscheint auf dem Arbeitsrapport. PNG mit durchsichtigem Hintergrund
+            sieht am besten aus, 400 Pixel Breite genügen. Maximal 1 MB.
+          </p>
+
+          {logoAdresse && (
+            <div className="flex items-center gap-4 mb-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoAdresse}
+                alt="Logo der Organisation"
+                className="max-h-16 border rounded bg-white p-1"
+              />
+              <form action={entferneLogo}>
+                <button type="submit" className="text-xs text-gray-500 hover:text-red-600">
+                  Logo entfernen
+                </button>
+              </form>
+            </div>
+          )}
+
+          <form action={ladeLogoHoch} className="flex flex-wrap items-center gap-2">
+            <input
+              type="file"
+              name="logo"
+              accept="image/png,image/jpeg,image/svg+xml,image/webp"
+              required
+              className="text-sm"
+            />
+            <button
+              type="submit"
+              className="rounded border text-sm font-medium px-3 py-1.5 hover:bg-gray-50"
+            >
+              Hochladen
+            </button>
+          </form>
+        </div>
       </section>
 
       <section>

@@ -223,6 +223,14 @@
       {
         "typ": "neu",
         "text": "Druckansicht für Rapporte – die Fassung für den Kunden, ohne Preise. Ist noch nicht unterschrieben, enthält sie eine Linie für Datum und Unterschrift."
+      },
+      {
+        "typ": "neu",
+        "text": "Absenderangaben und Logo der eigenen Organisation lassen sich unter Einstellungen hinterlegen und erscheinen auf dem Arbeitsrapport."
+      },
+      {
+        "typ": "fix",
+        "text": "In der Druckansicht wurde die Totalzeile auf jeder Seite wiederholt und Positionen mitten im Text umgebrochen. Behoben."
       }
     ]
   },

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 import { formatDatumCH } from "@/lib/date-utils";
+import { logoAdresseVon } from "@/lib/logo-adresse";
 import { mengeLabel } from "@/lib/menge";
 import { HilfeDruckenButton } from "@/components/hilfe-drucken-button";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
@@ -63,6 +64,10 @@ export default async function RapportDruckPage({
   const kunde = (rapportRoh as { kunden?: Adresse | null }).kunden ?? null;
 
   const strasse = [kunde?.strasse, kunde?.hausnummer].filter(Boolean).join(" ");
+  const absenderStrasse = [organisation?.strasse, organisation?.hausnummer]
+    .filter(Boolean)
+    .join(" ");
+  const logoAdresse = logoAdresseVon(organisation?.logo_pfad);
 
   // Nur Arbeitszeit summieren – Mengenartikel wie Kilometer oder Material
   // haben keine Dauer und dürfen die Stundensumme nicht aufblähen.
@@ -84,9 +89,31 @@ export default async function RapportDruckPage({
             {rapportNummer(rapport)} · {formatDatumCH(rapport.datum)}
           </p>
         </div>
-        {organisation?.name && (
-          <p className="text-sm font-medium text-arcos-navy text-right">{organisation.name}</p>
-        )}
+        {/* Absender: Logo und Anschrift der eigenen Organisation. Das
+            Dokument bleibt beim Kunden – ohne Absender ist es wertlos.
+            Gepflegt wird das unter Einstellungen (0042). */}
+        <div className="text-right text-sm">
+          {logoAdresse && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={logoAdresse}
+              alt={organisation?.name ?? "Logo"}
+              className="max-h-16 ml-auto mb-2"
+            />
+          )}
+          {organisation?.name && (
+            <p className="font-medium text-arcos-navy">{organisation.name}</p>
+          )}
+          {absenderStrasse && <p className="text-gray-600">{absenderStrasse}</p>}
+          {(organisation?.plz || organisation?.ort) && (
+            <p className="text-gray-600">
+              {organisation?.plz} {organisation?.ort}
+            </p>
+          )}
+          {organisation?.telefon && <p className="text-gray-600">{organisation.telefon}</p>}
+          {organisation?.email && <p className="text-gray-600">{organisation.email}</p>}
+          {organisation?.webseite && <p className="text-gray-600">{organisation.webseite}</p>}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-8 mb-8 text-sm">
@@ -118,7 +145,7 @@ export default async function RapportDruckPage({
         </div>
       )}
 
-      <table className="w-full text-sm mb-8">
+      <table className="w-full text-sm mb-2">
         <thead>
           <tr className="border-b-2 border-arcos-navy text-left">
             <th className="py-2 pr-3">Leistung</th>
@@ -128,7 +155,7 @@ export default async function RapportDruckPage({
         </thead>
         <tbody>
           {positionen.map((z) => (
-            <tr key={z.id} className="border-b align-top">
+            <tr key={z.id} className="border-b align-top break-inside-avoid">
               <td className="py-2 pr-3 whitespace-nowrap">{z.dienstleistung_bezeichnung}</td>
               <td className="py-2 pr-3 whitespace-pre-line">{z.beschreibung ?? ""}</td>
               <td className="py-2 text-right whitespace-nowrap">{mengeLabel(z)}</td>
@@ -142,19 +169,18 @@ export default async function RapportDruckPage({
             </tr>
           )}
         </tbody>
-        {summeStunden > 0 && (
-          <tfoot>
-            <tr className="font-medium">
-              <td className="py-2" colSpan={2}>
-                Total Arbeitszeit
-              </td>
-              <td className="py-2 text-right whitespace-nowrap">
-                {summeStunden.toFixed(2)} h
-              </td>
-            </tr>
-          </tfoot>
-        )}
       </table>
+
+      {/* Das Total steht bewusst NEBEN der Tabelle und nicht in einem
+          tfoot: Browser wiederholen Kopf- und Fussgruppen einer Tabelle
+          auf jeder Druckseite, und dann steht die Summe zweimal da – auf
+          der ersten Seite sogar mitten im Dokument. */}
+      {summeStunden > 0 && (
+        <div className="flex justify-between text-sm font-medium border-t-2 border-arcos-navy pt-2 mb-8 break-inside-avoid">
+          <span>Total Arbeitszeit</span>
+          <span>{summeStunden.toFixed(2)} h</span>
+        </div>
+      )}
 
       {/* Unterschrift oder Vermerk. Die Linie bleibt auch dann stehen,
           wenn noch nicht unterschrieben ist – so lässt sich der Rapport

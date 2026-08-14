@@ -14,6 +14,9 @@ export const einstellungen: HilfeArtikel[] = [
       "mwst",
       "mehrwertsteuer",
       "steuersatz",
+      "absender",
+      "logo",
+      "briefkopf",
       "arbeitstag",
       "schliesstage",
       "betriebsferien",
@@ -60,6 +63,12 @@ Die zur Auswahl stehenden Prioritätsstufen samt Farbe (erscheint als kleiner Pu
 ## Dokument-Kategorien
 
 Kategorien zur Einordnung hochgeladener Dokumente (z.B. "Vertrag", "Offerte") – erscheinen als Auswahl beim Hochladen an jeder Stelle, die eine Dokumentenablage hat (Kunden, Projekte, Anfragen, Zeiteinträge, Mitarbeitende).
+
+## Absenderangaben und Logo
+
+Adresse, Telefon, E-Mail und Webseite der eigenen Organisation – zusammen mit dem **Logo**. Beides erscheint auf dem [Arbeitsrapport](/hilfe/rapporte), den der Kunde erhält, und später auch im PDF und im Begleitmail. Deshalb wird es hier einmal gepflegt und nicht je Dokument.
+
+Fürs Logo eignet sich ein **PNG mit durchsichtigem Hintergrund**, 400 Pixel Breite genügen für Druck und PDF. Maximal 1 MB.
 
 ## Arbeitszeit-Grenzen
 

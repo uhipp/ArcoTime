@@ -35,38 +35,40 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 // Header statt eines fixen Kunden-Logos angezeigt, da ArcoTime an mehrere
 // Organisationen (Mandanten) vergeben werden kann und das Arcos-Group-Logo
 // dafür nicht (mehr) passend ist.
+export type OrganisationDaten = {
+  id: string;
+  name: string;
+  zeige_auf_login: boolean;
+  warnung_ab_minuten_pro_tag: number | null;
+  sperre_ab_minuten_pro_tag: number | null;
+  modul_disposition: boolean;
+  arbeitstag_von_minuten: number;
+  arbeitstag_bis_minuten: number;
+  // Absenderangaben für Dokumente, die beim Kunden bleiben (0042).
+  strasse: string | null;
+  hausnummer: string | null;
+  plz: string | null;
+  ort: string | null;
+  telefon: string | null;
+  email: string | null;
+  webseite: string | null;
+  logo_pfad: string | null;
+};
+
 export const getCurrentOrganisation = cache(
-  async (): Promise<{
-    id: string;
-    name: string;
-    zeige_auf_login: boolean;
-    warnung_ab_minuten_pro_tag: number | null;
-    sperre_ab_minuten_pro_tag: number | null;
-    modul_disposition: boolean;
-    arbeitstag_von_minuten: number;
-    arbeitstag_bis_minuten: number;
-  } | null> => {
+  async (): Promise<OrganisationDaten | null> => {
     const user = await getCurrentUser();
     if (!user) return null;
 
     const supabase = await createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag, modul_disposition, arbeitstag_von_minuten, arbeitstag_bis_minuten)")
+      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag, modul_disposition, arbeitstag_von_minuten, arbeitstag_bis_minuten, strasse, hausnummer, plz, ort, telefon, email, webseite, logo_pfad)")
       .eq("id", user.id)
       .single();
 
     return (
-      (data?.organisationen as {
-    id: string;
-    name: string;
-    zeige_auf_login: boolean;
-    warnung_ab_minuten_pro_tag: number | null;
-    sperre_ab_minuten_pro_tag: number | null;
-    modul_disposition: boolean;
-    arbeitstag_von_minuten: number;
-    arbeitstag_bis_minuten: number;
-  } | null) ?? null
+      (data?.organisationen as OrganisationDaten | null) ?? null
     );
   }
 );
