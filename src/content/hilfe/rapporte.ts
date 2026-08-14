@@ -41,6 +41,8 @@ Datum und ausführende Person gelten für den **ganzen Rapport** – sie stehen 
 
 Ist noch nicht unterschrieben, steht dort eine Linie für Datum und Unterschrift. So lässt sich der Rapport ausdrucken und von Hand unterschreiben, wenn kein Tablet dabei ist.
 
+Daneben steht „PDF“: dasselbe Dokument als Datei, zum Ablegen oder Weiterschicken. Aufbau und Masse sind dieselben wie in der Druckansicht.
+
 ## Rapport abschliessen
 
 Solange ein Rapport offen ist, zählen seine Positionen nirgends. Der Abschluss ist damit kein Formalismus, sondern der Moment, in dem die Arbeit gültig wird – er steht unten auf der Rapportseite.

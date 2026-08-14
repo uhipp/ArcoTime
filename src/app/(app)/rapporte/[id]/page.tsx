@@ -118,6 +118,16 @@ export default async function RapportDetailPage({
           >
             Druckansicht
           </Link>
+          {/* Kein <Link>: Das PDF ist keine Seite der Anwendung, sondern
+              eine Datei. Der Router soll sie nicht abzufangen versuchen. */}
+          <a
+            href={`/rapporte/${id}/pdf`}
+            target="_blank"
+            rel="noopener"
+            className="text-sm text-arcos-steel hover:underline"
+          >
+            PDF
+          </a>
           <Link href="/rapporte" className="text-sm text-arcos-steel hover:underline">
             Zur Übersicht
           </Link>

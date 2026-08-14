@@ -1,23 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentOrganisation } from "@/lib/get-profile";
+import { ladeRapportDokument } from "@/lib/rapport-dokument-daten";
 import { formatDatumCH } from "@/lib/date-utils";
-import { logoAdresseVon } from "@/lib/logo-adresse";
 import { mengeLabel } from "@/lib/menge";
 import { HilfeDruckenButton } from "@/components/hilfe-drucken-button";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
-
-type Adresse = {
-  name: string;
-  vorname: string | null;
-  adresse_zusatz: string | null;
-  strasse: string | null;
-  hausnummer: string | null;
-  postfach: string | null;
-  plz: string | null;
-  ort: string | null;
-};
 
 // Druckansicht eines Rapports – die Fassung, die der Kunde bekommt.
 //
@@ -36,53 +23,11 @@ export default async function RapportDruckPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const daten = await ladeRapportDokument(id);
+  if (!daten) notFound();
 
-  const [organisation, { data: rapportRoh }, { data: positionenRoh }] = await Promise.all([
-    getCurrentOrganisation(),
-    supabase
-      .from("rapporte")
-      .select(
-        "*, kunden(name, vorname, adresse_zusatz, strasse, hausnummer, postfach, plz, ort), projekte(bezeichnung, kostenstelle), profiles!rapporte_mitarbeiter_id_fkey(name)"
-      )
-      .eq("id", id)
-      .single(),
-    supabase
-      .from("v_zeiteintraege")
-      .select("*")
-      .eq("rapport_id", id)
-      .order("start_zeit", { ascending: true, nullsFirst: false }),
-  ]);
-
-  if (!rapportRoh) notFound();
-
-  const rapport = rapportRoh as Rapport;
-  const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
-
-  // Der Rapport-Typ kennt beim Kunden nur die Felder, die die Detailseite
-  // braucht. Hier wird die volle Adresse geladen, deshalb eigens getypt.
-  const kunde = (rapportRoh as { kunden?: Adresse | null }).kunden ?? null;
-
+  const { rapport, positionen, kunde, absender, summeStunden } = daten;
   const strasse = [kunde?.strasse, kunde?.hausnummer].filter(Boolean).join(" ");
-  const absenderStrasse = [organisation?.strasse, organisation?.hausnummer]
-    .filter(Boolean)
-    .join(" ");
-  const logoAdresse = logoAdresseVon(organisation?.logo_pfad);
-
-  // Absenderzeile fürs Fensterkuvert: Name – Strasse Nr – PLZ Ort, in
-  // einer Zeile. Fehlt ein Teil, fällt er samt Trennstrich weg, statt
-  // eine Lücke zu hinterlassen.
-  const absenderZeile = [
-    organisation?.name,
-    absenderStrasse || null,
-    [organisation?.plz, organisation?.ort].filter(Boolean).join(" ") || null,
-  ]
-    .filter(Boolean)
-    .join(" – ");
-
-  // Nur Arbeitszeit summieren – Mengenartikel wie Kilometer oder Material
-  // haben keine Dauer und dürfen die Stundensumme nicht aufblähen.
-  const summeStunden = positionen.reduce((s, z) => s + Number(z.menge_stunden ?? 0), 0);
 
   return (
     // Zusätzlicher linker Rand im Druck: Der Standardrand des Browsers
@@ -92,7 +37,17 @@ export default async function RapportDruckPage({
         <Link href={`/rapporte/${id}`} className="text-sm text-arcos-steel hover:underline">
           ← Zurück zum Rapport
         </Link>
-        <HilfeDruckenButton label="Rapport drucken" />
+        <div className="flex items-center gap-3">
+          <a
+            href={`/rapporte/${id}/pdf`}
+            target="_blank"
+            rel="noopener"
+            className="text-sm text-arcos-steel hover:underline"
+          >
+            Als PDF öffnen
+          </a>
+          <HilfeDruckenButton label="Rapport drucken" />
+        </div>
       </div>
 
       {/* Kopfbereich mit FESTER Höhe. Der Absender steht darin absolut
@@ -115,34 +70,34 @@ export default async function RapportDruckPage({
             Dokument bleibt beim Kunden – ohne Absender ist es wertlos.
             Gepflegt wird das unter Einstellungen (0042). */}
         <div className="absolute right-0 top-0 text-right text-sm">
-          {logoAdresse && (
+          {absender.logoAdresse && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={logoAdresse}
-              alt={organisation?.name ?? "Logo"}
+              src={absender.logoAdresse}
+              alt={absender.name ?? "Logo"}
               className="max-h-16 ml-auto mb-2"
             />
           )}
-          {organisation?.name && (
-            <p className="font-medium text-arcos-navy">{organisation.name}</p>
+          {absender.name && (
+            <p className="font-medium text-arcos-navy">{absender.name}</p>
           )}
-          {absenderStrasse && <p className="text-gray-600">{absenderStrasse}</p>}
-          {(organisation?.plz || organisation?.ort) && (
+          {absender.strasse && <p className="text-gray-600">{absender.strasse}</p>}
+          {(absender.plz || absender.ort) && (
             <p className="text-gray-600">
-              {organisation?.plz} {organisation?.ort}
+              {absender.plz} {absender.ort}
             </p>
           )}
-          {organisation?.telefon && <p className="text-gray-600">{organisation.telefon}</p>}
-          {organisation?.email && <p className="text-gray-600">{organisation.email}</p>}
-          {organisation?.webseite && <p className="text-gray-600">{organisation.webseite}</p>}
+          {absender.telefon && <p className="text-gray-600">{absender.telefon}</p>}
+          {absender.email && <p className="text-gray-600">{absender.email}</p>}
+          {absender.webseite && <p className="text-gray-600">{absender.webseite}</p>}
         </div>
 
         {/* Empfängerblock an fester Höhe. Darüber die Absenderzeile in
             7 Punkt und unterstrichen – die Zeile, die im Fensterkuvert
             über der Anschrift steht. */}
         <div className="absolute left-0 top-[3.5cm] text-sm">
-          {absenderZeile && (
-            <p className="text-[7pt] underline mb-1 text-gray-700">{absenderZeile}</p>
+          {absender.zeile && (
+            <p className="text-[7pt] underline mb-1 text-gray-700">{absender.zeile}</p>
           )}
           <p className="font-medium">
             {kunde?.vorname ? `${kunde.vorname} ` : ""}

@@ -231,6 +231,10 @@
       {
         "typ": "fix",
         "text": "In der Druckansicht wurde die Totalzeile auf jeder Seite wiederholt und Positionen mitten im Text umgebrochen. Behoben."
+      },
+      {
+        "typ": "neu",
+        "text": "Arbeitsrapporte lassen sich als PDF öffnen und ablegen – gleicher Aufbau wie die Druckansicht, inklusive Absender, Logo und Unterschrift."
       }
     ]
   },
