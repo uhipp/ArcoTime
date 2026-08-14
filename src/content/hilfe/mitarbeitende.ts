@@ -34,7 +34,7 @@ Es gibt zwei Rollen: **Mitarbeitende** und **Admin**.
 
 Mitarbeitende dürfen alles erfassen und bearbeiten, was ihnen die Anwendung zeigt – auch Kunden, Projekte und Dienstleistungen, und zwar direkt aus dem Formular heraus, in dem sie gerade stehen. Nicht löschen dürfen sie: **Kunden, Projekte, Dienstleistungen** und bereits **exportierte Zeiteinträge**. Diese Datensätze hängen an bestehenden Zeiteinträgen und Rapporten, ein Löschen wirkt also rückwärts. Der Löschknopf erscheint bei ihnen gar nicht erst.
 
-Nur Admins sehen zusätzlich: [Einstellungen](/hilfe/einstellungen), Mitarbeitende, [Export](/hilfe/export), die Abwesenheiten einer Person sowie Preise und Rabatte auf der Kundenseite.
+Nur Admins sehen zusätzlich: [Einstellungen](/hilfe/einstellungen), Mitarbeitende, [Export](/hilfe/export) und die Abwesenheiten einer Person.
 
 ## Farbe
 

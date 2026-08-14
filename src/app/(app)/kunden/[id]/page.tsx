@@ -112,16 +112,16 @@ export default async function KundeDetailPage({
         <KundeForm kunde={kunde as Kunde} action={updateAction} error={error} />
       </div>
 
-      {istAdmin && (
-        <KundenPreiseRabatte
-          kundeId={id}
-          dienstleistungen={alleDienstleistungen ?? []}
-          klassen={alleKlassen ?? []}
-          preise={(kundenpreise ?? []) as never[]}
-          rabatte={(kundenrabatte ?? []) as never[]}
-          standardRabatt={Number(kunde.standard_rabatt_prozent ?? 0)}
-        />
-      )}
+      {/* Bewusst ohne Adminprüfung: Preise und Rabatte sind Vorgaben für
+          die Erfassung, keine Historie – siehe 0032. */}
+      <KundenPreiseRabatte
+        kundeId={id}
+        dienstleistungen={alleDienstleistungen ?? []}
+        klassen={alleKlassen ?? []}
+        preise={(kundenpreise ?? []) as never[]}
+        rabatte={(kundenrabatte ?? []) as never[]}
+        standardRabatt={Number(kunde.standard_rabatt_prozent ?? 0)}
+      />
 
       <div>
         <div className="flex items-center justify-between mb-4">
