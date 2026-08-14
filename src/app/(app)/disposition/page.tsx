@@ -194,6 +194,10 @@ export default async function DispositionPage({
           : r.projekte?.bezeichnung ?? null,
       href: `/rapporte/${r.id}`,
       konflikt: alleKonflikte.has(r.id),
+      datum: r.datum,
+      // Nur offene Rapporte lassen sich verschieben. Ein abgeschlossener
+      // hält fest, was geleistet wurde – daran zieht niemand mehr.
+      ziehbar: r.status === "offen",
     }));
 
   const rasterMoeglich = ansicht !== "monat";
@@ -280,11 +284,14 @@ export default async function DispositionPage({
             eintraege={rasterEintraege}
             vonMinuten={organisation?.arbeitstag_von_minuten ?? 420}
             bisMinuten={organisation?.arbeitstag_bis_minuten ?? 1080}
+            spaltenBedeutung={ansicht === "woche" ? "tag" : "person"}
           />
           <p className="text-xs text-gray-400 mt-2">
             Der Ausschnitt ist der Arbeitstag aus den Einstellungen. Einsätze
             ausserhalb erscheinen am Rand geklemmt, Einsätze ohne Planzeit in
-            der Zeile darüber. Rot umrandet heisst doppelt belegt.
+            der Zeile darüber. Rot umrandet heisst doppelt belegt. Geplante
+            Einsätze lassen sich mit der Maus verschieben – in Viertelstunden
+            und, in der Wochenansicht, auf einen anderen Tag.
           </p>
         </div>
       )}

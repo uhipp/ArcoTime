@@ -199,6 +199,10 @@
       {
         "typ": "neu",
         "text": "Die Disposition zeigt Tag und Woche als Zeitraster: Stunden senkrecht, Tage beziehungsweise Personen waagrecht. Freie Zeitfenster sind damit auf einen Blick sichtbar, und über jeder Spalte lässt sich direkt ein Einsatz anlegen."
+      },
+      {
+        "typ": "neu",
+        "text": "Geplante Einsätze lassen sich in der Disposition mit der Maus verschieben – auf eine andere Uhrzeit, einen anderen Tag oder eine andere Person. Auf dem Tablet mit dem Finger, kurz halten und ziehen. Abgeschlossene Rapporte bleiben unbeweglich."
       }
     ]
   },

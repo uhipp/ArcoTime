@@ -1,4 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { verschiebeEinsatz } from "@/app/actions/disposition";
 
 export type RasterSpalte = {
   key: string;
@@ -23,6 +38,13 @@ export type RasterEintrag = {
   zweiteZeile?: string | null;
   href: string;
   konflikt?: boolean;
+  // Nur geplante Einsätze offener Rapporte lassen sich ziehen. Erfasste
+  // Zeit ist eine Tatsache über die Vergangenheit – die per Maus zu
+  // versetzen wäre Fälschung.
+  ziehbar?: boolean;
+  // Tag, auf dem der Eintrag liegt. In der Tagesansicht wechselt beim
+  // Ziehen die Person, nicht der Tag; dann bleibt dieser Wert.
+  datum: string;
 };
 
 // Höhe einer Stunde in Pixeln. 56 ist der Kompromiss: hoch genug, dass in
@@ -48,17 +70,74 @@ function alsUhrzeit(minuten: number): string {
 // Arbeitstag der Organisation (Einstellungen), und was ausserhalb liegt,
 // wird an den Rand geklemmt statt abgeschnitten. Ein Raster über volle
 // 24 Stunden wäre zu drei Vierteln leer.
+// Auf diese Schrittweite rastet ein gezogener Einsatz ein. Minutengenau
+// zu ziehen ist mit der Maus nicht zu treffen und in der Planung auch
+// nicht gemeint.
+const RASTUNG_MINUTEN = 15;
+
 export function DispoRaster({
   spalten,
   eintraege,
   vonMinuten,
   bisMinuten,
+  spaltenBedeutung,
 }: {
   spalten: RasterSpalte[];
   eintraege: RasterEintrag[];
   vonMinuten: number;
   bisMinuten: number;
+  // Was eine Spalte darstellt – davon hängt ab, was sich beim Ablegen
+  // ändert: der Tag oder die zuständige Person.
+  spaltenBedeutung: "tag" | "person";
 }) {
+  const router = useRouter();
+  const [fehler, setFehler] = useState<string | null>(null);
+  const [laeuft, setLaeuft] = useState(false);
+
+  // Touch mit Verzögerung: Ohne das liesse sich im Raster nicht mehr
+  // scrollen, weil jede Berührung sofort als Ziehen gälte.
+  const sensoren = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+  );
+
+  async function beimAblegen(ereignis: DragEndEvent) {
+    const eintrag = eintraege.find((e) => e.key === ereignis.active.id);
+    if (!eintrag || eintrag.vonMinuten == null) return;
+
+    const zielSpalte = ereignis.over ? String(ereignis.over.id) : eintrag.spalte;
+    const verschobeneMinuten =
+      Math.round(((ereignis.delta.y / STUNDE_PX) * 60) / RASTUNG_MINUTEN) * RASTUNG_MINUTEN;
+
+    const dauer = (eintrag.bisMinuten ?? eintrag.vonMinuten + 60) - eintrag.vonMinuten;
+    // Innerhalb des sichtbaren Ausschnitts halten, sonst landet ein Einsatz
+    // ausserhalb des Rasters und ist nur noch am Rand geklemmt zu sehen.
+    const neuVon = Math.min(Math.max(eintrag.vonMinuten + verschobeneMinuten, start), ende - dauer);
+
+    if (zielSpalte === eintrag.spalte && neuVon === eintrag.vonMinuten) return;
+
+    setFehler(null);
+    setLaeuft(true);
+    const ergebnis = await verschiebeEinsatz(eintrag.key, {
+      datum: spaltenBedeutung === "tag" ? zielSpalte : eintrag.datum,
+      vonMinuten: neuVon,
+      bisMinuten: neuVon + dauer,
+      mitarbeiterId:
+        spaltenBedeutung === "person"
+          ? zielSpalte === "ohne"
+            ? null
+            : zielSpalte
+          : undefined,
+    });
+    setLaeuft(false);
+
+    if (ergebnis?.fehler) {
+      setFehler(ergebnis.fehler);
+      return;
+    }
+    router.refresh();
+  }
+
   // Auf volle Stunden erweitern, damit die Beschriftung aufgeht.
   const start = Math.floor(vonMinuten / 60) * 60;
   const ende = Math.ceil(bisMinuten / 60) * 60;
@@ -70,7 +149,15 @@ export function DispoRaster({
   const imRaster = eintraege.filter((e) => e.vonMinuten != null);
 
   return (
-    <div className="bg-white rounded-lg border overflow-x-auto">
+    <DndContext sensors={sensoren} onDragEnd={beimAblegen}>
+      {fehler && (
+        <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2 mb-2">{fehler}</div>
+      )}
+      <div
+        className={`bg-white rounded-lg border overflow-x-auto ${
+          laeuft ? "opacity-60 pointer-events-none" : ""
+        }`}
+      >
       <div className="min-w-[48rem]">
         {/* Kopfzeile */}
         <div
@@ -148,11 +235,7 @@ export function DispoRaster({
           </div>
 
           {spalten.map((s) => (
-            <div
-              key={s.key}
-              className={`relative border-l ${s.betont ? "bg-arcos-steel/5" : ""}`}
-              style={{ height: hoehe }}
-            >
+            <Spalte key={s.key} spalte={s} hoehe={hoehe}>
               {/* Stundenlinien */}
               {stunden.map((m, i) => (
                 <div
@@ -164,36 +247,105 @@ export function DispoRaster({
 
               {imRaster
                 .filter((e) => e.spalte === s.key)
-                .map((e) => {
-                  // An den Rand klemmen statt abschneiden: Ein Einsatz, der
-                  // vor dem Arbeitstag beginnt, soll sichtbar bleiben.
-                  const von = Math.max(e.vonMinuten as number, start);
-                  const bis = Math.min(e.bisMinuten ?? (e.vonMinuten as number) + 60, ende);
-                  const top = ((von - start) / 60) * STUNDE_PX;
-                  // Mindesthöhe, damit ein Kurzeinsatz anklickbar bleibt.
-                  const hoeheBalken = Math.max(((bis - von) / 60) * STUNDE_PX, 22);
-
-                  return (
-                    <Link
-                      key={e.key}
-                      href={e.href}
-                      title={`${e.titelZeile}${e.zweiteZeile ? ` · ${e.zweiteZeile}` : ""}`}
-                      className={`absolute left-0.5 right-0.5 rounded px-1.5 py-0.5 text-[11px] leading-4 text-white overflow-hidden hover:opacity-90 ${
-                        e.konflikt ? "ring-2 ring-red-500" : ""
-                      }`}
-                      style={{ top, height: hoeheBalken, backgroundColor: e.farbe }}
-                    >
-                      <div className="font-medium truncate">{e.titelZeile}</div>
-                      {e.zweiteZeile && (
-                        <div className="truncate opacity-90">{e.zweiteZeile}</div>
-                      )}
-                    </Link>
-                  );
-                })}
-            </div>
+                .map((e) => (
+                  <Balken key={e.key} eintrag={e} start={start} ende={ende} />
+                ))}
+            </Spalte>
           ))}
         </div>
       </div>
+      </div>
+    </DndContext>
+  );
+}
+
+// Eine Spalte ist die Ablegefläche. Getroffen wird sie über die ganze
+// Höhe – wohin genau innerhalb der Spalte, ergibt sich aus der
+// verschobenen Strecke, nicht aus dem Ablegepunkt.
+function Spalte({
+  spalte,
+  hoehe,
+  children,
+}: {
+  spalte: RasterSpalte;
+  hoehe: number;
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: spalte.key });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`relative border-l ${spalte.betont ? "bg-arcos-steel/5" : ""} ${
+        isOver ? "bg-arcos-steel/10" : ""
+      }`}
+      style={{ height: hoehe }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Balken({
+  eintrag,
+  start,
+  ende,
+}: {
+  eintrag: RasterEintrag;
+  start: number;
+  ende: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: eintrag.key,
+    disabled: !eintrag.ziehbar,
+  });
+
+  // An den Rand klemmen statt abschneiden: Ein Einsatz, der vor dem
+  // Arbeitstag beginnt, soll sichtbar bleiben.
+  const von = Math.max(eintrag.vonMinuten as number, start);
+  const bis = Math.min(eintrag.bisMinuten ?? (eintrag.vonMinuten as number) + 60, ende);
+  const top = ((von - start) / 60) * STUNDE_PX;
+  // Mindesthöhe, damit ein Kurzeinsatz anklickbar bleibt.
+  const hoehe = Math.max(((bis - von) / 60) * STUNDE_PX, 22);
+
+  const beschriftung = `${eintrag.titelZeile}${
+    eintrag.zweiteZeile ? ` · ${eintrag.zweiteZeile}` : ""
+  }`;
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      title={
+        eintrag.ziehbar
+          ? `${beschriftung} — zum Verschieben ziehen`
+          : `${beschriftung} — abgeschlossen, nicht verschiebbar`
+      }
+      className={`absolute left-0.5 right-0.5 rounded overflow-hidden ${
+        eintrag.konflikt ? "ring-2 ring-red-500" : ""
+      } ${eintrag.ziehbar ? "cursor-grab active:cursor-grabbing" : ""} ${
+        isDragging ? "opacity-70 z-10 shadow-lg" : ""
+      }`}
+      style={{
+        top,
+        height: hoehe,
+        backgroundColor: eintrag.farbe,
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+      }}
+    >
+      {/* Der Link liegt im Balken, damit das Ziehen ihn nicht auslöst –
+          dnd-kit unterdrückt den Klick nach einer Bewegung selbst, ein
+          echtes <a> würde bei jedem Loslassen trotzdem navigieren. */}
+      <Link
+        href={eintrag.href}
+        draggable={false}
+        className="block px-1.5 py-0.5 text-[11px] leading-4 text-white h-full hover:opacity-90"
+      >
+        <div className="font-medium truncate">{eintrag.titelZeile}</div>
+        {eintrag.zweiteZeile && (
+          <div className="truncate opacity-90">{eintrag.zweiteZeile}</div>
+        )}
+      </Link>
     </div>
   );
 }

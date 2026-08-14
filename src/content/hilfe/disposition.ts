@@ -50,13 +50,23 @@ Der sichtbare Ausschnitt ist der **Arbeitstag** aus den [Einstellungen](/hilfe/e
 
 Der **Monat** bleibt eine Liste. Über dreissig Tage hinweg wäre ein Raster unleserlich, und dort will man ohnehin nur wissen, an welchen Tagen etwas liegt.
 
+## Einsätze verschieben
+
+Im Zeitraster lassen sich geplante Einsätze mit der Maus ziehen – nach oben oder unten für eine andere Uhrzeit, in der Wochenansicht seitlich auf einen anderen Tag, in der Tagesansicht auf eine andere Person. Gerastet wird in Viertelstunden; die Dauer bleibt dabei erhalten.
+
+Auf Tablet und Smartphone dasselbe mit dem Finger: kurz halten, dann ziehen. Das kurze Halten ist nötig, damit sich die Ansicht weiterhin normal scrollen lässt.
+
+**Nicht verschiebbar sind abgeschlossene Rapporte.** Sie halten fest, was geleistet wurde – daran zieht niemand mehr. Für Korrekturen ist die Stornierung vorgesehen.
+
+Fällt das Ziel auf einen **Schliesstag** oder in eine **Abwesenheit**, die die Planung blockiert, wird nicht verschoben und der Grund erscheint über dem Raster. Eine **Doppelbelegung** wird dagegen zugelassen und nur rot markiert – siehe unten.
+
 ## Überschneidungen
 
 Zwei Einsätze derselben Person zur selben Zeit werden mit **"Doppelt belegt"** markiert. Das ist bewusst nur ein Hinweis und keine Sperre – manchmal ist eine Überschneidung gewollt (Übergabe, kurzer Zwischenhalt), und die Planung soll nicht daran scheitern.
 
 ## Was noch kommt
 
-Direkt im Kalender auf eine freie Zeit klicken und dort den nächsten Rapport erfassen, sowie eine farbliche Kennzeichnung von Schliesstagen und Abwesenheiten in der Übersicht.
+Eine farbliche Kennzeichnung von Schliesstagen und Abwesenheiten direkt im Raster, damit man gesperrte Zeiten sieht, bevor man dorthin zieht.
 `,
   },
 ];
