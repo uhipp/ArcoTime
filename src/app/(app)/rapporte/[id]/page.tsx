@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
-import { formatDatumCH } from "@/lib/date-utils";
+import { formatDatumCH, heuteIso } from "@/lib/date-utils";
 import { mengeLabel } from "@/lib/menge";
 import { DeleteButton } from "@/components/delete-button";
 import { RapportKopfForm } from "@/components/rapport-kopf-form";
@@ -10,12 +10,14 @@ import { DispoTagesspalte } from "@/components/dispo-tagesspalte";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { RapportPositionForm } from "@/components/rapport-position-form";
+import { RapportAbschluss } from "@/components/rapport-abschluss";
 import {
   aktualisiereRapport,
   loescheRapport,
   fuegePositionHinzu,
   aktualisierePosition,
   loeschePosition,
+  schliesseRapportAb,
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 
@@ -270,9 +272,24 @@ export default async function RapportDetailPage({
         />
       </div>
 
+      {offen && (
+        <RapportAbschluss
+          action={schliesseRapportAb.bind(null, id)}
+          anzahlPositionen={positionen.length}
+          datumInZukunft={rapport.datum > heuteIso()}
+        />
+      )}
+
+      {!offen && rapport.abschluss_vermerk && (
+        <p className="text-sm text-gray-500 max-w-2xl">
+          Abgeschlossen ohne Unterschrift. Vermerk:{" "}
+          <strong>{rapport.abschluss_vermerk}</strong>
+        </p>
+      )}
+
       <p className="text-sm text-gray-400">
-        Unterschrift, PDF und Versand folgen in der nächsten Etappe – siehe
-        docs/phase8-arbeitsrapport-plan.md.
+        Unterschrift auf dem Tablet, PDF und Versand folgen als nächste
+        Etappe – siehe docs/phase8-arbeitsrapport-plan.md.
       </p>
     </div>
   );

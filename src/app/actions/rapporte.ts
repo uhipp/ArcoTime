@@ -530,3 +530,59 @@ export async function freieZeitenAm(argumente: {
     }),
   };
 }
+
+// ---------------------------------------------------------
+// Abschliessen
+// ---------------------------------------------------------
+// Erste Ausbaustufe: Abschluss OHNE Unterschrift. Der Kunde ist oft nicht
+// mehr vor Ort oder nicht unterschriftsberechtigt, und dann darf der
+// Rapport nicht tagelang offen liegen – er zählt sonst nirgends. Verlangt
+// wird dafür ein Vermerk, warum keine Unterschrift vorliegt; das ist die
+// Gegenleistung für die Abkürzung und macht den Fall später nachvollziehbar.
+//
+// Die eigentliche Arbeit macht schliesse_rapport() in der Datenbank:
+// Nummer atomar vergeben, Status setzen, Datum in der Zukunft ablehnen,
+// Rapport ohne Positionen ablehnen. Alles, was schiefgehen kann, kommt von
+// dort als Ausnahme zurück – hier wird sie nur weitergereicht, statt sie
+// nachzubauen und damit zweimal zu pflegen.
+export async function schliesseRapportAb(
+  rapportId: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  const supabase = await createClient();
+  const vermerk = String(formData.get("abschluss_vermerk") ?? "").trim();
+
+  if (vermerk === "") {
+    return {
+      fehler:
+        "Bitte kurz festhalten, warum keine Unterschrift vorliegt – zum Beispiel „Kunde nicht vor Ort“.",
+    };
+  }
+
+  const { error } = await supabase.rpc("schliesse_rapport", {
+    p_rapport_id: rapportId,
+    p_status: "abgeschlossen",
+    p_unterschrift: null,
+    p_unterzeichner: null,
+    p_vermerk: vermerk,
+  });
+
+  if (error) {
+    return { fehler: error.message };
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/rapporte");
+  // Auswertungen, Export und Zeiterfassung zeigen die Positionen ab jetzt:
+  // Sie sind nicht mehr vorläufig (siehe 0036).
+  revalidatePath("/auswertungen");
+  revalidatePath("/zeiterfassung");
+  revalidatePath("/kalender");
+  redirect(
+    mitErfolg(
+      `/rapporte/${rapportId}`,
+      "Rapport abgeschlossen – die Positionen zählen ab jetzt als erfasste Zeit."
+    )
+  );
+}

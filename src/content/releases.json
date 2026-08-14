@@ -175,6 +175,10 @@
       {
         "typ": "fix",
         "text": "Beim Erfassen mehrerer Positionen sprang ArcoTime nur nach der ersten zurück ins leere Formular, danach blieb die Seite oben stehen. Behoben – die Regel gilt jetzt bei jedem Speichern, auch in allen anderen Erfassungslisten."
+      },
+      {
+        "typ": "neu",
+        "text": "Rapporte lassen sich jetzt abschliessen: Der Rapport erhält seine Nummer, wird unveränderlich, und seine Positionen zählen ab dann als erfasste Zeit. Solange die Unterschrift auf dem Tablet fehlt, braucht es dafür einen kurzen Vermerk."
       }
     ]
   },

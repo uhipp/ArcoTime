@@ -33,6 +33,16 @@ Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der �
 
 Nach dem Anlegen landest du direkt auf der Detailseite, wo du die Positionen erfasst.
 
+## Rapport abschliessen
+
+Solange ein Rapport offen ist, zählen seine Positionen nirgends. Der Abschluss ist damit kein Formalismus, sondern der Moment, in dem die Arbeit gültig wird – er steht unten auf der Rapportseite.
+
+Beim Abschliessen erhält der Rapport seine **Nummer** und wird **unveränderlich**. Korrekturen laufen danach über Storno und Neuerstellung.
+
+Weil die Unterschrift auf dem Tablet noch nicht zur Verfügung steht, verlangt ArcoTime derzeit einen kurzen **Vermerk**, warum keine Unterschrift vorliegt – etwa „Kunde nicht mehr vor Ort". Er bleibt am Rapport sichtbar.
+
+Zwei Fälle lassen keinen Abschluss zu: ein Rapport **ohne Positionen** und einer mit **Datum in der Zukunft**. Beim zweiten ist der Einsatz schlicht noch nicht geleistet.
+
 ## Wann eine Position zählt
 
 Ein Rapport wird meist **vorbereitet**: Die Disposition legt die Aufträge der kommenden Woche an, oft schon mit bekannten Positionen – Reisespesen, angenommene Stunden – und mit einer Beschreibung dessen, was zu tun ist. Der Monteur passt vor Ort die Werte an und schliesst ab.
