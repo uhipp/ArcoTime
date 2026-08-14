@@ -31,11 +31,24 @@ const stil = StyleSheet.create({
   // Kopfbereich mit fester Höhe: Der Absender darf die Lage der Anschrift
   // nicht verschieben, sonst passt sie nicht mehr ins Fensterkuvert.
   kopf: { height: 7 * CM, position: "relative" },
-  absender: { position: "absolute", top: 0, right: 0, textAlign: "right" },
-  logo: { maxHeight: 45, marginLeft: "auto", marginBottom: 6 },
-  absenderName: { fontFamily: "Helvetica-Bold", color: "#1D3557" },
-  absenderZeile: { color: "#555555", fontSize: 9 },
-  anschrift: { position: "absolute", top: 3.5 * CM, left: 0 },
+  // Feste Breite ist hier Pflicht, nicht Geschmack: Ein Block ohne Breite
+  // zieht sich in react-pdf über die ganze Zeile – der Absender legte
+  // sich damit über die Anschrift. Rechtsbündig wird über alignItems
+  // gesetzt und zusätzlich an jedem Text, weil textAlign vom Block nicht
+  // zuverlässig auf die Kinder durchschlägt.
+  absender: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 7 * CM,
+    alignItems: "flex-end",
+  },
+  // Bilder brauchen eine ausdrückliche Breite. maxHeight steuert in
+  // react-pdf nichts – ohne Breite füllt das Logo die ganze Zeile.
+  logo: { width: 4 * CM, objectFit: "contain", marginBottom: 6 },
+  absenderName: { fontFamily: "Helvetica-Bold", color: "#1D3557", textAlign: "right" },
+  absenderZeile: { color: "#555555", fontSize: 9, textAlign: "right" },
+  anschrift: { position: "absolute", top: 3.5 * CM, left: 0, width: 8 * CM },
   absenderzeileKlein: { fontSize: 7, textDecoration: "underline", marginBottom: 4, color: "#333333" },
   empfaengerName: { fontFamily: "Helvetica-Bold" },
   titel: { textAlign: "center", marginBottom: 20 },
@@ -76,7 +89,8 @@ const stil = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
   unterschriftBereich: { marginTop: 30 },
-  unterschriftBild: { maxHeight: 60, marginBottom: 2 },
+  // Ebenfalls mit fester Breite – siehe Logo.
+  unterschriftBild: { width: 6 * CM, objectFit: "contain", marginBottom: 2 },
   linie: { borderTopWidth: 0.5, borderTopColor: "#888888", width: 200, paddingTop: 3 },
   klein: { fontSize: 8, color: "#666666" },
 });
