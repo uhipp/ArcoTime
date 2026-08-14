@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "fix",
+        "text": "Meldungen beim Verschieben in der Disposition standen über dem Zeitraster und waren beim Ziehen eines Nachmittagstermins ausserhalb des Bildes. Der Balken sprang kommentarlos zurück, als wäre nichts passiert. Sie erscheinen jetzt fest am unteren Rand."
+      },
+      {
         "typ": "verbessert",
         "text": "Im Rapport springt die Seite nach dem Ändern, Entfernen und beim Bearbeiten einer Position zurück zum Positionsformular statt an den Seitenanfang. Dasselbe beim Entfernen und Ersetzen einer beteiligten Person."
       },

@@ -241,26 +241,44 @@ export function DispoRaster({
 
   return (
     <DndContext sensors={sensoren} onDragEnd={beimAblegen}>
-      {fehler && (
-        <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2 mb-2">{fehler}</div>
-      )}
-      {nachfrage && (
-        <div className="rounded bg-amber-50 text-amber-900 text-sm px-3 py-2 mb-2 flex flex-wrap items-center gap-3">
-          <span className="flex-1 min-w-[14rem]">{nachfrage.text}</span>
-          <button
-            type="button"
-            onClick={() => void nachfrage.ausfuehren()}
-            className="rounded bg-amber-600 text-white text-sm px-3 py-1 hover:bg-amber-700"
-          >
-            Trotzdem verschieben
-          </button>
-          <button
-            type="button"
-            onClick={() => setNachfrage(null)}
-            className="text-sm text-gray-600 hover:underline"
-          >
-            Abbrechen
-          </button>
+      {/* Meldungen liegen fest am unteren Rand und nicht über dem Raster.
+          Das Raster ist einen ganzen Arbeitstag hoch; wer einen Balken am
+          Nachmittag zieht, hat den Anfang der Seite längst nicht mehr im
+          Bild. Eine Meldung dort oben ist so gut wie keine – der Balken
+          sprang zurück, und es sah aus, als wäre nichts passiert. */}
+      {(fehler || nachfrage) && (
+        <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
+          {fehler && (
+            <div className="w-full max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-lg flex flex-wrap items-center gap-3">
+              <span className="flex-1 min-w-[14rem]">{fehler}</span>
+              <button
+                type="button"
+                onClick={() => setFehler(null)}
+                className="text-sm text-gray-600 hover:underline"
+              >
+                Schliessen
+              </button>
+            </div>
+          )}
+          {nachfrage && (
+            <div className="w-full max-w-xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-lg flex flex-wrap items-center gap-3">
+              <span className="flex-1 min-w-[14rem]">{nachfrage.text}</span>
+              <button
+                type="button"
+                onClick={() => void nachfrage.ausfuehren()}
+                className="rounded bg-amber-600 text-white text-sm px-3 py-1 hover:bg-amber-700"
+              >
+                Trotzdem verschieben
+              </button>
+              <button
+                type="button"
+                onClick={() => setNachfrage(null)}
+                className="text-sm text-gray-600 hover:underline"
+              >
+                Abbrechen
+              </button>
+            </div>
+          )}
         </div>
       )}
       <div
