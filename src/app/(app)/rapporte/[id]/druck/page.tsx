@@ -99,8 +99,18 @@ export default async function RapportDruckPage({
           positioniert – sonst schiebt jede zusätzliche Zeile im Absender
           die Empfängeranschrift nach unten, und die muss für das
           Fensterkuvert immer an derselben Stelle stehen. Genau das ist
-          passiert, als die Adresse der Organisation dazukam. */}
-      <div className="relative h-[4cm] mb-6">
+          passiert, als die Adresse der Organisation dazukam.
+          
+          Die beiden Masse sind am Kuvert ausgemessen und die einzigen
+          Stellschrauben für die Lage von Anschrift und Titel:
+          
+            top-[3.5cm]  Oberkante der Anschrift
+            h-[7cm]      Höhe des Kopfbereichs – bestimmt zugleich, wo der
+                         Titel beginnt (Höhe plus der Abstand mb-6)
+          
+          Wer die Anschrift verschiebt, verschiebt nur die erste Zahl; wer
+          den Titel verschiebt, nur die zweite. */}
+      <div className="relative h-[7cm] mb-6">
         {/* Absender: Logo und Anschrift der eigenen Organisation. Das
             Dokument bleibt beim Kunden – ohne Absender ist es wertlos.
             Gepflegt wird das unter Einstellungen (0042). */}
@@ -130,7 +140,7 @@ export default async function RapportDruckPage({
         {/* Empfängerblock an fester Höhe. Darüber die Absenderzeile in
             7 Punkt und unterstrichen – die Zeile, die im Fensterkuvert
             über der Anschrift steht. */}
-        <div className="absolute left-0 top-[1.5cm] text-sm">
+        <div className="absolute left-0 top-[3.5cm] text-sm">
           {absenderZeile && (
             <p className="text-[7pt] underline mb-1 text-gray-700">{absenderZeile}</p>
           )}
