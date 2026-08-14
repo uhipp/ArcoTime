@@ -207,6 +207,71 @@ export default async function DispositionPage({
     for (const id of konflikteFinden(proTag.get(tag) ?? [], beteiligteVon)) alleKonflikte.add(id);
   }
 
+  // ---------------------------------------------------------
+  // Abwesenheiten und Schliesstage als Konflikt
+  // ---------------------------------------------------------
+  // Beim Verschieben wird gefragt, und wer bestätigt, hat den Grund im
+  // Kopf. Zwei Telefone und eine Mittagspause später hat ihn niemand mehr
+  // – und der Balken sah aus wie jeder andere. Ein Plan, der nicht
+  // aufgeht, muss man ihm ansehen, und zwar dauerhaft.
+  //
+  // Kein Verbund auf abwesenheitsarten: abwesenheiten.art hält nur den
+  // Schlüssel, ein Fremdschlüssel darauf existiert nicht (siehe den
+  // Fehler in freieZeitenAm).
+  const [{ data: abwesenheiten }, { data: abwesenheitsarten }, { data: schliesstage }] =
+    await Promise.all([
+      supabase
+        .from("abwesenheiten")
+        .select("mitarbeiter_id, art, von, bis, von_zeit, bis_zeit")
+        .lte("von", bis)
+        .gte("bis", von),
+      supabase.from("abwesenheitsarten").select("wert, bezeichnung, blockiert"),
+      supabase.from("schliesstage").select("bezeichnung, von, bis").lte("von", bis).gte("bis", von),
+    ]);
+
+  const artVon = new Map(
+    (abwesenheitsarten ?? []).map((a) => [a.wert, a as { bezeichnung: string; blockiert: boolean }])
+  );
+
+  const konfliktGruende = new Map<string, string[]>();
+  for (const r of rapporte) {
+    const gruende: string[] = [];
+
+    if (alleKonflikte.has(r.id)) gruende.push("doppelt belegt");
+
+    for (const tag of schliesstage ?? []) {
+      if (tag.von <= r.datum && tag.bis >= r.datum) gruende.push(`betriebsfrei (${tag.bezeichnung})`);
+    }
+
+    for (const person of beteiligteVon(r.id)) {
+      for (const a of abwesenheiten ?? []) {
+        if (a.mitarbeiter_id !== person) continue;
+        if (a.von > r.datum || a.bis < r.datum) continue;
+
+        // Arten ohne "blockiert" – Homeoffice, Aussendienst – sind reine
+        // Information und kein Konflikt.
+        const art = artVon.get(a.art);
+        if (art?.blockiert === false) continue;
+
+        // Halbtägige Abwesenheit zählt nur, wenn sie sich mit der
+        // Planzeit überschneidet. Ohne Planzeit gilt der ganze Tag.
+        if (a.von_zeit && r.geplant_von && r.geplant_bis) {
+          const abVon = Number(a.von_zeit.slice(0, 2)) * 60 + Number(a.von_zeit.slice(3, 5));
+          const abBis = a.bis_zeit
+            ? Number(a.bis_zeit.slice(0, 2)) * 60 + Number(a.bis_zeit.slice(3, 5))
+            : 24 * 60;
+          const planVon = minuten(r.geplant_von) ?? 0;
+          const planBis = minuten(r.geplant_bis) ?? 24 * 60;
+          if (planBis <= abVon || planVon >= abBis) continue;
+        }
+
+        gruende.push(`${nameVon(person)}: ${art?.bezeichnung ?? "abwesend"}`);
+      }
+    }
+
+    if (gruende.length > 0) konfliktGruende.set(r.id, gruende);
+  }
+
   // In der Wochenansicht sind die Spalten die Tage, in der Tagesansicht die
   // Personen. Das ist die Frage, die man in der jeweiligen Ansicht stellt:
   // "wie ist die Woche verteilt" gegenüber "wer ist heute wo".
@@ -258,7 +323,8 @@ export default async function DispositionPage({
       farbe: farbeVon(r.mitarbeiter_id ?? null),
       titelZeile: kunde,
       href: `/rapporte/${r.id}`,
-      konflikt: alleKonflikte.has(r.id),
+      konflikt: konfliktGruende.has(r.id),
+      konfliktGrund: konfliktGruende.get(r.id)?.join(" · "),
       datum: r.datum,
       // Nur offene Rapporte lassen sich verschieben. Ein abgeschlossener
       // hält fest, was geleistet wurde – daran zieht niemand mehr.
@@ -399,7 +465,9 @@ export default async function DispositionPage({
           <p className="text-xs text-gray-400 mt-2">
             Der Ausschnitt ist der Arbeitstag aus den Einstellungen. Einsätze
             ausserhalb erscheinen am Rand geklemmt, Einsätze ohne Planzeit in
-            der Zeile darüber. Rot umrandet heisst doppelt belegt. Geplante
+            der Zeile darüber. Rot heisst Terminkonflikt – doppelt belegt,
+            abwesend oder betriebsfrei; der Grund steht auf dem Balken.
+            Geplante
             Einsätze lassen sich mit der Maus verschieben – in Viertelstunden
             und, in der Wochenansicht, auf einen anderen Tag.
           </p>
@@ -413,7 +481,6 @@ export default async function DispositionPage({
         {tage.map((tag) => {
           const eintraege = proTag.get(tag) ?? [];
           const istHeute = tag === heute;
-          const konflikte = konflikteFinden(eintraege, beteiligteVon);
 
           return (
             <div
@@ -451,7 +518,8 @@ export default async function DispositionPage({
                     const person =
                       beteiligte.length > 0 ? beteiligte.join(", ") : "nicht zugewiesen";
 
-                    const imKonflikt = konflikte.has(r.id);
+                    const gruende = konfliktGruende.get(r.id) ?? [];
+                    const imKonflikt = gruende.length > 0;
 
                     return (
                       <li
@@ -484,9 +552,9 @@ export default async function DispositionPage({
                         {imKonflikt && (
                           <span
                             className="rounded bg-red-100 text-red-800 text-xs px-2 py-0.5"
-                            title="Diese Person ist im selben Zeitfenster mehrfach eingeplant."
+                            title={gruende.join(" · ")}
                           >
-                            Doppelt belegt
+                            Achtung Terminkonflikt: {gruende.join(" · ")}
                           </span>
                         )}
                       </li>

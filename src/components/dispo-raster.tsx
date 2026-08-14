@@ -38,6 +38,10 @@ export type RasterEintrag = {
   zweiteZeile?: string | null;
   href: string;
   konflikt?: boolean;
+  // Warum der Einsatz im Konflikt steht – "doppelt belegt",
+  // "Peter Muster: Ferien". Steht auf dem Balken, nicht nur im Tooltip:
+  // Eine Warnung, die man suchen muss, ist keine.
+  konfliktGrund?: string;
   // Nur geplante Einsätze offener Rapporte lassen sich ziehen. Erfasste
   // Zeit ist eine Tatsache über die Vergangenheit – die per Maus zu
   // versetzen wäre Fälschung.
@@ -336,10 +340,20 @@ export function DispoRaster({
                     <Link
                       key={e.key}
                       href={e.href}
-                      className="block text-[11px] leading-4 text-white rounded px-1 truncate hover:opacity-80"
+                      className={`block text-[11px] leading-4 text-white rounded px-1 truncate hover:opacity-80 ${
+                        e.konflikt ? "ring-2 ring-red-500" : ""
+                      }`}
                       style={{ backgroundColor: e.farbe }}
-                      title={`${e.titelZeile}${e.zweiteZeile ? ` · ${e.zweiteZeile}` : ""}`}
+                      title={[
+                        `${e.titelZeile}${e.zweiteZeile ? ` · ${e.zweiteZeile}` : ""}`,
+                        e.konflikt
+                          ? `Achtung Terminkonflikt: ${e.konfliktGrund ?? "Planung prüfen"}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" — ")}
                     >
+                      {e.konflikt && <span className="font-semibold">⚠ </span>}
                       {e.titelZeile}
                     </Link>
                   ))}
@@ -464,8 +478,10 @@ function Balken({
   const von = Math.max(eintrag.vonMinuten as number, start);
   const bis = Math.min(eintrag.bisMinuten ?? (eintrag.vonMinuten as number) + 60, ende);
   const top = ((von - start) / 60) * STUNDE_PX;
-  // Mindesthöhe, damit ein Kurzeinsatz anklickbar bleibt.
-  const hoehe = Math.max(((bis - von) / 60) * STUNDE_PX, 22);
+  // Mindesthöhe, damit ein Kurzeinsatz anklickbar bleibt – mit
+  // Konflikthinweis etwas mehr, sonst verdeckt die Warnung den
+  // Kundennamen, den sie erklären soll.
+  const hoehe = Math.max(((bis - von) / 60) * STUNDE_PX, eintrag.konflikt ? 40 : 22);
 
   const beschriftung = `${eintrag.titelZeile}${
     eintrag.zweiteZeile ? ` · ${eintrag.zweiteZeile}` : ""
@@ -492,11 +508,15 @@ function Balken({
           gezogen.current = false;
         }
       }}
-      title={
-        eintrag.ziehbar
-          ? `${beschriftung} — zum Verschieben ziehen`
-          : `${beschriftung} — abgeschlossen, nicht verschiebbar`
-      }
+      title={[
+        beschriftung,
+        eintrag.konflikt
+          ? `Achtung Terminkonflikt: ${eintrag.konfliktGrund ?? "Planung prüfen"}`
+          : null,
+        eintrag.ziehbar ? "zum Verschieben ziehen" : "abgeschlossen, nicht verschiebbar",
+      ]
+        .filter(Boolean)
+        .join(" — ")}
       className={`absolute rounded overflow-hidden ${
         eintrag.konflikt ? "ring-2 ring-red-500" : ""
       } cursor-grab active:cursor-grabbing ${
@@ -522,6 +542,16 @@ function Balken({
         draggable={false}
         className="block px-1.5 py-0.5 text-[11px] leading-4 text-white h-full hover:opacity-90"
       >
+        {/* Der Hinweis steht zuoberst und in eigener Farbe: Auf dem
+            farbigen Balken der Person geht roter Text unter, und bei
+            einem kurzen Einsatz ist die erste Zeile die einzige, die
+            sicher zu sehen ist. */}
+        {eintrag.konflikt && (
+          <div className="-mx-1.5 -mt-0.5 mb-0.5 truncate bg-red-600 px-1.5 font-semibold text-white">
+            ⚠ Achtung Terminkonflikt
+            {eintrag.konfliktGrund ? `: ${eintrag.konfliktGrund}` : ""}
+          </div>
+        )}
         <div className="font-medium truncate">{eintrag.titelZeile}</div>
         {eintrag.zweiteZeile && (
           <div className="truncate opacity-90">{eintrag.zweiteZeile}</div>

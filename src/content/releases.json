@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "neu",
+        "text": "Einsätze mit einem Terminkonflikt sind in der Disposition rot markiert und mit „Achtung Terminkonflikt“ und dem Grund beschriftet – doppelt belegt, eine beteiligte Person abwesend oder betriebsfrei. Die Markierung bleibt stehen, solange der Konflikt besteht: Eine Rückfrage beim Verschieben ist schnell vergessen, der rote Balken nicht."
+      },
+      {
         "typ": "fix",
         "text": "Beim Verschieben eines Einsatzes im Zeitraster sprang die Seite zum Rapport, sobald man den Balken losliess. Das Verschieben lief zwar, war aber nicht mehr zu sehen – und Rückfragen wegen einer Abwesenheit gingen dabei verloren."
       },

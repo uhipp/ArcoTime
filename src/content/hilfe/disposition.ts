@@ -68,9 +68,15 @@ Bei einem Einsatz mit mehreren [Beteiligten](/hilfe/rapporte) erscheint derselbe
 
 Fällt das Ziel auf einen **Schliesstag** oder in eine **Abwesenheit**, die die Planung blockiert, erscheint eine Rückfrage mit dem Namen der betroffenen Person – du kannst trotzdem verschieben. Blockiert wird nicht: Bei einem Team würde eine einzige Abwesenheit sonst den ganzen Einsatz festsetzen, und die Person wird ohnehin ersetzt. Eine **Doppelbelegung** wird dagegen zugelassen und nur rot markiert – siehe unten.
 
-## Überschneidungen
+## Terminkonflikte
 
-Zwei Einsätze derselben Person zur selben Zeit werden mit **"Doppelt belegt"** markiert. Das ist bewusst nur ein Hinweis und keine Sperre – manchmal ist eine Überschneidung gewollt (Übergabe, kurzer Zwischenhalt), und die Planung soll nicht daran scheitern.
+Ein Einsatz, bei dem etwas nicht aufgeht, trägt im Raster einen roten Balken mit **„⚠ Achtung Terminkonflikt"** und dem Grund. In der Monatsliste steht dieselbe Angabe als roter Vermerk. Drei Fälle führen dazu:
+
+- **doppelt belegt** – dieselbe Person ist im selben Zeitfenster zweimal eingeplant
+- **abwesend** – eine beteiligte Person hat an diesem Tag Ferien, ist krank oder sonst abwesend. Halbtägige Abwesenheiten zählen nur, wenn sie sich mit der Planzeit überschneiden; Arten ohne Häkchen „blockiert die Planung" (Homeoffice, Aussendienst) gelten nicht als Konflikt.
+- **betriebsfrei** – der Tag ist ein [Schliesstag](/hilfe/einstellungen) der Organisation
+
+Das ist bewusst ein Hinweis und **keine Sperre**: Manchmal ist eine Überschneidung gewollt, und wer eine abwesende Person trotzdem einplant, hat meist einen Grund. Beim Verschieben wird gefragt – aber eine Rückfrage ist schnell vergessen, wenn zwei Telefone dazwischenkommen. Deshalb bleibt die Markierung am Einsatz stehen, solange der Konflikt besteht, und verschwindet von selbst, sobald er gelöst ist.
 
 ## Was noch kommt
 
