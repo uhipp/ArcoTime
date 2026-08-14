@@ -179,6 +179,14 @@
       {
         "typ": "neu",
         "text": "Rapporte lassen sich jetzt abschliessen: Der Rapport erhält seine Nummer, wird unveränderlich, und seine Positionen zählen ab dann als erfasste Zeit. Solange die Unterschrift auf dem Tablet fehlt, braucht es dafür einen kurzen Vermerk."
+      },
+      {
+        "typ": "fix",
+        "text": "Wurde das Datum oder die ausführende Person eines Rapports nachträglich geändert, blieben die bereits erfassten Positionen auf dem alten Stand – im Export tauchten sie dann unter dem falschen Tag auf. Sie ziehen jetzt automatisch nach."
+      },
+      {
+        "typ": "fix",
+        "text": "Ein abgeschlossener Rapport liess sich nicht exportieren: Die Sperre, die seine Positionen vor Änderungen schützt, verhinderte auch das Eintragen der Belegnummer."
       }
     ]
   },

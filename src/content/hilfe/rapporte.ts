@@ -33,6 +33,8 @@ Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der �
 
 Nach dem Anlegen landest du direkt auf der Detailseite, wo du die Positionen erfasst.
 
+Datum und ausführende Person gelten für den **ganzen Rapport** – sie stehen deshalb nur im Kopf und nicht bei den Positionen. Änderst du sie oben, ziehen die bereits erfassten Positionen automatisch nach.
+
 ## Rapport abschliessen
 
 Solange ein Rapport offen ist, zählen seine Positionen nirgends. Der Abschluss ist damit kein Formalismus, sondern der Moment, in dem die Arbeit gültig wird – er steht unten auf der Rapportseite.
