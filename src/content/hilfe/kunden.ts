@@ -10,6 +10,8 @@ export const kunden: HilfeArtikel[] = [
     inhalt: `
 Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfassung und Anfragen.
 
+**Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
+
 ## Neuen Kunden anlegen
 
 Auf **"+ Neuer Kunde"** klicken und die Felder ausfüllen. Pflichtfeld ist nur der **Name** (Nach- oder Firmenname); alles andere kann später ergänzt werden.
@@ -30,7 +32,7 @@ Legt jemand versehentlich zweimal denselben Kunden an (z.B. weil zwei Mitarbeite
 
 Auf der Detailseite eines Kunden siehst du dessen komplette Historie: alle Anfragen und alle Zeiterfassungen, filterbar nach Zeitraum und Status.
 
-## Preise & Rabatte (nur Admins)
+## Preise & Rabatte
 
 Unter den Stammdaten liegt der Block **"Preise & Rabatte"** mit zwei Listen. Beide wirken ausschliesslich auf **neu erfasste** Zeiteinträge – bestehende behalten Preis und Rabatt, die beim Erfassen galten. Eine Änderung rechnet also nie rückwirkend um.
 

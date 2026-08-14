@@ -12,6 +12,8 @@ Auf dieser Seite erfasst du deine Arbeitszeit – entweder nachträglich mit fes
 
 ![Zeiterfassungsformular](/hilfe-bilder/zeiterfassung-formular.png)
 
+**Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
+
 ## Zeit nachträglich erfassen
 
 1. **Projekt** wählen. Fehlt das Projekt noch? Über **"+ Neues Projekt"** direkt neben dem Feld kannst du es sofort anlegen, ohne die Seite zu verlassen (siehe [Durchgängige Schnellerfassung](/hilfe/anfragen)).

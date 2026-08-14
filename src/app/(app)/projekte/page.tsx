@@ -1,12 +1,35 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { SortierKopf } from "@/components/sortier-kopf";
+import { vergleiche } from "@/lib/sortierung";
+
+type ProjektZeile = {
+  id: string;
+  bezeichnung: string;
+  kostenstelle: string | null;
+  status: string;
+  kunden?: { name: string; vorname: string | null } | null;
+};
+
+const SORTIERWERT: Record<string, (p: ProjektZeile) => unknown> = {
+  projekt: (p) => p.bezeichnung,
+  kunde: (p) => [p.kunden?.vorname, p.kunden?.name].filter(Boolean).join(" ") || null,
+  kostenstelle: (p) => p.kostenstelle,
+  status: (p) => p.status,
+};
 
 export default async function ProjektePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; kunde_id?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    kunde_id?: string;
+    sort?: string;
+    richtung?: string;
+  }>;
 }) {
-  const { status, kunde_id } = await searchParams;
+  const params = await searchParams;
+  const { status, kunde_id, sort, richtung } = params;
   const supabase = await createClient();
 
   let query = supabase
@@ -17,7 +40,14 @@ export default async function ProjektePage({
   if (status) query = query.eq("status", status);
   if (kunde_id) query = query.eq("kunde_id", kunde_id);
 
-  const { data: projekte, error } = await query;
+  const { data, error } = await query;
+  const projekte = (data as ProjektZeile[] | null) ?? [];
+
+  const werteVon = sort ? SORTIERWERT[sort] : undefined;
+  if (werteVon) {
+    const richtungsfaktor = richtung === "ab" ? -1 : 1;
+    projekte.sort((a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b)));
+  }
   const { data: kunden } = await supabase
     .from("kunden")
     .select("id, name, vorname")
@@ -58,6 +88,9 @@ export default async function ProjektePage({
           <option value="aktiv">Aktiv</option>
           <option value="inaktiv">Inaktiv</option>
         </select>
+        {/* Filtern darf die Sortierung nicht verwerfen. */}
+        {sort && <input type="hidden" name="sort" value={sort} />}
+        {richtung && <input type="hidden" name="richtung" value={richtung} />}
         <button
           type="submit"
           className="rounded border text-sm px-4 py-2 hover:bg-gray-50"
@@ -76,14 +109,22 @@ export default async function ProjektePage({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
-              <th className="px-4 py-2">Projekt</th>
-              <th className="px-4 py-2">Kunde</th>
-              <th className="px-4 py-2">Kostenstelle</th>
-              <th className="px-4 py-2">Status</th>
+              <SortierKopf spalte="projekt" basis="/projekte" params={params}>
+                Projekt
+              </SortierKopf>
+              <SortierKopf spalte="kunde" basis="/projekte" params={params}>
+                Kunde
+              </SortierKopf>
+              <SortierKopf spalte="kostenstelle" basis="/projekte" params={params}>
+                Kostenstelle
+              </SortierKopf>
+              <SortierKopf spalte="status" basis="/projekte" params={params}>
+                Status
+              </SortierKopf>
             </tr>
           </thead>
           <tbody>
-            {projekte?.map((m) => (
+            {projekte.map((m) => (
               <tr key={m.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">
                   <Link href={`/projekte/${m.id}`} className="text-arcos-steel hover:underline">

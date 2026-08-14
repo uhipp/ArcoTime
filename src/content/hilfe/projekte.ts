@@ -10,6 +10,8 @@ export const projekte: HilfeArtikel[] = [
     inhalt: `
 Jedes Projekt gehört zu genau einem Kunden und ist die Grundlage für die Zeiterfassung.
 
+**Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
+
 ## Neues Projekt anlegen
 
 **"+ Neues Projekt"** klicken, **Kunde** wählen (oder über **"+ Neuer Kunde"** direkt einen neuen anlegen, siehe [Kunden](/hilfe/kunden)) und eine **Bezeichnung** vergeben.

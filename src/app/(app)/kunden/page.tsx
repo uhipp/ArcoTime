@@ -1,13 +1,23 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Kunde } from "@/lib/types";
+import { SortierKopf } from "@/components/sortier-kopf";
+import { vergleiche } from "@/lib/sortierung";
+
+const SORTIERWERT: Record<string, (k: Kunde) => unknown> = {
+  name: (k) => [k.vorname, k.name].filter(Boolean).join(" ") || null,
+  ort: (k) => k.ort,
+  email: (k) => k.email,
+  schluessel: (k) => k.adress_schluessel,
+};
 
 export default async function KundenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; richtung?: string }>;
 }) {
-  const { q } = await searchParams;
+  const params = await searchParams;
+  const { q, sort, richtung } = params;
   const supabase = await createClient();
 
   let query = supabase
@@ -21,7 +31,14 @@ export default async function KundenPage({
     );
   }
 
-  const { data: kunden, error } = await query;
+  const { data, error } = await query;
+  const kunden = (data as Kunde[] | null) ?? [];
+
+  const werteVon = sort ? SORTIERWERT[sort] : undefined;
+  if (werteVon) {
+    const richtungsfaktor = richtung === "ab" ? -1 : 1;
+    kunden.sort((a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b)));
+  }
 
   return (
     <div>
@@ -43,6 +60,10 @@ export default async function KundenPage({
           placeholder="Suche nach Name, Ort, Adress-Schlüssel…"
           className="w-full max-w-sm rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
+        {/* Eine Suche darf die eingestellte Sortierung nicht verwerfen –
+            das Formular schickt sonst nur "q" ab. */}
+        {sort && <input type="hidden" name="sort" value={sort} />}
+        {richtung && <input type="hidden" name="richtung" value={richtung} />}
       </form>
 
       {error && (
@@ -55,14 +76,22 @@ export default async function KundenPage({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Ort</th>
-              <th className="px-4 py-2">E-Mail</th>
-              <th className="px-4 py-2">Adress-Schlüssel</th>
+              <SortierKopf spalte="name" basis="/kunden" params={params}>
+                Name
+              </SortierKopf>
+              <SortierKopf spalte="ort" basis="/kunden" params={params}>
+                Ort
+              </SortierKopf>
+              <SortierKopf spalte="email" basis="/kunden" params={params}>
+                E-Mail
+              </SortierKopf>
+              <SortierKopf spalte="schluessel" basis="/kunden" params={params}>
+                Adress-Schlüssel
+              </SortierKopf>
             </tr>
           </thead>
           <tbody>
-            {(kunden as Kunde[] | null)?.map((k) => (
+            {kunden.map((k) => (
               <tr key={k.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">
                   <Link href={`/kunden/${k.id}`} className="text-arcos-steel hover:underline">
@@ -75,7 +104,7 @@ export default async function KundenPage({
                 <td className="px-4 py-2">{k.adress_schluessel ?? "–"}</td>
               </tr>
             ))}
-            {kunden?.length === 0 && (
+            {kunden.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
                   Keine Kunden gefunden.

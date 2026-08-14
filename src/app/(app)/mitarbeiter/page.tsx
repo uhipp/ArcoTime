@@ -5,18 +5,32 @@ import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { updateMitarbeiter, ladeMitarbeitendeEin, deaktiviereMitarbeiter } from "@/app/actions/mitarbeiter";
 import { DeleteButton } from "@/components/delete-button";
 import type { Profile } from "@/lib/types";
+import { SortierKopf } from "@/components/sortier-kopf";
+import { vergleiche } from "@/lib/sortierung";
 
 type MitarbeiterZeile = Profile & { deaktiviert_am: string | null };
+
+const SORTIERWERT: Record<string, (m: MitarbeiterZeile) => unknown> = {
+  vorname: (m) => m.vorname,
+  nachname: (m) => m.nachname,
+  email: (m) => m.email,
+  rolle: (m) => m.role,
+  // Aktive zuerst: "aktiv" vor "deaktiviert" ist auch alphabetisch die
+  // gewünschte Reihenfolge, hier aber bewusst über das Datum, damit
+  // zuletzt deaktivierte Konten beieinander stehen.
+  status: (m) => m.deaktiviert_am ?? "",
+};
 
 export default async function MitarbeitendePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; sort?: string; richtung?: string }>;
 }) {
   const profile = await getCurrentProfile();
   if (profile?.role !== "admin") redirect("/");
 
-  const { error } = await searchParams;
+  const params = await searchParams;
+  const { error, sort, richtung } = params;
   const supabase = await createClient();
 
   const [{ data: mitarbeitende }, organisation] = await Promise.all([
@@ -26,6 +40,15 @@ export default async function MitarbeitendePage({
       .order("nachname"),
     getCurrentOrganisation(),
   ]);
+
+  const sortierteMitarbeitende = (mitarbeitende as MitarbeiterZeile[] | null) ?? [];
+  const werteVon = sort ? SORTIERWERT[sort] : undefined;
+  if (werteVon) {
+    const richtungsfaktor = richtung === "ab" ? -1 : 1;
+    sortierteMitarbeitende.sort(
+      (a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b))
+    );
+  }
 
   const { data: lizenzInfo } = organisation
     ? await supabase.from("organisationen").select("lizenzen_gebucht").eq("id", organisation.id).single()
@@ -100,18 +123,29 @@ export default async function MitarbeitendePage({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
-              <th className="px-4 py-2">Vorname</th>
-              <th className="px-4 py-2">Nachname</th>
-              <th className="px-4 py-2">E-Mail</th>
-              <th className="px-4 py-2">Rolle</th>
+              <SortierKopf spalte="vorname" basis="/mitarbeiter" params={params}>
+                Vorname
+              </SortierKopf>
+              <SortierKopf spalte="nachname" basis="/mitarbeiter" params={params}>
+                Nachname
+              </SortierKopf>
+              <SortierKopf spalte="email" basis="/mitarbeiter" params={params}>
+                E-Mail
+              </SortierKopf>
+              <SortierKopf spalte="rolle" basis="/mitarbeiter" params={params}>
+                Rolle
+              </SortierKopf>
+              {/* Farbe hat keine sinnvolle Reihenfolge. */}
               <th className="px-4 py-2">Farbe</th>
-              <th className="px-4 py-2">Status</th>
+              <SortierKopf spalte="status" basis="/mitarbeiter" params={params}>
+                Status
+              </SortierKopf>
               <th className="px-4 py-2"></th>
               <th className="px-4 py-2"></th>
             </tr>
           </thead>
           <tbody>
-            {(mitarbeitende as MitarbeiterZeile[] | null)?.map((m) => {
+            {sortierteMitarbeitende.map((m) => {
               const action = updateMitarbeiter.bind(null, m.id);
               const deaktiviert = Boolean(m.deaktiviert_am);
               return (

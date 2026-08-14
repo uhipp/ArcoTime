@@ -7,13 +7,33 @@ import { zeitraumFuer, heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
 import { DatumFeld } from "@/components/datum-feld";
+import { SortierKopf } from "@/components/sortier-kopf";
+import { vergleiche } from "@/lib/sortierung";
+
+const SORTIERWERT: Record<string, (z: ZeiteintragMitDetails) => unknown> = {
+  datum: (z) => z.datum,
+  kunde: (z) =>
+    [z.vorname, z.kunde_name, z.projekt_bezeichnung].filter(Boolean).join(" ") || null,
+  dienstleistung: (z) => z.dienstleistung_bezeichnung,
+  // Nach der verrechneten Menge, nicht nach dem angezeigten Text: "45 min"
+  // und "2 Stk" liessen sich als Zeichenkette nicht sinnvoll vergleichen.
+  menge: (z) => Number(z.menge_verrechnet ?? 0),
+  betrag: (z) => Number(z.betrag ?? 0),
+};
 
 export default async function ZeiterfassungPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; von?: string; bis?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    von?: string;
+    bis?: string;
+    sort?: string;
+    richtung?: string;
+  }>;
 }) {
-  const { error, von, bis } = await searchParams;
+  const params = await searchParams;
+  const { error, von, bis, sort, richtung } = params;
   const [defaultVon, defaultBis] = zeitraumFuer("woche", heuteIso());
   const vonDatum = von ?? defaultVon;
   const bisDatum = bis ?? defaultBis;
@@ -54,6 +74,12 @@ export default async function ZeiterfassungPage({
   ]);
 
   const zeilen = (eintraege as ZeiteintragMitDetails[] | null) ?? [];
+
+  const werteVon = sort ? SORTIERWERT[sort] : undefined;
+  if (werteVon) {
+    const richtungsfaktor = richtung === "ab" ? -1 : 1;
+    zeilen.sort((a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b)));
+  }
   const summeStunden = zeilen.reduce((s, z) => s + Number(z.menge_stunden), 0);
   const summeBetrag = zeilen.reduce((s, z) => s + Number(z.betrag), 0);
 
@@ -90,6 +116,9 @@ export default async function ZeiterfassungPage({
             defaultValue={bisDatum}
             className="rounded border border-gray-300 px-2 py-1.5"
           />
+          {/* Zeitraum wechseln darf die Sortierung nicht verwerfen. */}
+          {sort && <input type="hidden" name="sort" value={sort} />}
+          {richtung && <input type="hidden" name="richtung" value={richtung} />}
           <button type="submit" className="rounded border px-3 py-1.5 hover:bg-gray-50">
             Filtern
           </button>
@@ -106,11 +135,21 @@ export default async function ZeiterfassungPage({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
             <tr>
-              <th className="px-4 py-2">Datum</th>
-              <th className="px-4 py-2">Kunde / Projekt</th>
-              <th className="px-4 py-2">Dienstleistung</th>
-              <th className="px-4 py-2">Dauer</th>
-              <th className="px-4 py-2">Betrag</th>
+              <SortierKopf spalte="datum" basis="/zeiterfassung" params={params}>
+                Datum
+              </SortierKopf>
+              <SortierKopf spalte="kunde" basis="/zeiterfassung" params={params}>
+                Kunde / Projekt
+              </SortierKopf>
+              <SortierKopf spalte="dienstleistung" basis="/zeiterfassung" params={params}>
+                Dienstleistung
+              </SortierKopf>
+              <SortierKopf spalte="menge" basis="/zeiterfassung" params={params}>
+                Dauer
+              </SortierKopf>
+              <SortierKopf spalte="betrag" basis="/zeiterfassung" params={params}>
+                Betrag
+              </SortierKopf>
               <th className="px-4 py-2"></th>
             </tr>
           </thead>

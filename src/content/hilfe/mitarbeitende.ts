@@ -12,6 +12,8 @@ Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingela
 
 ![Mitarbeitende-Liste mit Farbfeldern](/hilfe-bilder/mitarbeitende-liste-farben.png)
 
+**Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
+
 ## Neue Person einladen
 
 Vorname, Nachname und E-Mail-Adresse eingeben und auf **"Einladungslink senden"** klicken. Die Adresse wird vorher geprüft – fehlt etwa die Endung (name@firma statt name@firma.ch), sagt ArcoTime das sofort, statt dass die Einladung stillschweigend beim Mailserver hängen bleibt. Das legt sofort einen Login an und verschickt eine E-Mail mit einem Link, über den die Person selbst ihr Passwort festlegt – kein separates Konto-Setup nötig.
