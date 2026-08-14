@@ -95,11 +95,16 @@ export default async function RapportDruckPage({
         <HilfeDruckenButton label="Rapport drucken" />
       </div>
 
-      <div className="flex items-start justify-end mb-8">
+      {/* Kopfbereich mit FESTER Höhe. Der Absender steht darin absolut
+          positioniert – sonst schiebt jede zusätzliche Zeile im Absender
+          die Empfängeranschrift nach unten, und die muss für das
+          Fensterkuvert immer an derselben Stelle stehen. Genau das ist
+          passiert, als die Adresse der Organisation dazukam. */}
+      <div className="relative h-[4cm] mb-6">
         {/* Absender: Logo und Anschrift der eigenen Organisation. Das
             Dokument bleibt beim Kunden – ohne Absender ist es wertlos.
             Gepflegt wird das unter Einstellungen (0042). */}
-        <div className="text-right text-sm">
+        <div className="absolute right-0 top-0 text-right text-sm">
           {logoAdresse && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -121,29 +126,28 @@ export default async function RapportDruckPage({
           {organisation?.email && <p className="text-gray-600">{organisation.email}</p>}
           {organisation?.webseite && <p className="text-gray-600">{organisation.webseite}</p>}
         </div>
-      </div>
 
-      {/* Empfängerblock. Darüber die Absenderzeile in 7 Punkt und
-          unterstrichen – die Zeile, die im Fensterkuvert über der Anschrift
-          steht. Der Abstand nach oben schafft dafür Platz. */}
-      <div className="mt-[0.5cm] mb-8 text-sm">
-        {absenderZeile && (
-          <p className="text-[7pt] underline mb-1 text-gray-700">{absenderZeile}</p>
-        )}
-        <p className="font-medium">
-          {kunde?.vorname ? `${kunde.vorname} ` : ""}
-          {kunde?.name}
-        </p>
-        {kunde?.adresse_zusatz && <p>{kunde.adresse_zusatz}</p>}
-        {strasse && <p>{strasse}</p>}
-        {(kunde?.plz || kunde?.ort) && (
-          <p>
-            {kunde?.plz} {kunde?.ort}
+        {/* Empfängerblock an fester Höhe. Darüber die Absenderzeile in
+            7 Punkt und unterstrichen – die Zeile, die im Fensterkuvert
+            über der Anschrift steht. */}
+        <div className="absolute left-0 top-[1.5cm] text-sm">
+          {absenderZeile && (
+            <p className="text-[7pt] underline mb-1 text-gray-700">{absenderZeile}</p>
+          )}
+          <p className="font-medium">
+            {kunde?.vorname ? `${kunde.vorname} ` : ""}
+            {kunde?.name}
           </p>
-        )}
+          {kunde?.adresse_zusatz && <p>{kunde.adresse_zusatz}</p>}
+          {strasse && <p>{strasse}</p>}
+          {(kunde?.plz || kunde?.ort) && (
+            <p>
+              {kunde?.plz} {kunde?.ort}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Titel zentriert über dem Projektblock. */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-semibold text-arcos-navy">Arbeitsrapport</h1>
         <p className="text-sm text-gray-500 mt-1">
