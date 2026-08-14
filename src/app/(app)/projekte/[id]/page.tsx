@@ -8,6 +8,7 @@ import { updateProjekt, deleteProjekt } from "@/app/actions/projekte";
 import { DeleteButton } from "@/components/delete-button";
 import { ProjektTeam } from "@/components/projekt-team";
 import type { Projekt } from "@/lib/types";
+import { PraesenzSperre } from "@/components/praesenz-sperre";
 
 export default async function ProjektDetailPage({
   params,
@@ -67,12 +68,14 @@ export default async function ProjektDetailPage({
             />
           )}
         </div>
-        <ProjektForm
-          projekt={projekt as Projekt}
-          kunden={kunden ?? []}
-          action={updateAction}
-          error={error}
-        />
+        <PraesenzSperre bereich="projekt" bezugId={id}>
+          <ProjektForm
+            projekt={projekt as Projekt}
+            kunden={kunden ?? []}
+            action={updateAction}
+            error={error}
+          />
+        </PraesenzSperre>
       </div>
 
       <ProjektTeam

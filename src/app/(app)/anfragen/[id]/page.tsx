@@ -14,6 +14,7 @@ import {
   deleteAnfrage,
 } from "@/app/actions/anfragen";
 import type { Anfrage } from "@/lib/types";
+import { PraesenzSperre } from "@/components/praesenz-sperre";
 
 export default async function AnfrageDetailPage({
   params,
@@ -91,209 +92,211 @@ export default async function AnfrageDetailPage({
         </div>
       )}
 
-      <AnfrageForm
-        anfrage={anfrage as Anfrage}
-        kunden={kunden ?? []}
-        projekte={projekte ?? []}
-        mitarbeitende={mitarbeitende ?? []}
-        kanaele={kanaele ?? []}
-        prioritaeten={prioritaeten ?? []}
-        action={formularAction}
-        error={error}
-      >
-        {!bereitsVerrechnet && (
-          <div className="border-t pt-5">
-            <h2 className="text-lg font-medium mb-1">
-              {anfrage.status === "erledigt" ? "Nachträglich verrechnen" : "Anfrage erledigen"}
-            </h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Drei Wege, eine Anfrage abzuschliessen – Änderungen oben werden
-              bei allen dreien mitgespeichert. Der Zeiteintrag unten ist der
-              übliche Weg; nicht verrechenbare Arbeit bitte über das interne
-              Projekt mit Rabatt 100% erfassen.
-            </p>
-            <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Projekt</label>
-                <select
-                  name="zeit_projekt_id"
-                  defaultValue={anfrage.projekt_id ?? ""}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                >
-                  <option value="">Bitte wählen…</option>
-                  {projekte
-                    ?.filter((p) => p.kunde_id === anfrage.kunde_id)
-                    .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.bezeichnung}
+      <PraesenzSperre bereich="anfrage" bezugId={id}>
+        <AnfrageForm
+          anfrage={anfrage as Anfrage}
+          kunden={kunden ?? []}
+          projekte={projekte ?? []}
+          mitarbeitende={mitarbeitende ?? []}
+          kanaele={kanaele ?? []}
+          prioritaeten={prioritaeten ?? []}
+          action={formularAction}
+          error={error}
+        >
+          {!bereitsVerrechnet && (
+            <div className="border-t pt-5">
+              <h2 className="text-lg font-medium mb-1">
+                {anfrage.status === "erledigt" ? "Nachträglich verrechnen" : "Anfrage erledigen"}
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Drei Wege, eine Anfrage abzuschliessen – Änderungen oben werden
+                bei allen dreien mitgespeichert. Der Zeiteintrag unten ist der
+                übliche Weg; nicht verrechenbare Arbeit bitte über das interne
+                Projekt mit Rabatt 100% erfassen.
+              </p>
+              <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Projekt</label>
+                  <select
+                    name="zeit_projekt_id"
+                    defaultValue={anfrage.projekt_id ?? ""}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  >
+                    <option value="">Bitte wählen…</option>
+                    {projekte
+                      ?.filter((p) => p.kunde_id === anfrage.kunde_id)
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.bezeichnung}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Dienstleistung</label>
+                  <select
+                    name="zeit_dienstleistung_id"
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  >
+                    <option value="">Bitte wählen…</option>
+                    {dienstleistungen?.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.bezeichnung}
                       </option>
                     ))}
-                </select>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Dienstleistung</label>
-                <select
-                  name="zeit_dienstleistung_id"
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                >
-                  <option value="">Bitte wählen…</option>
-                  {dienstleistungen?.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.bezeichnung}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Dauer (Minuten)</label>
-                <input
-                  name="zeit_dauer_minuten"
-                  type="number"
-                  min={1}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Mitarbeitende</label>
-                <select
-                  name="zeit_mitarbeiter_id"
-                  defaultValue={anfrage.zugewiesen_an ?? ""}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                >
-                  <option value="">Ich</option>
-                  {mitarbeitende?.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Rabatt</label>
-                <select
-                  name="zeit_rabatt_prozent"
-                  defaultValue={0}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                >
-                  {rabattsaetze?.map((r) => (
-                    <option key={r.id} value={r.prozent}>
-                      {r.bezeichnung ?? rabattLabel(r.prozent)}
-                      {!r.aktiv ? " (inaktiv)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">
-                  Beschreibung des Zeiteintrags
-                </label>
-                {/* Ohne die führende Namenszeile zusammengesetzt – sonst
-                    stünde der Name mitten in Zeile 1 ("Titel – Peter Huber").
-                    Den Namen setzt erledigeAnfrage() serverseitig wieder als
-                    eigene erste Zeile davor, passend zur tatsächlich
-                    ausgewählten Person. */}
-                <textarea
-                  name="zeit_beschreibung"
-                  rows={2}
-                  defaultValue={`${anfrage.titel}${sachtext ? " – " + sachtext : ""}`}
-                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Der Name der ausführenden Person wird beim Speichern
-                  automatisch als erste Zeile ergänzt.
-                </p>
-              </div>
-              {rapportMoeglich && dokumente.length > 0 && (
-                <div className="rounded border bg-gray-50 px-3 py-3">
-                  <p className="text-xs font-medium text-gray-600 mb-2">
-                    Dokumente in den Rapport übernehmen
-                  </p>
-                  <div className="space-y-1">
-                    {dokumente.map((d) => (
-                      <label key={d.id} className="flex items-start gap-2 text-sm">
-                        <input
-                          type="checkbox"
-                          name="uebernehmen_dokument"
-                          value={d.id}
-                          className="mt-1"
-                        />
-                        <span>
-                          {d.dateiname}
-                          {d.dokument_kategorien?.bezeichnung && (
-                            <span className="text-gray-400">
-                              {" "}
-                              · {d.dokument_kategorien.bezeichnung}
-                            </span>
-                          )}
-                        </span>
-                      </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Dauer (Minuten)</label>
+                  <input
+                    name="zeit_dauer_minuten"
+                    type="number"
+                    min={1}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Mitarbeitende</label>
+                  <select
+                    name="zeit_mitarbeiter_id"
+                    defaultValue={anfrage.zugewiesen_an ?? ""}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  >
+                    <option value="">Ich</option>
+                    {mitarbeitende?.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
                     ))}
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2">
-                    Gilt nur für „Erledigen mit Rapport“. Die Dokumente werden
-                    kopiert – die Originale bleiben bei der Anfrage.
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Rabatt</label>
+                  <select
+                    name="zeit_rabatt_prozent"
+                    defaultValue={0}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  >
+                    {rabattsaetze?.map((r) => (
+                      <option key={r.id} value={r.prozent}>
+                        {r.bezeichnung ?? rabattLabel(r.prozent)}
+                        {!r.aktiv ? " (inaktiv)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">
+                    Beschreibung des Zeiteintrags
+                  </label>
+                  {/* Ohne die führende Namenszeile zusammengesetzt – sonst
+                      stünde der Name mitten in Zeile 1 ("Titel – Peter Huber").
+                      Den Namen setzt erledigeAnfrage() serverseitig wieder als
+                      eigene erste Zeile davor, passend zur tatsächlich
+                      ausgewählten Person. */}
+                  <textarea
+                    name="zeit_beschreibung"
+                    rows={2}
+                    defaultValue={`${anfrage.titel}${sachtext ? " – " + sachtext : ""}`}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Der Name der ausführenden Person wird beim Speichern
+                    automatisch als erste Zeile ergänzt.
                   </p>
                 </div>
-              )}
-
-              <div className="flex flex-wrap items-center gap-3">
-                <AbsendeKnopf
-                  name="absicht"
-                  value="zeiteintrag"
-                  laufttext="Wird erledigt…"
-                  className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {anfrage.status === "erledigt"
-                    ? "Verrechnen"
-                    : "Erledigen mit Zeiteintrag"}
-                </AbsendeKnopf>
-
-                {rapportMoeglich && (
-                  <>
-                    {/* Zweiter und dritter Weg. Die Felder des
-                        Zeiteintrags-Blocks tragen kein required, die beiden
-                        Knöpfe brauchen deshalb kein formNoValidate – und
-                        dürfen es auch nicht haben, sonst fiele die Prüfung
-                        von Kunde und Titel der Anfrage gleich mit weg. */}
-                    <AbsendeKnopf
-                      name="absicht"
-                      value="rapport"
-                      laufttext="Rapport wird angelegt…"
-                      className="rounded border border-arcos-steel text-arcos-steel text-sm font-medium px-4 py-2 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {anfrage.status === "erledigt"
-                        ? "Rapport erstellen"
-                        : "Erledigen mit Rapport"}
-                    </AbsendeKnopf>
-                    {anfrage.status !== "erledigt" && (
+                {rapportMoeglich && dokumente.length > 0 && (
+                  <div className="rounded border bg-gray-50 px-3 py-3">
+                    <p className="text-xs font-medium text-gray-600 mb-2">
+                      Dokumente in den Rapport übernehmen
+                    </p>
+                    <div className="space-y-1">
+                      {dokumente.map((d) => (
+                        <label key={d.id} className="flex items-start gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            name="uebernehmen_dokument"
+                            value={d.id}
+                            className="mt-1"
+                          />
+                          <span>
+                            {d.dateiname}
+                            {d.dokument_kategorien?.bezeichnung && (
+                              <span className="text-gray-400">
+                                {" "}
+                                · {d.dokument_kategorien.bezeichnung}
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Gilt nur für „Erledigen mit Rapport“. Die Dokumente werden
+                      kopiert – die Originale bleiben bei der Anfrage.
+                    </p>
+                  </div>
+                )}
+  
+                <div className="flex flex-wrap items-center gap-3">
+                  <AbsendeKnopf
+                    name="absicht"
+                    value="zeiteintrag"
+                    laufttext="Wird erledigt…"
+                    className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {anfrage.status === "erledigt"
+                      ? "Verrechnen"
+                      : "Erledigen mit Zeiteintrag"}
+                  </AbsendeKnopf>
+  
+                  {rapportMoeglich && (
+                    <>
+                      {/* Zweiter und dritter Weg. Die Felder des
+                          Zeiteintrags-Blocks tragen kein required, die beiden
+                          Knöpfe brauchen deshalb kein formNoValidate – und
+                          dürfen es auch nicht haben, sonst fiele die Prüfung
+                          von Kunde und Titel der Anfrage gleich mit weg. */}
                       <AbsendeKnopf
                         name="absicht"
-                        value="ohne_nachweis"
-                        laufttext="Wird erledigt…"
-                        className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                        value="rapport"
+                        laufttext="Rapport wird angelegt…"
+                        className="rounded border border-arcos-steel text-arcos-steel text-sm font-medium px-4 py-2 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        Nur als erledigt markieren
+                        {anfrage.status === "erledigt"
+                          ? "Rapport erstellen"
+                          : "Erledigen mit Rapport"}
                       </AbsendeKnopf>
-                    )}
-                  </>
-                )}
+                      {anfrage.status !== "erledigt" && (
+                        <AbsendeKnopf
+                          name="absicht"
+                          value="ohne_nachweis"
+                          laufttext="Wird erledigt…"
+                          className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          Nur als erledigt markieren
+                        </AbsendeKnopf>
+                      )}
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400">
+                  <strong>Mit Rapport</strong> legt einen Rapport-Entwurf für
+                  diesen Kunden an und übernimmt Titel und Beschreibung als
+                  Bemerkung – die Positionen erfasst du danach im Rapport.
+                  <strong> Nur als erledigt markieren</strong> schliesst die
+                  Anfrage ohne Zeiteintrag und ohne Rapport, etwa bei einer
+                  blossen Rückfrage.
+                </p>
               </div>
-              <p className="text-xs text-gray-400">
-                <strong>Mit Rapport</strong> legt einen Rapport-Entwurf für
-                diesen Kunden an und übernimmt Titel und Beschreibung als
-                Bemerkung – die Positionen erfasst du danach im Rapport.
-                <strong> Nur als erledigt markieren</strong> schliesst die
-                Anfrage ohne Zeiteintrag und ohne Rapport, etwa bei einer
-                blossen Rückfrage.
-              </p>
             </div>
-          </div>
-        )}
-      </AnfrageForm>
+          )}
+        </AnfrageForm>
+      </PraesenzSperre>
 
       {(bereitsVerrechnet || anfrage.rapport_id) && (
         <p className="text-sm text-gray-500 flex flex-wrap gap-4">

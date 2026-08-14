@@ -20,6 +20,7 @@ import {
   schliesseRapportAb,
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
+import { PraesenzSperre } from "@/components/praesenz-sperre";
 
 export default async function RapportDetailPage({
   params,
@@ -137,17 +138,19 @@ export default async function RapportDetailPage({
           man sonst dauernd zwischen Kalender und Rapport. */}
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0">
-          <RapportKopfForm
-            rapport={rapport}
-            kunden={kunden ?? []}
-            projekte={projekte ?? []}
-            mitarbeitende={mitarbeitende ?? []}
-            aktuellerUserId={profile?.id ?? ""}
-            action={aktualisiereRapport.bind(null, id)}
-            absendeText="Kopfdaten speichern"
-            mitDisposition={organisation?.modul_disposition ?? false}
-            gesperrt={!offen}
-          />
+          <PraesenzSperre bereich="rapport" bezugId={id}>
+            <RapportKopfForm
+              rapport={rapport}
+              kunden={kunden ?? []}
+              projekte={projekte ?? []}
+              mitarbeitende={mitarbeitende ?? []}
+              aktuellerUserId={profile?.id ?? ""}
+              action={aktualisiereRapport.bind(null, id)}
+              absendeText="Kopfdaten speichern"
+              mitDisposition={organisation?.modul_disposition ?? false}
+              gesperrt={!offen}
+            />
+          </PraesenzSperre>
         </div>
         {organisation?.modul_disposition && (
           <DispoTagesspalte

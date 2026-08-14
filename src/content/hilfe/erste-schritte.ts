@@ -16,7 +16,9 @@ Bearbeiten zwei Personen denselben Kunden, dasselbe Projekt oder denselben Rappo
 
 Hat jemand anders in der Zwischenzeit gespeichert, wird **nicht überschrieben**. Stattdessen erscheint eine Meldung, wer den Datensatz geändert hat und wann. Deine Eingaben bleiben dabei im Formular stehen: Lade die Seite in einem zweiten Fenster, sieh dir die Änderung an und übertrage deine Anpassung.
 
-Das ist bewusst keine Sperre. Eine Sperre liesse sich im Browser nicht zuverlässig wieder aufheben – wer den Laptop zuklappt, würde alle anderen aussperren.
+Damit es gar nicht erst so weit kommt, erscheint beim Öffnen ein Hinweis, wenn jemand anders denselben Datensatz gerade offen hat – mit Namen. Solange das der Fall ist, lässt sich nicht speichern.
+
+Diese Anwesenheit **läuft von selbst ab**: Kommt zwei Minuten lang kein Lebenszeichen aus dem Browser, ist der Datensatz wieder frei. Wer den Laptop zuklappt oder den Tab schliesst, sperrt also niemanden aus – und es muss auch niemand eine Sperre von Hand aufheben.
 
 ## Anmelden
 

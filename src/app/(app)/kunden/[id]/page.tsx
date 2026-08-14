@@ -11,6 +11,7 @@ import { DeleteButton } from "@/components/delete-button";
 import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import type { Kunde, ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
+import { PraesenzSperre } from "@/components/praesenz-sperre";
 
 type SearchParams = { error?: string; von?: string; bis?: string; projekt_id?: string };
 
@@ -111,7 +112,9 @@ export default async function KundeDetailPage({
             />
           )}
         </div>
-        <KundeForm kunde={kunde as Kunde} action={updateAction} error={error} />
+        <PraesenzSperre bereich="kunde" bezugId={id}>
+          <KundeForm kunde={kunde as Kunde} action={updateAction} error={error} />
+        </PraesenzSperre>
       </div>
 
       {/* Bewusst ohne Adminprüfung: Preise und Rabatte sind Vorgaben für

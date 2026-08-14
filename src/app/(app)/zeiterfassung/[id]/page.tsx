@@ -8,6 +8,7 @@ import { bearbeiteZeiteintrag, deleteZeiteintrag } from "@/app/actions/zeiteintr
 import { DeleteButton } from "@/components/delete-button";
 import type { Zeiteintrag } from "@/lib/types";
 import Link from "next/link";
+import { PraesenzSperre } from "@/components/praesenz-sperre";
 
 export default async function ZeiteintragDetailPage({
   params,
@@ -94,19 +95,21 @@ export default async function ZeiteintragDetailPage({
           <p>Beschreibung: {zeiteintrag.beschreibung ?? "–"}</p>
         </div>
       ) : (
-        <ZeiterfassungForm
-          zeiteintrag={zeiteintrag as Zeiteintrag}
-          projekte={projekte ?? []}
-          dienstleistungen={dienstleistungen ?? []}
-          mitarbeitende={mitarbeitende ?? []}
-          kunden={kunden ?? []}
-          rabattsaetze={rabattsaetze ?? []}
-          klassenRabatte={klassenRabatte ?? []}
-          aktuellerUserId={profile?.id ?? ""}
-          action={updateAction}
-          timerMoeglich
-          error={error}
-        />
+        <PraesenzSperre bereich="zeiteintrag" bezugId={id}>
+          <ZeiterfassungForm
+            zeiteintrag={zeiteintrag as Zeiteintrag}
+            projekte={projekte ?? []}
+            dienstleistungen={dienstleistungen ?? []}
+            mitarbeitende={mitarbeitende ?? []}
+            kunden={kunden ?? []}
+            rabattsaetze={rabattsaetze ?? []}
+            klassenRabatte={klassenRabatte ?? []}
+            aktuellerUserId={profile?.id ?? ""}
+            action={updateAction}
+            timerMoeglich
+            error={error}
+          />
+        </PraesenzSperre>
       )}
 
       <div className="max-w-2xl mt-8">

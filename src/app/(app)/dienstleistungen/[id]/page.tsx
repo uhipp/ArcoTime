@@ -5,6 +5,7 @@ import { DienstleistungForm } from "@/components/dienstleistung-form";
 import { updateDienstleistung, deleteDienstleistung } from "@/app/actions/dienstleistungen";
 import { DeleteButton } from "@/components/delete-button";
 import type { Dienstleistung } from "@/lib/types";
+import { PraesenzSperre } from "@/components/praesenz-sperre";
 
 export default async function DienstleistungDetailPage({
   params,
@@ -62,14 +63,16 @@ export default async function DienstleistungDetailPage({
           />
         )}
       </div>
-      <DienstleistungForm
-        dienstleistung={dienstleistung as Dienstleistung}
-        klassen={klassen ?? []}
-        mwstCodes={mwstCodes ?? []}
-        einheiten={einheiten ?? []}
-        action={updateAction}
-        error={error}
-      />
+      <PraesenzSperre bereich="dienstleistung" bezugId={id}>
+        <DienstleistungForm
+          dienstleistung={dienstleistung as Dienstleistung}
+          klassen={klassen ?? []}
+          mwstCodes={mwstCodes ?? []}
+          einheiten={einheiten ?? []}
+          action={updateAction}
+          error={error}
+        />
+      </PraesenzSperre>
     </div>
   );
 }

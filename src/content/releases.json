@@ -211,6 +211,10 @@
       {
         "typ": "neu",
         "text": "Konfliktprüfung beim Speichern: Hat jemand anders denselben Datensatz zwischenzeitlich geändert, wird nicht mehr überschrieben. ArcoTime meldet, wer und wann – die eigenen Eingaben bleiben im Formular stehen."
+      },
+      {
+        "typ": "neu",
+        "text": "Hat jemand anders einen Datensatz gerade offen, erscheint beim Öffnen ein Hinweis mit Namen und das Speichern ist gesperrt. Die Anwesenheit läuft nach zwei Minuten ohne Lebenszeichen von selbst ab – niemand bleibt ausgesperrt."
       }
     ]
   },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { useGesperrt } from "@/components/praesenz-sperre";
 
 // Absende-Knopf, der sich während der laufenden Server Action selbst
 // sperrt.
@@ -35,13 +36,17 @@ export function AbsendeKnopf({
   value?: string;
 }) {
   const { pending } = useFormStatus();
+  // Solange jemand anders denselben Datensatz offen hat, sperrt sich der
+  // Knopf selbst – siehe praesenz-sperre. Ausserhalb einer PraesenzSperre
+  // ist das immer false, der Knopf verhält sich dann wie bisher.
+  const gesperrt = useGesperrt();
 
   return (
     <button
       type="submit"
       name={name}
       value={value}
-      disabled={pending}
+      disabled={pending || gesperrt}
       aria-busy={pending}
       className={
         className ??
