@@ -139,6 +139,10 @@
       {
         "typ": "neu",
         "text": "Der Kalender zeigt jetzt auch die geplanten Einsätze aus den Rapporten, nicht nur erfasste Zeit. Gleiche Farbe je Person; geplante Zeit ist deckend, bereits erfasste schraffiert."
+      },
+      {
+        "typ": "neu",
+        "text": "Die Rapport-Übersicht lässt sich per Klick auf den Spaltenkopf sortieren, ein zweiter Klick dreht die Richtung. Weitere Listen folgen."
       }
     ]
   },

@@ -52,6 +52,12 @@ Der zweite Weg führt über eine [Anfrage](/hilfe/anfragen): Dort schliesst **"E
 
 Zu jedem Rapport lassen sich Dokumente ablegen – Anweisungen, Pläne, Fotos, alles was die Person braucht, die rausfährt. Kommt der Rapport aus einer [Anfrage](/hilfe/anfragen), können deren Dokumente beim Abschliessen direkt mit übernommen werden.
 
+## Übersicht sortieren
+
+Ein Klick auf einen Spaltenkopf sortiert die Liste nach dieser Spalte, ein zweiter Klick dreht die Richtung um. Der kleine Pfeil zeigt, wonach gerade sortiert ist. Ein gesetzter Statusfilter bleibt dabei erhalten.
+
+Die Sortierung steht in der Adresse – die Ansicht überlebt also ein Neuladen und lässt sich als Lesezeichen ablegen oder weitergeben.
+
 ## Rapportnummer
 
 Die Nummer im Format **2026-0001** wird erst beim Abschliessen vergeben, nicht beim Anlegen. Ein verworfener Entwurf reisst dadurch keine Lücke in die Nummernfolge. Bis dahin steht in der Übersicht "Entwurf". Die Zählung beginnt in jedem Jahr neu.

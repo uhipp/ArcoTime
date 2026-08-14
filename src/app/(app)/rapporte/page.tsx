@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatDatumCH } from "@/lib/date-utils";
 import { rapportNummer, type Rapport, type RapportStatus } from "@/lib/types";
+import { SortierKopf } from "@/components/sortier-kopf";
+import { vergleiche } from "@/lib/sortierung";
 
 const STATUS_STIL: Record<RapportStatus, string> = {
   offen: "bg-amber-100 text-amber-800",
@@ -17,12 +19,24 @@ const STATUS_TEXT: Record<RapportStatus, string> = {
   storniert: "Storniert",
 };
 
+// Sortierschlüssel und der Wert, nach dem sie sortieren. Beisammen
+// gehalten, damit ein neuer Spaltenkopf nur hier ergänzt werden muss.
+const SORTIERWERT: Record<string, (r: Rapport) => unknown> = {
+  nummer: (r) => (r.jahr && r.nummer ? r.jahr * 100000 + r.nummer : null),
+  datum: (r) => r.datum,
+  kunde: (r) => [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || null,
+  projekt: (r) => r.projekte?.bezeichnung ?? null,
+  mitarbeiter: (r) => r.profiles?.name ?? null,
+  status: (r) => r.status,
+};
+
 export default async function RapportePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; status?: string }>;
+  searchParams: Promise<{ error?: string; status?: string; sort?: string; richtung?: string }>;
 }) {
-  const { error, status } = await searchParams;
+  const params = await searchParams;
+  const { error, status, sort, richtung } = params;
   const supabase = await createClient();
 
   let query = supabase
@@ -35,6 +49,13 @@ export default async function RapportePage({
 
   const { data } = await query;
   const rapporte = (data as Rapport[] | null) ?? [];
+
+  // Ohne Sortierwunsch bleibt die Reihenfolge der Abfrage: neueste zuerst.
+  const werteVon = sort ? SORTIERWERT[sort] : undefined;
+  if (werteVon) {
+    const richtungsfaktor = richtung === "ab" ? -1 : 1;
+    rapporte.sort((a, b) => richtungsfaktor * vergleiche(werteVon(a), werteVon(b)));
+  }
 
   return (
     <div>
@@ -54,7 +75,9 @@ export default async function RapportePage({
 
       <div className="flex gap-2 mb-4 text-sm">
         <Link
-          href="/rapporte"
+          href={`/rapporte?${new URLSearchParams(
+            Object.entries({ sort, richtung }).filter(([, v]) => v) as [string, string][]
+          ).toString()}`}
           className={`rounded border px-3 py-1.5 ${!status ? "bg-arcos-steel text-white" : "bg-white hover:bg-gray-50"}`}
         >
           Alle
@@ -62,7 +85,12 @@ export default async function RapportePage({
         {(["offen", "signiert", "abgeschlossen", "storniert"] as RapportStatus[]).map((s) => (
           <Link
             key={s}
-            href={`/rapporte?status=${s}`}
+            href={`/rapporte?${new URLSearchParams(
+              Object.entries({ status: s, sort, richtung }).filter(([, v]) => v) as [
+                string,
+                string,
+              ][]
+            ).toString()}`}
             className={`rounded border px-3 py-1.5 ${status === s ? "bg-arcos-steel text-white" : "bg-white hover:bg-gray-50"}`}
           >
             {STATUS_TEXT[s]}
@@ -80,12 +108,24 @@ export default async function RapportePage({
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
-                <th className="px-4 py-2">Nummer</th>
-                <th className="px-4 py-2">Datum</th>
-                <th className="px-4 py-2">Kunde</th>
-                <th className="px-4 py-2">Projekt</th>
-                <th className="px-4 py-2">Ausgeführt von</th>
-                <th className="px-4 py-2">Status</th>
+                <SortierKopf spalte="nummer" basis="/rapporte" params={params}>
+                  Nummer
+                </SortierKopf>
+                <SortierKopf spalte="datum" basis="/rapporte" params={params}>
+                  Datum
+                </SortierKopf>
+                <SortierKopf spalte="kunde" basis="/rapporte" params={params}>
+                  Kunde
+                </SortierKopf>
+                <SortierKopf spalte="projekt" basis="/rapporte" params={params}>
+                  Projekt
+                </SortierKopf>
+                <SortierKopf spalte="mitarbeiter" basis="/rapporte" params={params}>
+                  Ausgeführt von
+                </SortierKopf>
+                <SortierKopf spalte="status" basis="/rapporte" params={params}>
+                  Status
+                </SortierKopf>
               </tr>
             </thead>
             <tbody className="divide-y">
