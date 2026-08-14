@@ -29,6 +29,8 @@ export default async function ExportPage({
   const { data: offeneRaw, error } = await supabase
     .from("v_zeiteintraege")
     .select("*")
+    // Ein vorbereiteter Rapport ist noch nicht verrechenbar – siehe 0036.
+    .eq("vorlaeufig", false)
     .is("beleg_id", null)
     .is("timer_gestartet_um", null)
     .gte("datum", von)

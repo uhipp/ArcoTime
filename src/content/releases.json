@@ -159,6 +159,18 @@
       {
         "typ": "fix",
         "text": "Bei jedem Speichern einer Anfrage stapelte sich der Name der zuständigen Person als weitere Zeile in der Beschreibung. Behoben – bestehende Mehrfachzeilen räumt ArcoTime beim nächsten Speichern selbst auf."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Positionen eines noch offenen Rapports zählen nicht mehr als erfasste Zeit: Sie erscheinen weder in Auswertungen noch im Export oder in der Zeiterfassungsliste. Erst das Abschliessen macht sie gültig – ein vorbereiteter Auftrag verfälscht damit keine Auswertung mehr."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Im Kalender erscheint ein Einsatz nur noch einmal: als Planung, solange der Rapport offen ist, danach als geleistete Zeit."
+      },
+      {
+        "typ": "neu",
+        "text": "Ein Zeiteintrag kann nicht mehr in der Zukunft liegen, und ein Rapport mit Datum in der Zukunft lässt sich nicht abschliessen."
       }
     ]
   },

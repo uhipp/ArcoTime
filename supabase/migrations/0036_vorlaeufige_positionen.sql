@@ -178,3 +178,81 @@ end;
 $$;
 
 grant execute on function erstelle_export(uuid, date, date) to authenticated;
+
+-- ---------------------------------------------------------
+-- Abschliessen nur mit Datum bis heute
+-- ---------------------------------------------------------
+-- Ein Rapport wird für die Zukunft vorbereitet – das ist der Normalfall.
+-- Nicht möglich ist, ihn dort auch ABZUSCHLIESSEN: Arbeit von morgen kann
+-- heute nicht geleistet sein. Genau hier wird aus Absicht ein Nachweis,
+-- also gehört die Prüfung an diese Stelle und nicht an die Position.
+--
+-- Nur der Datumsteil wird geprüft, nicht die Uhrzeit: Wer um 16:55 einen
+-- Einsatz bis 17:00 abschliesst, tut nichts Falsches.
+--
+-- Der Rest der Funktion ist unverändert gegenüber 0026.
+
+create or replace function schliesse_rapport(
+  p_rapport_id uuid,
+  p_status text,
+  p_unterschrift text default null,
+  p_unterzeichner text default null,
+  p_vermerk text default null
+)
+returns table(jahr int, nummer int)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_org uuid;
+  v_jahr int;
+  v_nummer int;
+  v_status text;
+  v_datum date;
+begin
+  if p_status not in ('signiert', 'abgeschlossen') then
+    raise exception 'Ungültiger Zielstatus: %', p_status;
+  end if;
+
+  select r.organisation_id, extract(year from r.datum)::int, r.status, r.datum
+    into v_org, v_jahr, v_status, v_datum
+  from public.rapporte r
+  where r.id = p_rapport_id
+    and r.organisation_id = public.current_organisation_id();
+
+  if v_org is null then
+    raise exception 'Rapport nicht gefunden.';
+  end if;
+  if v_status <> 'offen' then
+    raise exception 'Dieser Rapport ist bereits abgeschlossen.';
+  end if;
+  if v_datum > current_date then
+    raise exception 'Ein Rapport mit Datum in der Zukunft lässt sich nicht abschliessen – die Arbeit ist noch nicht geleistet.';
+  end if;
+  if not exists (select 1 from public.zeiteintraege z where z.rapport_id = p_rapport_id) then
+    raise exception 'Ein Rapport ohne Positionen lässt sich nicht abschliessen.';
+  end if;
+
+  -- Atomar hochzählen, auch wenn zwei Personen gleichzeitig abschliessen.
+  insert into public.rapport_nummernkreis (organisation_id, jahr, letzte_nummer)
+  values (v_org, v_jahr, 1)
+  on conflict (organisation_id, jahr)
+    do update set letzte_nummer = rapport_nummernkreis.letzte_nummer + 1
+  returning letzte_nummer into v_nummer;
+
+  update public.rapporte r
+  set status = p_status,
+      jahr = v_jahr,
+      nummer = v_nummer,
+      unterschrift_png = p_unterschrift,
+      unterzeichner_name = p_unterzeichner,
+      signiert_am = case when p_status = 'signiert' then now() end,
+      abschluss_vermerk = p_vermerk
+  where r.id = p_rapport_id;
+
+  return query select v_jahr, v_nummer;
+end;
+$$;
+
+grant execute on function schliesse_rapport(uuid, text, text, text, text) to authenticated;

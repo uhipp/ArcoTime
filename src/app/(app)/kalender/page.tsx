@@ -62,6 +62,10 @@ export default async function KalenderPage({
   let query = supabase
     .from("v_zeiteintraege")
     .select("*")
+    // Positionen offener Rapporte erscheinen als Planungsbalken, nicht
+    // zusätzlich als erfasste Zeit – sonst steht ein Einsatz zweimal im
+    // selben Tag (siehe 0036).
+    .eq("vorlaeufig", false)
     .gte("datum", rasterVon)
     .lte("datum", rasterBis);
 
@@ -102,14 +106,22 @@ export default async function KalenderPage({
   if (params.projekt_id) planFilter.projekt_id = params.projekt_id;
   if (params.mitarbeiter_id) planFilter.geplant_fuer = params.mitarbeiter_id;
 
+  // Nur OFFENE Rapporte: Ein abgeschlossener zeigt seine tatsächlich
+  // geleistete Zeit über die Zeiteinträge. So bleibt es bei einem Balken
+  // je Einsatz, und ob er geplant oder geleistet ist, sieht man an der
+  // Darstellung.
+  //
+  // Gesucht wird über datum, nicht über geplant_von: Ein Rapport ohne
+  // Planzeiten fiele sonst ganz aus dem Kalender – und wäre nirgends mehr
+  // sichtbar, weil seine Positionen als vorläufig ausgeblendet sind.
   const planQuery = params.klasse_id
     ? null
     : supabase
         .from("rapporte")
-        .select("id, kunde_id, projekt_id, geplant_fuer, geplant_von, geplant_bis")
-        .not("geplant_von", "is", null)
-        .gte("geplant_von", rasterVon)
-        .lte("geplant_von", `${rasterBis}T23:59:59`)
+        .select("id, datum, kunde_id, projekt_id, geplant_fuer, geplant_von, geplant_bis")
+        .eq("status", "offen")
+        .gte("datum", rasterVon)
+        .lte("datum", rasterBis)
         .match(planFilter);
 
   // Alle Queries unabhängig voneinander gleichzeitig statt nacheinander
@@ -150,8 +162,9 @@ export default async function KalenderPage({
   const planungRoh = (planErgebnis.data as
     | {
         id: string;
+        datum: string;
         geplant_fuer: string | null;
-        geplant_von: string;
+        geplant_von: string | null;
         geplant_bis: string | null;
       }[]
     | null) ?? [];
@@ -187,7 +200,8 @@ export default async function KalenderPage({
   const uhrzeit = (wert: string | null) => (wert ? wert.slice(11, 16) : "");
 
   for (const r of planungRoh) {
-    const eintrag = tagEintrag(r.geplant_von.slice(0, 10));
+    // Planzeit bestimmt den Tag, wenn vorhanden – sonst das Rapportdatum.
+    const eintrag = tagEintrag(r.geplant_von ? r.geplant_von.slice(0, 10) : r.datum);
     eintrag.plan.push({
       rapportId: r.id,
       mitarbeiterId: r.geplant_fuer,
@@ -399,8 +413,8 @@ export default async function KalenderPage({
                   key: `p-${p.rapportId}`,
                   farbe: p.farbe,
                   schraffiert: false,
-                  label: `${p.name.split(" ")[0]}${p.von ? ` · ${p.von}` : ""}${
-                    p.bis ? `–${p.bis}` : ""
+                  label: `${p.von ? `${p.von}${p.bis ? `–${p.bis}` : ""} · ` : ""}${
+                    p.name.split(" ")[0]
                   }`,
                   href: `/rapporte/${p.rapportId}`,
                   titel: `Geplant: ${p.name}${p.von ? `, ${p.von}` : ""}${

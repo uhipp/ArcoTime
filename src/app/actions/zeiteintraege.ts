@@ -47,6 +47,22 @@ function mitPassenderMenge(
     : { ...werte, dauer_minuten: null, start_zeit: null, end_zeit: null };
 }
 
+// Ein Zeiteintrag kann nicht in der Zukunft liegen – die Arbeit muss
+// zuerst getan sein. Geprüft wird nur das Datum, nicht die Uhrzeit: Wer um
+// 16:55 den Block bis 17:00 erfasst, tut nichts Falsches, und eine
+// Anwendung, die auf die Minute pocht, erzieht nur zum Schummeln.
+//
+// Gilt NICHT für Positionen eines Rapports: Ein Rapport wird in der Regel
+// vorbereitet, seine Positionen sind Auftragsinhalt und dürfen in der
+// Zukunft liegen. Dort greift die Regel beim Abschliessen (siehe
+// schliesse_rapport in 0036).
+function datumInZukunft(datum: string): string | null {
+  if (!datum) return null;
+  return datum > heuteIso()
+    ? "Das Datum liegt in der Zukunft. Ein Zeiteintrag lässt sich erst erfassen, wenn die Arbeit geleistet ist."
+    : null;
+}
+
 export async function createZeiteintrag(
   _bisher: FormularErgebnis,
   formData: FormData
@@ -54,6 +70,11 @@ export async function createZeiteintrag(
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const values = zeiteintragFromForm(formData);
+
+  const zukunft = datumInZukunft(values.datum);
+  if (zukunft) {
+    return { fehler: zukunft };
+  }
 
   const fehler = await pruefeGegenDienstleistung(supabase, values);
   if (fehler) {
@@ -91,6 +112,11 @@ export async function updateZeiteintrag(
 ): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = zeiteintragFromForm(formData);
+
+  const zukunft = datumInZukunft(values.datum);
+  if (zukunft) {
+    return { fehler: zukunft };
+  }
 
   const fehler = await pruefeGegenDienstleistung(supabase, values);
   if (fehler) {

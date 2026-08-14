@@ -40,6 +40,8 @@ export default async function KundeDetailPage({
   let zeitQuery = supabase
     .from("v_zeiteintraege")
     .select("*")
+    // Nur erbrachte Leistung, keine Entwürfe – siehe 0036.
+    .eq("vorlaeufig", false)
     .eq("kunde_id", id)
     .order("datum", { ascending: false })
     .order("start_zeit", { ascending: false });

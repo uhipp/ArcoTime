@@ -50,6 +50,8 @@ export default async function AuswertungenPage({
   let query = supabase
     .from("v_zeiteintraege")
     .select("*")
+    // Entwürfe zählen nicht – siehe 0036.
+    .eq("vorlaeufig", false)
     .gte("datum", von)
     .lte("datum", bis)
     .order("datum", { ascending: true })

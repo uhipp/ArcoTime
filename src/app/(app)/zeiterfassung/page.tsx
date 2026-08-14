@@ -66,6 +66,11 @@ export default async function ZeiterfassungPage({
     supabase
       .from("v_zeiteintraege")
       .select("*")
+      // Positionen offener Rapporte gehören hier nicht hin: Sie sind
+      // Auftragsinhalt, oft mit einem Datum in der Zukunft, und werden im
+      // Rapport bearbeitet. Erst mit dem Abschluss werden sie zu erfasster
+      // Zeit – siehe 0036.
+      .eq("vorlaeufig", false)
       .eq("mitarbeiter_id", aktuellerUserId)
       .gte("datum", vonDatum)
       .lte("datum", bisDatum)

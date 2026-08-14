@@ -164,6 +164,11 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
   zahlungskondition_tage: number;
   konto: string | null;
   mwst_code: string | null;
+  // Vorläufig = gehört zu einem Rapport, der noch nicht signiert oder
+  // abgeschlossen ist. Zählt weder in Auswertungen noch im Export – siehe
+  // Migration 0036.
+  vorlaeufig: boolean;
+  rapport_status: string | null;
 };
 
 export type RapportStatus = "offen" | "signiert" | "abgeschlossen" | "storniert";

@@ -33,6 +33,18 @@ Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der �
 
 Nach dem Anlegen landest du direkt auf der Detailseite, wo du die Positionen erfasst.
 
+## Wann eine Position zählt
+
+Ein Rapport wird meist **vorbereitet**: Die Disposition legt die Aufträge der kommenden Woche an, oft schon mit bekannten Positionen – Reisespesen, angenommene Stunden – und mit einer Beschreibung dessen, was zu tun ist. Der Monteur passt vor Ort die Werte an und schliesst ab.
+
+Bis zum Abschluss ist eine Position eine **Absicht, kein Nachweis**. Sie erscheint deshalb weder in den [Auswertungen](/hilfe/auswertungen) noch im [Export](/hilfe/export) und auch nicht in der [Zeiterfassungsliste](/hilfe/zeiterfassung) – dort stünden sonst Zeiten, die noch gar nicht geleistet sein können. Im [Kalender](/hilfe/kalender) erscheint der Einsatz als **geplant**.
+
+Mit dem Abschliessen oder Signieren zählt alles auf einmal: Es wird nichts kopiert und nichts verschoben, der Rapport wechselt lediglich seinen Status. Ein **stornierter** Rapport zählt nie.
+
+Daraus folgt: **Ein Rapport mit Datum in der Zukunft lässt sich nicht abschliessen.** Vorbereiten ja, abschliessen erst, wenn der Tag da ist.
+
+Nicht betroffen ist die Prüfung der Tagesarbeitszeit – sie zählt auch vorläufige Positionen mit. Sie fragt, ob ein Tag überhaupt plausibel ist, und das gilt für die Planung genauso: Wenn die Disposition jemandem vierzehn Stunden auf einen Tag legt, soll das auffallen.
+
 ## Positionen erfassen
 
 Jede Position ist ein ganz normaler Zeiteintrag – sie wird verrechnet, exportiert und erscheint in den Auswertungen wie jeder andere Eintrag auch. Der Rapport ist nur die Klammer darum.
