@@ -215,6 +215,10 @@
       {
         "typ": "neu",
         "text": "Hat jemand anders einen Datensatz gerade offen, erscheint beim Öffnen ein Hinweis mit Namen. Wer zuerst da war, darf speichern; wer später dazukommt, kann nur lesen. Die Anwesenheit läuft nach zwei Minuten ohne Lebenszeichen von selbst ab – niemand bleibt ausgesperrt."
+      },
+      {
+        "typ": "neu",
+        "text": "Rapporte lassen sich mit der Unterschrift des Kunden abschliessen – auf dem Tablet mit Finger oder Stift, am Rechner mit der Maus. Der Abschluss ohne Unterschrift bleibt als Ausweg bestehen und verlangt weiterhin einen Vermerk."
       }
     ]
   },

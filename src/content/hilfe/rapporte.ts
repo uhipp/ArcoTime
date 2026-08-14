@@ -41,7 +41,9 @@ Solange ein Rapport offen ist, zählen seine Positionen nirgends. Der Abschluss 
 
 Beim Abschliessen erhält der Rapport seine **Nummer** und wird **unveränderlich**. Korrekturen laufen danach über Storno und Neuerstellung.
 
-Weil die Unterschrift auf dem Tablet noch nicht zur Verfügung steht, verlangt ArcoTime derzeit einen kurzen **Vermerk**, warum keine Unterschrift vorliegt – etwa „Kunde nicht mehr vor Ort". Er bleibt am Rapport sichtbar.
+Der gemeinte Weg ist **„Signieren und abschliessen"**: Name der unterzeichnenden Person eintragen, den Kunden im Feld darunter unterschreiben lassen – mit Finger oder Stift auf dem Tablet, mit der Maus am Rechner – und abschliessen. Die Unterschrift bleibt am Rapport sichtbar.
+
+Ist niemand Unterschriftsberechtigtes mehr vor Ort, gibt es darunter **„Ohne Unterschrift abschliessen"**. Dieser Weg verlangt einen kurzen **Vermerk**, warum keine Unterschrift vorliegt – etwa „Kunde nicht mehr vor Ort". Er liegt bewusst eine Ebene tiefer, damit er nicht zur Gewohnheit wird.
 
 Zwei Fälle lassen keinen Abschluss zu: ein Rapport **ohne Positionen** und einer mit **Datum in der Zukunft**. Beim zweiten ist der Einsatz schlicht noch nicht geleistet.
 

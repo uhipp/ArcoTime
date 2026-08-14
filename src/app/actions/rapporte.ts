@@ -598,3 +598,56 @@ export async function schliesseRapportAb(
     )
   );
 }
+
+// Rapport mit Unterschrift des Kunden abschliessen.
+//
+// Der Weg, der eigentlich gemeint ist: Der Kunde bestätigt vor Ort, was
+// geleistet wurde. Der Abschluss ohne Unterschrift bleibt daneben
+// bestehen – er ist der Ausweg, wenn niemand Unterschriftsberechtigtes
+// mehr da ist, und verlangt dafür einen Vermerk.
+//
+// Die Unterschrift steht als PNG-Data-URL in der Zeile des Rapports. Sie
+// gehört untrennbar dazu und ist wenige Kilobyte gross; ein Objekt im
+// Dateispeicher daneben könnte verwaisen oder separat gelöscht werden
+// (siehe 0026).
+export async function signiereRapport(
+  rapportId: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  const supabase = await createClient();
+  const unterschrift = String(formData.get("unterschrift") ?? "").trim();
+  const unterzeichner = String(formData.get("unterzeichner_name") ?? "").trim();
+
+  if (unterzeichner === "") {
+    return { fehler: "Bitte den Namen der unterzeichnenden Person angeben." };
+  }
+  if (!unterschrift.startsWith("data:image/png")) {
+    return { fehler: "Es fehlt die Unterschrift. Bitte im Feld oben unterschreiben." };
+  }
+
+  const { error } = await supabase.rpc("schliesse_rapport", {
+    p_rapport_id: rapportId,
+    p_status: "signiert",
+    p_unterschrift: unterschrift,
+    p_unterzeichner: unterzeichner,
+    p_vermerk: null,
+  });
+
+  if (error) {
+    return { fehler: error.message };
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/rapporte");
+  // Ab jetzt zählen die Positionen als erfasste Zeit – siehe 0036.
+  revalidatePath("/auswertungen");
+  revalidatePath("/zeiterfassung");
+  revalidatePath("/kalender");
+  redirect(
+    mitErfolg(
+      `/rapporte/${rapportId}`,
+      "Rapport signiert – die Positionen zählen ab jetzt als erfasste Zeit."
+    )
+  );
+}

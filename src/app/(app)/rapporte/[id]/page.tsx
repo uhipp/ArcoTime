@@ -18,6 +18,7 @@ import {
   aktualisierePosition,
   loeschePosition,
   schliesseRapportAb,
+  signiereRapport,
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
@@ -277,13 +278,35 @@ export default async function RapportDetailPage({
 
       {offen && (
         <RapportAbschluss
-          action={schliesseRapportAb.bind(null, id)}
+          signierenAction={signiereRapport.bind(null, id)}
+          ohneUnterschriftAction={schliesseRapportAb.bind(null, id)}
           anzahlPositionen={positionen.length}
           datumInZukunft={rapport.datum > heuteIso()}
         />
       )}
 
-      {!offen && rapport.abschluss_vermerk && (
+      {!offen && rapport.unterschrift_png && (
+        <div className="bg-white rounded-lg border p-5 max-w-2xl">
+          <h2 className="text-lg font-medium mb-1">Unterschrift</h2>
+          <p className="text-sm text-gray-500 mb-3">
+            {rapport.unterzeichner_name}
+            {rapport.signiert_am
+              ? ` · ${new Date(rapport.signiert_am).toLocaleString("de-CH")}`
+              : ""}
+          </p>
+          {/* Bewusst ein einfaches img: Die Unterschrift ist eine
+              Data-URL in der Zeile des Rapports, next/image brächte hier
+              nichts ausser Umwegen. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={rapport.unterschrift_png}
+            alt={`Unterschrift von ${rapport.unterzeichner_name ?? "Kunde"}`}
+            className="max-h-40 border rounded bg-white"
+          />
+        </div>
+      )}
+
+      {!offen && !rapport.unterschrift_png && rapport.abschluss_vermerk && (
         <p className="text-sm text-gray-500 max-w-2xl">
           Abgeschlossen ohne Unterschrift. Vermerk:{" "}
           <strong>{rapport.abschluss_vermerk}</strong>
@@ -291,8 +314,8 @@ export default async function RapportDetailPage({
       )}
 
       <p className="text-sm text-gray-400">
-        Unterschrift auf dem Tablet, PDF und Versand folgen als nächste
-        Etappe – siehe docs/phase8-arbeitsrapport-plan.md.
+        PDF und Versand folgen als nächste Etappe – siehe
+        docs/phase8-arbeitsrapport-plan.md.
       </p>
     </div>
   );
