@@ -11,7 +11,7 @@ export const anfragen: HilfeArtikel[] = [
       "wiedervorlage",
       "zuweisen",
       "übernehmen",
-      "erledigen",
+      "erledigen", "rapport aus anfrage", "abschliessen", "löschen",
       "kanal",
       "priorität",
       "schnellerfassung",
@@ -69,17 +69,24 @@ Mehr dazu unter [Benachrichtigungen](/hilfe/benachrichtigungen).
 
 ## Anfrage erledigen
 
-Eine Anfrage abschliessen erzeugt **immer** einen Zeiteintrag – auch wenn nichts verrechnet wird (dann mit Rabatt 100%). So bleibt die tatsächlich aufgewendete Zeit vollständig erfasst. Dafür auf der Anfrage-Detailseite Projekt, Dienstleistung und Dauer angeben und auf "Erledigen" klicken.
+Auf der Detailseite stehen drei Wege zur Auswahl. Bei allen dreien werden Änderungen an Titel, Beschreibung und Zuweisung mitgespeichert – du musst vorher nicht separat auf "Speichern" klicken.
 
-Drei Dinge passieren dabei automatisch:
+**Erledigen mit Zeiteintrag** ist der übliche Weg: Projekt, Dienstleistung und Dauer angeben, fertig. Auch nicht verrechnete Arbeit gehört hier hinein (dann mit Rabatt 100%), damit die tatsächlich aufgewendete Zeit vollständig erfasst bleibt.
 
-- **Änderungen oben werden mitgespeichert.** Du musst Titel, Beschreibung oder Zuweisung nicht separat über "Speichern" sichern, bevor du erledigst – ein Klick auf "Erledigen" übernimmt beides.
+**Erledigen mit Rapport** legt einen [Rapport](/hilfe/rapporte)-Entwurf für diesen Kunden an und übernimmt Titel und Beschreibung der Anfrage als Bemerkung. Die einzelnen Positionen erfasst du danach direkt im Rapport – ArcoTime führt dich dorthin. Der richtige Weg, wenn aus der Anfrage ein Einsatz vor Ort mit mehreren Leistungen wird.
+
+**Nur als erledigt markieren** schliesst die Anfrage ohne Zeiteintrag und ohne Rapport. Gedacht für alles, was keine Leistung nach sich zieht: eine Rückfrage, ein Irrläufer, etwas, das sich von selbst erledigt hat. Steht allen offen, nicht nur Admins.
+
+Beim Zeiteintrag passiert zusätzlich automatisch:
+
 - **Der Name der ausführenden Person kommt als erste Zeile in den Zeiteintrag.** Das ist die gleiche Konvention wie in der [Zeiterfassung](/hilfe/zeiterfassung) und für den Export nötig. Du musst den Namen also nicht selbst in die Beschreibung tippen.
 - **War die Anfrage niemandem zugewiesen**, übernimmt die ausführende Person automatisch die Zuständigkeit. Wer eine Anfrage erledigt, ist damit auch dafür verantwortlich – sonst stünde nur am Zeiteintrag, wer gearbeitet hat.
 
 Im Feld **"Mitarbeitende"** lässt sich eine andere Person als die zugewiesene wählen, wenn jemand anderes die Arbeit übernommen hat. Der Zeiteintrag läuft dann auf die ausführende Person, die Anfrage bleibt bei der zuständigen.
 
-Eine erledigte Anfrage lässt sich weiterhin einsehen, aber nicht mehr per Drag & Drop verschieben.
+Eine erledigte Anfrage lässt sich weiterhin einsehen, aber nicht mehr per Drag & Drop verschieben. Wurde sie ohne Zeiteintrag geschlossen, kann sie später trotzdem noch verrechnet werden – der Block heisst dann "Nachträglich verrechnen".
+
+**Löschen** darf eine Anfrage weiterhin nur ein Admin. Erledigen und Löschen sind zwei verschiedene Dinge: Erledigtes bleibt nachvollziehbar, Gelöschtes ist weg.
 `,
   },
 ];

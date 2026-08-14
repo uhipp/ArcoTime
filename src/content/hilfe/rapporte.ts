@@ -25,7 +25,7 @@ Ein Rapport ist **optional**. Fernwartung, Büroarbeit, interne Zeit oder eine t
 
 ## Einen Rapport erstellen
 
-**"+ Neuer Rapport"** auf der Übersicht. Im Kopf legst du fest:
+Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der Übersicht. Im Kopf legst du fest:
 
 - **Kunde** und **Projekt** – zur Auswahl stehen nur Projekte dieses Kunden
 - **Einsatzdatum** und **ausgeführt von** – beides gilt für alle Positionen, du musst es nicht je Zeile wiederholen
@@ -45,6 +45,8 @@ Je nach gewählter Leistung erscheint das passende Feld:
 Welche Leistungen als Arbeitszeit zählen, legt ein Admin unter [Dienstleistungen](/hilfe/dienstleistungen) fest. Preis, MWSt-Satz und Rabatt werden beim Hinzufügen eingefroren – eine spätere Änderung an den Stammdaten verändert einen bestehenden Rapport nicht.
 
 Einen Timer gibt es hier bewusst nicht: Wer einen Rapport schreibt, ist mit der Arbeit fertig.
+
+Der zweite Weg führt über eine [Anfrage](/hilfe/anfragen): Dort schliesst **"Erledigen mit Rapport"** die Anfrage ab und legt gleichzeitig den passenden Rapport-Entwurf an – Kunde, Projekt und zuständige Person sind bereits gesetzt, Titel und Beschreibung stehen als Bemerkung drin. Der übliche Ablauf, wenn aus einer Kundenanfrage ein Einsatz vor Ort wird.
 
 ## Rapportnummer
 

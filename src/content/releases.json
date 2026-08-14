@@ -103,6 +103,14 @@
       {
         "typ": "neu",
         "text": "Projektteam: Auf der Projektdetailseite lässt sich festlegen, wer ein nicht öffentliches Projekt sehen darf. Wer ein Projekt anlegt, gehört automatisch dazu."
+      },
+      {
+        "typ": "neu",
+        "text": "Eine Anfrage lässt sich neu auch über einen Rapport abschliessen – Titel und Beschreibung wandern dabei als Bemerkung in den Rapport-Entwurf."
+      },
+      {
+        "typ": "neu",
+        "text": "„Nur als erledigt markieren“ schliesst eine Anfrage ohne Zeiteintrag und ohne Rapport, für alles was keine Leistung nach sich zieht. Steht allen Benutzern offen; Löschen bleibt beim Admin."
       }
     ]
   },

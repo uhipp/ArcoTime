@@ -12,6 +12,8 @@ import {
   updateAnfrage,
   deleteAnfrage,
   erledigeAnfrage,
+  erledigeAnfrageMitRapport,
+  erledigeAnfrageOhneNachweis,
 } from "@/app/actions/anfragen";
 import type { Anfrage } from "@/lib/types";
 
@@ -55,6 +57,8 @@ export default async function AnfrageDetailPage({
   const updateAction = updateAnfrage.bind(null, id);
   const deleteAction = deleteAnfrage.bind(null, id);
   const erledigenAction = erledigeAnfrage.bind(null, id);
+  const rapportAction = erledigeAnfrageMitRapport.bind(null, id);
+  const ohneNachweisAction = erledigeAnfrageOhneNachweis.bind(null, id);
 
   const bereitsVerrechnet = Boolean(anfrage.zeiteintrag_id);
 
@@ -98,9 +102,10 @@ export default async function AnfrageDetailPage({
               {anfrage.status === "erledigt" ? "Nachträglich verrechnen" : "Anfrage erledigen"}
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Erzeugt beim Abschluss direkt einen Zeiteintrag, damit nichts vergessen wird.
-              Nicht verrechenbare Arbeit bitte über das interne Projekt mit Rabatt 100% erfassen.
-              Änderungen oben werden dabei mitgespeichert.
+              Drei Wege, eine Anfrage abzuschliessen – Änderungen oben werden
+              bei allen dreien mitgespeichert. Der Zeiteintrag unten ist der
+              übliche Weg; nicht verrechenbare Arbeit bitte über das interne
+              Projekt mit Rabatt 100% erfassen.
             </p>
             <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -197,13 +202,49 @@ export default async function AnfrageDetailPage({
                   automatisch als erste Zeile ergänzt.
                 </p>
               </div>
-              <button
-                type="submit"
-                formAction={erledigenAction}
-                className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
-              >
-                {anfrage.status === "erledigt" ? "Verrechnen" : "Erledigen"}
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="submit"
+                  formAction={erledigenAction}
+                  className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+                >
+                  {anfrage.status === "erledigt"
+                    ? "Verrechnen"
+                    : "Erledigen mit Zeiteintrag"}
+                </button>
+
+                {anfrage.status !== "erledigt" && (
+                  <>
+                    {/* Zweiter und dritter Weg. Die Felder des
+                        Zeiteintrags-Blocks tragen kein required, die beiden
+                        Knöpfe brauchen deshalb kein formNoValidate – und
+                        dürfen es auch nicht haben, sonst fiele die Prüfung
+                        von Kunde und Titel der Anfrage gleich mit weg. */}
+                    <button
+                      type="submit"
+                      formAction={rapportAction}
+                      className="rounded border border-arcos-steel text-arcos-steel text-sm font-medium px-4 py-2 hover:bg-gray-50"
+                    >
+                      Erledigen mit Rapport
+                    </button>
+                    <button
+                      type="submit"
+                      formAction={ohneNachweisAction}
+                      className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
+                    >
+                      Nur als erledigt markieren
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className="text-xs text-gray-400">
+                <strong>Mit Rapport</strong> legt einen Rapport-Entwurf für
+                diesen Kunden an und übernimmt Titel und Beschreibung als
+                Bemerkung – die Positionen erfasst du danach im Rapport.
+                <strong> Nur als erledigt markieren</strong> schliesst die
+                Anfrage ohne Zeiteintrag und ohne Rapport, etwa bei einer
+                blossen Rückfrage.
+              </p>
             </div>
           </div>
         )}

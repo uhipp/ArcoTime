@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { heuteIso } from "@/lib/date-utils";
-import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
+import { mitNamePraefix, ohneNamenszeile } from "@/lib/mitarbeiter-praefix";
 import { benachrichtigeZuweisung } from "@/lib/anfrage-benachrichtigung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import type { AnfrageStatus } from "@/lib/types";
@@ -302,6 +302,134 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
   revalidatePath("/anfragen");
   revalidatePath("/zeiterfassung");
   redirect(mitErfolg(`/anfragen/${id}`, "Anfrage erledigt und Zeiteintrag erstellt."));
+}
+
+// ---------------------------------------------------------
+// Weitere Abschlusswege
+// ---------------------------------------------------------
+// Bis hierher liess sich eine Anfrage nur über einen Zeiteintrag
+// abschliessen. Mit den Rapporten war der Ablauf nicht mehr durchgängig:
+// Wer den Einsatz als Rapport dokumentiert, hätte die zugehörige Anfrage
+// nur von Hand nachziehen können. Und manche Anfrage erledigt sich ohne
+// jede Leistung – eine Rückfrage, ein Irrläufer.
+//
+// Beide Wege teilen sich die Nachbearbeitung der Anfrage-Felder: Sie
+// stehen im selben Formular (siehe erledigeAnfrage), müssen also
+// mitgespeichert werden, sonst gehen Änderungen direkt vor dem Abschluss
+// verloren.
+async function anfrageFelderFuerAbschluss(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  formData: FormData,
+  ausfuehrendeId: string | null
+): Promise<Record<string, unknown>> {
+  // Fehlt "titel", stammt der Aufruf nicht von der Detailseite; dann
+  // bleiben die Stammdaten der Anfrage unangetastet.
+  if (formData.get("titel") === null) return {};
+
+  const werte = anfrageFromForm(formData);
+
+  // Wer abschliesst, übernimmt die Zuständigkeit – eine erledigte Anfrage
+  // ohne zuständige Person ist ein Loch in der Nachvollziehbarkeit.
+  if (!werte.zugewiesen_an) werte.zugewiesen_an = ausfuehrendeId;
+
+  const bekannteNamen = await alleNamen(supabase);
+  const zustaendigName = await nameFuer(supabase, werte.zugewiesen_an);
+  if (zustaendigName) {
+    werte.beschreibung = mitNamePraefix(werte.beschreibung, zustaendigName, bekannteNamen);
+  }
+  return werte;
+}
+
+// Abschluss ohne Nachweis: kein Zeiteintrag, kein Rapport. Steht allen
+// offen, nicht nur Admins – wer eine Anfrage bearbeiten darf, darf sie
+// auch als erledigt kennzeichnen. Das Löschen bleibt davon unberührt und
+// weiterhin dem Admin vorbehalten (RLS anfragen_delete, siehe 0013).
+export async function erledigeAnfrageOhneNachweis(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const werte = await anfrageFelderFuerAbschluss(supabase, formData, userData.user?.id ?? null);
+
+  const { error } = await supabase
+    .from("anfragen")
+    .update({ ...werte, status: "erledigt", erledigt_am: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/anfragen");
+  redirect(mitErfolg(`/anfragen/${id}`, "Anfrage erledigt."));
+}
+
+// Abschluss über einen Rapport: legt den Rapport als Entwurf an und
+// übernimmt die Beschreibung der Anfrage als Bemerkung. Die Positionen
+// erfasst man anschliessend im Rapport selbst, deshalb führt der Weg
+// direkt dorthin.
+export async function erledigeAnfrageMitRapport(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+
+  // Bewusst aus dem Formular und nicht aus der Datenbank: Kunde, Projekt
+  // und Beschreibung können unmittelbar vor dem Klick geändert worden
+  // sein, und dann gehört der neue Stand in den Rapport.
+  const kunde_id = String(formData.get("kunde_id") ?? "").trim();
+  const projekt_id = String(formData.get("projekt_id") ?? "").trim();
+  const titel = String(formData.get("titel") ?? "").trim();
+  const zugewiesen = String(formData.get("zugewiesen_an") ?? "").trim();
+
+  if (!kunde_id) {
+    redirect(
+      `/anfragen/${id}?error=${encodeURIComponent(
+        "Für einen Rapport braucht es einen Kunden. Bitte oben einen auswählen."
+      )}`
+    );
+  }
+
+  // Die Namenszeile gehört nicht in die Bemerkung: Der Rapport führt die
+  // ausführende Person als eigenes Feld, sie stünde dort doppelt.
+  const bekannteNamen = await alleNamen(supabase);
+  const sachtext = ohneNamenszeile(String(formData.get("beschreibung") ?? ""), bekannteNamen);
+  const bemerkung = [titel, sachtext].filter((t) => t !== "").join("\n") || null;
+
+  const mitarbeiter_id = zugewiesen || userData.user?.id;
+
+  const { data: rapport, error: rapportError } = await supabase
+    .from("rapporte")
+    .insert({
+      kunde_id,
+      projekt_id: projekt_id || null,
+      mitarbeiter_id,
+      datum: heuteIso(),
+      bemerkung,
+    })
+    .select("id")
+    .single();
+
+  if (rapportError || !rapport) {
+    redirect(
+      `/anfragen/${id}?error=${encodeURIComponent(
+        rapportError?.message ?? "Rapport konnte nicht angelegt werden."
+      )}`
+    );
+  }
+
+  const werte = await anfrageFelderFuerAbschluss(supabase, formData, mitarbeiter_id ?? null);
+
+  const { error } = await supabase
+    .from("anfragen")
+    .update({ ...werte, status: "erledigt", erledigt_am: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/anfragen");
+  revalidatePath("/rapporte");
+  redirect(
+    mitErfolg(`/rapporte/${rapport.id}`, "Anfrage erledigt – jetzt Positionen erfassen.")
+  );
 }
 
 // Übernimmt eine noch nicht zugewiesene Anfrage für sich selbst.
