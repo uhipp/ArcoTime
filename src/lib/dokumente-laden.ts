@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { DokumentBereich, Dokument } from "@/lib/types";
 
 // Gemeinsamer Ladehelfer für die Dokumente-Sektion, die identisch auf
-// fünf verschiedenen Detailseiten eingebunden wird (Kunde, Projekt,
-// Mitarbeitende, Anfrage, Zeiteintrag).
+// sechs verschiedenen Detailseiten eingebunden wird (Kunde, Projekt,
+// Mitarbeitende, Anfrage, Zeiteintrag, Rapport).
 export async function ladeDokumente(
   supabase: Awaited<ReturnType<typeof createClient>>,
   bereich: DokumentBereich,

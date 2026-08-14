@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { mitErfolg } from "@/lib/erfolg";
 import { heuteIso } from "@/lib/date-utils";
 import { mitNamePraefix, ohneNamenszeile } from "@/lib/mitarbeiter-praefix";
@@ -340,6 +341,73 @@ async function anfrageFelderFuerAbschluss(
   return werte;
 }
 
+// Kopiert ausgewählte Dokumente der Anfrage an den neuen Rapport.
+//
+// Bewusst eine echte Kopie im Storage und nicht dieselbe Datei unter zwei
+// Einträgen: loescheDokument() entfernt zum Datensatz immer auch das
+// Storage-Objekt. Zwei Zeilen auf denselben Pfad hätten bedeutet, dass das
+// Löschen in der Anfrage dem Monteur den Plan aus dem Rapport zieht.
+// Fachlich passt die Kopie ohnehin besser: Der Rapport hält fest, was dem
+// Monteur mitgegeben wurde, auch wenn die Anfrage später überarbeitet wird.
+//
+// Ein Fehlschlag bleibt folgenlos für den Abschluss: Der Rapport steht zu
+// diesem Zeitpunkt, und ein nicht kopierter Plan lässt sich von Hand
+// nachladen – ihn deswegen wieder zu verwerfen wäre der schlechtere Tausch.
+// Zurückgegeben wird, wie viele tatsächlich übernommen wurden.
+async function uebernehmeDokumente(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  dokumentIds: string[],
+  rapportId: string
+): Promise<number> {
+  if (dokumentIds.length === 0) return 0;
+
+  const { data: quellen } = await supabase
+    .from("dokumente")
+    .select("id, dateiname, speicherpfad, mime_type, groesse_bytes, kategorie_id, notiz")
+    .in("id", dokumentIds);
+
+  if (!quellen || quellen.length === 0) return 0;
+
+  const admin = createAdminClient();
+  let uebernommen = 0;
+
+  for (const q of quellen) {
+    const { data: zeile, error } = await supabase
+      .from("dokumente")
+      .insert({
+        bereich: "rapport",
+        bezug_id: rapportId,
+        dateiname: q.dateiname,
+        speicherpfad: "pending",
+        mime_type: q.mime_type,
+        groesse_bytes: q.groesse_bytes,
+        kategorie_id: q.kategorie_id,
+        notiz: q.notiz,
+      })
+      .select("id")
+      .single();
+
+    if (error || !zeile) continue;
+
+    const zielPfad = `rapport/${rapportId}/${zeile.id}-${q.dateiname.replace(/[^\w.-]+/g, "_")}`;
+    const { error: kopierFehler } = await admin.storage
+      .from("dokumente")
+      .copy(q.speicherpfad, zielPfad);
+
+    if (kopierFehler) {
+      // Ohne Datei ist die Zeile wertlos – wieder entfernen, sonst steht
+      // im Rapport ein Dokument, das sich nicht öffnen lässt.
+      await supabase.from("dokumente").delete().eq("id", zeile.id);
+      continue;
+    }
+
+    await supabase.from("dokumente").update({ speicherpfad: zielPfad }).eq("id", zeile.id);
+    uebernommen += 1;
+  }
+
+  return uebernommen;
+}
+
 // Abschluss ohne Nachweis: kein Zeiteintrag, kein Rapport. Steht allen
 // offen, nicht nur Admins – wer eine Anfrage bearbeiten darf, darf sie
 // auch als erledigt kennzeichnen. Das Löschen bleibt davon unberührt und
@@ -414,11 +482,22 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
     );
   }
 
+  const uebernommen = await uebernehmeDokumente(
+    supabase,
+    formData.getAll("uebernehmen_dokument").map(String),
+    rapport.id
+  );
+
   const werte = await anfrageFelderFuerAbschluss(supabase, formData, mitarbeiter_id ?? null);
 
   const { error } = await supabase
     .from("anfragen")
-    .update({ ...werte, status: "erledigt", erledigt_am: new Date().toISOString() })
+    .update({
+      ...werte,
+      status: "erledigt",
+      erledigt_am: new Date().toISOString(),
+      rapport_id: rapport.id,
+    })
     .eq("id", id);
 
   if (error) {
@@ -427,8 +506,15 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
 
   revalidatePath("/anfragen");
   revalidatePath("/rapporte");
+  const dokumentHinweis =
+    uebernommen > 0
+      ? ` ${uebernommen} ${uebernommen === 1 ? "Dokument" : "Dokumente"} übernommen.`
+      : "";
   redirect(
-    mitErfolg(`/rapporte/${rapport.id}`, "Anfrage erledigt – jetzt Positionen erfassen.")
+    mitErfolg(
+      `/rapporte/${rapport.id}`,
+      `Anfrage erledigt – jetzt Positionen erfassen.${dokumentHinweis}`
+    )
   );
 }
 

@@ -222,6 +222,7 @@ export type Anfrage = {
   wiedervorlage_am: string | null;
   erledigt_am: string | null;
   zeiteintrag_id: string | null;
+  rapport_id: string | null;
   erstellt_von: string | null;
   created_at: string;
   kunden?: Pick<Kunde, "id" | "name" | "vorname"> | null;
@@ -240,7 +241,13 @@ export type BelegExport = {
   projekte?: { bezeichnung: string; kunden?: { name: string; vorname: string | null } | null } | null;
 };
 
-export type DokumentBereich = "kunde" | "projekt" | "mitarbeitende" | "anfrage" | "zeiteintrag";
+export type DokumentBereich =
+  | "kunde"
+  | "projekt"
+  | "mitarbeitende"
+  | "anfrage"
+  | "zeiteintrag"
+  | "rapport";
 
 export type Dokument = {
   id: string;

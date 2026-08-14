@@ -202,6 +202,39 @@ export default async function AnfrageDetailPage({
                   automatisch als erste Zeile ergänzt.
                 </p>
               </div>
+              {anfrage.status !== "erledigt" && dokumente.length > 0 && (
+                <div className="rounded border bg-gray-50 px-3 py-3">
+                  <p className="text-xs font-medium text-gray-600 mb-2">
+                    Dokumente in den Rapport übernehmen
+                  </p>
+                  <div className="space-y-1">
+                    {dokumente.map((d) => (
+                      <label key={d.id} className="flex items-start gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          name="uebernehmen_dokument"
+                          value={d.id}
+                          className="mt-1"
+                        />
+                        <span>
+                          {d.dateiname}
+                          {d.dokument_kategorien?.bezeichnung && (
+                            <span className="text-gray-400">
+                              {" "}
+                              · {d.dokument_kategorien.bezeichnung}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Gilt nur für „Erledigen mit Rapport“. Die Dokumente werden
+                    kopiert – die Originale bleiben bei der Anfrage.
+                  </p>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="submit"
@@ -250,11 +283,24 @@ export default async function AnfrageDetailPage({
         )}
       </AnfrageForm>
 
-      {bereitsVerrechnet && (
-        <p className="text-sm text-gray-500">
-          <Link href={`/zeiterfassung/${anfrage.zeiteintrag_id}`} className="text-arcos-steel hover:underline">
-            Zugehörigen Zeiteintrag ansehen
-          </Link>
+      {(bereitsVerrechnet || anfrage.rapport_id) && (
+        <p className="text-sm text-gray-500 flex flex-wrap gap-4">
+          {bereitsVerrechnet && (
+            <Link
+              href={`/zeiterfassung/${anfrage.zeiteintrag_id}`}
+              className="text-arcos-steel hover:underline"
+            >
+              Zugehörigen Zeiteintrag ansehen
+            </Link>
+          )}
+          {anfrage.rapport_id && (
+            <Link
+              href={`/rapporte/${anfrage.rapport_id}`}
+              className="text-arcos-steel hover:underline"
+            >
+              Zugehörigen Rapport ansehen
+            </Link>
+          )}
         </p>
       )}
 

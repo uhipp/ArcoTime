@@ -48,6 +48,10 @@ Einen Timer gibt es hier bewusst nicht: Wer einen Rapport schreibt, ist mit der 
 
 Der zweite Weg führt über eine [Anfrage](/hilfe/anfragen): Dort schliesst **"Erledigen mit Rapport"** die Anfrage ab und legt gleichzeitig den passenden Rapport-Entwurf an – Kunde, Projekt und zuständige Person sind bereits gesetzt, Titel und Beschreibung stehen als Bemerkung drin. Der übliche Ablauf, wenn aus einer Kundenanfrage ein Einsatz vor Ort wird.
 
+## Dokumente am Rapport
+
+Zu jedem Rapport lassen sich Dokumente ablegen – Anweisungen, Pläne, Fotos, alles was die Person braucht, die rausfährt. Kommt der Rapport aus einer [Anfrage](/hilfe/anfragen), können deren Dokumente beim Abschliessen direkt mit übernommen werden.
+
 ## Rapportnummer
 
 Die Nummer im Format **2026-0001** wird erst beim Abschliessen vergeben, nicht beim Anlegen. Ein verworfener Entwurf reisst dadurch keine Lücke in die Nummernfolge. Bis dahin steht in der Übersicht "Entwurf". Die Zählung beginnt in jedem Jahr neu.

@@ -7,6 +7,7 @@ import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateZeiteintrag, deleteZeiteintrag, stoppeTimer } from "@/app/actions/zeiteintraege";
 import { DeleteButton } from "@/components/delete-button";
 import type { Zeiteintrag } from "@/lib/types";
+import Link from "next/link";
 
 export default async function ZeiteintragDetailPage({
   params,
@@ -28,6 +29,7 @@ export default async function ZeiteintragDetailPage({
     { data: kunden },
     { data: rabattsaetze },
     { data: klassenRabatte },
+    { data: herkunft },
     { dokumente, kategorien },
   ] = await Promise.all([
     supabase.from("zeiteintraege").select("*").eq("id", id).single(),
@@ -44,6 +46,9 @@ export default async function ZeiteintragDetailPage({
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
     supabase.from("kundenrabatte").select("kunde_id, klasse_id, rabatt_prozent"),
+    // Rückrichtung: Die Anfrage hält zeiteintrag_id, hier wird danach
+    // gesucht – keine zweite Spalte, die dasselbe behauptet (siehe 0034).
+    supabase.from("anfragen").select("id, titel").eq("zeiteintrag_id", id).maybeSingle(),
     ladeDokumente(supabase, "zeiteintrag", id),
   ]);
 
@@ -57,7 +62,20 @@ export default async function ZeiteintragDetailPage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Zeiteintrag bearbeiten</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">Zeiteintrag bearbeiten</h1>
+          {herkunft && (
+            <p className="text-sm text-gray-500 mt-1">
+              Aus Anfrage{" "}
+              <Link
+                href={`/anfragen/${herkunft.id}`}
+                className="text-arcos-steel hover:underline"
+              >
+                {herkunft.titel}
+              </Link>
+            </p>
+          )}
+        </div>
         {!istExportiert && (
           <DeleteButton action={deleteAction} label="Eintrag löschen" />
         )}

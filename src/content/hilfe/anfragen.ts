@@ -75,6 +75,8 @@ Auf der Detailseite stehen drei Wege zur Auswahl. Bei allen dreien werden Änder
 
 **Erledigen mit Rapport** legt einen [Rapport](/hilfe/rapporte)-Entwurf für diesen Kunden an und übernimmt Titel und Beschreibung der Anfrage als Bemerkung. Die einzelnen Positionen erfasst du danach direkt im Rapport – ArcoTime führt dich dorthin. Der richtige Weg, wenn aus der Anfrage ein Einsatz vor Ort mit mehreren Leistungen wird.
 
+Hängen an der Anfrage bereits **Dokumente** – ein Plan, eine Anweisung, ein Foto –, kannst du beim Abschliessen ankreuzen, welche davon in den Rapport mitgehen sollen. Sie werden kopiert, die Originale bleiben bei der Anfrage. Wird also später eines davon in der Anfrage gelöscht, hat der Monteur seines trotzdem noch.
+
 **Nur als erledigt markieren** schliesst die Anfrage ohne Zeiteintrag und ohne Rapport. Gedacht für alles, was keine Leistung nach sich zieht: eine Rückfrage, ein Irrläufer, etwas, das sich von selbst erledigt hat. Steht allen offen, nicht nur Admins.
 
 Beim Zeiteintrag passiert zusätzlich automatisch:
@@ -85,6 +87,8 @@ Beim Zeiteintrag passiert zusätzlich automatisch:
 Im Feld **"Mitarbeitende"** lässt sich eine andere Person als die zugewiesene wählen, wenn jemand anderes die Arbeit übernommen hat. Der Zeiteintrag läuft dann auf die ausführende Person, die Anfrage bleibt bei der zuständigen.
 
 Eine erledigte Anfrage lässt sich weiterhin einsehen, aber nicht mehr per Drag & Drop verschieben. Wurde sie ohne Zeiteintrag geschlossen, kann sie später trotzdem noch verrechnet werden – der Block heisst dann "Nachträglich verrechnen".
+
+Ist eine Anfrage über einen Zeiteintrag oder einen Rapport abgeschlossen, führt ein Verweis am Ende der Seite direkt dorthin – und umgekehrt steht auf dem Zeiteintrag beziehungsweise dem Rapport, aus welcher Anfrage er entstanden ist. So bleibt der Weg von der Kundenanfrage bis zur verrechneten Leistung in beide Richtungen nachvollziehbar.
 
 **Löschen** darf eine Anfrage weiterhin nur ein Admin. Erledigen und Löschen sind zwei verschiedene Dinge: Erledigtes bleibt nachvollziehbar, Gelöschtes ist weg.
 `,

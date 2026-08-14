@@ -7,6 +7,8 @@ import { mengeLabel } from "@/lib/menge";
 import { DeleteButton } from "@/components/delete-button";
 import { RapportKopfForm } from "@/components/rapport-kopf-form";
 import { DispoTagesspalte } from "@/components/dispo-tagesspalte";
+import { DokumenteBereich } from "@/components/dokumente-bereich";
+import { ladeDokumente } from "@/lib/dokumente-laden";
 import { RapportPositionForm } from "@/components/rapport-position-form";
 import {
   aktualisiereRapport,
@@ -38,6 +40,8 @@ export default async function RapportDetailPage({
     { data: mitarbeitende },
     { data: dienstleistungen },
     { data: rabattsaetze },
+    { data: herkunft },
+    { dokumente, kategorien },
   ] = await Promise.all([
     getCurrentProfile(),
     getCurrentOrganisation(),
@@ -60,6 +64,10 @@ export default async function RapportDetailPage({
       .eq("aktiv", true)
       .order("bezeichnung"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
+    // Rückrichtung der Verknüpfung: Die Anfrage hält rapport_id, hier wird
+    // danach gesucht. Bewusst keine zweite Spalte am Rapport – siehe 0034.
+    supabase.from("anfragen").select("id, titel").eq("rapport_id", id).maybeSingle(),
+    ladeDokumente(supabase, "rapport", id),
   ]);
 
   if (!rapportRoh) notFound();
@@ -87,6 +95,17 @@ export default async function RapportDetailPage({
             {formatDatumCH(rapport.datum)} · {rapport.kunden?.vorname ? `${rapport.kunden.vorname} ` : ""}
             {rapport.kunden?.name}
           </p>
+          {herkunft && (
+            <p className="text-sm text-gray-500 mt-1">
+              Aus Anfrage{" "}
+              <Link
+                href={`/anfragen/${herkunft.id}`}
+                className="text-arcos-steel hover:underline"
+              >
+                {herkunft.titel}
+              </Link>
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Link href="/rapporte" className="text-sm text-arcos-steel hover:underline">
@@ -229,6 +248,22 @@ export default async function RapportDetailPage({
             action={fuegePositionHinzu.bind(null, id)}
           />
         )}
+      </div>
+
+      <div className="max-w-2xl">
+        <h2 className="text-lg font-medium mb-1">Dokumente</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Anweisungen, Pläne und Fotos zu diesem Einsatz – für die Person, die
+          rausfährt.
+        </p>
+        <DokumenteBereich
+          bereich="rapport"
+          bezugId={id}
+          initialDokumente={dokumente}
+          kategorien={kategorien}
+          aktuellerUserId={profile?.id ?? ""}
+          istAdmin={profile?.role === "admin"}
+        />
       </div>
 
       <p className="text-sm text-gray-400">

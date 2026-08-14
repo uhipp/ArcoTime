@@ -111,6 +111,18 @@
       {
         "typ": "neu",
         "text": "„Nur als erledigt markieren“ schliesst eine Anfrage ohne Zeiteintrag und ohne Rapport, für alles was keine Leistung nach sich zieht. Steht allen Benutzern offen; Löschen bleibt beim Admin."
+      },
+      {
+        "typ": "neu",
+        "text": "Rapporte haben eine eigene Dokumentenablage – für Anweisungen, Pläne und Fotos zum Einsatz."
+      },
+      {
+        "typ": "neu",
+        "text": "Beim Abschliessen einer Anfrage über einen Rapport lässt sich auswählen, welche Dokumente der Anfrage in den Rapport mitgehen sollen."
+      },
+      {
+        "typ": "neu",
+        "text": "Zeiteintrag und Rapport zeigen an, aus welcher Anfrage sie entstanden sind – und die Anfrage verweist zurück. Der Weg von der Kundenanfrage bis zur verrechneten Leistung ist damit in beide Richtungen nachvollziehbar."
       }
     ]
   },
