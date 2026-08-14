@@ -8,6 +8,7 @@ import { freieZeitenAm } from "@/app/actions/rapporte";
 import type { Rapport } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import { AbsendeKnopf } from "@/components/absende-knopf";
+import { STAND_FELD } from "@/lib/konflikt";
 
 type KundeOption = { id: string; name: string; vorname: string | null };
 type ProjektOption = { id: string; bezeichnung: string; kunde_id: string };
@@ -100,6 +101,11 @@ export function RapportKopfForm({
 
   return (
     <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
+      {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
+          Datensatz seither unverändert ist – siehe lib/konflikt. */}
+      {rapport?.updated_at && (
+        <input type="hidden" name={STAND_FELD} value={String(rapport.updated_at)} />
+      )}
       {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{meldung}</div>
       )}

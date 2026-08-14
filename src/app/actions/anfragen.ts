@@ -11,6 +11,7 @@ import { benachrichtigeZuweisung } from "@/lib/anfrage-benachrichtigung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import type { AnfrageStatus } from "@/lib/types";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
+import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
 
 async function nameFuer(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -125,9 +126,20 @@ export async function updateAnfrage(
     }
   }
 
-  const { error } = await supabase.from("anfragen").update(values).eq("id", id);
+  // Konfliktprüfung – siehe lib/konflikt.
+  const stand = String(formData.get(STAND_FELD) ?? "") || null;
+  let abfrage = supabase
+    .from("anfragen")
+    .update(values)
+    .eq("id", id);
+  if (stand) abfrage = abfrage.eq("updated_at", stand);
+
+  const { data: geaendert, error } = await abfrage.select("id");
   if (error) {
     return { fehler: error.message };
+  }
+  if (!geaendert || geaendert.length === 0) {
+    return { fehler: await konfliktMeldung(supabase, "anfragen", id, stand) };
   }
 
   if (zuweisungGeaendert && values.zugewiesen_an) {

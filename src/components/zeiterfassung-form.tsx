@@ -13,6 +13,7 @@ import { DatumFeld } from "@/components/datum-feld";
 import Link from "next/link";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { AbsendeKnopf } from "@/components/absende-knopf";
+import { STAND_FELD } from "@/lib/konflikt";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 type KundeOption = Pick<Kunde, "id" | "name" | "vorname">;
@@ -373,6 +374,11 @@ export function ZeiterfassungForm({
   return (
     <>
     <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5">
+      {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
+          Datensatz seither unverändert ist – siehe lib/konflikt. */}
+      {zeiteintrag?.updated_at && (
+        <input type="hidden" name={STAND_FELD} value={String(zeiteintrag.updated_at)} />
+      )}
       {/* Enter in einem Textfeld löst immer den ERSTEN Absendeknopf des
           Formulars aus – und das wäre "Timer starten", der weiter oben
           steht als "Speichern". Dieser unsichtbare Knopf steht davor und

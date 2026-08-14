@@ -10,6 +10,14 @@ export const ersteSchritte: HilfeArtikel[] = [
     inhalt: `
 Willkommen bei ArcoTime. Diese Seite gibt einen kurzen Überblick, wie die Anwendung aufgebaut ist.
 
+## Wenn zwei gleichzeitig am selben Datensatz arbeiten
+
+Bearbeiten zwei Personen denselben Kunden, dasselbe Projekt oder denselben Rapport, gewinnt **nicht** einfach der Letzte. ArcoTime merkt sich beim Öffnen den Stand des Datensatzes und prüft ihn beim Speichern.
+
+Hat jemand anders in der Zwischenzeit gespeichert, wird **nicht überschrieben**. Stattdessen erscheint eine Meldung, wer den Datensatz geändert hat und wann. Deine Eingaben bleiben dabei im Formular stehen: Lade die Seite in einem zweiten Fenster, sieh dir die Änderung an und übertrage deine Anpassung.
+
+Das ist bewusst keine Sperre. Eine Sperre liesse sich im Browser nicht zuverlässig wieder aufheben – wer den Laptop zuklappt, würde alle anderen aussperren.
+
 ## Anmelden
 
 Du meldest dich mit deiner E-Mail-Adresse und deinem Passwort an. Falls du das Passwort vergessen hast, klicke auf **"Passwort vergessen?"** auf der Anmeldeseite – du bekommst dann einen Link per E-Mail, über den du ein neues Passwort setzen kannst.

@@ -207,6 +207,10 @@
       {
         "typ": "fix",
         "text": "Gleichzeitige Einsätze lagen im Dispo-Raster übereinander, der hintere war unsichtbar. Sie stehen jetzt nebeneinander und teilen sich die Breite."
+      },
+      {
+        "typ": "neu",
+        "text": "Konfliktprüfung beim Speichern: Hat jemand anders denselben Datensatz zwischenzeitlich geändert, wird nicht mehr überschrieben. ArcoTime meldet, wer und wann – die eigenen Eingaben bleiben im Formular stehen."
       }
     ]
   },

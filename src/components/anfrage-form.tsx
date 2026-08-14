@@ -8,6 +8,7 @@ import type { Anfrage, Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import Link from "next/link";
 import { AbsendeKnopf } from "@/components/absende-knopf";
+import { STAND_FELD } from "@/lib/konflikt";
 
 type AnfrageKanal = { id: string; wert: string; bezeichnung: string; symbol: string; aktiv: boolean };
 type AnfragePrioritaet = { id: string; wert: string; bezeichnung: string; aktiv: boolean };
@@ -92,6 +93,11 @@ export function AnfrageForm({
   return (
     <>
       <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
+      {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
+          Datensatz seither unverändert ist – siehe lib/konflikt. */}
+      {anfrage?.updated_at && (
+        <input type="hidden" name={STAND_FELD} value={String(anfrage.updated_at)} />
+      )}
         {meldung && (
           <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{meldung}</div>
         )}

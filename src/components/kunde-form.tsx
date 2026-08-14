@@ -6,6 +6,7 @@ import type { Kunde } from "@/lib/types";
 import { PlzOrtFields } from "@/components/plz-ort-fields";
 import Link from "next/link";
 import { AbsendeKnopf } from "@/components/absende-knopf";
+import { STAND_FELD } from "@/lib/konflikt";
 
 export function KundeForm({
   kunde,
@@ -23,6 +24,11 @@ export function KundeForm({
 
   return (
     <form action={formAction} className="space-y-6 max-w-2xl">
+      {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
+          Datensatz seither unverändert ist – siehe lib/konflikt. */}
+      {kunde?.updated_at && (
+        <input type="hidden" name={STAND_FELD} value={String(kunde.updated_at)} />
+      )}
       {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
           {meldung}

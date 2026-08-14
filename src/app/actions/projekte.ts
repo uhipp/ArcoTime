@@ -8,6 +8,7 @@ import { mitErfolg } from "@/lib/erfolg";
 import { loeschHinweis } from "@/lib/loeschen";
 import { getCurrentUser } from "@/lib/get-profile";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
+import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
 
 function projektFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -63,9 +64,19 @@ export async function updateProjekt(
   const supabase = await createClient();
   const values = projektFromForm(formData);
 
-  const { error } = await supabase.from("projekte").update(values).eq("id", id);
+  // Konfliktprüfung: Das Update greift nur, wenn der Datensatz seit dem
+  // Öffnen des Formulars unverändert ist. Sonst betrifft es null Zeilen
+  // und wir melden, statt zu überschreiben (siehe lib/konflikt).
+  const stand = String(formData.get(STAND_FELD) ?? "") || null;
+  let abfrage = supabase.from("projekte").update(values).eq("id", id);
+  if (stand) abfrage = abfrage.eq("updated_at", stand);
+
+  const { data: geaendert, error } = await abfrage.select("id");
   if (error) {
     return { fehler: error.message };
+  }
+  if (!geaendert || geaendert.length === 0) {
+    return { fehler: await konfliktMeldung(supabase, "projekte", id, stand) };
   }
 
   revalidatePath("/projekte");

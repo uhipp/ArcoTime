@@ -32,6 +32,8 @@ export type Kunde = {
   // Vorbelegung des Rabatts bei neuen Zeiteinträgen dieses Kunden. Wirkt
   // nicht rückwirkend – der Rabatt wird pro Eintrag gespeichert.
   standard_rabatt_prozent: number;
+  // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
+  updated_at?: string;
 };
 
 export type ProjektStatus = "aktiv" | "inaktiv";
@@ -47,6 +49,8 @@ export type Projekt = {
   sichtbar_fuer_alle: boolean;
   naechste_belegnummer: number;
   kunden?: Pick<Kunde, "id" | "name" | "vorname">;
+  // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
+  updated_at?: string;
 };
 
 export type Dienstleistungsklasse = {
@@ -88,6 +92,8 @@ export type Dienstleistung = {
   aktiv: boolean;
   dienstleistungsklassen?: Pick<Dienstleistungsklasse, "id" | "bezeichnung">;
   mwst_codes?: Pick<MwstCode, "id" | "code">;
+  // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
+  updated_at?: string;
 };
 
 export type Kundenpreis = {
@@ -128,6 +134,8 @@ export type Zeiteintrag = {
   referenz: string | null;
   beleg_id: string | null;
   preis: number | null;
+  // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
+  updated_at?: string;
 };
 
 // Zeile aus der View v_zeiteintraege (inkl. berechnetem Betrag & Stammdaten)
@@ -201,6 +209,8 @@ export type Rapport = {
   kunden?: Pick<Kunde, "id" | "name" | "vorname" | "email"> | null;
   projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
   profiles?: { id: string; name: string } | null;
+  // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
+  updated_at?: string;
 };
 
 // Anzeigeform der Rapportnummer: 2026-0001. Vor dem Abschliessen gibt es
@@ -233,6 +243,8 @@ export type Anfrage = {
   kunden?: Pick<Kunde, "id" | "name" | "vorname"> | null;
   projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
   zugewiesen?: Pick<Profile, "id" | "name"> | null;
+  // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
+  updated_at?: string;
 };
 
 export type BelegExport = {

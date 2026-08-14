@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { loeschHinweis } from "@/lib/loeschen";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
+import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
 
 function kundeFromForm(formData: FormData) {
   const num = (v: FormDataEntryValue | null) =>
@@ -62,9 +63,19 @@ export async function updateKunde(
   const supabase = await createClient();
   const values = kundeFromForm(formData);
 
-  const { error } = await supabase.from("kunden").update(values).eq("id", id);
+  // Konfliktprüfung: Das Update greift nur, wenn der Datensatz seit dem
+  // Öffnen des Formulars unverändert ist. Sonst betrifft es null Zeilen
+  // und wir melden, statt zu überschreiben (siehe lib/konflikt).
+  const stand = String(formData.get(STAND_FELD) ?? "") || null;
+  let abfrage = supabase.from("kunden").update(values).eq("id", id);
+  if (stand) abfrage = abfrage.eq("updated_at", stand);
+
+  const { data: geaendert, error } = await abfrage.select("id");
   if (error) {
     return { fehler: error.message };
+  }
+  if (!geaendert || geaendert.length === 0) {
+    return { fehler: await konfliktMeldung(supabase, "kunden", id, stand) };
   }
 
   revalidatePath("/kunden");
