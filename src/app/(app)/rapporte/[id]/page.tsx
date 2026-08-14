@@ -112,6 +112,12 @@ export default async function RapportDetailPage({
           )}
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href={`/rapporte/${id}/druck`}
+            className="text-sm text-arcos-steel hover:underline"
+          >
+            Druckansicht
+          </Link>
           <Link href="/rapporte" className="text-sm text-arcos-steel hover:underline">
             Zur Übersicht
           </Link>

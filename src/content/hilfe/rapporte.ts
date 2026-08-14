@@ -35,6 +35,12 @@ Nach dem Anlegen landest du direkt auf der Detailseite, wo du die Positionen erf
 
 Datum und ausführende Person gelten für den **ganzen Rapport** – sie stehen deshalb nur im Kopf und nicht bei den Positionen. Änderst du sie oben, ziehen die bereits erfassten Positionen automatisch nach.
 
+## Druckansicht
+
+Über **„Druckansicht"** oben am Rapport öffnet sich die Fassung, die der Kunde bekommt: Kundenadresse, Einsatz, Positionen mit Mengen und ein Feld für die Bestätigung. **Ohne Preise** – der Rapport ist ein Leistungsnachweis, keine Rechnung.
+
+Ist noch nicht unterschrieben, steht dort eine Linie für Datum und Unterschrift. So lässt sich der Rapport ausdrucken und von Hand unterschreiben, wenn kein Tablet dabei ist.
+
 ## Rapport abschliessen
 
 Solange ein Rapport offen ist, zählen seine Positionen nirgends. Der Abschluss ist damit kein Formalismus, sondern der Moment, in dem die Arbeit gültig wird – er steht unten auf der Rapportseite.

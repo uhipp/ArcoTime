@@ -219,6 +219,10 @@
       {
         "typ": "neu",
         "text": "Rapporte lassen sich mit der Unterschrift des Kunden abschliessen – auf dem Tablet mit Finger oder Stift, am Rechner mit der Maus. Der Abschluss ohne Unterschrift bleibt als Ausweg bestehen und verlangt weiterhin einen Vermerk."
+      },
+      {
+        "typ": "neu",
+        "text": "Druckansicht für Rapporte – die Fassung für den Kunden, ohne Preise. Ist noch nicht unterschrieben, enthält sie eine Linie für Datum und Unterschrift."
       }
     ]
   },
