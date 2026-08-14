@@ -1,5 +1,10 @@
+"use client";
+
 import type { Dienstleistung, Dienstleistungsklasse, MwstCode } from "@/lib/types";
 import Link from "next/link";
+import { useActionState } from "react";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 
 export function DienstleistungForm({
   dienstleistung,
@@ -13,14 +18,19 @@ export function DienstleistungForm({
   klassen: Pick<Dienstleistungsklasse, "id" | "bezeichnung">[];
   mwstCodes: Pick<MwstCode, "id" | "code" | "bezeichnung">[];
   einheiten: { id: string; bezeichnung: string; aktiv: boolean }[];
-  action: (formData: FormData) => void;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
 }) {
+
+  // Fehler kommt aus der Aktion zurueck statt per Weiterleitung –
+  // so bleibt die Eingabe stehen (siehe lib/formular-ergebnis).
+  const [ergebnis, formAction] = useActionState(action, null);
+  const meldung = ergebnis?.fehler ?? error;
   return (
-    <form action={action} className="space-y-6 max-w-2xl">
-      {error && (
+    <form action={formAction} className="space-y-6 max-w-2xl">
+      {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
-          {error}
+          {meldung}
         </div>
       )}
 
@@ -201,12 +211,12 @@ export function DienstleistungForm({
       </label>
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+        <AbsendeKnopf
+          laufttext="Wird gespeichert…"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Speichern
-        </button>
+        </AbsendeKnopf>
         <Link
           href="/dienstleistungen"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"

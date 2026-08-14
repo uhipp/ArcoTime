@@ -9,6 +9,7 @@ import { ladeTagesbelegung, pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { normalisiereZeit } from "@/lib/zeit";
 import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 
 function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -46,14 +47,17 @@ function mitPassenderMenge(
     : { ...werte, dauer_minuten: null, start_zeit: null, end_zeit: null };
 }
 
-export async function createZeiteintrag(formData: FormData) {
+export async function createZeiteintrag(
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const values = zeiteintragFromForm(formData);
 
   const fehler = await pruefeGegenDienstleistung(supabase, values);
   if (fehler) {
-    redirect(`/zeiterfassung?error=${encodeURIComponent(fehler)}`);
+    return { fehler: fehler };
   }
 
   const grenze = await pruefeTagesgrenze({
@@ -63,7 +67,7 @@ export async function createZeiteintrag(formData: FormData) {
     neueMinuten: values.menge === null ? values.dauer_minuten : 0,
   });
   if (grenze) {
-    redirect(`/zeiterfassung?error=${encodeURIComponent(grenze)}`);
+    return { fehler: grenze };
   }
 
   const { error } = await supabase.from("zeiteintraege").insert({
@@ -73,20 +77,24 @@ export async function createZeiteintrag(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/zeiterfassung?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/zeiterfassung");
   redirect(mitErfolg("/zeiterfassung", "Eintrag gespeichert."));
 }
 
-export async function updateZeiteintrag(id: string, formData: FormData) {
+export async function updateZeiteintrag(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = zeiteintragFromForm(formData);
 
   const fehler = await pruefeGegenDienstleistung(supabase, values);
   if (fehler) {
-    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(fehler)}`);
+    return { fehler: fehler };
   }
 
   const grenze = await pruefeTagesgrenze({
@@ -97,7 +105,7 @@ export async function updateZeiteintrag(id: string, formData: FormData) {
     ohneEintragId: id,
   });
   if (grenze) {
-    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(grenze)}`);
+    return { fehler: grenze };
   }
 
   const { error } = await supabase
@@ -106,7 +114,7 @@ export async function updateZeiteintrag(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    redirect(`/zeiterfassung/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/zeiterfassung");

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { loeschHinweis } from "@/lib/loeschen";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 
 function dienstleistungFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -26,20 +27,27 @@ function dienstleistungFromForm(formData: FormData) {
   };
 }
 
-export async function createDienstleistung(formData: FormData) {
+export async function createDienstleistung(
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = dienstleistungFromForm(formData);
 
   const { error } = await supabase.from("dienstleistungen").insert(values);
   if (error) {
-    redirect(`/dienstleistungen/neu?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/dienstleistungen");
   redirect(mitErfolg("/dienstleistungen", "Dienstleistung gespeichert."));
 }
 
-export async function updateDienstleistung(id: string, formData: FormData) {
+export async function updateDienstleistung(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = dienstleistungFromForm(formData);
 
@@ -48,7 +56,7 @@ export async function updateDienstleistung(id: string, formData: FormData) {
     .update(values)
     .eq("id", id);
   if (error) {
-    redirect(`/dienstleistungen/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/dienstleistungen");

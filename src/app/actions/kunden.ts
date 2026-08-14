@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { loeschHinweis } from "@/lib/loeschen";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 
 function kundeFromForm(formData: FormData) {
   const num = (v: FormDataEntryValue | null) =>
@@ -37,26 +38,33 @@ function kundeFromForm(formData: FormData) {
   };
 }
 
-export async function createKunde(formData: FormData) {
+export async function createKunde(
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = kundeFromForm(formData);
 
   const { error } = await supabase.from("kunden").insert(values);
   if (error) {
-    redirect(`/kunden/neu?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/kunden");
   redirect(mitErfolg("/kunden", "Kunde gespeichert."));
 }
 
-export async function updateKunde(id: string, formData: FormData) {
+export async function updateKunde(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = kundeFromForm(formData);
 
   const { error } = await supabase.from("kunden").update(values).eq("id", id);
   if (error) {
-    redirect(`/kunden/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/kunden");

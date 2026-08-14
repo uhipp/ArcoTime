@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { heuteIso } from "@/lib/date-utils";
 import { ZeitFeld } from "@/components/zeit-feld";
 import { freieZeitenAm } from "@/app/actions/rapporte";
 import type { Rapport } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 
 type KundeOption = { id: string; name: string; vorname: string | null };
 type ProjektOption = { id: string; bezeichnung: string; kunde_id: string };
@@ -30,7 +32,7 @@ export function RapportKopfForm({
   projekte: ProjektOption[];
   mitarbeitende: { id: string; name: string }[];
   aktuellerUserId: string;
-  action: (formData: FormData) => void;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
   absendeText: string;
   gesperrt?: boolean;
@@ -40,6 +42,10 @@ export function RapportKopfForm({
   // Aus der Disposition heraus vorbelegtes Einsatzdatum.
   vorgabeDatum?: string;
 }) {
+  // Fehler kommt aus der Aktion zurück statt per Weiterleitung – so bleibt
+  // die Eingabe stehen (siehe lib/formular-ergebnis).
+  const [ergebnis, formAction] = useActionState(action, null);
+  const meldung = ergebnis?.fehler ?? error;
   const [kundeId, setKundeId] = useState(rapport?.kunde_id ?? "");
   const [projektId, setProjektId] = useState(rapport?.projekt_id ?? "");
 
@@ -93,8 +99,10 @@ export function RapportKopfForm({
   }
 
   return (
-    <form action={action} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
-      {error && <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+    <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
+      {meldung && (
+        <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{meldung}</div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -321,12 +329,12 @@ export function RapportKopfForm({
       </div>
 
       {!gesperrt && (
-        <button
-          type="submit"
-          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+        <AbsendeKnopf
+          laufttext="Wird gespeichert…"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {absendeText}
-        </button>
+        </AbsendeKnopf>
       )}
     </form>
   );

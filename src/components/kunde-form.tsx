@@ -1,6 +1,11 @@
+"use client";
+
+import { useActionState } from "react";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import type { Kunde } from "@/lib/types";
 import { PlzOrtFields } from "@/components/plz-ort-fields";
 import Link from "next/link";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 
 export function KundeForm({
   kunde,
@@ -8,14 +13,19 @@ export function KundeForm({
   error,
 }: {
   kunde?: Kunde;
-  action: (formData: FormData) => void;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
 }) {
+  // Fehler kommt aus der Aktion zurück statt über eine Weiterleitung –
+  // damit bleiben die zwanzig Felder ausgefüllt (siehe formular-ergebnis).
+  const [ergebnis, formAction] = useActionState(action, null);
+  const meldung = ergebnis?.fehler ?? error;
+
   return (
-    <form action={action} className="space-y-6 max-w-2xl">
-      {error && (
+    <form action={formAction} className="space-y-6 max-w-2xl">
+      {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
-          {error}
+          {meldung}
         </div>
       )}
 
@@ -110,12 +120,12 @@ export function KundeForm({
       </section>
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+        <AbsendeKnopf
+          laufttext="Wird gespeichert…"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Speichern
-        </button>
+        </AbsendeKnopf>
         <Link
           href="/kunden"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"

@@ -10,7 +10,7 @@ import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
-import type { PositionsErgebnis } from "@/lib/positions-ergebnis";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -72,13 +72,16 @@ function planzeitenAus(formData: FormData) {
   };
 }
 
-export async function erstelleRapport(formData: FormData) {
+export async function erstelleRapport(
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const werte = rapportFromForm(formData);
 
   if (!werte.kunde_id) {
-    redirect(`/rapporte/neu?error=${encodeURIComponent("Bitte einen Kunden wählen.")}`);
+    return { fehler: "Bitte einen Kunden wählen." };
   }
 
   const { data: neuer, error } = await supabase
@@ -91,9 +94,7 @@ export async function erstelleRapport(formData: FormData) {
     .single();
 
   if (error || !neuer) {
-    redirect(
-      `/rapporte/neu?error=${encodeURIComponent(error?.message ?? "Unbekannter Fehler.")}`
-    );
+    return { fehler: error?.message ?? "Unbekannter Fehler." };
   }
 
   revalidatePath("/rapporte");
@@ -102,13 +103,17 @@ export async function erstelleRapport(formData: FormData) {
   redirect(mitErfolg(`/rapporte/${neuer.id}`, "Rapport angelegt – jetzt Positionen erfassen."));
 }
 
-export async function aktualisiereRapport(id: string, formData: FormData) {
+export async function aktualisiereRapport(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const werte = rapportFromForm(formData);
 
   const { error } = await supabase.from("rapporte").update(werte).eq("id", id);
   if (error) {
-    redirect(`/rapporte/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath(`/rapporte/${id}`);
@@ -191,9 +196,9 @@ export async function loescheRapport(id: string) {
 // ---------------------------------------------------------
 export async function fuegePositionHinzu(
   rapportId: string,
-  _bisher: PositionsErgebnis,
+  _bisher: FormularErgebnis,
   formData: FormData
-): Promise<PositionsErgebnis> {
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -276,9 +281,9 @@ export async function fuegePositionHinzu(
 export async function aktualisierePosition(
   rapportId: string,
   zeiteintragId: string,
-  _bisher: PositionsErgebnis,
+  _bisher: FormularErgebnis,
   formData: FormData
-): Promise<PositionsErgebnis> {
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
 
   const { data: rapport } = await supabase

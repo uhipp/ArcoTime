@@ -7,7 +7,7 @@ import { ZeitFeld } from "@/components/zeit-feld";
 import { minutenZwischen } from "@/lib/zeit";
 import { holeTagesbelegung } from "@/app/actions/zeiteintraege";
 import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
-import type { PositionsErgebnis } from "@/lib/positions-ergebnis";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import type { Dienstleistung, ZeiteintragMitDetails } from "@/lib/types";
 
@@ -32,7 +32,7 @@ export function RapportPositionForm({
 }: {
   dienstleistungen: DienstleistungOption[];
   rabattsaetze: Rabattsatz[];
-  action: (bisher: PositionsErgebnis, formData: FormData) => Promise<PositionsErgebnis>;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   // Gesetzt beim Bearbeiten einer bestehenden Position.
   position?: ZeiteintragMitDetails;
   abbrechenHref?: string;

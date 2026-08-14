@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
 import { rabattLabel } from "@/lib/rabatt";
 import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
@@ -11,6 +11,8 @@ import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
 import type { Dienstleistung, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import Link from "next/link";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 type KundeOption = Pick<Kunde, "id" | "name" | "vorname">;
@@ -108,11 +110,16 @@ export function ZeiterfassungForm({
   rabattsaetze: Rabattsatz[];
   klassenRabatte: KlassenRabatt[];
   aktuellerUserId: string;
-  action: (formData: FormData) => void;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   starteTimerAction?: (formData: FormData) => void;
   stoppeTimerAction?: (formData: FormData) => void;
   error?: string;
 }) {
+
+  // Fehler kommt aus der Aktion zurueck statt per Weiterleitung –
+  // so bleibt die Eingabe stehen (siehe lib/formular-ergebnis).
+  const [ergebnis, formAction] = useActionState(action, null);
+  const meldung = ergebnis?.fehler ?? error;
   const istNeu = !zeiteintrag;
   const laeuft = Boolean(zeiteintrag?.timer_gestartet_um);
 
@@ -357,10 +364,10 @@ export function ZeiterfassungForm({
 
   return (
     <>
-    <form action={action} className="space-y-5 bg-white rounded-lg border p-5">
-      {error && (
+    <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5">
+      {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
-          {error}
+          {meldung}
         </div>
       )}
 
@@ -704,12 +711,12 @@ export function ZeiterfassungForm({
             ⏹ Timer stoppen
           </button>
         ) : (
-          <button
-            type="submit"
-            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          <AbsendeKnopf
+            laufttext="Wird gespeichert…"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Speichern
-          </button>
+          </AbsendeKnopf>
         )}
         <Link
           href="/zeiterfassung"

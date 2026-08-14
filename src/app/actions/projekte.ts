@@ -7,6 +7,7 @@ import { heuteIso } from "@/lib/date-utils";
 import { mitErfolg } from "@/lib/erfolg";
 import { loeschHinweis } from "@/lib/loeschen";
 import { getCurrentUser } from "@/lib/get-profile";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 
 function projektFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -32,7 +33,10 @@ function projektFromForm(formData: FormData) {
   return werte;
 }
 
-export async function createProjekt(formData: FormData) {
+export async function createProjekt(
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = projektFromForm(formData);
 
@@ -42,7 +46,7 @@ export async function createProjekt(formData: FormData) {
     .select("id")
     .single();
   if (error) {
-    redirect(`/projekte/neu?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   if (angelegt) await erstellerInsTeam(supabase, angelegt.id);
@@ -51,13 +55,17 @@ export async function createProjekt(formData: FormData) {
   redirect(mitErfolg("/projekte", "Projekt gespeichert."));
 }
 
-export async function updateProjekt(id: string, formData: FormData) {
+export async function updateProjekt(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = projektFromForm(formData);
 
   const { error } = await supabase.from("projekte").update(values).eq("id", id);
   if (error) {
-    redirect(`/projekte/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/projekte");

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { heuteIso } from "@/lib/date-utils";
 import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import type { Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import Link from "next/link";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 
 export function ProjektForm({
   projekt,
@@ -15,9 +17,14 @@ export function ProjektForm({
 }: {
   projekt?: Projekt;
   kunden: Pick<Kunde, "id" | "name" | "vorname">[];
-  action: (formData: FormData) => void;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
 }) {
+
+  // Fehler kommt aus der Aktion zurueck statt per Weiterleitung –
+  // so bleibt die Eingabe stehen (siehe lib/formular-ergebnis).
+  const [ergebnis, formAction] = useActionState(action, null);
+  const meldung = ergebnis?.fehler ?? error;
   const [kundenListe, setKundenListe] = useState(kunden);
   const [kundeId, setKundeId] = useState(projekt?.kunde_id ?? "");
 
@@ -28,10 +35,10 @@ export function ProjektForm({
 
   return (
     <>
-    <form action={action} className="space-y-6 max-w-2xl">
-      {error && (
+    <form action={formAction} className="space-y-6 max-w-2xl">
+      {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
-          {error}
+          {meldung}
         </div>
       )}
 
@@ -161,12 +168,12 @@ export function ProjektForm({
       </div>
 
       <div className="flex gap-3">
-        <button
-          type="submit"
-          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+        <AbsendeKnopf
+          laufttext="Wird gespeichert…"
+          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Speichern
-        </button>
+        </AbsendeKnopf>
         <Link
           href="/projekte"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
