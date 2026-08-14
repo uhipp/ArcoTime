@@ -5,10 +5,10 @@ export const kalender: HilfeArtikel[] = [
     slug: "kalender",
     titel: "Kalender",
     kategorie: "Arbeiten mit ArcoTime",
-    stichworte: ["monatsübersicht", "farbe", "legende", "wiedervorlage im kalender"],
+    stichworte: ["monatsübersicht", "farbe", "legende", "wiedervorlage im kalender", "planung", "geplant", "schraffiert", "disposition im kalender"],
     routen: ["/kalender"],
     inhalt: `
-Die Kalenderübersicht zeigt Zeiterfassung und Anfragen gemeinsam in einer Monatsansicht.
+Die Kalenderübersicht zeigt geplante Einsätze, erfasste Zeit und fällige Anfragen gemeinsam in einer Monatsansicht.
 
 ![Kalenderübersicht mit farbigen Tageszellen](/hilfe-bilder/kalender-uebersicht.png)
 
@@ -16,8 +16,11 @@ Die Kalenderübersicht zeigt Zeiterfassung und Anfragen gemeinsam in einer Monat
 
 Jeder Tag zeigt eine kleine farbige Liste:
 
-- **Eine Zeile pro Mitarbeitendem** mit Zeiterfassung an diesem Tag, in der jeweils eigenen Farbe, mit Stundensumme. Klick öffnet die Tagesauswertung.
+- **Eine Zeile pro geplantem Einsatz** aus den [Rapporten](/hilfe/rapporte), mit Uhrzeit. Diese stehen zuoberst – die Frage „wer ist wann eingeteilt" ist meist die wichtigere. Klick öffnet den Rapport.
+- **Eine Zeile pro Mitarbeitendem** mit Zeiterfassung an diesem Tag, mit Stundensumme. Klick öffnet die Tagesauswertung.
 - **Eine Zeile pro fälliger Anfrage** (nach ihrem Wiedervorlage-Datum, siehe [Anfragen](/hilfe/anfragen)), farbig nach der zugewiesenen Person. Klick öffnet direkt die Anfrage.
+
+**Geplant oder erfasst?** Beides trägt dieselbe Farbe der Person – die Zuordnung soll auf einen Blick stimmen. Unterschieden wird über die Fläche: geplante Zeit ist deckend, bereits erfasste Zeit **schraffiert**. So braucht es keine zweite Farbskala, die man sich zusätzlich merken müsste.
 
 Sind mehr als vier Einträge an einem Tag, erscheint **"+N weitere"** mit einem Link zur vollständigen Tagesübersicht.
 

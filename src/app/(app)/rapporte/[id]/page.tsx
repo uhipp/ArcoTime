@@ -97,12 +97,12 @@ export default async function RapportDetailPage({
           </p>
           {herkunft && (
             <p className="text-sm text-gray-500 mt-1">
-              Aus Anfrage{" "}
               <Link
                 href={`/anfragen/${herkunft.id}`}
                 className="text-arcos-steel hover:underline"
+                title={herkunft.titel}
               >
-                {herkunft.titel}
+                Verbundene Anfrage anzeigen
               </Link>
             </p>
           )}

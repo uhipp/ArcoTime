@@ -32,6 +32,14 @@ const STANDARDFARBE = "#457B9D";
 const MAX_ZEILEN_JE_TAG = 4;
 
 type ZeitZeile = { mitarbeiterId: string; name: string; farbe: string; stunden: number };
+type PlanZeile = {
+  rapportId: string;
+  mitarbeiterId: string | null;
+  name: string;
+  farbe: string;
+  von: string;
+  bis: string;
+};
 type AnfrageZeile = { id: string; titel: string; farbe: string };
 
 export default async function KalenderPage({
@@ -81,6 +89,29 @@ export default async function KalenderPage({
     if (params.mitarbeiter_id) anfrageQuery = anfrageQuery.eq("zugewiesen_an", params.mitarbeiter_id);
   }
 
+  // Geplante Einsätze aus den Rapporten. Sie sind für die Übersicht sogar
+  // wichtiger als die erfassten Zeiten: Der Kalender beantwortet die Frage
+  // "wer ist wann wo eingeteilt", und die Zeiterfassung kommt erst danach.
+  // Wie bei den Anfragen entfallen sie bei aktivem Klassenfilter – ein
+  // Rapportkopf kennt keine Dienstleistungsklasse.
+  // Filter als match-Objekt statt als Kette von Neuzuweisungen: Letzteres
+  // treibt die Typherleitung von PostgREST in die Tiefe, bis TypeScript
+  // aufgibt ("Type instantiation is excessively deep").
+  const planFilter: Record<string, string> = {};
+  if (params.kunde_id) planFilter.kunde_id = params.kunde_id;
+  if (params.projekt_id) planFilter.projekt_id = params.projekt_id;
+  if (params.mitarbeiter_id) planFilter.geplant_fuer = params.mitarbeiter_id;
+
+  const planQuery = params.klasse_id
+    ? null
+    : supabase
+        .from("rapporte")
+        .select("id, kunde_id, projekt_id, geplant_fuer, geplant_von, geplant_bis")
+        .not("geplant_von", "is", null)
+        .gte("geplant_von", rasterVon)
+        .lte("geplant_von", `${rasterBis}T23:59:59`)
+        .match(planFilter);
+
   // Alle Queries unabhängig voneinander gleichzeitig statt nacheinander
   // abschicken (die Haupt-Queries hängen nicht von den Filter-Listen ab).
   const [
@@ -90,6 +121,7 @@ export default async function KalenderPage({
     { data: alleMitarbeitende },
     { data },
     anfrageErgebnis,
+    planErgebnis,
   ] = await Promise.all([
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
@@ -100,6 +132,7 @@ export default async function KalenderPage({
     supabase.from("profiles").select("id, name, farbe").order("name"),
     query,
     anfrageQuery ?? Promise.resolve({ data: [] as never[] }),
+    planQuery ?? Promise.resolve({ data: [] as never[] }),
   ]);
   const zeilen = (data as ZeiteintragMitDetails[] | null) ?? [];
   const anfragenRoh = (anfrageErgebnis.data as
@@ -114,21 +147,56 @@ export default async function KalenderPage({
       }[]
     | null) ?? [];
 
+  const planungRoh = (planErgebnis.data as
+    | {
+        id: string;
+        geplant_fuer: string | null;
+        geplant_von: string;
+        geplant_bis: string | null;
+      }[]
+    | null) ?? [];
+
   const farbeVon = (mitarbeiterId: string | null) =>
     alleMitarbeitende?.find((m) => m.id === mitarbeiterId)?.farbe ?? STANDARDFARBE;
 
   const proTag = new Map<
     string,
-    { stunden: number; betrag: number; zeit: Map<string, ZeitZeile>; anfragen: AnfrageZeile[] }
+    {
+      stunden: number;
+      betrag: number;
+      zeit: Map<string, ZeitZeile>;
+      anfragen: AnfrageZeile[];
+      plan: PlanZeile[];
+    }
   >();
   const tagEintrag = (datum: string) => {
     let eintrag = proTag.get(datum);
     if (!eintrag) {
-      eintrag = { stunden: 0, betrag: 0, zeit: new Map(), anfragen: [] };
+      eintrag = { stunden: 0, betrag: 0, zeit: new Map(), anfragen: [], plan: [] };
       proTag.set(datum, eintrag);
     }
     return eintrag;
   };
+
+  const nameVon = (mitarbeiterId: string | null) =>
+    alleMitarbeitende?.find((m) => m.id === mitarbeiterId)?.name ?? "Nicht zugeteilt";
+
+  // Uhrzeit aus dem Zeitstempel wie im Rapportformular: dort wird
+  // geplant_von/bis ebenso über die Zeichenkette gelesen, damit beide
+  // Seiten dieselbe Uhrzeit anzeigen.
+  const uhrzeit = (wert: string | null) => (wert ? wert.slice(11, 16) : "");
+
+  for (const r of planungRoh) {
+    const eintrag = tagEintrag(r.geplant_von.slice(0, 10));
+    eintrag.plan.push({
+      rapportId: r.id,
+      mitarbeiterId: r.geplant_fuer,
+      name: nameVon(r.geplant_fuer),
+      farbe: farbeVon(r.geplant_fuer),
+      von: uhrzeit(r.geplant_von),
+      bis: uhrzeit(r.geplant_bis),
+    });
+  }
 
   for (const z of zeilen) {
     const eintrag = tagEintrag(z.datum);
@@ -167,6 +235,9 @@ export default async function KalenderPage({
   }
   for (const a of anfragenRoh) {
     if (a.zugewiesen_an) sichtbareMitarbeiterIds.add(a.zugewiesen_an);
+  }
+  for (const p of planungRoh) {
+    if (p.geplant_fuer) sichtbareMitarbeiterIds.add(p.geplant_fuer);
   }
   const legende = (alleMitarbeitende ?? []).filter((m) => sichtbareMitarbeiterIds.has(m.id));
 
@@ -285,6 +356,20 @@ export default async function KalenderPage({
               {m.name}
             </span>
           ))}
+          <span className="inline-flex items-center gap-1.5 text-gray-400">
+            <span
+              className="inline-block w-2.5 h-2.5 rounded-full bg-gray-400"
+            />
+            geplant
+            <span
+              className="inline-block w-2.5 h-2.5 rounded-full bg-gray-400 ml-2"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(135deg, rgba(255,255,255,.45) 0 2px, transparent 2px 4px)",
+              }}
+            />
+            erfasst
+          </span>
         </div>
       )}
 
@@ -306,17 +391,34 @@ export default async function KalenderPage({
 
               const zeitZeilen = werte ? [...werte.zeit.values()] : [];
               const anfrageZeilen = werte?.anfragen ?? [];
+              const planZeilen = werte?.plan ?? [];
+              // Planung zuerst: Der Kalender beantwortet vor allem die
+              // Frage, wer wann eingeteilt ist.
               const alleZeilen = [
+                ...planZeilen.map((p) => ({
+                  key: `p-${p.rapportId}`,
+                  farbe: p.farbe,
+                  schraffiert: false,
+                  label: `${p.name.split(" ")[0]}${p.von ? ` · ${p.von}` : ""}${
+                    p.bis ? `–${p.bis}` : ""
+                  }`,
+                  href: `/rapporte/${p.rapportId}`,
+                  titel: `Geplant: ${p.name}${p.von ? `, ${p.von}` : ""}${
+                    p.bis ? `–${p.bis}` : ""
+                  }`,
+                })),
                 ...zeitZeilen.map((z) => ({
                   key: `z-${z.mitarbeiterId}`,
                   farbe: z.farbe,
+                  schraffiert: true,
                   label: `${z.name.split(" ")[0]} · ${z.stunden.toFixed(1)}h`,
                   href: `/auswertungen?ansicht=tag&datum=${tagIso}`,
-                  titel: `${z.name}: ${z.stunden.toFixed(2)} h`,
+                  titel: `Erfasst – ${z.name}: ${z.stunden.toFixed(2)} h`,
                 })),
                 ...anfrageZeilen.map((a) => ({
                   key: `a-${a.id}`,
                   farbe: a.farbe,
+                  schraffiert: false,
                   label: a.titel,
                   href: `/anfragen/${a.id}`,
                   titel: a.titel,
@@ -357,7 +459,20 @@ export default async function KalenderPage({
                         href={zeile.href}
                         title={zeile.titel}
                         className="block text-[11px] leading-4 text-white rounded px-1 truncate hover:opacity-80"
-                        style={{ backgroundColor: zeile.farbe }}
+                        style={
+                          // Gleiche Farbe je Person, damit die Zuordnung auf
+                          // einen Blick stimmt. Erfasste Zeit bekommt eine
+                          // Schraffur darüber, geplante Zeit bleibt deckend –
+                          // so sind beide unterscheidbar, ohne dass eine
+                          // zweite Farbskala nötig wird.
+                          zeile.schraffiert
+                            ? {
+                                backgroundColor: zeile.farbe,
+                                backgroundImage:
+                                  "repeating-linear-gradient(135deg, rgba(255,255,255,.45) 0 3px, transparent 3px 7px)",
+                              }
+                            : { backgroundColor: zeile.farbe }
+                        }
                       >
                         {zeile.label}
                       </Link>

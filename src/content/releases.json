@@ -135,6 +135,10 @@
       {
         "typ": "fix",
         "text": "Das Löschen eines Zeiteintrags meldete Erfolg, auch wenn es gar nicht möglich war. Jetzt wird der Grund genannt."
+      },
+      {
+        "typ": "neu",
+        "text": "Der Kalender zeigt jetzt auch die geplanten Einsätze aus den Rapporten, nicht nur erfasste Zeit. Gleiche Farbe je Person; geplante Zeit ist deckend, bereits erfasste schraffiert."
       }
     ]
   },
