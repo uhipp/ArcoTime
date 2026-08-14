@@ -40,9 +40,15 @@ Was als "frei" gilt, ergibt sich aus drei Dingen, alle unter [Einstellungen](/hi
 
 Ist der Tag gesperrt, sagt der Tagesplan auch warum ("Betriebsferien", "Ferien") – statt einfach keine Vorschläge zu machen.
 
-## Übersicht
+## Tag, Woche, Monat
 
-Unter **Disposition** siehst du die geplanten Einsätze als **Tag**, **Woche** oder **Monat**, wahlweise gefiltert auf eine Person. Jeder Eintrag führt per Klick direkt in den Rapport.
+**Tag** und **Woche** zeigen ein Zeitraster: Stunden senkrecht, und waagrecht in der Wochenansicht die Tage, in der Tagesansicht die **Personen**. Damit beantwortet die Ansicht nicht nur „was ist geplant", sondern vor allem „wo ist noch Platz" – die Frage, die man beim Disponieren den ganzen Tag stellt.
+
+Der sichtbare Ausschnitt ist der **Arbeitstag** aus den [Einstellungen](/hilfe/einstellungen). Einsätze ausserhalb verschwinden nicht, sie werden an den Rand geklemmt. Einsätze **ohne Planzeit** stehen in einer eigenen Zeile über dem Raster – sonst würde man an ihnen vorbeiplanen.
+
+Über jeder Spalte steht **„+ planen"**: In der Woche legt das einen Einsatz an diesem Tag an, in der Tagesansicht gleich für diese Person. In der Tagesansicht gibt es zusätzlich die Spalte **„Nicht zugeteilt"** – dort sammeln sich die Einsätze, die noch niemandem gehören.
+
+Der **Monat** bleibt eine Liste. Über dreissig Tage hinweg wäre ein Raster unleserlich, und dort will man ohnehin nur wissen, an welchen Tagen etwas liegt.
 
 ## Überschneidungen
 

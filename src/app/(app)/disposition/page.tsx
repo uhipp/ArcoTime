@@ -11,6 +11,7 @@ import {
   type Ansicht,
 } from "@/lib/date-utils";
 import { rapportNummer, type Rapport } from "@/lib/types";
+import { DispoRaster, type RasterEintrag, type RasterSpalte } from "@/components/dispo-raster";
 
 type SearchParams = {
   ansicht?: string;
@@ -111,7 +112,7 @@ export default async function DispositionPage({
 
   const [{ data: rapporteRoh }, { data: mitarbeitende }] = await Promise.all([
     query,
-    supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
+    supabase.from("profiles").select("id, name, farbe").is("deaktiviert_am", null).order("name"),
   ]);
 
   const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
@@ -133,6 +134,69 @@ export default async function DispositionPage({
   };
 
   const heute = heuteIso();
+
+  const STANDARDFARBE = "#457B9D";
+  const personen = (mitarbeitende ?? []) as { id: string; name: string; farbe: string | null }[];
+  const farbeVon = (id: string | null) =>
+    personen.find((m) => m.id === id)?.farbe ?? STANDARDFARBE;
+  const nameVon = (id: string | null) =>
+    personen.find((m) => m.id === id)?.name ?? "Nicht zugeteilt";
+
+  // Alle Konflikte des sichtbaren Zeitraums, tagweise ermittelt.
+  const alleKonflikte = new Set<string>();
+  for (const tag of tage) {
+    for (const id of konflikteFinden(proTag.get(tag) ?? [])) alleKonflikte.add(id);
+  }
+
+  // In der Wochenansicht sind die Spalten die Tage, in der Tagesansicht die
+  // Personen. Das ist die Frage, die man in der jeweiligen Ansicht stellt:
+  // "wie ist die Woche verteilt" gegenüber "wer ist heute wo".
+  const rasterSpalten: RasterSpalte[] =
+    ansicht === "woche"
+      ? tage.map((t) => ({
+          key: t,
+          titel: new Date(`${t}T12:00:00`).toLocaleDateString("de-CH", { weekday: "short" }),
+          untertitel: formatDatumCH(t),
+          betont: t === heute,
+          planenHref: `/rapporte/neu?datum=${t}${
+            params.mitarbeiter_id ? `&mitarbeiter=${params.mitarbeiter_id}` : ""
+          }`,
+        }))
+      : [
+          ...personen
+            .filter((m) => !params.mitarbeiter_id || m.id === params.mitarbeiter_id)
+            .map((m) => ({
+              key: m.id,
+              titel: m.name,
+              planenHref: `/rapporte/neu?datum=${bezugsdatum}&mitarbeiter=${m.id}`,
+            })),
+          // Eigene Spalte, damit unzugeteilte Einsätze nicht untergehen –
+          // sie sind der häufigste Grund, warum am Morgen jemand anruft.
+          {
+            key: "ohne",
+            titel: "Nicht zugeteilt",
+            planenHref: `/rapporte/neu?datum=${bezugsdatum}`,
+          },
+        ];
+
+  const rasterEintraege: RasterEintrag[] = rapporte
+    .filter((r) => ansicht !== "tag" || r.datum === bezugsdatum)
+    .map((r) => ({
+      key: r.id,
+      spalte: ansicht === "woche" ? r.datum : (r.geplant_fuer ?? "ohne"),
+      vonMinuten: minuten(r.geplant_von),
+      bisMinuten: minuten(r.geplant_bis),
+      farbe: farbeVon(r.geplant_fuer),
+      titelZeile: [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || "Ohne Kunde",
+      zweiteZeile:
+        ansicht === "woche"
+          ? [nameVon(r.geplant_fuer), r.projekte?.bezeichnung].filter(Boolean).join(" · ")
+          : r.projekte?.bezeichnung ?? null,
+      href: `/rapporte/${r.id}`,
+      konflikt: alleKonflikte.has(r.id),
+    }));
+
+  const rasterMoeglich = ansicht !== "monat";
 
   return (
     <div>
@@ -206,6 +270,28 @@ export default async function DispositionPage({
         )}
       </form>
 
+      {/* Zeitraster für Tag und Woche, Liste für den Monat: Über 30 Tage
+          hinweg wäre ein Raster unleserlich, dort will man ohnehin nur
+          wissen, an welchen Tagen etwas liegt. */}
+      {rasterMoeglich && (
+        <div className="mb-6">
+          <DispoRaster
+            spalten={rasterSpalten}
+            eintraege={rasterEintraege}
+            vonMinuten={organisation?.arbeitstag_von_minuten ?? 420}
+            bisMinuten={organisation?.arbeitstag_bis_minuten ?? 1080}
+          />
+          <p className="text-xs text-gray-400 mt-2">
+            Der Ausschnitt ist der Arbeitstag aus den Einstellungen. Einsätze
+            ausserhalb erscheinen am Rand geklemmt, Einsätze ohne Planzeit in
+            der Zeile darüber. Rot umrandet heisst doppelt belegt.
+          </p>
+        </div>
+      )}
+
+      {/* Liste nur im Monat: In Tag und Woche steht dasselbe im Raster,
+          und zwar besser – dort sieht man zusätzlich die Lücken. */}
+      {!rasterMoeglich && (
       <div className="space-y-3">
         {tage.map((tag) => {
           const eintraege = proTag.get(tag) ?? [];
@@ -292,6 +378,7 @@ export default async function DispositionPage({
           );
         })}
       </div>
+      )}
     </div>
   );
 }

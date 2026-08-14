@@ -195,6 +195,10 @@
       {
         "typ": "verbessert",
         "text": "Geplante Einsätze zeigen im Kalender jetzt Uhrzeit, Kunde und Ort statt des Vornamens – die Person steht ohnehin in der Farbe."
+      },
+      {
+        "typ": "neu",
+        "text": "Die Disposition zeigt Tag und Woche als Zeitraster: Stunden senkrecht, Tage beziehungsweise Personen waagrecht. Freie Zeitfenster sind damit auf einen Blick sichtbar, und über jeder Spalte lässt sich direkt ein Einsatz anlegen."
       }
     ]
   },
