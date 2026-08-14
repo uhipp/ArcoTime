@@ -38,7 +38,7 @@ Was als "frei" gilt, ergibt sich aus drei Dingen, alle unter [Einstellungen](/hi
 - den **Schliesstagen** – an Feiertagen und in den Betriebsferien wird nichts vorgeschlagen,
 - den **Abwesenheiten** der Person, sofern die Abwesenheitsart die Planung blockiert.
 
-Ist der Tag gesperrt, sagt der Tagesplan auch warum ("Betriebsferien", "Ferien") – statt einfach keine Vorschläge zu machen.
+Ist der ganze Tag gesperrt, sagt der Tagesplan auch warum („Betriebsferien", „Ferien") – statt einfach keine Vorschläge zu machen. Eine **halbtägige** Abwesenheit sperrt den Tag nicht: Sie erscheint wie ein belegter Block, die übrige Zeit bleibt planbar. Wer einen Einsatz trotzdem in dieses Fenster schiebt, wird gefragt.
 
 ## Tag, Woche, Monat
 

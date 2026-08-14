@@ -489,10 +489,14 @@ export async function freieZeitenAm(argumente: {
   belegt: { von: string; bis: string; titel: string }[];
   frei: { von: string; bis: string }[];
   gesperrt: string | null;
+  // Halbtägige, blockierende Abwesenheiten als Zeitfenster. Sie sperren
+  // nicht den ganzen Tag, kollidieren aber mit einem Termin, der in sie
+  // hineinfällt – der Aufrufer entscheidet, ob ihn das betrifft.
+  abwesend: { vonMin: number; bisMin: number; bezeichnung: string }[];
 }> {
   const { mitarbeiterId, datum, ohneRapportId } = argumente;
 
-  if (!mitarbeiterId || !datum) return { belegt: [], frei: [], gesperrt: null };
+  if (!mitarbeiterId || !datum) return { belegt: [], frei: [], gesperrt: null, abwesend: [] };
 
   const supabase = await createClient();
 
@@ -533,6 +537,7 @@ export async function freieZeitenAm(argumente: {
       belegt: [],
       frei: [],
       gesperrt: "Abwesenheiten liessen sich nicht prüfen",
+      abwesend: [],
     };
   }
 
@@ -546,30 +551,47 @@ export async function freieZeitenAm(argumente: {
       belegt: [],
       frei: [],
       gesperrt: `Betriebsfrei: ${schliesstage.map((t) => t.bezeichnung).join(", ")}`,
+      abwesend: [],
     };
   }
 
-  // Ganztägige Abwesenheit (ohne Uhrzeiten) sperrt den Tag. Halbtägige
-  // Abwesenheiten zählen weiter unten wie ein belegter Block.
-  const ganztags = (abwesenheiten ?? []).filter((a) => !a.von_zeit);
+  // Arten einmal laden: Sie entscheiden, ob eine Abwesenheit die Planung
+  // überhaupt blockiert (Homeoffice und Aussendienst tun es nicht).
+  const { data: arten } = (abwesenheiten ?? []).length
+    ? await supabase.from("abwesenheitsarten").select("wert, bezeichnung, blockiert")
+    : { data: [] as { wert: string; bezeichnung: string; blockiert: boolean }[] };
+
+  const artVon = (wert: string) => arten?.find((x) => x.wert === wert);
+  const blockiert = (a: { art: string }) => artVon(a.art)?.blockiert !== false;
+
+  // Ganztägige Abwesenheit (ohne Uhrzeiten) sperrt den Tag.
+  const ganztags = (abwesenheiten ?? []).filter((a) => !a.von_zeit && blockiert(a));
   if (ganztags.length > 0) {
-    const { data: arten } = await supabase
-      .from("abwesenheitsarten")
-      .select("wert, bezeichnung, blockiert");
-    const blockierend = ganztags.filter(
-      (a) => arten?.find((x) => x.wert === a.art)?.blockiert !== false
-    );
-    if (blockierend.length > 0) {
-      const bezeichnung =
-        arten?.find((x) => x.wert === blockierend[0].art)?.bezeichnung ?? "Abwesend";
-      return { belegt: [], frei: [], gesperrt: `Abwesend: ${bezeichnung}` };
-    }
+    const bezeichnung = artVon(ganztags[0].art)?.bezeichnung ?? "Abwesend";
+    return { belegt: [], frei: [], gesperrt: `Abwesend: ${bezeichnung}`, abwesend: [] };
   }
+
+  // Halbtägige Abwesenheiten zählen wie ein belegter Block. Der Kommentar
+  // an dieser Stelle behauptete das schon, der Code tat es nie: Sie
+  // standen weder in "belegt" noch verkleinerten sie "frei", und beim
+  // Verschieben kam keine Meldung – eine Weiterbildung von 08:00 bis
+  // 12:00 war für die Planung schlicht unsichtbar.
+  const abwesend = (abwesenheiten ?? [])
+    .filter((a) => a.von_zeit && blockiert(a))
+    .map((a) => ({
+      vonMin: Number(a.von_zeit.slice(0, 2)) * 60 + Number(a.von_zeit.slice(3, 5)),
+      bisMin: a.bis_zeit
+        ? Number(a.bis_zeit.slice(0, 2)) * 60 + Number(a.bis_zeit.slice(3, 5))
+        : tagBis,
+      bezeichnung: artVon(a.art)?.bezeichnung ?? "Abwesend",
+    }))
+    .filter((a) => a.bisMin > a.vonMin);
 
   const leer = {
     belegt: [],
     frei: [{ von: alsUhrzeit(tagVon), bis: alsUhrzeit(tagBis) }],
     gesperrt: null,
+    abwesend,
   };
 
   // Belegung über die Beteiligten (0045): Eine Person ist belegt, sobald
@@ -584,9 +606,15 @@ export async function freieZeitenAm(argumente: {
     .not("geplant_bis", "is", null);
 
   const zeilen = (data ?? []).filter((r) => r.id !== ohneRapportId);
-  if (zeilen.length === 0) return leer;
+  if (zeilen.length === 0 && abwesend.length === 0) return leer;
 
-  const belegt = zeilen
+  const belegt = [
+    ...abwesend.map((a) => ({
+      vonMin: a.vonMin,
+      bisMin: a.bisMin,
+      titel: a.bezeichnung,
+    })),
+    ...zeilen
     .map((r) => {
       const kunde = r.kunden as { name?: string; vorname?: string | null } | null;
       return {
@@ -595,8 +623,8 @@ export async function freieZeitenAm(argumente: {
         titel: `${kunde?.vorname ? `${kunde.vorname} ` : ""}${kunde?.name ?? "Einsatz"}`,
       };
     })
-    .filter((b) => b.bisMin > b.vonMin)
-    .sort((a, b) => a.vonMin - b.vonMin);
+    .filter((b) => b.bisMin > b.vonMin),
+  ].sort((a, b) => a.vonMin - b.vonMin);
 
   // Lücken zwischen den belegten Blöcken. Überlappende Blöcke werden dabei
   // verschmolzen – sonst entstünden negative "Lücken".
@@ -615,6 +643,7 @@ export async function freieZeitenAm(argumente: {
 
   return {
     gesperrt: null,
+    abwesend,
     belegt: belegt.map((b) => ({
       von: alsUhrzeit(b.vonMin),
       bis: alsUhrzeit(b.bisMin),

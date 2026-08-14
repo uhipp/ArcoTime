@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "fix",
+        "text": "Halbtägige Abwesenheiten – eine Weiterbildung von 08:00 bis 12:00 – waren für die Planung unsichtbar: Sie standen weder im Tagesplan noch verkleinerten sie die freien Zeiten, und beim Verschieben kam keine Meldung. Sie zählen jetzt wie ein belegter Block."
+      },
+      {
         "typ": "neu",
         "text": "Einsätze mit einem Terminkonflikt sind in der Disposition rot markiert und mit „Achtung Terminkonflikt“ und dem Grund beschriftet – doppelt belegt, eine beteiligte Person abwesend oder betriebsfrei. Die Markierung bleibt stehen, solange der Konflikt besteht: Eine Rückfrage beim Verschieben ist schnell vergessen, der rote Balken nicht."
       },

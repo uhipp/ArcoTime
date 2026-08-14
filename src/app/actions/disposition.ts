@@ -9,6 +9,10 @@ export type VerschiebeErgebnis =
   | { warnung: string }
   | null;
 
+function alsUhrzeit(minuten: number): string {
+  return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(minuten % 60).padStart(2, "0")}`;
+}
+
 function alsZeitstempel(datum: string, minuten: number): string {
   const h = String(Math.floor(minuten / 60)).padStart(2, "0");
   const m = String(minuten % 60).padStart(2, "0");
@@ -74,18 +78,34 @@ export async function verschiebeEinsatz(
   if (!ziel.trotzdem && zuPruefen.length > 0) {
     const hindernisse: string[] = [];
     for (const person of zuPruefen) {
-      const { gesperrt } = await freieZeitenAm({
+      const { gesperrt, abwesend } = await freieZeitenAm({
         mitarbeiterId: person,
         datum: ziel.datum,
         ohneRapportId: rapportId,
       });
-      if (gesperrt) {
+
+      // Halbtägige Abwesenheit: Sie sperrt den Tag nicht, kollidiert aber,
+      // wenn der Termin in ihr Fenster fällt. Ohne diese Prüfung ging ein
+      // Einsatz kommentarlos in eine Weiterbildung von 08:00 bis 12:00.
+      const kollision = abwesend.find(
+        (a) => ziel.vonMinuten < a.bisMin && ziel.bisMinuten > a.vonMin
+      );
+
+      const grund =
+        gesperrt ??
+        (kollision
+          ? `${kollision.bezeichnung} ${alsUhrzeit(kollision.vonMin)}–${alsUhrzeit(
+              kollision.bisMin
+            )}`
+          : null);
+
+      if (grund) {
         const { data: p } = await supabase
           .from("profiles")
           .select("name")
           .eq("id", person)
           .maybeSingle();
-        hindernisse.push(`${p?.name ?? "Eine Person"}: ${gesperrt}`);
+        hindernisse.push(`${p?.name ?? "Eine Person"}: ${grund}`);
       }
     }
 
