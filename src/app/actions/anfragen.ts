@@ -57,8 +57,13 @@ export async function createAnfrage(
   // Mitarbeitenden schon jetzt als erste Zeile in die Beschreibung setzen –
   // gleiche Konvention wie in der Zeiterfassung (wichtig für den Export).
   if (values.zugewiesen_an) {
-    const name = await nameFuer(supabase, values.zugewiesen_an);
-    if (name) values.beschreibung = mitNamePraefix(values.beschreibung, name);
+    const [name, bekannteNamen] = await Promise.all([
+      nameFuer(supabase, values.zugewiesen_an),
+      alleNamen(supabase),
+    ]);
+    // Namensliste mitgeben: Sonst erkennt die Funktion eine bereits
+    // vorhandene Namenszeile nicht und setzt eine zweite darüber.
+    if (name) values.beschreibung = mitNamePraefix(values.beschreibung, name, bekannteNamen);
   }
 
   const { data: neue, error } = await supabase
@@ -105,7 +110,12 @@ export async function updateAnfrage(
   const zuweisungGeaendert =
     values.zugewiesen_an && values.zugewiesen_an !== bestehend?.zugewiesen_an;
 
-  if (zuweisungGeaendert) {
+  // Bewusst bei JEDEM Speichern, nicht nur bei einer geänderten Zuweisung:
+  // Die Namenszeile ist eine Zusicherung – solange jemand zuständig ist,
+  // steht sein Name in Zeile 1. Nur beim Wechsel nachzuziehen liess einen
+  // einmal verrutschten Text für immer verrutscht (und hinderte die
+  // Bereinigung mehrfacher Namenszeilen daran, je zu greifen).
+  if (values.zugewiesen_an) {
     const [neuerName, bekannteNamen] = await Promise.all([
       nameFuer(supabase, values.zugewiesen_an),
       alleNamen(supabase),
