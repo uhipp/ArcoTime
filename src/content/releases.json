@@ -265,6 +265,18 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "fix",
+        "text": "Abwesenheiten wirkten nirgends: Weder die Disposition noch das Rapportformular haben sie gefunden, ein Einsatz liess sich kommentarlos auf einen Ferientag schieben. Ursache war eine fehlerhafte Abfrage, deren Fehler stillschweigend als „keine Abwesenheit“ gelesen wurde."
+      },
+      {
+        "typ": "fix",
+        "text": "Eine neue Rapport-Position wurde zwar auf die gewählte Person gebucht, in der Beschreibung – und damit im Export – stand aber die verantwortliche Person. Auch die Kontrolle der Tagesarbeitszeit lief auf sie statt auf die Person, die die Stunde geleistet hat."
+      },
+      {
+        "typ": "fix",
+        "text": "Im Rapport blieb der Tagesplan unter „Planung“ leer und der Tagesplan rechts zeigte „nicht zugewiesen“, obwohl Beteiligte erfasst waren. Beide lasen noch das alte Feld für die eingeplante Person, das seit der Einführung der Beteiligten nicht mehr gefüllt wird."
+      },
+      {
         "typ": "neu",
         "text": "Gruppen von Mitarbeitenden unter Einstellungen – „Team Ost“, „Sanitär“. In der Disposition schränkt der Filter „Gruppe“ die Tagesansicht auf deren Spalten ein, am Rapport fügt „Ganze Gruppe hinzufügen“ das Team in einem Zug als Beteiligte hinzu. Eine Gruppe ist eine Sicht, keine Berechtigung; Mehrfachzugehörigkeit ist möglich."
       },

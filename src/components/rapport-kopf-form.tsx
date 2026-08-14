@@ -32,6 +32,7 @@ export function RapportKopfForm({
   gesperrt,
   mitDisposition,
   vorgabeDatum,
+  beteiligte = [],
 }: {
   rapport?: Rapport;
   kunden: KundeOption[];
@@ -47,6 +48,8 @@ export function RapportKopfForm({
   mitDisposition?: boolean;
   // Aus der Disposition heraus vorbelegtes Einsatzdatum.
   vorgabeDatum?: string;
+  // Beteiligte des Einsatzes (0045) – für den Tagesplan unter Planung.
+  beteiligte?: { id: string; name: string }[];
 }) {
   // Fehler kommt aus der Aktion zurück statt per Weiterleitung – so bleibt
   // die Eingabe stehen (siehe lib/formular-ergebnis).
@@ -71,7 +74,14 @@ export function RapportKopfForm({
 
   // Planung: Zustand im Formular halten, damit ein Klick auf eine freie
   // Zeit die Felder füllen kann.
-  const [geplantFuer, setGeplantFuer] = useState(rapport?.geplant_fuer ?? "");
+  //
+  // Wessen Tag hier gezeigt wird, stand bis 0045 in rapport.geplant_fuer.
+  // Seit die Beteiligten in einer eigenen Tabelle stehen, wird die Spalte
+  // nicht mehr geschrieben – das Auswahlfeld war deshalb an einem
+  // bestehenden Rapport immer leer, und mit ihm blieb der ganze Tagesplan
+  // unsichtbar. Neu kommen die Namen aus den Beteiligten, und die
+  // Auswahl ist reine Ansicht: Sie wird nicht mitgeschickt.
+  const [planPerson, setPlanPerson] = useState("");
   const [datum, setDatum] = useState(rapport?.datum ?? vorgabeDatum ?? heuteIso());
   const [planVon, setPlanVon] = useState(rapport?.geplant_von?.slice(11, 16) ?? "");
   const [planBis, setPlanBis] = useState(rapport?.geplant_bis?.slice(11, 16) ?? "");
@@ -86,13 +96,22 @@ export function RapportKopfForm({
   // Ob die Belegung überhaupt gilt, wird beim Rendern abgeleitet statt im
   // Effect zurückgesetzt: Damit kann kein veralteter Tagesplan der zuvor
   // gewählten Person kurz stehen bleiben.
-  const belegungRelevant = Boolean(mitDisposition && geplantFuer && datum);
+  // Zur Auswahl stehen die verantwortliche Person und die übrigen
+  // Beteiligten – an einem neuen Rapport gibt es noch keine Beteiligten,
+  // und dann ist sie die einzige sinnvolle Antwort.
+  const verantwortlichName =
+    mitarbeitende.find((m) => m.id === mitarbeiterId)?.name ?? "Verantwortliche Person";
+  const weitereBeteiligte = beteiligte.filter((b) => b.id !== mitarbeiterId);
+  // Leere Wahl heisst "der verantwortlichen Person folgen": Wer oben die
+  // Person wechselt, sieht sofort deren Tag, ohne zweimal zu klicken.
+  const planPersonWirksam = planPerson || mitarbeiterId;
+  const belegungRelevant = Boolean(mitDisposition && planPersonWirksam && datum);
   const belegung = belegungRelevant ? belegungRoh : null;
 
   useEffect(() => {
     if (!belegungRelevant) return;
     let verworfen = false;
-    freieZeitenAm({ mitarbeiterId: geplantFuer, datum, ohneRapportId: rapport?.id ?? null })
+    freieZeitenAm({ mitarbeiterId: planPersonWirksam, datum, ohneRapportId: rapport?.id ?? null })
       .then((r) => {
         if (!verworfen) setBelegungRoh(r);
       })
@@ -104,7 +123,7 @@ export function RapportKopfForm({
     return () => {
       verworfen = true;
     };
-  }, [belegungRelevant, geplantFuer, datum, rapport?.id]);
+  }, [belegungRelevant, planPersonWirksam, datum, rapport?.id]);
 
   function waehleKunde(neu: string) {
     setKundeId(neu);
@@ -235,19 +254,20 @@ export function RapportKopfForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1" htmlFor="geplant_fuer">
-                Eingeplant für
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="plan_person">
+                Tagesplan von
               </label>
+              {/* Bewusst ohne name: Wer dabei ist, steht unter
+                  "Beteiligte" – dieses Feld wählt nur, wessen Tag unten
+                  gezeigt wird, und wird nicht gespeichert. */}
               <select
-                id="geplant_fuer"
-                name="geplant_fuer"
-                disabled={gesperrt}
-                value={geplantFuer}
-                onChange={(e) => setGeplantFuer(e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+                id="plan_person"
+                value={planPerson}
+                onChange={(e) => setPlanPerson(e.target.value)}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               >
-                <option value="">Noch niemand</option>
-                {mitarbeitende.map((m) => (
+                <option value="">{verantwortlichName} (verantwortlich)</option>
+                {weitereBeteiligte.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
                   </option>

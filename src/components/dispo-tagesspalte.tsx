@@ -42,6 +42,25 @@ export async function DispoTagesspalte({
   const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
   const namen = new Map((mitarbeitende ?? []).map((m) => [m.id, m.name]));
 
+  // Wer eingeplant ist, steht seit 0045 in rapport_beteiligte. Die Spalte
+  // las weiterhin rapporte.geplant_fuer – die wird nicht mehr
+  // geschrieben, und deshalb stand hier bei jedem neueren Einsatz
+  // "nicht zugewiesen", obwohl das Team am Rapport erfasst war.
+  const { data: beteiligteRoh } = rapporte.length
+    ? await supabase
+        .from("rapport_beteiligte")
+        .select("rapport_id, mitarbeiter_id")
+        .in("rapport_id", rapporte.map((r) => r.id))
+    : { data: [] };
+
+  const beteiligteVon = new Map<string, string[]>();
+  for (const z of beteiligteRoh ?? []) {
+    beteiligteVon.set(z.rapport_id, [
+      ...(beteiligteVon.get(z.rapport_id) ?? []),
+      namen.get(z.mitarbeiter_id) ?? "?",
+    ]);
+  }
+
   const wochentag = new Date(`${tag}T12:00:00`).toLocaleDateString("de-CH", {
     weekday: "short",
   });
@@ -80,6 +99,13 @@ export async function DispoTagesspalte({
                   ? `${uhrzeit(r.geplant_von) || "?"}–${uhrzeit(r.geplant_bis) || "?"}`
                   : "ganztags";
               const istDieser = r.id === aktuellerRapportId;
+              // Verantwortliche Person zuerst, dann die übrigen Beteiligten.
+              const eingeplant = [
+                ...(namen.get(r.mitarbeiter_id) ? [namen.get(r.mitarbeiter_id)!] : []),
+                ...(beteiligteVon.get(r.id) ?? []).filter(
+                  (n) => n !== namen.get(r.mitarbeiter_id)
+                ),
+              ];
 
               return (
                 <li
@@ -103,8 +129,10 @@ export async function DispoTagesspalte({
                     {r.kunden?.vorname ? `${r.kunden.vorname} ` : ""}
                     {r.kunden?.name}
                   </div>
-                  <div className={r.geplant_fuer ? "text-gray-500" : "text-amber-700"}>
-                    {r.geplant_fuer ? namen.get(r.geplant_fuer) ?? "?" : "nicht zugewiesen"}
+                  <div className={eingeplant.length > 0 ? "text-gray-500" : "text-amber-700"}>
+                    {eingeplant.length > 0
+                      ? eingeplant.join(", ")
+                      : "nicht zugewiesen"}
                   </div>
                 </li>
               );

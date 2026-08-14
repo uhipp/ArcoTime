@@ -279,11 +279,6 @@ export async function fuegePositionHinzu(
     menge: mengeRoh === null ? null : Number(mengeRoh),
     beschreibung: str(formData.get("beschreibung")),
     rabatt_prozent: Number(formData.get("rabatt_prozent") ?? 0),
-    // Person der Position. Fehlt das Feld – kein Team, oder ein
-    // Mengenartikel –, bleibt sie, wie sie war (0046).
-    ...(formData.has("mitarbeiter_id")
-      ? { mitarbeiter_id: String(formData.get("mitarbeiter_id") ?? "").trim() }
-      : {}),
   };
 
   const fehler = await pruefeGegenDienstleistung(supabase, werte);
@@ -294,9 +289,12 @@ export async function fuegePositionHinzu(
   const istArbeitszeit = werte.menge === null;
 
   if (istArbeitszeit) {
+    // Die Tagesgrenze gilt der Person, die die Stunde leistet – nicht der
+    // verantwortlichen des Rapports. Sonst zählte bei einem Team alles
+    // auf die Projektleitung, und die Grenze wäre für beide falsch.
     const grenze = await pruefeTagesgrenze({
       supabase,
-      mitarbeiterId: rapport.mitarbeiter_id,
+      mitarbeiterId: werte.mitarbeiter_id,
       datum: rapport.datum,
       neueMinuten: werte.dauer_minuten,
     });
@@ -307,7 +305,11 @@ export async function fuegePositionHinzu(
 
   const { error } = await supabase.from("zeiteintraege").insert({
     ...werte,
-    beschreibung: await mitNamenszeile(supabase, rapport.mitarbeiter_id, werte.beschreibung),
+    // Namenszeile auf die Person der Position, wie beim Ändern (0046).
+    // Stand hier auf rapport.mitarbeiter_id: Die Position wurde zwar auf
+    // die gewählte Person gebucht, in der Beschreibung – und damit im
+    // Export – stand aber die Projektleitung.
+    beschreibung: await mitNamenszeile(supabase, werte.mitarbeiter_id, werte.beschreibung),
     ...(istArbeitszeit
       ? { menge: null }
       : { dauer_minuten: null, start_zeit: null, end_zeit: null }),
@@ -487,8 +489,11 @@ export async function freieZeitenAm(argumente: {
 
   const supabase = await createClient();
 
-  const [{ data: organisation }, { data: schliesstage }, { data: abwesenheiten }] =
-    await Promise.all([
+  const [
+    { data: organisation },
+    { data: schliesstage },
+    { data: abwesenheiten, error: abwesenheitenFehler },
+  ] = await Promise.all([
       supabase
         .from("organisationen")
         .select("arbeitstag_von_minuten, arbeitstag_bis_minuten")
@@ -499,13 +504,30 @@ export async function freieZeitenAm(argumente: {
         .select("bezeichnung")
         .lte("von", datum)
         .gte("bis", datum),
+      // KEIN Verbund auf abwesenheitsarten: abwesenheiten.art hält den
+      // Schlüssel (z.B. 'ferien'), aber es gibt keinen Fremdschlüssel
+      // darauf – abwesenheitsarten.wert ist nur je Organisation
+      // eindeutig. PostgREST fand die Beziehung folglich nicht, gab
+      // einen Fehler zurück, und weil hier nur data gelesen wurde, sah
+      // jeder Tag abwesenheitsfrei aus: Die Prüfung war seit 0030 wirkungslos.
       supabase
         .from("abwesenheiten")
-        .select("art, von_zeit, bis_zeit, abwesenheitsarten:art")
+        .select("art, von_zeit, bis_zeit")
         .eq("mitarbeiter_id", mitarbeiterId)
         .lte("von", datum)
         .gte("bis", datum),
     ]);
+
+  // Eine gescheiterte Abfrage darf nicht als "keine Abwesenheit" gelten –
+  // genau das hat den Fehler oben so lange verdeckt. Lieber melden und
+  // die Entscheidung der Person überlassen.
+  if (abwesenheitenFehler) {
+    return {
+      belegt: [],
+      frei: [],
+      gesperrt: "Abwesenheiten liessen sich nicht prüfen",
+    };
+  }
 
   const tagVon = organisation?.arbeitstag_von_minuten ?? 420;
   const tagBis = organisation?.arbeitstag_bis_minuten ?? 1080;

@@ -197,6 +197,7 @@ export default async function RapportDetailPage({
               absendeText="Kopfdaten speichern"
               mitDisposition={organisation?.modul_disposition ?? false}
               gesperrt={!offen}
+              beteiligte={beteiligte}
             />
           </PraesenzSperre>
         </div>
