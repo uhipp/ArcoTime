@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
 import type { Anfrage, Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import Link from "next/link";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 
 type AnfrageKanal = { id: string; wert: string; bezeichnung: string; symbol: string; aktiv: boolean };
 type AnfragePrioritaet = { id: string; wert: string; bezeichnung: string; aktiv: boolean };
@@ -29,7 +31,7 @@ export function AnfrageForm({
   mitarbeitende: { id: string; name: string }[];
   kanaele: AnfrageKanal[];
   prioritaeten: AnfragePrioritaet[];
-  action: (formData: FormData) => void;
+  action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
   // Der Erledigen-Block der Detailseite. Er liegt bewusst INNERHALB dieses
   // Formulars: als eigenes <form> daneben gingen Änderungen an Titel und
@@ -38,6 +40,12 @@ export function AnfrageForm({
   // überschreibt die Aktion per formAction.
   children?: React.ReactNode;
 }) {
+  // Fehler kommt aus der Aktion zurück statt per Weiterleitung – so bleibt
+  // die Eingabe stehen (siehe lib/formular-ergebnis). Weil an diesem
+  // Formular vier Absichten hängen, verzweigt eine einzige Aktion über das
+  // Feld "absicht" des gedrückten Knopfs.
+  const [ergebnis, formAction] = useActionState(action, null);
+  const meldung = ergebnis?.fehler ?? error;
   const [kundenListe, setKundenListe] = useState(kunden);
   const [kundeId, setKundeId] = useState(anfrage?.kunde_id ?? "");
   const [projekteListe, setProjekteListe] = useState(projekte);
@@ -83,9 +91,9 @@ export function AnfrageForm({
 
   return (
     <>
-      <form action={action} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
-        {error && (
-          <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
+      <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
+        {meldung && (
+          <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{meldung}</div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -282,12 +290,12 @@ export function AnfrageForm({
         </div>
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          <AbsendeKnopf
+            laufttext="Wird gespeichert…"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Speichern
-          </button>
+          </AbsendeKnopf>
           <Link
             href="/anfragen"
             className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"

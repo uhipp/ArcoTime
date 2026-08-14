@@ -10,6 +10,7 @@ import { mitNamePraefix, ohneNamenszeile } from "@/lib/mitarbeiter-praefix";
 import { benachrichtigeZuweisung } from "@/lib/anfrage-benachrichtigung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import type { AnfrageStatus } from "@/lib/types";
+import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 
 async function nameFuer(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -45,7 +46,10 @@ function anfrageFromForm(formData: FormData) {
   };
 }
 
-export async function createAnfrage(formData: FormData) {
+export async function createAnfrage(
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = anfrageFromForm(formData);
 
@@ -63,7 +67,7 @@ export async function createAnfrage(formData: FormData) {
     .select("id")
     .single();
   if (error || !neue) {
-    redirect(`/anfragen/neu?error=${encodeURIComponent(error?.message ?? "Unbekannter Fehler.")}`);
+    return { fehler: error?.message ?? "Unbekannter Fehler." };
   }
 
   if (values.zugewiesen_an) {
@@ -81,7 +85,11 @@ export async function createAnfrage(formData: FormData) {
   redirect(mitErfolg("/anfragen", "Anfrage erstellt."));
 }
 
-export async function updateAnfrage(id: string, formData: FormData) {
+export async function updateAnfrage(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const values = anfrageFromForm(formData);
 
@@ -109,7 +117,7 @@ export async function updateAnfrage(id: string, formData: FormData) {
 
   const { error } = await supabase.from("anfragen").update(values).eq("id", id);
   if (error) {
-    redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   if (zuweisungGeaendert && values.zugewiesen_an) {
@@ -157,7 +165,11 @@ export async function setzeStatus(id: string, status: AnfrageStatus) {
 // erfasst, was Soll/Ist-Stundenauswertungen je Mitarbeitendem erst möglich
 // macht (nicht verrechenbare Arbeit läuft dazu über ein internes Projekt +
 // eine unproduktive Dienstleistung in den Stammdaten).
-export async function erledigeAnfrage(id: string, formData: FormData) {
+async function erledigeAnfrage(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
 
   // Die Zeiteintrags-Felder tragen bewusst das Präfix "zeit_": Sie stecken im
@@ -173,11 +185,7 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
   const rabatt_prozent = Number(formData.get("zeit_rabatt_prozent") ?? 0);
 
   if (!projekt_id || !dienstleistung_id || dauer_minuten <= 0) {
-    redirect(
-      `/anfragen/${id}?error=${encodeURIComponent(
-        "Bitte Projekt, Dienstleistung und eine gültige Dauer angeben. Für nicht verrechenbare Arbeit bitte das interne Projekt wählen und Rabatt auf 100% setzen."
-      )}`
-    );
+    return { fehler: "Bitte Projekt, Dienstleistung und eine gültige Dauer angeben. Für nicht verrechenbare Arbeit bitte das interne Projekt wählen und Rabatt auf 100% setzen." };
   }
 
   // Rabattsperre der Dienstleistung gilt auch hier – sonst liesse sich ein
@@ -195,11 +203,7 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
     rabatt_prozent > 0 &&
     rabatt_prozent < 100
   ) {
-    redirect(
-      `/anfragen/${id}?error=${encodeURIComponent(
-        `Für "${dienstleistung.bezeichnung}" sind keine Teilrabatte zugelassen (nur 0% oder 100%).`
-      )}`
-    );
+    return { fehler: `Für "${dienstleistung.bezeichnung}" sind keine Teilrabatte zugelassen (nur 0% oder 100%).` };
   }
 
   const { data: userData } = await supabase.auth.getUser();
@@ -216,7 +220,7 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
       neueMinuten: dauer_minuten,
     });
     if (grenze) {
-      redirect(`/anfragen/${id}?error=${encodeURIComponent(grenze)}`);
+      return { fehler: grenze };
     }
   }
 
@@ -248,9 +252,7 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
     .single();
 
   if (zeitError || !neuerEintrag) {
-    redirect(
-      `/anfragen/${id}?error=${encodeURIComponent(zeitError?.message ?? "Unbekannter Fehler")}`
-    );
+    return { fehler: zeitError?.message ?? "Unbekannter Fehler" };
   }
 
   // Die Anfrage-Felder kommen aus demselben Formular und werden hier
@@ -297,7 +299,7 @@ export async function erledigeAnfrage(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/anfragen");
@@ -437,7 +439,11 @@ async function uebernehmeDokumente(
 // offen, nicht nur Admins – wer eine Anfrage bearbeiten darf, darf sie
 // auch als erledigt kennzeichnen. Das Löschen bleibt davon unberührt und
 // weiterhin dem Admin vorbehalten (RLS anfragen_delete, siehe 0013).
-export async function erledigeAnfrageOhneNachweis(id: string, formData: FormData) {
+async function erledigeAnfrageOhneNachweis(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const werte = await anfrageFelderFuerAbschluss(supabase, formData, userData.user?.id ?? null, id);
@@ -448,7 +454,7 @@ export async function erledigeAnfrageOhneNachweis(id: string, formData: FormData
     .eq("id", id);
 
   if (error) {
-    redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/anfragen");
@@ -459,7 +465,11 @@ export async function erledigeAnfrageOhneNachweis(id: string, formData: FormData
 // übernimmt die Beschreibung der Anfrage als Bemerkung. Die Positionen
 // erfasst man anschliessend im Rapport selbst, deshalb führt der Weg
 // direkt dorthin.
-export async function erledigeAnfrageMitRapport(id: string, formData: FormData) {
+async function erledigeAnfrageMitRapport(
+  id: string,
+  _bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -472,11 +482,7 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
   const zugewiesen = String(formData.get("zugewiesen_an") ?? "").trim();
 
   if (!kunde_id) {
-    redirect(
-      `/anfragen/${id}?error=${encodeURIComponent(
-        "Für einen Rapport braucht es einen Kunden. Bitte oben einen auswählen."
-      )}`
-    );
+    return { fehler: "Für einen Rapport braucht es einen Kunden. Bitte oben einen auswählen." };
   }
 
   // Die Namenszeile gehört nicht in die Bemerkung: Der Rapport führt die
@@ -500,11 +506,7 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
     .single();
 
   if (rapportError || !rapport) {
-    redirect(
-      `/anfragen/${id}?error=${encodeURIComponent(
-        rapportError?.message ?? "Rapport konnte nicht angelegt werden."
-      )}`
-    );
+    return { fehler: rapportError?.message ?? "Rapport konnte nicht angelegt werden." };
   }
 
   const uebernommen = await uebernehmeDokumente(
@@ -526,7 +528,7 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
     .eq("id", id);
 
   if (error) {
-    redirect(`/anfragen/${id}?error=${encodeURIComponent(error.message)}`);
+    return { fehler: error.message };
   }
 
   revalidatePath("/anfragen");
@@ -541,6 +543,39 @@ export async function erledigeAnfrageMitRapport(id: string, formData: FormData) 
       `Anfrage erledigt – jetzt Positionen erfassen.${dokumentHinweis}`
     )
   );
+}
+
+// Ein Formular, vier Absichten.
+//
+// Die Detailseite hat oben das Anfrageformular und darunter die
+// Abschlusswege – alles in EINEM Formular, damit Änderungen an Titel und
+// Beschreibung beim Abschliessen nicht verloren gehen (das war Bug0003).
+// Bis hierher hing an jedem Knopf eine eigene Aktion über formAction.
+//
+// Das ging nicht mehr zusammen mit dem Bewahren der Eingabe:
+// useActionState kennt genau eine Aktion je Formular. Deshalb verzweigt
+// jetzt eine Aktion über das Feld "absicht", das der gedrückte Knopf
+// mitschickt – der Standardweg in HTML, seit es Formulare gibt.
+//
+// Fehlt das Feld (Enter in einem Textfeld löst den ersten Knopf aus, und
+// der trägt keinen Wert), gilt "speichern". Das ist das harmlose Verhalten.
+export async function bearbeiteAnfrage(
+  id: string,
+  bisher: FormularErgebnis,
+  formData: FormData
+): Promise<FormularErgebnis> {
+  const absicht = String(formData.get("absicht") ?? "speichern");
+
+  switch (absicht) {
+    case "zeiteintrag":
+      return erledigeAnfrage(id, bisher, formData);
+    case "rapport":
+      return erledigeAnfrageMitRapport(id, bisher, formData);
+    case "ohne_nachweis":
+      return erledigeAnfrageOhneNachweis(id, bisher, formData);
+    default:
+      return updateAnfrage(id, bisher, formData);
+  }
 }
 
 // Übernimmt eine noch nicht zugewiesene Anfrage für sich selbst.

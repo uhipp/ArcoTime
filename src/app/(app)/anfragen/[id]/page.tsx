@@ -6,14 +6,12 @@ import { ladeDokumente } from "@/lib/dokumente-laden";
 import { AnfrageForm } from "@/components/anfrage-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { DeleteButton } from "@/components/delete-button";
+import { AbsendeKnopf } from "@/components/absende-knopf";
 import { rabattLabel } from "@/lib/rabatt";
 import { ohneNamenszeile } from "@/lib/mitarbeiter-praefix";
 import {
-  updateAnfrage,
+  bearbeiteAnfrage,
   deleteAnfrage,
-  erledigeAnfrage,
-  erledigeAnfrageMitRapport,
-  erledigeAnfrageOhneNachweis,
 } from "@/app/actions/anfragen";
 import type { Anfrage } from "@/lib/types";
 
@@ -54,11 +52,10 @@ export default async function AnfrageDetailPage({
 
   if (!anfrage) notFound();
 
-  const updateAction = updateAnfrage.bind(null, id);
+  // Eine Aktion für alle vier Absichten des Formulars – welche gilt,
+  // entscheidet der gedrückte Knopf über sein Feld "absicht".
+  const formularAction = bearbeiteAnfrage.bind(null, id);
   const deleteAction = deleteAnfrage.bind(null, id);
-  const erledigenAction = erledigeAnfrage.bind(null, id);
-  const rapportAction = erledigeAnfrageMitRapport.bind(null, id);
-  const ohneNachweisAction = erledigeAnfrageOhneNachweis.bind(null, id);
 
   const bereitsVerrechnet = Boolean(anfrage.zeiteintrag_id);
   const hatRapport = Boolean(anfrage.rapport_id);
@@ -101,7 +98,7 @@ export default async function AnfrageDetailPage({
         mitarbeitende={mitarbeitende ?? []}
         kanaele={kanaele ?? []}
         prioritaeten={prioritaeten ?? []}
-        action={updateAction}
+        action={formularAction}
         error={error}
       >
         {!bereitsVerrechnet && (
@@ -244,15 +241,16 @@ export default async function AnfrageDetailPage({
               )}
 
               <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="submit"
-                  formAction={erledigenAction}
-                  className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+                <AbsendeKnopf
+                  name="absicht"
+                  value="zeiteintrag"
+                  laufttext="Wird erledigt…"
+                  className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {anfrage.status === "erledigt"
                     ? "Verrechnen"
                     : "Erledigen mit Zeiteintrag"}
-                </button>
+                </AbsendeKnopf>
 
                 {rapportMoeglich && (
                   <>
@@ -261,23 +259,25 @@ export default async function AnfrageDetailPage({
                         Knöpfe brauchen deshalb kein formNoValidate – und
                         dürfen es auch nicht haben, sonst fiele die Prüfung
                         von Kunde und Titel der Anfrage gleich mit weg. */}
-                    <button
-                      type="submit"
-                      formAction={rapportAction}
-                      className="rounded border border-arcos-steel text-arcos-steel text-sm font-medium px-4 py-2 hover:bg-gray-50"
+                    <AbsendeKnopf
+                      name="absicht"
+                      value="rapport"
+                      laufttext="Rapport wird angelegt…"
+                      className="rounded border border-arcos-steel text-arcos-steel text-sm font-medium px-4 py-2 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {anfrage.status === "erledigt"
                         ? "Rapport erstellen"
                         : "Erledigen mit Rapport"}
-                    </button>
+                    </AbsendeKnopf>
                     {anfrage.status !== "erledigt" && (
-                      <button
-                        type="submit"
-                        formAction={ohneNachweisAction}
-                        className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
+                      <AbsendeKnopf
+                        name="absicht"
+                        value="ohne_nachweis"
+                        laufttext="Wird erledigt…"
+                        className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         Nur als erledigt markieren
-                      </button>
+                      </AbsendeKnopf>
                     )}
                   </>
                 )}

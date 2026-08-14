@@ -21,16 +21,26 @@ export function AbsendeKnopf({
   children,
   laufttext,
   className,
+  name,
+  value,
 }: {
   children: React.ReactNode;
   laufttext?: string;
   className?: string;
+  // Für Formulare mit mehreren Absichten: Der Wert des gedrückten Knopfs
+  // landet in den Formulardaten, und eine einzige Aktion verzweigt darauf.
+  // useActionState kennt nur eine Aktion je Formular – mit formAction je
+  // Knopf liesse sich die Eingabe bei einer Ablehnung nicht bewahren.
+  name?: string;
+  value?: string;
 }) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
+      name={name}
+      value={value}
       disabled={pending}
       aria-busy={pending}
       className={

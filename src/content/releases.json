@@ -151,6 +151,10 @@
       {
         "typ": "fix",
         "text": "Wurde eine Rapport-Position wegen der Tagesarbeitszeit abgelehnt, war sie samt Beschreibung verloren. Der Hinweis erscheint jetzt bereits beim Erfassen, und eine Ablehnung lässt die Eingabe stehen."
+      },
+      {
+        "typ": "fix",
+        "text": "Wird eine Eingabe vom Server abgelehnt – etwa wegen der Tagesarbeitszeit oder einer fehlenden Angabe –, bleibt das Formular jetzt ausgefüllt. Bisher war alles Getippte weg. Betrifft Kunden, Projekte, Dienstleistungen, Zeiterfassung, Rapporte und Anfragen."
       }
     ]
   },
