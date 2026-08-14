@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { fuegeBeteiligtenHinzu, entferneBeteiligten } from "@/app/actions/rapporte";
+import { fuegeBeteiligtenHinzu, entferneBeteiligten, fuegeGruppeHinzu } from "@/app/actions/rapporte";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { DeleteButton } from "@/components/delete-button";
@@ -22,6 +22,7 @@ export function RapportTeam({
   rapportId,
   beteiligte,
   alle,
+  gruppen,
   verantwortlichId,
   bearbeitbar,
   ersetzenAction,
@@ -29,6 +30,9 @@ export function RapportTeam({
   rapportId: string;
   beteiligte: Person[];
   alle: Person[];
+  // Gruppen aus den Einstellungen (0049) – der Regelfall ist "das Team
+  // Ost fährt hin", nicht drei einzeln gewählte Namen.
+  gruppen: { id: string; bezeichnung: string }[];
   verantwortlichId: string | null;
   bearbeitbar: boolean;
   ersetzenAction: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
@@ -116,6 +120,41 @@ export function RapportTeam({
             </button>
           </form>
         ))}
+
+      {bearbeitbar && gruppen.length > 0 && (
+        <form
+          action={fuegeGruppeHinzu.bind(null, rapportId)}
+          className="mt-3 flex flex-wrap items-end gap-2"
+        >
+          <div className="flex-1 min-w-[12rem]">
+            <label className="block text-xs text-gray-500 mb-1" htmlFor="neue_gruppe_team">
+              Ganze Gruppe hinzufügen
+            </label>
+            <select
+              id="neue_gruppe_team"
+              name="gruppe_id"
+              required
+              defaultValue=""
+              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+            >
+              <option value="" disabled>
+                Bitte wählen…
+              </option>
+              {gruppen.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.bezeichnung}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="rounded border text-sm font-medium px-3 py-1.5 hover:bg-gray-50"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      )}
 
       {/* Personentausch: Fällt jemand aus, übernimmt ein anderer – samt
           der bereits erfassten Stunden. Ohne das müsste man die Teamzeile

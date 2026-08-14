@@ -854,6 +854,53 @@ export async function storniereRapport(
 // darf trotzdem Positionen erfassen – die Disposition etwa fährt nie
 // selbst mit. Eingeschränkt wird später über das Berechtigungssystem.
 
+// Alle Mitglieder einer Gruppe auf einmal zum Einsatz nehmen (0049).
+//
+// Der Regelfall in der Disposition ist "das Team Ost fährt hin", nicht
+// drei einzelne Namen. Wer schon dabei ist, bleibt es – upsert statt
+// vorher löschen, damit ein bereits von Hand ergänzter Vierter nicht
+// wieder verschwindet.
+export async function fuegeGruppeHinzu(rapportId: string, formData: FormData) {
+  const supabase = await createClient();
+  const gruppeId = String(formData.get("gruppe_id") ?? "").trim();
+
+  if (!gruppeId) {
+    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent("Bitte eine Gruppe wählen.")}`);
+  }
+
+  const { data: mitglieder } = await supabase
+    .from("gruppen_mitglieder")
+    .select("mitarbeiter_id")
+    .eq("gruppe_id", gruppeId);
+
+  if (!mitglieder || mitglieder.length === 0) {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent(
+        "Diese Gruppe hat keine Mitglieder. Unter Einstellungen lassen sie sich zuteilen."
+      )}`
+    );
+  }
+
+  const { error } = await supabase.from("rapport_beteiligte").upsert(
+    mitglieder.map((m) => ({ rapport_id: rapportId, mitarbeiter_id: m.mitarbeiter_id })),
+    { onConflict: "rapport_id,mitarbeiter_id" }
+  );
+
+  if (error) {
+    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/disposition");
+  revalidatePath("/kalender");
+  redirect(
+    mitErfolg(
+      `/rapporte/${rapportId}?fokus=neue_gruppe_team`,
+      `${mitglieder.length} Personen zum Einsatz hinzugefügt.`
+    )
+  );
+}
+
 export async function fuegeBeteiligtenHinzu(
   rapportId: string,
   formData: FormData

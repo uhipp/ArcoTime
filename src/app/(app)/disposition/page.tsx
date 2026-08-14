@@ -17,6 +17,7 @@ type SearchParams = {
   ansicht?: string;
   datum?: string;
   mitarbeiter_id?: string;
+  gruppe_id?: string;
 };
 
 // Alle Tage zwischen zwei ISO-Daten, einschliesslich. Bewusst hier und
@@ -126,10 +127,30 @@ export default async function DispositionPage({
     query = query.eq("rapport_beteiligte.mitarbeiter_id", params.mitarbeiter_id);
   }
 
-  const [{ data: rapporteRoh }, { data: mitarbeitende }] = await Promise.all([
+  const [
+    { data: rapporteRoh },
+    { data: mitarbeitende },
+    { data: gruppen },
+    { data: gruppenMitglieder },
+  ] = await Promise.all([
     query,
     supabase.from("profiles").select("id, name, farbe").is("deaktiviert_am", null).order("name"),
+    supabase.from("gruppen").select("id, bezeichnung").eq("aktiv", true).order("sortierung"),
+    supabase.from("gruppen_mitglieder").select("gruppe_id, mitarbeiter_id"),
   ]);
+
+  // Gruppen schränken die SPALTEN ein, nicht die Einsätze (0049). Ein
+  // Einsatz, an dem eine Person aus der Gruppe beteiligt ist, soll
+  // sichtbar bleiben – auch wenn die übrigen Beteiligten anderswo
+  // hingehören. Andernfalls verschwände genau die Zusammenarbeit über
+  // Teamgrenzen hinweg, die man in der Disposition sehen will.
+  const gruppenPersonen = params.gruppe_id
+    ? new Set(
+        (gruppenMitglieder ?? [])
+          .filter((z) => z.gruppe_id === params.gruppe_id)
+          .map((z) => z.mitarbeiter_id)
+      )
+    : null;
 
   const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
 
@@ -203,6 +224,7 @@ export default async function DispositionPage({
       : [
           ...personen
             .filter((m) => !params.mitarbeiter_id || m.id === params.mitarbeiter_id)
+            .filter((m) => !gruppenPersonen || gruppenPersonen.has(m.id))
             .map((m) => ({
               key: m.id,
               titel: m.name,
@@ -317,6 +339,23 @@ export default async function DispositionPage({
       <form className="bg-white rounded-lg border p-4 mb-6 flex flex-wrap items-end gap-3 text-sm">
         <input type="hidden" name="ansicht" value={ansicht} />
         <input type="hidden" name="datum" value={bezugsdatum} />
+        {gruppen && gruppen.length > 0 && (
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Gruppe</label>
+            <select
+              name="gruppe_id"
+              defaultValue={params.gruppe_id ?? ""}
+              className="rounded border border-gray-300 px-2 py-1.5 min-w-[10rem]"
+            >
+              <option value="">Alle</option>
+              {gruppen.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.bezeichnung}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div>
           <label className="block text-xs text-gray-500 mb-1">Monteur</label>
           <select
@@ -335,8 +374,11 @@ export default async function DispositionPage({
         <button type="submit" className="rounded border px-3 py-1.5 hover:bg-gray-50">
           Filtern
         </button>
-        {params.mitarbeiter_id && (
-          <Link href={query2({ mitarbeiter_id: "" })} className="text-gray-500 hover:underline">
+        {(params.mitarbeiter_id || params.gruppe_id) && (
+          <Link
+            href={query2({ mitarbeiter_id: "", gruppe_id: "" })}
+            className="text-gray-500 hover:underline"
+          >
             Filter zurücksetzen
           </Link>
         )}

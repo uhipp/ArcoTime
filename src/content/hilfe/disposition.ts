@@ -52,6 +52,8 @@ Der sichtbare Ausschnitt ist der **Arbeitstag** aus den [Einstellungen](/hilfe/e
 
 Bei vielen Mitarbeitenden behalten die Spalten ihre Breite und das Raster wird seitlich gescrollt – zusammengequetschte Spalten, in denen kein Kundenname mehr steht, wären keine Übersicht. Die Uhrzeiten links bleiben dabei stehen.
 
+Wird es trotzdem zu breit, hilft der Filter **Gruppe**: Er zeigt in der Tagesansicht nur noch die Spalten einer [Gruppe](/hilfe/einstellungen) – „Sanitär“, „Team Ost“. Die **Einsätze** schränkt er nicht ein: Ein Auftrag, an dem jemand aus der Gruppe beteiligt ist, bleibt sichtbar, auch wenn die übrigen Beteiligten anderswo hingehören. Sonst verschwände genau die Zusammenarbeit über Teamgrenzen hinweg, die man sehen will.
+
 Der **Monat** bleibt eine Liste. Über dreissig Tage hinweg wäre ein Raster unleserlich, und dort will man ohnehin nur wissen, an welchen Tagen etwas liegt.
 
 ## Einsätze verschieben

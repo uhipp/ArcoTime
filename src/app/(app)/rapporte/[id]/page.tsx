@@ -52,6 +52,7 @@ export default async function RapportDetailPage({
     { data: rabattsaetze },
     { data: herkunft },
     { data: beteiligteRoh },
+    { data: gruppen },
     { dokumente, kategorien },
   ] = await Promise.all([
     getCurrentProfile(),
@@ -82,6 +83,7 @@ export default async function RapportDetailPage({
       .from("rapport_beteiligte")
       .select("mitarbeiter_id, profiles(id, name)")
       .eq("rapport_id", id),
+    supabase.from("gruppen").select("id, bezeichnung").eq("aktiv", true).order("sortierung"),
     ladeDokumente(supabase, "rapport", id),
   ]);
 
@@ -327,6 +329,7 @@ export default async function RapportDetailPage({
         rapportId={id}
         beteiligte={beteiligte}
         alle={mitarbeitende ?? []}
+        gruppen={gruppen ?? []}
         verantwortlichId={rapport.mitarbeiter_id ?? null}
         bearbeitbar={offen}
         ersetzenAction={ersetzeBeteiligten.bind(null, id)}

@@ -73,6 +73,8 @@ Die **verantwortliche Person** aus dem Kopf ist immer dabei und lässt sich nich
 
 Die Beteiligten sind **reine Planung, keine Berechtigung**: Wer nicht dazugehört, darf trotzdem Positionen erfassen – die Disposition etwa fährt nie selbst mit.
 
+**Ganze Gruppe hinzufügen**: Sind unter [Einstellungen](/hilfe/einstellungen) Gruppen angelegt, kommt ein Team in einem Zug dazu – der Regelfall ist „Team Ost fährt hin“ und nicht drei einzeln gewählte Namen. Wer schon dabei ist, bleibt es.
+
 **Person ersetzen**: Fällt jemand aus, übernimmt eine andere Person – samt aller bereits erfassten Stundenpositionen. Ohne diese Funktion müsste man die Teamzeile tauschen und danach jede Position einzeln umhängen, und würde dabei welche vergessen. Bereits **exportierte** Positionen bleiben, wo sie sind: Wessen Stunden verrechnet wurden, ändert man nicht nachträglich.
 
 **Geleistet von**: Sind mehrere Personen beteiligt, wählst du bei jeder Stundenposition, wer sie geleistet hat. Material und Reisespesen brauchen das nicht – sie gehören zum Auftrag, nicht zu einer Person. Der Name landet auch in der ersten Zeile der Beschreibung, denn im Export ist das die einzige Spur, wem die Stunde gehört.

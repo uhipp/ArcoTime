@@ -636,3 +636,84 @@ export async function entferneLogo() {
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen", "Logo entfernt."));
 }
+
+// ---------------------------------------------------------
+// Gruppen von Mitarbeitenden (0049)
+// ---------------------------------------------------------
+// Eine Gruppe ist eine Sicht, keine Berechtigung: Sie bündelt die
+// Spalten der Disposition und stellt ein Team in einem Zug zusammen. Wer
+// in keiner Gruppe ist, verliert dadurch nichts.
+
+export async function createGruppe(formData: FormData) {
+  const supabase = await createClient();
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) return;
+
+  const { error } = await supabase.from("gruppen").insert({
+    bezeichnung,
+    sortierung: await naechsteSortierung(supabase, "gruppen"),
+  });
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  revalidatePath("/disposition");
+  redirect(mitErfolg("/einstellungen?fokus=neue_gruppe", "Gruppe hinzugefügt."));
+}
+
+export async function updateGruppe(id: string, formData: FormData) {
+  const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
+  if (!bezeichnung) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
+  }
+  revalidatePath("/disposition");
+  await speichereListeneintrag(
+    "gruppen",
+    id,
+    { bezeichnung, sortierung: sortierungAus(formData) },
+    "Gruppe gespeichert."
+  );
+}
+
+export async function toggleGruppe(id: string, aktiv: boolean) {
+  const supabase = await createClient();
+  await supabase.from("gruppen").update({ aktiv }).eq("id", id);
+  revalidatePath("/einstellungen");
+  revalidatePath("/disposition");
+  redirect(mitErfolg("/einstellungen", aktiv ? "Gruppe aktiviert." : "Gruppe deaktiviert."));
+}
+
+// Mitglieder einer Gruppe setzen.
+//
+// Bewusst als Ganzes und nicht Person für Person: Das Formular schickt
+// alle Häkchen, und ein Vergleich Zeile für Zeile wäre nur dann nötig,
+// wenn an einer Mitgliedschaft mehr hinge als die Zugehörigkeit. Zuerst
+// löschen, dann einfügen – die Tabelle hat keine weiteren Angaben, die
+// dabei verloren gehen könnten.
+export async function setzeGruppenMitglieder(gruppeId: string, formData: FormData) {
+  const supabase = await createClient();
+  const mitglieder = formData.getAll("mitarbeiter_id").map(String).filter(Boolean);
+
+  const { error: loeschFehler } = await supabase
+    .from("gruppen_mitglieder")
+    .delete()
+    .eq("gruppe_id", gruppeId);
+
+  if (loeschFehler) {
+    redirect(`/einstellungen?error=${encodeURIComponent(loeschFehler.message)}`);
+  }
+
+  if (mitglieder.length > 0) {
+    const { error } = await supabase.from("gruppen_mitglieder").insert(
+      // organisation_id setzt der Trigger aus 0049.
+      mitglieder.map((id) => ({ gruppe_id: gruppeId, mitarbeiter_id: id }))
+    );
+    if (error) {
+      redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+    }
+  }
+
+  revalidatePath("/einstellungen");
+  revalidatePath("/disposition");
+  redirect(mitErfolg("/einstellungen", "Gruppe gespeichert."));
+}

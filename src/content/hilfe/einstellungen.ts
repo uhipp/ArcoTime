@@ -90,6 +90,19 @@ Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) �
 
 Das Häkchen **"blockiert die Planung"** entscheidet, ob die Art in der Disposition wirkt: Ist es gesetzt, fällt der Zeitraum aus den freien Zeiten heraus. Ohne Häkchen ist die Abwesenheit reine Information und die Person bleibt einplanbar – gedacht für Fälle wie Homeoffice oder Aussendienst.
 
+## Gruppen
+
+Fasst Mitarbeitende zusammen – „Team Ost“, „Sanitär“, „Lernende“. Eine Gruppe wird angelegt wie jede andere Auswahlliste; die Mitglieder werden darunter mit Häkchen zugeteilt und mit **„Mitglieder speichern“** übernommen.
+
+Eine Gruppe ist eine **Sicht, keine Berechtigung**: Wer in keiner Gruppe ist, sieht und darf genau gleich viel wie vorher. Mehrfache Zugehörigkeit ist gewollt – der Springer gehört zu beiden Teams, und ihn zwingend einem zuzuordnen wäre eine Aussage, die im Betrieb niemand treffen kann.
+
+Zwei Stellen nutzen die Gruppen:
+
+- In der [Disposition](/hilfe/disposition) schränkt der Filter **Gruppe** die Tagesansicht auf die Spalten dieser Gruppe ein. Bei zwanzig Mitarbeitenden ist das der Unterschied zwischen einer Übersicht und einer Tapete.
+- Am [Rapport](/hilfe/rapporte) fügt **„Ganze Gruppe hinzufügen“** alle Mitglieder auf einmal als Beteiligte hinzu. Wer schon dabei ist, bleibt es.
+
+Wird eine Gruppe **deaktiviert**, verschwindet sie aus beiden Auswahlfeldern. Bereits zusammengestellte Teams bleiben davon unberührt – sie bestehen aus Personen, nicht aus der Gruppe.
+
 ## Was sich nachträglich NICHT ändern lässt
 
 Bei Kanälen und Prioritäten wird intern ein **unveränderlicher Schlüssel** aus der ursprünglichen Bezeichnung abgeleitet (z.B. \`telefon\`). Genau dieser Schlüssel steht in den Anfragen, nicht die Bezeichnung – deshalb darfst du umbenennen, ohne dass bestehende Anfragen ihre Zuordnung verlieren. Der Schlüssel selbst bleibt allerdings auf dem alten Stand; sichtbar ist er nur im Export.

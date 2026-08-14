@@ -36,6 +36,10 @@ import {
   createDokumentKategorie,
   toggleDokumentKategorie,
   updateDokumentKategorie,
+  createGruppe,
+  updateGruppe,
+  toggleGruppe,
+  setzeGruppenMitglieder,
 } from "@/app/actions/einstellungen";
 
 // Minuten seit Mitternacht als HH:MM, für die Anzeige der gespeicherten
@@ -66,6 +70,9 @@ export default async function EinstellungenPage({
     { data: kanaele },
     { data: prioritaeten },
     { data: dokumentKategorien },
+    { data: gruppen },
+    { data: gruppenMitglieder },
+    { data: mitarbeitende },
   ] = await Promise.all([
     supabase.from("dienstleistungsklassen").select("*").order("sortierung"),
     supabase.from("einheiten").select("*").order("sortierung"),
@@ -76,7 +83,23 @@ export default async function EinstellungenPage({
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),
     supabase.from("anfrage_prioritaeten").select("*").order("sortierung"),
     supabase.from("dokument_kategorien").select("*").order("sortierung"),
+    supabase.from("gruppen").select("*").order("sortierung"),
+    supabase.from("gruppen_mitglieder").select("gruppe_id, mitarbeiter_id"),
+    supabase
+      .from("profiles")
+      .select("id, name")
+      .is("deaktiviert_am", null)
+      .order("name"),
   ]);
+
+  // Mitglieder je Gruppe, damit die Häkchen ohne Suche in einer Liste
+  // gesetzt werden können.
+  const mitgliederVon = new Map<string, Set<string>>();
+  for (const z of gruppenMitglieder ?? []) {
+    const menge = mitgliederVon.get(z.gruppe_id) ?? new Set<string>();
+    menge.add(z.mitarbeiter_id);
+    mitgliederVon.set(z.gruppe_id, menge);
+  }
 
   return (
     <div className="space-y-10 max-w-2xl">
@@ -594,6 +617,112 @@ export default async function EinstellungenPage({
             <input type="checkbox" name="blockiert" defaultChecked />
             blockiert
           </label>
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Gruppen</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Fasst Mitarbeitende zusammen – „Team Ost“, „Sanitär“, „Lernende“.
+          In der <strong>Disposition</strong> lässt sich die Tagesansicht damit
+          auf die Spalten einer Gruppe einschränken, und am Rapport kommt ein
+          Team in einem Zug dazu.
+        </p>
+        <p className="rounded bg-blue-50 text-blue-900 text-xs px-3 py-2 mb-3">
+          Eine Gruppe ist eine <strong>Sicht, keine Berechtigung</strong>: Wer
+          in keiner Gruppe ist, sieht und darf genau gleich viel. Mehrfache
+          Zugehörigkeit ist gewollt – der Springer gehört zu beiden Teams.
+        </p>
+        <ul className="bg-white rounded-lg border divide-y mb-4">
+          {gruppen?.map((g) => (
+            <li key={g.id} className="px-4 py-3 text-sm">
+              <form
+                action={updateGruppe.bind(null, g.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <input
+                  name="bezeichnung"
+                  required
+                  defaultValue={g.bezeichnung}
+                  aria-label="Bezeichnung"
+                  className={`flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1 ${
+                    g.aktiv ? "" : "text-gray-400"
+                  }`}
+                />
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={g.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+
+              {/* Die Mitglieder stehen in einem eigenen Formular: Sie
+                  gehören in eine andere Tabelle, und ein gemeinsames
+                  "speichern" würde verschweigen, dass zwei Dinge
+                  geschrieben werden. */}
+              <form action={setzeGruppenMitglieder.bind(null, g.id)} className="mt-2">
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {mitarbeitende?.map((m) => (
+                    <label key={m.id} className="flex items-center gap-1.5 text-xs">
+                      <input
+                        type="checkbox"
+                        name="mitarbeiter_id"
+                        value={m.id}
+                        defaultChecked={mitgliederVon.get(g.id)?.has(m.id) ?? false}
+                      />
+                      {m.name}
+                    </label>
+                  ))}
+                  {(!mitarbeitende || mitarbeitende.length === 0) && (
+                    <span className="text-xs text-gray-400">
+                      Noch keine Mitarbeitenden erfasst.
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center gap-3">
+                  <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                    Mitglieder speichern
+                  </button>
+                  <span className="text-xs text-gray-400">
+                    {mitgliederVon.get(g.id)?.size ?? 0} zugeteilt
+                  </span>
+                </div>
+              </form>
+
+              <form action={toggleGruppe.bind(null, g.id, !g.aktiv)} className="mt-1">
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
+                  {g.aktiv ? "deaktivieren" : "aktivieren"}
+                </button>
+              </form>
+            </li>
+          ))}
+          {(!gruppen || gruppen.length === 0) && (
+            <li className="px-4 py-3 text-sm text-gray-400">
+              Noch keine Gruppen. Ohne Gruppen zeigt die Disposition wie bisher
+              alle Mitarbeitenden.
+            </li>
+          )}
+        </ul>
+        <form action={createGruppe} className="flex flex-wrap items-end gap-2">
+          <input
+            id="neue_gruppe"
+            name="bezeichnung"
+            required
+            placeholder="Neue Gruppe…"
+            className="flex-1 min-w-[10rem] rounded border border-gray-300 px-3 py-2 text-sm"
+          />
           <button
             type="submit"
             className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
