@@ -112,21 +112,44 @@ export async function fuehreAus(
   // bei der man vor dem Auslösen nachdenken muss.
   const vorher = zeilen.map((z) => ({ id: z.kunde_id, anreise_km: null }));
 
+  // Der Lauf wird VOR den Änderungen festgehalten, nicht danach.
+  //
+  // Ursprünglich stand er am Schluss – und beim ersten Einsatz scheiterte
+  // genau dieses Insert (die Tabelle war der Schnittstelle noch nicht
+  // bekannt). Die Kunden waren da längst geändert, ohne dass ein Rückweg
+  // aufgezeichnet war. Bei einer Aufgabe, deren einziger Schutz die
+  // Rückholbarkeit ist, ist das die falsche Reihenfolge: Erst die Spur,
+  // dann die Tat. Scheitert das Schreiben der Spur, ist noch nichts
+  // passiert; scheitert eine Änderung danach, gilt der Rückweg trotzdem
+  // für alles, was geschrieben wurde.
+  const { data: lauf, error: protokollFehler } = await supabase
+    .from("datenpflege_laeufe")
+    .insert({ aufgabe, anzahl: zeilen.length, vorher })
+    .select("id")
+    .single();
+
+  if (protokollFehler || !lauf) {
+    return {
+      anzahl: 0,
+      fehler: `Der Lauf liess sich nicht festhalten – es wurde nichts geändert. ${
+        protokollFehler?.message ?? ""
+      }`.trim(),
+    };
+  }
+
   for (const z of zeilen) {
     const { error } = await supabase
       .from("kunden")
       .update({ anreise_km: z.km })
       .eq("id", z.kunde_id);
-    if (error) return { anzahl: 0, fehler: error.message };
+    if (error) {
+      return {
+        anzahl: 0,
+        fehler: `${error.message} – der bereits geänderte Teil lässt sich unten rückgängig machen.`,
+      };
+    }
   }
 
-  const { error: protokollFehler } = await supabase.from("datenpflege_laeufe").insert({
-    aufgabe,
-    anzahl: zeilen.length,
-    vorher,
-  });
-
-  if (protokollFehler) return { anzahl: zeilen.length, fehler: protokollFehler.message };
   return { anzahl: zeilen.length };
 }
 
