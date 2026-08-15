@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { heuteIso } from "@/lib/date-utils";
 import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import type { Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
@@ -112,7 +111,9 @@ export function ProjektForm({
           <DatumFeld
             id="startdatum"
             name="startdatum"
-            defaultValue={projekt?.startdatum ?? heuteIso()}
+            // Kein heutiges Datum als Vorgabe: Ein vorbelegtes Datum wird
+            // übersehen und mitgespeichert.
+            defaultValue={projekt?.startdatum ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>

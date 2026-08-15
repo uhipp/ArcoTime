@@ -16,10 +16,22 @@ import { forwardRef } from "react";
 // Der blur betrifft auch die Tastatureingabe – dort feuert "change" aber
 // erst, wenn das Datum vollständig und gültig ist. Der Fokus wandert also
 // nicht mitten im Tippen weg.
+//
+// autoComplete="off": Ein leeres Datumsfeld muss leer bleiben. Browser
+// stellen Formularwerte nach einer Weiterleitung oder beim Zurückgehen
+// gerne wieder her, und bei einem Feld wie "Austritt" ist das nicht
+// bloss lästig – ein Datum, das niemand eingetragen hat, beendet dort
+// ein unbefristetes Arbeitsverhältnis.
+//
+// Grundregel dazu: Datumsfelder werden NIE mit dem heutigen Datum
+// vorbelegt. Ein vorbelegtes Datum wird übersehen und mitgespeichert;
+// das leere Feld zwingt zur bewussten Angabe. Ausnahmen sind Filter und
+// Zeiträume, die eine Ansicht steuern und nichts speichern.
 export const DatumFeld = forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   function DatumFeld({ className, onChange, ...rest }, ref) {
     return (
       <input
+        autoComplete="off"
         {...rest}
         ref={ref}
         type="date"
