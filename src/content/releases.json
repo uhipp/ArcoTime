@@ -282,6 +282,10 @@
       },
       {
         "typ": "verbessert",
+        "text": "Die Mitarbeitendenseite nennt die Zahl der Konten mit Administratorrechten und erklärt, dass diese Rechte an Personen gehören und nicht an ein gemeinsames Verwaltungskonto – sonst steht im Änderungsprotokoll „Admin“ statt der Person, die es war."
+      },
+      {
+        "typ": "verbessert",
         "text": "Ein laufender Timer ist jetzt auffindbar statt nur sichtbar: Das rote ⏱ in der Navigation führt direkt zum betroffenen Rapport, in der Rapportliste ist dessen Zeile rot markiert und mit „⏱ läuft“ versehen, und über der Liste steht ein Band mit Startzeit und Kunde."
       },
       {

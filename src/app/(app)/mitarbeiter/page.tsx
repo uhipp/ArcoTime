@@ -185,7 +185,9 @@ export default async function MitarbeitendePage({
     ? await supabase.from("organisationen").select("lizenzen_gebucht").eq("id", organisation.id).single()
     : { data: null };
 
-  const genutzteLizenzen = (mitarbeitende ?? []).filter((m) => !m.deaktiviert_am).length;
+  const aktive = (mitarbeitende ?? []).filter((m) => !m.deaktiviert_am);
+  const genutzteLizenzen = aktive.length;
+  const anzahlAdmins = aktive.filter((m) => m.role === "admin").length;
 
   return (
     <div>
@@ -203,6 +205,24 @@ export default async function MitarbeitendePage({
           {error}
         </div>
       )}
+
+      {/* Leitplanke für neue Mandanten: Die naheliegende Einrichtung ist
+          ein Sammelkonto "Admin", mit dem mehrere Leute konfigurieren.
+          Damit verliert alles seine Aussagekraft, was an Personen hängt –
+          Änderungsprotokoll, Zeiterfassung, Unterschrift am Rapport. Der
+          Hinweis steht deshalb dort, wo Konten angelegt werden. */}
+      <p className="rounded bg-blue-50 text-blue-900 text-sm px-3 py-2 mb-6">
+        <strong>
+          {anzahlAdmins === 1 ? "Ein Konto hat" : `${anzahlAdmins} Konten haben`}{" "}
+          Administratorrechte.
+        </strong>{" "}
+        Adminrechte gehören an <strong>Personen</strong>, nicht an ein
+        gemeinsames Verwaltungskonto: Jede und jeder arbeitet mit dem eigenen
+        Login, und wer zusätzlich einrichten und konfigurieren soll, bekommt
+        dort die Rolle „Admin“. Nur so bleibt nachvollziehbar, wer etwas
+        geändert hat – und nur so stimmen Zeiterfassung, Kalender und die
+        Unterschrift am Rapport.
+      </p>
 
       <div className="bg-white rounded-lg border p-5 mb-8">
         <h2 className="text-lg font-medium mb-1">Neue Person einladen</h2>

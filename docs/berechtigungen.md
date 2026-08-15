@@ -33,6 +33,33 @@ Es gibt genau zwei: `admin` und `mitarbeiter`. Dazu kommt
 `ist_platform_admin` – das ist Arcos selbst und gehört nicht zur
 Organisation.
 
+## Ein Mensch, ein Konto
+
+Am 15.08.2026 entschieden, nach der Frage, ob „Admin" ein getrenntes
+Verwaltungskonto sein sollte: **nein.** Adminrechte sind eine Eigenschaft
+einer Person, kein eigener Zugang.
+
+Begründung, in dieser Reihenfolge:
+
+1. **Geteilte Konten zerstören die Nachvollziehbarkeit.** Ein Konto, mit
+   dem „niemand arbeitet", benutzen in der Praxis mehrere. Das
+   Änderungsprotokoll (0053) zeigt dann „Admin" statt der Person – und
+   beantwortet die Frage nicht mehr, für die es gebaut wurde.
+2. **Im Kleinbetrieb ist der Chef ein Mitarbeiter.** Zwingt man ihn zum
+   Kontenwechsel, arbeitet er nach zwei Wochen dauerhaft im Konto mit den
+   meisten Rechten – das Gegenteil des Gewollten.
+3. **Ein reines Verwaltungskonto kostet eine Lizenz**, ohne dass jemand
+   damit arbeitet.
+
+Der Wunsch dahinter – nicht jeder soll alles dürfen – ist berechtigt und
+gehört ins Berechtigungssystem: „Admin" bündelt heute Konfigurieren,
+Löschen von Stammdaten und alle Auswertungen sehen. Diese drei
+aufzutrennen ist die Aufgabe, nicht ein zweites Login.
+
+Den reinen Verwalter ohne Mitarbeit gibt es genau einmal, und dort gehört
+er hin: der Plattform-Admin (Arcos), ausserhalb der Organisation und ohne
+Lizenz.
+
 ## Die Grundregel
 
 > Mitarbeitende dürfen grundsätzlich alles erfassen und bearbeiten, was

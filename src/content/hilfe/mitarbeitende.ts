@@ -16,6 +16,16 @@ Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingela
 
 **Spalten wählen**: Über „Spalten“ oben rechts blendest du nicht benötigte Angaben aus. Die Auswahl gilt nur für deine Anmeldung. Vorname und die beiden Spalten ganz rechts bleiben sichtbar – dort hängen das Bearbeitungsformular und die Knöpfe.
 
+
+## Ein Mensch, ein Konto
+
+Jede Person arbeitet mit dem **eigenen Login** – auch die Chefin, auch das Büro. Ein gemeinsames Verwaltungskonto („Admin"), mit dem mehrere Leute konfigurieren, wirkt praktisch und kostet zwei Dinge:
+
+- **Nachvollziehbarkeit.** Im [Änderungsprotokoll](/hilfe/einstellungen) stünde dann „Admin" statt der Person, die es tatsächlich war.
+- **Richtigkeit.** Zeiterfassung, Kalenderfarbe, verantwortliche Person am Rapport und Abwesenheiten hängen alle an einer Person. Ein Sammelkonto hat keine.
+
+**„Admin" ist deshalb eine Eigenschaft einer Person und kein eigener Zugang.** Wer mitarbeitet und zusätzlich einrichten soll, bekommt an seinem persönlichen Konto die Rolle „Admin". Ein reines Verwaltungskonto ohne Mitarbeit ist nicht vorgesehen – es würde ausserdem eine Lizenz belegen, ohne dass jemand damit arbeitet.
+
 ## Neue Person einladen
 
 Vorname, Nachname und E-Mail-Adresse eingeben und auf **"Einladungslink senden"** klicken. Die Adresse wird vorher geprüft – fehlt etwa die Endung (name@firma statt name@firma.ch), sagt ArcoTime das sofort, statt dass die Einladung stillschweigend beim Mailserver hängen bleibt. Das legt sofort einen Login an und verschickt eine E-Mail mit einem Link, über den die Person selbst ihr Passwort festlegt – kein separates Konto-Setup nötig.
