@@ -25,8 +25,11 @@ type DienstleistungOption = Pick<
 
 // Eine Position zum Rapport hinzufügen. Bewusst schlanker als die
 // Zeiterfassung: Datum, ausführende Person und Projekt kommen vom Rapport
-// und gelten für den ganzen Einsatz. Kein Timer – wer einen Rapport
-// schreibt, ist mit der Arbeit fertig.
+// und gelten für den ganzen Einsatz.
+//
+// Hier steht bewusst kein Timer: Er sitzt an der bereits erfassten
+// Position in der Tabelle darüber (Phase 11, Etappe C). Wer im Fahrzeug
+// losfährt, drückt einen Knopf – er füllt kein Formular aus.
 export function RapportPositionForm({
   dienstleistungen,
   rabattsaetze,

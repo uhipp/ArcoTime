@@ -47,6 +47,22 @@ export default async function AppLayout({
         .lt("datum", heuteIso())
     : { count: 0 };
 
+  // Ein laufender Timer muss unübersehbar sein – der vergessene Timer vom
+  // Freitagabend ist sonst der erste Supportfall. Der Zähler steht dort,
+  // wo der Timer läuft: am Rapport oder in der Zeiterfassung.
+  const { data: laufenderTimer } = profile
+    ? await supabase
+        .from("zeiteintraege")
+        .select("id, rapport_id")
+        .eq("mitarbeiter_id", profile.id)
+        .not("timer_gestartet_um", "is", null)
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+
+  const timerAmRapport = Boolean(laufenderTimer?.rapport_id);
+  const timerInZeiterfassung = Boolean(laufenderTimer && !laufenderTimer.rapport_id);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b-2 border-arcos-steel print:hidden">
@@ -96,8 +112,19 @@ export default async function AppLayout({
           </div>
 
           <nav className="flex flex-wrap gap-4 text-sm py-3">
-            <Link href="/zeiterfassung" className="hover:text-arcos-navy">
+            <Link
+              href="/zeiterfassung"
+              className="hover:text-arcos-navy flex items-center gap-1.5"
+            >
               Zeiterfassung
+              {timerInZeiterfassung && (
+                <span
+                  title="Es läuft ein Timer"
+                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium"
+                >
+                  ⏱
+                </span>
+              )}
             </Link>
             <Link href="/anfragen" className="hover:text-arcos-navy flex items-center gap-1.5">
               Anfragen
@@ -112,6 +139,14 @@ export default async function AppLayout({
                 Klick nützt. Den Filter setzt der Zähler daneben. */}
             <Link href="/rapporte" className="hover:text-arcos-navy flex items-center gap-1.5">
               Rapporte
+              {timerAmRapport && (
+                <span
+                  title="An einem Rapport läuft ein Timer"
+                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium"
+                >
+                  ⏱
+                </span>
+              )}
               {Boolean(offeneRapporte) && (
                 <span
                   title="Offene Rapporte aus vergangenen Tagen"

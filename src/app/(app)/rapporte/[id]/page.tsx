@@ -7,6 +7,7 @@ import { mengeLabel } from "@/lib/menge";
 import { DeleteButton } from "@/components/delete-button";
 import { RapportKopfForm } from "@/components/rapport-kopf-form";
 import { DispoTagesspalte } from "@/components/dispo-tagesspalte";
+import { PositionsTimer } from "@/components/positions-timer";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { RapportPositionForm } from "@/components/rapport-position-form";
@@ -25,6 +26,8 @@ import {
   versendeRapport,
   storniereRapport,
   ersetzeBeteiligten,
+  starteZeitAnPosition,
+  stoppeZeitAnPosition,
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
@@ -92,6 +95,7 @@ export default async function RapportDetailPage({
   const rapport = rapportRoh as Rapport;
   const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
   const offen = rapport.status === "offen";
+  const laufendePosition = positionen.find((z) => z.timer_gestartet_um) ?? null;
 
   // PostgREST liefert die eingebettete Zeile je nach Beziehung als Objekt
   // oder Liste – beides abfangen und vereinheitlichen.
@@ -217,6 +221,27 @@ export default async function RapportDetailPage({
           Zeiteintrag und wird ganz normal verrechnet und exportiert.
         </p>
 
+        {/* Läuft ein Timer, steht er zuoberst und daumengross: Wer bei
+            der Ankunft stoppen will, soll nicht erst die richtige Zeile
+            in einer Tabelle suchen müssen. */}
+        {offen && laufendePosition && (
+          <div className="mb-4 rounded-lg border-2 border-red-500 bg-red-50 p-4">
+            <p className="text-sm font-medium text-red-800 mb-1">
+              Timer läuft: {laufendePosition.dienstleistung_bezeichnung}
+            </p>
+            <p className="text-xs text-red-700 mb-3">
+              Gestartet um {laufendePosition.start_zeit?.slice(0, 5) ?? "–"} Uhr. Die
+              gemessene Zeit ersetzt beim Stoppen die Dauer dieser Position.
+            </p>
+            <PositionsTimer
+              action={stoppeZeitAnPosition.bind(null, id, laufendePosition.id)}
+              laeuft
+              seit={laufendePosition.timer_gestartet_um}
+              gross
+            />
+          </div>
+        )}
+
         {positionen.length === 0 ? (
           <p className="text-sm text-gray-400 bg-white rounded-lg border p-5 mb-4">
             Noch keine Positionen erfasst.
@@ -240,13 +265,33 @@ export default async function RapportDetailPage({
                     <td className="px-4 py-2 text-gray-500 whitespace-pre-line">
                       {z.beschreibung ?? "–"}
                     </td>
-                    <td className="px-4 py-2 text-right whitespace-nowrap">{mengeLabel(z)}</td>
+                    <td className="px-4 py-2 text-right whitespace-nowrap">
+                      {z.timer_gestartet_um ? (
+                        <span className="font-medium text-red-700">⏱ Timer läuft</span>
+                      ) : (
+                        mengeLabel(z)
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       CHF {Number(z.betrag ?? 0).toFixed(2)}
                     </td>
                     {offen && (
                       <td className="px-4 py-2 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-3">
+                          {/* Nur bei Arbeitszeit: Kilometer und Material
+                              misst man nicht mit der Uhr. */}
+                          {z.menge == null && !z.beleg_id && (
+                            <PositionsTimer
+                              id={`timer_${z.id}`}
+                              action={
+                                z.timer_gestartet_um
+                                  ? stoppeZeitAnPosition.bind(null, id, z.id)
+                                  : starteZeitAnPosition.bind(null, id, z.id)
+                              }
+                              laeuft={Boolean(z.timer_gestartet_um)}
+                              seit={z.timer_gestartet_um}
+                            />
+                          )}
                           <Link
                             // fokus: Das Bearbeitungsformular steht unter
                             // der Tabelle – ohne den Parameter beginnt die

@@ -48,11 +48,12 @@ async function rabattFuer(
 
 // Legt die Standardpositionen eines neuen Rapports an (0051).
 //
-// Fehler werden bewusst verschluckt: Der Rapport steht zu diesem
-// Zeitpunkt bereits, und eine fehlende Vorlage-Position lässt sich in
-// zwei Klicks nachtragen – ihn deswegen abzulehnen wäre der schlechtere
-// Tausch. Dieselbe Überlegung wie beim Kopieren der Dokumente aus einer
-// Anfrage.
+// Ein Fehler lässt den Rapport stehen – er ist bereits angelegt, und ihn
+// deswegen abzulehnen wäre der schlechtere Tausch. Gemeldet wird er
+// trotzdem: Beim ersten Test blieben die Positionen aus, und weil die
+// Funktion schwieg, war nicht zu sehen, woran es lag. Eine Prüfung, die
+// stillschweigend nichts tut, hat dieses Projekt schon einmal Tage
+// gekostet (siehe die Abwesenheitsprüfung).
 export async function legeStandardpositionenAn(
   supabase: Client,
   rapport: {
@@ -63,12 +64,12 @@ export async function legeStandardpositionenAn(
     mitarbeiter_id: string;
   },
   userId: string | undefined
-): Promise<number> {
+): Promise<{ anzahl: number; fehler?: string }> {
   // Ohne Projekt lässt sich nichts verrechnen – dieselbe Bedingung wie
   // beim Erfassen einer Position von Hand.
-  if (!rapport.projekt_id) return 0;
+  if (!rapport.projekt_id) return { anzahl: 0 };
 
-  const { data: vorlagen } = await supabase
+  const { data: vorlagen, error: ladeFehler } = await supabase
     .from("rapport_standardpositionen")
     .select(
       "dienstleistung_id, vorgabe, dienstleistungen(zaehlt_als_arbeitszeit, rabatt_erlaubt, menge_aus_anreise, klasse_id)"
@@ -76,8 +77,10 @@ export async function legeStandardpositionenAn(
     .eq("aktiv", true)
     .order("sortierung");
 
+  if (ladeFehler) return { anzahl: 0, fehler: ladeFehler.message };
+
   const zeilen = (vorlagen ?? []) as unknown as Standardposition[];
-  if (zeilen.length === 0) return 0;
+  if (zeilen.length === 0) return { anzahl: 0 };
 
   const { data: kunde } = await supabase
     .from("kunden")
@@ -114,8 +117,9 @@ export async function legeStandardpositionenAn(
     });
   }
 
-  if (positionen.length === 0) return 0;
+  if (positionen.length === 0) return { anzahl: 0 };
 
   const { error } = await supabase.from("zeiteintraege").insert(positionen);
-  return error ? 0 : positionen.length;
+  if (error) return { anzahl: 0, fehler: error.message };
+  return { anzahl: positionen.length };
 }

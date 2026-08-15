@@ -116,7 +116,7 @@ export async function erstelleRapport(
     );
 
   // Womit ein Rapport beginnt, legt die Organisation fest (0051).
-  const angelegt = await legeStandardpositionenAn(
+  const standard = await legeStandardpositionenAn(
     supabase,
     {
       id: neuer.id,
@@ -131,11 +131,21 @@ export async function erstelleRapport(
   revalidatePath("/rapporte");
   // Direkt auf die Detailseite: Ohne Positionen ist ein Rapport nutzlos,
   // der nächste Schritt ist immer das Erfassen der ersten Position.
+  if (standard.fehler) {
+    redirect(
+      `/rapporte/${neuer.id}?error=${encodeURIComponent(
+        `Rapport angelegt, aber die Standardpositionen liessen sich nicht übernehmen: ${standard.fehler}`
+      )}`
+    );
+  }
+
   redirect(
     mitErfolg(
       `/rapporte/${neuer.id}`,
-      angelegt > 0
-        ? `Rapport angelegt, ${angelegt} Standardposition${angelegt > 1 ? "en" : ""} übernommen.`
+      standard.anzahl > 0
+        ? `Rapport angelegt, ${standard.anzahl} Standardposition${
+            standard.anzahl > 1 ? "en" : ""
+          } übernommen.`
         : "Rapport angelegt – jetzt Positionen erfassen."
     )
   );
@@ -1145,6 +1155,136 @@ export async function ersetzeBeteiligten(
       anzahl > 0
         ? `Person ersetzt, ${anzahl} ${anzahl === 1 ? "Position" : "Positionen"} umgehängt.`
         : "Person ersetzt."
+    )
+  );
+}
+
+// ---------------------------------------------------------
+// Timer an einer Rapportposition (Phase 11, Etappe C)
+// ---------------------------------------------------------
+// Bisher galt: "Einen Timer gibt es hier bewusst nicht – wer einen
+// Rapport schreibt, ist mit der Arbeit fertig." Die Annahme war falsch.
+// Der Rapport wird auch WÄHREND des Einsatzes benutzt, aus dem Fahrzeug
+// heraus: Der Monteur öffnet den Rapport des Kunden, startet die
+// Fahrzeit, fährt los und stoppt bei der Ankunft.
+//
+// Deshalb zwei Berührungen und sonst nichts. Wer im Auto ein Formular
+// ausfüllen muss, tut es während der Fahrt.
+
+export async function starteZeitAnPosition(rapportId: string, positionId: string) {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const meineId = userData.user?.id ?? "";
+
+  const { data: rapport } = await supabase
+    .from("rapporte")
+    .select("status")
+    .eq("id", rapportId)
+    .single();
+
+  if (rapport?.status !== "offen") {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent(
+        "Dieser Rapport ist abgeschlossen – daran lässt sich keine Zeit mehr messen."
+      )}`
+    );
+  }
+
+  // Ein Timer je Person. Zwei parallel laufende wären eine Zeit, die es
+  // nicht gibt – und beim Stoppen wüsste niemand, welche gemeint ist.
+  const { data: laufender } = await supabase
+    .from("zeiteintraege")
+    .select("id, rapport_id")
+    .eq("mitarbeiter_id", meineId)
+    .not("timer_gestartet_um", "is", null)
+    .limit(1)
+    .maybeSingle();
+
+  if (laufender && laufender.id !== positionId) {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent(
+        laufender.rapport_id
+          ? "Für dich läuft bereits ein Timer an einem anderen Rapport. Bitte zuerst dort stoppen."
+          : "Für dich läuft bereits ein Timer in der Zeiterfassung. Bitte zuerst dort stoppen."
+      )}`
+    );
+  }
+
+  const jetzt = new Date();
+  const startZeit = `${String(jetzt.getHours()).padStart(2, "0")}:${String(
+    jetzt.getMinutes()
+  ).padStart(2, "0")}`;
+
+  const { data: geaendert } = await supabase
+    .from("zeiteintraege")
+    .update({ timer_gestartet_um: jetzt.toISOString(), start_zeit: startZeit, end_zeit: null })
+    .eq("id", positionId)
+    .is("beleg_id", null)
+    .select("id");
+
+  if (!geaendert || geaendert.length === 0) {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent(
+        "Der Timer liess sich nicht starten – entweder ist die Position bereits exportiert, oder dir fehlen die Rechte."
+      )}`
+    );
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  redirect(mitErfolg(`/rapporte/${rapportId}?fokus=timer_${positionId}`, "Timer gestartet."));
+}
+
+// Die Dauer wird aus der gespeicherten Startzeit gerechnet und nicht aus
+// dem Browser: So stimmt sie auch, wenn das Telefon zwischendurch im
+// Ruhezustand war oder der Rapport auf einem anderen Gerät geöffnet wird.
+export async function stoppeZeitAnPosition(rapportId: string, positionId: string) {
+  const supabase = await createClient();
+
+  const { data: bestehend } = await supabase
+    .from("zeiteintraege")
+    .select("timer_gestartet_um")
+    .eq("id", positionId)
+    .single();
+
+  if (!bestehend?.timer_gestartet_um) {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent("Für diese Position läuft kein Timer.")}`
+    );
+  }
+
+  const start = new Date(bestehend.timer_gestartet_um);
+  const jetzt = new Date();
+  // Mindestens eine Minute: Eine Fahrt von null Minuten gibt es nicht,
+  // und die Datenbank verlangt einen Wert grösser als null.
+  const dauerMinuten = Math.max(1, Math.round((jetzt.getTime() - start.getTime()) / 60000));
+  const endZeit = `${String(jetzt.getHours()).padStart(2, "0")}:${String(
+    jetzt.getMinutes()
+  ).padStart(2, "0")}`;
+
+  const { data: geaendert } = await supabase
+    .from("zeiteintraege")
+    .update({
+      dauer_minuten: dauerMinuten,
+      end_zeit: endZeit,
+      timer_gestartet_um: null,
+    })
+    .eq("id", positionId)
+    .select("id");
+
+  if (!geaendert || geaendert.length === 0) {
+    redirect(
+      `/rapporte/${rapportId}?error=${encodeURIComponent(
+        "Der Timer liess sich nicht stoppen – bitte die Position von Hand korrigieren."
+      )}`
+    );
+  }
+
+  revalidatePath(`/rapporte/${rapportId}`);
+  revalidatePath("/zeiterfassung");
+  redirect(
+    mitErfolg(
+      `/rapporte/${rapportId}?fokus=pos_dienstleistung`,
+      `Timer gestoppt – ${dauerMinuten} Minuten übernommen.`
     )
   );
 }
