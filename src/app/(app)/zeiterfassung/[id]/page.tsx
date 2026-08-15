@@ -10,6 +10,7 @@ import { ZurueckLinks } from "@/components/zurueck-links";
 import type { Zeiteintrag } from "@/lib/types";
 import Link from "next/link";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function ZeiteintragDetailPage({
   params,
@@ -140,7 +141,7 @@ export default async function ZeiteintragDetailPage({
           initialDokumente={dokumente}
           kategorien={kategorien}
           aktuellerUserId={profile?.id ?? ""}
-          istAdmin={profile?.role === "admin"}
+          istAdmin={darf(profile, "dokumente.loeschen")}
         />
       </div>
     </div>

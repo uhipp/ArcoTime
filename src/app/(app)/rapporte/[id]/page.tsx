@@ -32,6 +32,7 @@ import {
 } from "@/app/actions/rapporte";
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function RapportDetailPage({
   params,
@@ -405,7 +406,7 @@ export default async function RapportDetailPage({
           initialDokumente={dokumente}
           kategorien={kategorien}
           aktuellerUserId={profile?.id ?? ""}
-          istAdmin={profile?.role === "admin"}
+          istAdmin={darf(profile, "dokumente.loeschen")}
         />
       </div>
 
@@ -426,7 +427,8 @@ export default async function RapportDetailPage({
           anzahlPositionen={positionen.length}
           datumInZukunft={rapport.datum > heuteIso()}
           darfAbschliessen={
-            rapport.mitarbeiter_id === profile?.id || profile?.role === "admin"
+            rapport.mitarbeiter_id === profile?.id ||
+            darf(profile, "rapporte.abschliessen.fremde")
           }
           verantwortlichName={rapport.profiles?.name ?? null}
         />

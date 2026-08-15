@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { fuehreAus, macheRueckgaengig, type AufgabenSchluessel } from "@/lib/datenpflege";
+import { darf } from "@/lib/berechtigungen";
 
 const PFAD = "/einstellungen/datenpflege";
 
@@ -15,7 +16,7 @@ const PFAD = "/einstellungen/datenpflege";
 // auch hier, damit die Meldung verständlich ist statt technisch.
 async function nurAdmin() {
   const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") {
+  if (!darf(profile, "datenpflege.verwalten")) {
     redirect(`${PFAD}?error=${encodeURIComponent("Dafür braucht es Administratorrechte.")}`);
   }
 }

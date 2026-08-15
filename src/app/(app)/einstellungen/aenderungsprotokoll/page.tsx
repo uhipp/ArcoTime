@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { ZurueckLinks } from "@/components/zurueck-links";
+import { darf } from "@/lib/berechtigungen";
 
 type Eintrag = {
   id: number;
@@ -78,7 +79,7 @@ export default async function ProtokollPage({
   searchParams: Promise<{ bereich?: string; seite?: string }>;
 }) {
   const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") redirect("/");
+  if (!darf(profile, "protokoll.lesen")) redirect("/");
 
   const { bereich, seite } = await searchParams;
   const supabase = await createClient();

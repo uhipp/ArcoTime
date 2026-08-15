@@ -3,13 +3,14 @@ import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import type { Anfrage } from "@/lib/types";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function DashboardPage() {
   const [profile, organisation] = await Promise.all([
     getCurrentProfile(),
     getCurrentOrganisation(),
   ]);
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = darf(profile, "einstellungen.verwalten");
   const supabase = await createClient();
   const heute = heuteIso();
 

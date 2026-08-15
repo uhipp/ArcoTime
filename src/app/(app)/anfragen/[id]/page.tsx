@@ -16,6 +16,7 @@ import {
 } from "@/app/actions/anfragen";
 import type { Anfrage } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function AnfrageDetailPage({
   params,
@@ -83,7 +84,7 @@ export default async function AnfrageDetailPage({
           <h1 className="text-2xl font-semibold">Anfrage bearbeiten</h1>
           <ZurueckLinks links={[{ href: "/anfragen", text: "Zur Übersicht" }]} />
         </div>
-        {profile?.role === "admin" && (
+        {darf(profile, "anfragen.loeschen") && (
           <DeleteButton action={deleteAction} label="Anfrage löschen" />
         )}
       </div>
@@ -331,7 +332,7 @@ export default async function AnfrageDetailPage({
           initialDokumente={dokumente}
           kategorien={kategorien}
           aktuellerUserId={profile?.id ?? ""}
-          istAdmin={profile?.role === "admin"}
+          istAdmin={darf(profile, "dokumente.loeschen")}
         />
       </div>
     </div>

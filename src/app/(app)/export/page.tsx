@@ -5,6 +5,7 @@ import { heuteIso, formatDatumCH } from "@/lib/date-utils";
 import { erstelleExport } from "@/app/actions/export";
 import type { ZeiteintragMitDetails, BelegExport } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function ExportPage({
   searchParams,
@@ -18,7 +19,7 @@ export default async function ExportPage({
   }>;
 }) {
   const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") redirect("/");
+  if (!darf(profile, "export.ausfuehren")) redirect("/");
 
   const params = await searchParams;
   const von = params.von ?? "2000-01-01";

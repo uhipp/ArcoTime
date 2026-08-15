@@ -11,6 +11,7 @@ import {
 } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
+import { darf } from "@/lib/berechtigungen";
 
 type SearchParams = {
   ansicht?: string;
@@ -44,7 +45,7 @@ export default async function AuswertungenPage({
   const gruppieren = params.gruppieren === "projekt";
 
   const profile = await getCurrentProfile();
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = darf(profile, "auswertungen.alle");
   const supabase = await createClient();
 
   let query = supabase

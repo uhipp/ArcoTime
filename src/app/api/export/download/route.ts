@@ -3,6 +3,7 @@ import ExcelJS from "exceljs";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
+import { darf } from "@/lib/berechtigungen";
 
 // Exakte Spaltenreihenfolge/-namen aus der Comatic-Musterdatei
 // (Zeile 1 der Vorlage, ohne Spalte A / Zeile 2, die nur der Erklärung dienten).
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
     .select("role")
     .eq("id", userData.user.id)
     .single();
-  if (profil?.role !== "admin") {
+  if (!darf(profil, "export.ausfuehren")) {
     return NextResponse.json({ error: "Nur für Admins." }, { status: 403 });
   }
 

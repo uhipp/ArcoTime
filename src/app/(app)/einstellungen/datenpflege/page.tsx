@@ -6,6 +6,7 @@ import { ZurueckLinks } from "@/components/zurueck-links";
 import { DeleteButton } from "@/components/delete-button";
 import { AUFGABEN, pruefungen, vorschau, type AufgabenSchluessel } from "@/lib/datenpflege";
 import { starteAufgabe, widerrufeLauf } from "@/app/actions/datenpflege";
+import { darf } from "@/lib/berechtigungen";
 
 type Lauf = {
   id: string;
@@ -35,7 +36,7 @@ export default async function DatenpflegePage({
   searchParams: Promise<{ error?: string; zeige?: string }>;
 }) {
   const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") redirect("/");
+  if (!darf(profile, "datenpflege.verwalten")) redirect("/");
 
   const { error, zeige } = await searchParams;
   const supabase = await createClient();

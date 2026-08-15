@@ -12,6 +12,7 @@ import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import type { Kunde, ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
+import { darf } from "@/lib/berechtigungen";
 
 type SearchParams = { error?: string; von?: string; bis?: string; projekt_id?: string };
 
@@ -86,7 +87,7 @@ export default async function KundeDetailPage({
 
   if (!kunde) notFound();
 
-  const istAdmin = profile?.role === "admin";
+  const istAdmin = darf(profile, "kunden.loeschen");
 
   const updateAction = updateKunde.bind(null, id);
   const deleteAction = deleteKunde.bind(null, id);

@@ -9,6 +9,7 @@ import {
   zeitraumFuer,
 } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
+import { darf } from "@/lib/berechtigungen";
 
 type SearchParams = {
   datum?: string;
@@ -72,7 +73,7 @@ export default async function KalenderPage({
       : "alles";
 
   const profile = await getCurrentProfile();
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = darf(profile, "kalender.alle");
   const supabase = await createClient();
 
   // Bewusst die ABFRAGE abschalten und nicht erst die Anzeige filtern:

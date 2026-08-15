@@ -9,6 +9,7 @@ import { ListenTabelle } from "@/components/listen-tabelle";
 import { SpaltenWahl } from "@/components/spalten-wahl";
 import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
+import { darf } from "@/lib/berechtigungen";
 
 type MitarbeiterZeile = Profile & { deaktiviert_am: string | null };
 
@@ -156,7 +157,7 @@ export default async function MitarbeitendePage({
   searchParams: Promise<{ error?: string; sort?: string; richtung?: string }>;
 }) {
   const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") redirect("/");
+  if (!profile || !darf(profile, "mitarbeitende.verwalten")) redirect("/");
 
   const params = await searchParams;
   const { error, sort, richtung } = params;

@@ -10,6 +10,7 @@ import { ZurueckLinks } from "@/components/zurueck-links";
 import { ProjektTeam } from "@/components/projekt-team";
 import type { Projekt } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function ProjektDetailPage({
   params,
@@ -43,7 +44,7 @@ export default async function ProjektDetailPage({
 
   if (!projekt) notFound();
 
-  const istAdmin = profile?.role === "admin";
+  const istAdmin = darf(profile, "projekte.loeschen");
 
   // PostgREST liefert die eingebettete Zeile je nach Beziehung als Objekt
   // oder Liste – beides abfangen und auf { id, name } vereinheitlichen.

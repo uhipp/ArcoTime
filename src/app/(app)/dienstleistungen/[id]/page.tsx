@@ -6,6 +6,7 @@ import { updateDienstleistung, deleteDienstleistung } from "@/app/actions/dienst
 import { DeleteButton } from "@/components/delete-button";
 import type { Dienstleistung } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function DienstleistungDetailPage({
   params,
@@ -45,7 +46,7 @@ export default async function DienstleistungDetailPage({
   ]);
 
   const profile = await getCurrentProfile();
-  const istAdmin = profile?.role === "admin";
+  const istAdmin = darf(profile, "dienstleistungen.loeschen");
 
   const updateAction = updateDienstleistung.bind(null, id);
   const deleteAction = deleteDienstleistung.bind(null, id);

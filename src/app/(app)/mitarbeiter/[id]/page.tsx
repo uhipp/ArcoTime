@@ -7,6 +7,7 @@ import { formatDatumCH, heuteIso } from "@/lib/date-utils";
 import { ZeitFeld } from "@/components/zeit-feld";
 import { erfasseAbwesenheit, loescheAbwesenheit } from "@/app/actions/abwesenheiten";
 import { DatumFeld } from "@/components/datum-feld";
+import { darf } from "@/lib/berechtigungen";
 
 // Erreichbar für Admin (jede Person) oder die Person selbst (nur die
 // eigene) – Personal-Dokumente sind sensibel, siehe Phase-7-Plan.
@@ -22,7 +23,7 @@ export default async function MitarbeitendeDetailPage({
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
 
-  const istAdmin = profile.role === "admin";
+  const istAdmin = darf(profile, "mitarbeitende.verwalten");
   if (!istAdmin && profile.id !== id) redirect("/");
 
   const supabase = await createClient();

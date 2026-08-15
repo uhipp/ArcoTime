@@ -8,6 +8,7 @@ import { logout } from "@/app/actions/auth";
 import { Toast } from "@/components/toast";
 import { AutoFokus } from "@/components/auto-fokus";
 import { KontextHilfeLink } from "@/components/kontext-hilfe-link";
+import { darf } from "@/lib/berechtigungen";
 
 export default async function AppLayout({
   children,
@@ -18,7 +19,7 @@ export default async function AppLayout({
     getCurrentProfile(),
     getCurrentOrganisation(),
   ]);
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = darf(profile, "einstellungen.verwalten");
 
   // Zähler für fällige Wiedervorlagen direkt in der Navigation, damit man
   // sie sofort sieht statt sie nur auf der Übersichtsseite zu entdecken.

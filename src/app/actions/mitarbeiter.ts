@@ -8,6 +8,7 @@ import { mitErfolg } from "@/lib/erfolg";
 import { siteOrigin } from "@/lib/site-origin";
 import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 import { getCurrentProfile } from "@/lib/get-profile";
+import { darf } from "@/lib/berechtigungen";
 
 // Maximal erlaubte Admin-Konten je Organisation (Geschäftsregel, nicht
 // technisch nötig) – begrenzt das Risiko, dass beliebig viele Konten
@@ -80,7 +81,7 @@ export async function updateMitarbeiter(id: string, formData: FormData) {
 // über die normale (RLS-beschränkte) Verbindung nicht möglich ist.
 export async function ladeMitarbeitendeEin(formData: FormData) {
   const profil = await getCurrentProfile();
-  if (profil?.role !== "admin") {
+  if (!darf(profil, "mitarbeitende.verwalten")) {
     redirect(`/mitarbeiter?error=${encodeURIComponent("Nur Admins können Mitarbeitende einladen.")}`);
   }
 
@@ -172,7 +173,7 @@ export async function ladeMitarbeitendeEin(formData: FormData) {
 // Deaktivieren/Reaktivieren im Kreis umgehen.
 export async function deaktiviereMitarbeiter(id: string) {
   const profil = await getCurrentProfile();
-  if (profil?.role !== "admin") {
+  if (!profil || !darf(profil, "mitarbeitende.verwalten")) {
     redirect(`/mitarbeiter?error=${encodeURIComponent("Nur Admins können Konten deaktivieren.")}`);
   }
   if (profil.id === id) {

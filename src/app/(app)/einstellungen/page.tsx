@@ -45,6 +45,7 @@ import {
   updateStandardposition,
   toggleStandardposition,
 } from "@/app/actions/einstellungen";
+import { darf } from "@/lib/berechtigungen";
 
 // Minuten seit Mitternacht als HH:MM, für die Anzeige der gespeicherten
 // Arbeitszeit. Gespeichert wird in Minuten, damit sich damit rechnen lässt.
@@ -58,7 +59,7 @@ export default async function EinstellungenPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") redirect("/");
+  if (!darf(profile, "einstellungen.verwalten")) redirect("/");
 
   const { error } = await searchParams;
   const organisation = await getCurrentOrganisation();
