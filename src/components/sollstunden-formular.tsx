@@ -125,7 +125,12 @@ export function SollstundenFormular({
                   id={`monat_${monat}`}
                   name={`monat_${monat}`}
                   type="number"
-                  step="0.25"
+                  // "any" und nicht 0.25: Bei 8,4 Stunden am Tag ergeben
+                  // sich Monatssummen wie 176,4 – der Browser lehnte sie
+                  // als "kein Vielfaches von 0,25" ab. Die Pfeiltasten
+                  // springen damit in Einerschritten, was hier ohnehin
+                  // die sinnvollere Schrittweite ist.
+                  step="any"
                   min="0"
                   value={monatswerte[monat] ?? ""}
                   onChange={(e) =>
@@ -167,7 +172,7 @@ export function SollstundenFormular({
                           </span>
                           <input
                             type="number"
-                            step="0.25"
+                            step="any"
                             min="0"
                             value={kalender[tag] ?? ""}
                             onChange={(e) =>
