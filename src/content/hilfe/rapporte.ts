@@ -55,6 +55,8 @@ Ist niemand Unterschriftsberechtigtes mehr vor Ort, gibt es darunter **„Ohne U
 
 Zwei Fälle lassen keinen Abschluss zu: ein Rapport **ohne Positionen** und einer mit **Datum in der Zukunft**. Beim zweiten ist der Einsatz schlicht noch nicht geleistet.
 
+Bleibt ein Rapport nach seinem Einsatztag offen, erinnert ArcoTime die Person unter „Ausgeführt von" täglich per E-Mail daran, und ein roter Zähler neben „Rapporte" zeigt die Anzahl – siehe [Benachrichtigungen](/hilfe/benachrichtigungen).
+
 ### Wer abschliesst
 
 Abschliessen darf die **verantwortliche Person** des Rapports – bei einem Einsatz mit mehreren Beteiligten also die Projektleitung. Sie war dabei, sie steht mit ihrem Namen auf dem Dokument, und sie beurteilt, ob alle Positionen erfasst sind. Wer nicht verantwortlich ist, sieht statt der Abschlussfelder einen Hinweis mit dem Namen der zuständigen Person.

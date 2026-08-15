@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "neu",
+        "text": "Erinnerung an offene Rapporte: Bleibt ein Rapport nach seinem Einsatztag offen, bekommt die Person unter „Ausgeführt von“ täglich um 07:30 Uhr eine E-Mail mit allen betroffenen Rapporten. Ein roter Zähler neben „Rapporte“ zeigt die Anzahl auch in der Navigation. Ein offener Rapport zählt nirgends – er ist unverrechnete Arbeit, die sonst niemandem auffällt."
+      },
+      {
         "typ": "fix",
         "text": "Halbtägige Abwesenheiten – eine Weiterbildung von 08:00 bis 12:00 – waren für die Planung unsichtbar: Sie standen weder im Tagesplan noch verkleinerten sie die freien Zeiten, und beim Verschieben kam keine Meldung. Sie zählen jetzt wie ein belegter Block."
       },

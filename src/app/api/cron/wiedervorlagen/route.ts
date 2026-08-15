@@ -3,9 +3,18 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { heuteIso } from "@/lib/date-utils";
 import { sendeMail } from "@/lib/email";
+import { erinnereAnOffeneRapporte } from "@/lib/cron/offene-rapporte";
 
-// Täglicher Reminder für fällige Wiedervorlagen (über Vercel Cron, siehe
-// vercel.json). Läuft ohne Nutzer-Session -> Service-Role-Client nötig, da
+// Die täglichen Meldungen von ArcoTime (über Vercel Cron, siehe
+// vercel.json): fällige Wiedervorlagen und offene Rapporte vergangener
+// Tage.
+//
+// Beide teilen sich bewusst EINEN Lauf und diesen Pfad. Der Name ist
+// historisch – als die Erinnerung an offene Rapporte dazukam, wäre ein
+// zweiter Cron-Eintrag der sauberere Name gewesen, hätte aber das
+// Kontingent des Hosting-Tarifs beansprucht und den Sommer-/Winterzeit-
+// Guard unten ein zweites Mal gebraucht. Eine Meldung am Morgen ist
+// ohnehin genug. Läuft ohne Nutzer-Session -> Service-Role-Client nötig, da
 // RLS sonst alles blockiert. Es werden bewusst ALLE Organisationen in einem
 // Lauf abgedeckt (jede Anfrage bleibt über zugewiesen_an/Mitarbeiter-E-Mail
 // korrekt zugeordnet).
@@ -90,8 +99,16 @@ export async function GET(request: NextRequest) {
     revalidatePath("/anfragen");
   }
 
+  // Kein früher Ausstieg mehr, wenn es keine Wiedervorlagen gibt: Die
+  // Rapport-Erinnerung hängt nicht an ihnen und lief sonst nie.
   if (zeilen.length === 0) {
-    return NextResponse.json({ versendet: 0, verschoben: 0, mitarbeitendeOhneEmail: [] });
+    const rapporte = await erinnereAnOffeneRapporte(appUrl);
+    return NextResponse.json({
+      versendet: 0,
+      verschoben: 0,
+      mitarbeitendeOhneEmail: [],
+      rapporte,
+    });
   }
 
   const zeilenMitZustaendigem = zeilen.filter((z) => z.zugewiesen_an);
@@ -150,5 +167,12 @@ export async function GET(request: NextRequest) {
     versendet += 1;
   }
 
-  return NextResponse.json({ versendet, verschoben: zuVerschieben.length, mitarbeitendeOhneEmail });
+  const rapporte = await erinnereAnOffeneRapporte(appUrl);
+
+  return NextResponse.json({
+    versendet,
+    verschoben: zuVerschieben.length,
+    mitarbeitendeOhneEmail,
+    rapporte,
+  });
 }

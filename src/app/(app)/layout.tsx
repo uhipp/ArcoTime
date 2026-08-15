@@ -33,6 +33,20 @@ export default async function AppLayout({
         .lte("wiedervorlage_am", heuteIso())
     : { count: 0 };
 
+  // Offene Rapporte vergangener Tage – dieselbe Überlegung wie oben und
+  // dieselbe Auswahl wie in der täglichen Erinnerungsmail: Ein offener
+  // Rapport ist unverrechnete Arbeit, und niemand vermisst etwas, das
+  // nirgends steht. Nur die eigenen: Erinnern lässt sich sinnvoll nur,
+  // wer abschliessen darf.
+  const { count: offeneRapporte } = profile
+    ? await supabase
+        .from("rapporte")
+        .select("id", { count: "exact", head: true })
+        .eq("mitarbeiter_id", profile.id)
+        .eq("status", "offen")
+        .lt("datum", heuteIso())
+    : { count: 0 };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b-2 border-arcos-steel print:hidden">
@@ -93,8 +107,19 @@ export default async function AppLayout({
                 </span>
               )}
             </Link>
-            <Link href="/rapporte" className="hover:text-arcos-navy">
+            {/* Ziel bleibt die ganze Liste: Ein Link, der je nach Zustand
+                woanders hinführt, verwirrt mehr, als der eine gesparte
+                Klick nützt. Den Filter setzt der Zähler daneben. */}
+            <Link href="/rapporte" className="hover:text-arcos-navy flex items-center gap-1.5">
               Rapporte
+              {Boolean(offeneRapporte) && (
+                <span
+                  title="Offene Rapporte aus vergangenen Tagen"
+                  className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium"
+                >
+                  {offeneRapporte}
+                </span>
+              )}
             </Link>
             {organisation?.modul_disposition && (
               <Link href="/disposition" className="hover:text-arcos-navy">
