@@ -5,21 +5,8 @@ import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { darf } from "@/lib/berechtigungen";
 import { ZurueckLinks } from "@/components/zurueck-links";
 import { speichereSollMonate } from "@/app/actions/zeitkonto";
+import { SollstundenFormular } from "@/components/sollstunden-formular";
 
-const MONATE = [
-  "Januar",
-  "Februar",
-  "März",
-  "April",
-  "Mai",
-  "Juni",
-  "Juli",
-  "August",
-  "September",
-  "Oktober",
-  "November",
-  "Dezember",
-];
 
 // Sollstunden je Monat und Jahr (Phase 12, Etappe A).
 //
@@ -43,14 +30,25 @@ export default async function SollstundenPage({
   const gewaehltesJahr = Number(jahr) || heute.getFullYear();
 
   const supabase = await createClient();
-  const { data: sollMonate } = await supabase
-    .from("soll_monate")
-    .select("monat, sollstunden")
-    .eq("jahr", gewaehltesJahr)
-    .order("monat");
+  const [{ data: sollMonate }, { data: schliesstage }] = await Promise.all([
+    supabase
+      .from("soll_monate")
+      .select("monat, sollstunden")
+      .eq("jahr", gewaehltesJahr)
+      .order("monat"),
+    // Feiertage und Betriebsferien: Im Kalenderfenster werden sie mit
+    // null vorbelegt und benannt – das ist die halbe Rechenarbeit.
+    supabase
+      .from("schliesstage")
+      .select("bezeichnung, von, bis")
+      .lte("von", `${gewaehltesJahr}-12-31`)
+      .gte("bis", `${gewaehltesJahr}-01-01`)
+      .order("von"),
+  ]);
 
-  const werte = new Map((sollMonate ?? []).map((s) => [s.monat, Number(s.sollstunden)]));
-  const summe = [...werte.values()].reduce((s, w) => s + w, 0);
+  const werte = Object.fromEntries(
+    (sollMonate ?? []).map((s) => [s.monat, Number(s.sollstunden)])
+  );
 
   // Das Tages-Soll bei vollem Pensum, als Kontrollgrösse neben der
   // Tabelle: Passen Monatssummen und Wochenstunden nicht zusammen, sieht
@@ -76,6 +74,15 @@ export default async function SollstundenPage({
         Organisation; das Pensum jeder Person rechnet ArcoTime davon ab.
       </p>
 
+      <p className="text-sm text-gray-500">
+        Wer die Tabelle nicht zur Hand hat, öffnet je Monat das{" "}
+        <strong>Kalenderfenster</strong>: Es zeigt jeden Tag einzeln, belegt
+        Werktage mit dem Tagesanteil und Wochenenden wie Schliesstage mit null
+        vor. Einzelne Tage lassen sich korrigieren – Brückentage, ein halber
+        24. Dezember –, und „Daten übernehmen“ schreibt die Summe in die
+        Monatszeile.
+      </p>
+
       <p className="rounded bg-blue-50 text-blue-900 text-sm px-3 py-2">
         Zur Kontrolle: Bei {Number(organisation.wochenstunden ?? 42)} Wochenstunden
         auf {Number(organisation.arbeitstage_pro_woche ?? 5)} Tage ergibt ein
@@ -99,39 +106,12 @@ export default async function SollstundenPage({
       </div>
 
       <form action={speichereSollMonate.bind(null, gewaehltesJahr)}>
-        <div className="rounded-lg border bg-white divide-y">
-          {MONATE.map((name, i) => {
-            const monat = i + 1;
-            return (
-              <div key={monat} className="flex items-center gap-3 px-4 py-2">
-                <label className="flex-1 text-sm" htmlFor={`monat_${monat}`}>
-                  {name}
-                </label>
-                <input
-                  id={`monat_${monat}`}
-                  name={`monat_${monat}`}
-                  type="number"
-                  step="0.25"
-                  min="0"
-                  defaultValue={werte.get(monat) ?? ""}
-                  placeholder="–"
-                  className="w-28 rounded border border-gray-300 px-2 py-1.5 text-sm text-right"
-                />
-                <span className="w-12 text-xs text-gray-400">Std.</span>
-              </div>
-            );
-          })}
-          <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 font-medium">
-            <span className="flex-1 text-sm">Summe {gewaehltesJahr}</span>
-            <span className="w-28 text-right text-sm">{summe.toFixed(2)}</span>
-            <span className="w-12 text-xs text-gray-400">Std.</span>
-          </div>
-        </div>
-
-        <p className="text-xs text-gray-400 mt-2">
-          Ein leeres Feld heisst „nicht erfasst“ und nicht „null Stunden“ – der
-          Monat wird dann aus der Tabelle entfernt.
-        </p>
+        <SollstundenFormular
+          jahr={gewaehltesJahr}
+          wochenstunden={Number(organisation.wochenstunden ?? 42)}
+          schliesstage={schliesstage ?? []}
+          werte={werte}
+        />
 
         <button
           type="submit"

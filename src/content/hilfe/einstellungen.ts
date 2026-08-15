@@ -97,6 +97,8 @@ Nur mit gebuchtem **Zeitkonto** sichtbar. Zwei Angaben bilden die Grundlage:
 - **Wochenstunden bei 100 %** und **Arbeitstage pro Woche** – daraus entsteht das **Tages-Soll** (bei 42 Stunden auf 5 Tage also 8,4 Stunden). Mit diesem Wert werden einzelne Ferien- und Absenztage bewertet.
 - **Sollstunden je Monat**, über „Sollstunden je Monat erfassen" auf einer eigenen Seite je Jahr. Das ist die verbindliche Summe, in der Praxis vom Treuhänder geliefert. Ein leeres Feld heisst „nicht erfasst" und nicht „null Stunden".
 
+**Das Kalenderfenster als Rechenhilfe**: Wer die Tabelle nicht zur Hand hat, klickt beim Monat auf **„Kalender"**. Es zeigt jeden Tag des Monats einzeln und belegt ihn vor – Werktage mit dem Tagesanteil (Wochenstunden ÷ 5), Wochenenden und [Schliesstage](/hilfe/einstellungen) mit null. Feiertage sind dabei benannt und gelb hinterlegt. Einzelne Tage korrigierst du direkt im Fenster (Brückentag, halber 24. Dezember), unten steht laufend die Summe, und **„Daten übernehmen"** schreibt sie in die Monatszeile. Gespeichert wird erst mit dem Knopf unter der Tabelle – bis dahin lässt sich alles noch ändern.
+
 Das Häkchen **„Feiertage sind in den Sollstunden bereits enthalten"** ist wichtig: Eine Treuhänder-Tabelle hat die Feiertage abgezogen, und ArcoTime kennt die Schliesstage ebenfalls. Ohne das Häkchen würden sie ein zweites Mal abgezogen – die häufigste Fehlerquelle in solchen Auswertungen.
 
 Die Angaben **je Person** – Eintritt, Austritt, Pensum und Ferienanspruch – stehen bei [Mitarbeitende](/hilfe/mitarbeitende) → Details.
