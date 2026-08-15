@@ -243,9 +243,15 @@ export async function ladeZeitkonto(
 
   const abschlussVon = new Map<string, Abschluss>();
   let letzterVorjahr: Abschluss | null = null;
+  // Jahr und Monat über Number(): Kämen sie je als Zeichenkette zurück –
+  // PostgREST tut das bei numerischen Typen –, liefe der Vergleich ins
+  // Leere und ein abgeschlossener Monat sähe aus wie ein offener.
   for (const a of (abschluesse ?? []) as Abschluss[]) {
-    if (a.jahr === jahr) abschlussVon.set(`${a.jahr}-${a.monat}`, a);
-    else letzterVorjahr = a;
+    if (Number(a.jahr) === jahr) {
+      abschlussVon.set(`${Number(a.jahr)}-${Number(a.monat)}`, a);
+    } else {
+      letzterVorjahr = a;
+    }
   }
   if (letzterVorjahr) startsaldo = Number(letzterVorjahr.saldo_ende);
 
