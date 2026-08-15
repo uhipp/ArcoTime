@@ -90,6 +90,20 @@ Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) �
 
 Das Häkchen **"blockiert die Planung"** entscheidet, ob die Art in der Disposition wirkt: Ist es gesetzt, fällt der Zeitraum aus den freien Zeiten heraus. Ohne Häkchen ist die Abwesenheit reine Information und die Person bleibt einplanbar – gedacht für Fälle wie Homeoffice oder Aussendienst.
 
+## Datenpflege
+
+Ein eigener Bereich unter Einstellungen, erreichbar über **„Datenpflege öffnen"**. Er enthält zweierlei.
+
+**Prüfungen** zeigen Lücken in den Stammdaten, die erst auffallen, wenn sie stören: Kunden ohne PLZ oder Ort (der Brief passt dann nicht ins Fenstercouvert), Kunden ohne E-Mail (kein Rapportversand), Kunden ohne Anfahrt-Kilometer, aktive Projekte ohne Projektleitung. Sie ändern nichts, sie zählen und verlinken auf die Liste, in der sich die Lücke schliessen lässt.
+
+**Sammelaktionen** führen bestehende Werte in einem Zug nach. Der Ablauf ist immer derselbe: **Vorschau ansehen** – jede betroffene Zeile mit „bisher" und „neu" –, dann auslösen, und der Lauf lässt sich **rückgängig machen**. Die alten Werte werden dabei aufbewahrt.
+
+Warum das so gebaut ist: Erweiterungen an ArcoTime bringen neue Felder mit. Die **Struktur** – die Spalte selbst – gilt sofort für alle Organisationen, sonst liefen mehrere Datenmodelle nebeneinander. Das **Umformen bestehender Werte** ist etwas anderes: Ob eine automatische Ableitung für eure 800 Kundenadressen passt, kann niemand von aussen beurteilen. Deshalb löst ihr das selbst aus, wenn es euch passt, und könnt es zurücknehmen.
+
+Ausgeführte Läufe bleiben unten stehen – auch rückgängig gemachte. Die Spur ist der Zweck.
+
+Ausgenommen bleiben Fehler, die Daten beschädigen, sowie Sicherheits- und Gesetzesanpassungen: Die laufen sofort für alle, mit Information danach statt Zustimmung davor.
+
 ## Standardpositionen für neue Rapporte
 
 Womit ein neuer [Arbeitsrapport](/hilfe/rapporte) beginnt. In vielen Betrieben ist das immer dasselbe – Anfahrt, Fahrzeit, manchmal eine Kleinmaterialpauschale. Wer hier nichts pflegt, bekommt wie bisher einen leeren Rapport.

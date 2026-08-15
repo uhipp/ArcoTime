@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { logoAdresseVon } from "@/lib/logo-adresse";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
@@ -125,6 +126,21 @@ export default async function EinstellungenPage({
         lassen sich nur deaktivieren statt löschen, damit bestehende Einträge
         lesbar bleiben.
       </p>
+      <div className="rounded-lg border bg-white p-5">
+        <h2 className="text-lg font-medium mb-1">Datenpflege</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Aufgaben an euren eigenen Daten: Lücken in den Stammdaten und
+          Sammelaktionen, mit denen sich bestehende Werte in einem Zug
+          nachführen lassen – mit Vorschau und Rückweg.
+        </p>
+        <Link
+          href="/einstellungen/datenpflege"
+          className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+        >
+          Datenpflege öffnen
+        </Link>
+      </div>
+
       <p className="text-sm text-gray-500">
         Das schmale Zahlenfeld rechts in jeder Zeile ist die{" "}
         <strong>Sortierung</strong>: Sie bestimmt die Reihenfolge in den

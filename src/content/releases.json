@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "neu",
+        "text": "Bereich Datenpflege unter Einstellungen: Prüfungen zeigen Lücken in den Stammdaten (Kunden ohne Ort, ohne E-Mail, ohne Anfahrt-km, Projekte ohne Projektleitung), Sammelaktionen führen bestehende Werte in einem Zug nach – mit Vorschau vorher und einem Rückweg nachher. Die erste Aktion übernimmt die Anfahrt-Kilometer aus bereits erfassten Positionen."
+      },
+      {
         "typ": "verbessert",
         "text": "Rückwege ergänzt: Die Übersicht zeigt neu auch Rapporte, Disposition, Mitarbeitende und Einstellungen. Anfrage und Projekt haben einen Link „Zur Übersicht“. Wer aus der Disposition einen Rapport öffnet, kommt über „Zur Disposition“ in dieselbe Ansicht und denselben Tag zurück; wer aus den Auswertungen einen Zeiteintrag öffnet, findet dort „Zu den Auswertungen“ und „Zur Zeiterfassung“."
       },
