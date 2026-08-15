@@ -23,6 +23,16 @@ import { forwardRef } from "react";
 // bloss lästig – ein Datum, das niemand eingetragen hat, beendet dort
 // ein unbefristetes Arbeitsverhältnis.
 //
+// WICHTIG für optionale Datumsfelder: Safari zeigt in einem LEEREN
+// <input type="date"> das heutige Datum als graue Vorschau an. Es ist
+// kein Wert und wird nicht gespeichert – von einem echten Datum ist es
+// aber nicht zu unterscheiden. Bei einem Feld wie "Austritt" sieht damit
+// jede Person aus, als hätte sie heute gekündigt.
+//
+// Für alles, was leer bleiben darf, deshalb OptionalesDatumFeld
+// verwenden: Ohne Wert gibt es dort gar kein Datumsfeld, sondern nur
+// "+ Datum setzen".
+//
 // Grundregel dazu: Datumsfelder werden NIE mit dem heutigen Datum
 // vorbelegt. Ein vorbelegtes Datum wird übersehen und mitgespeichert;
 // das leere Feld zwingt zur bewussten Angabe. Ausnahmen sind Filter und

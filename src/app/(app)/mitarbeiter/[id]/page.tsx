@@ -8,6 +8,7 @@ import { formatDatumCH, heuteIso } from "@/lib/date-utils";
 import { ZeitFeld } from "@/components/zeit-feld";
 import { erfasseAbwesenheit, loescheAbwesenheit } from "@/app/actions/abwesenheiten";
 import { DatumFeld } from "@/components/datum-feld";
+import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import { darf } from "@/lib/berechtigungen";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 import { DeleteButton } from "@/components/delete-button";
@@ -118,29 +119,32 @@ export default async function MitarbeitendeDetailPage({
               action={speichereAnstellung.bind(null, id)}
               className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4 text-sm"
             >
+              {/* OptionalesDatumFeld und nicht DatumFeld: Safari zeigt in
+                  einem leeren Datumsfeld das heutige Datum als optische
+                  Vorschau – nicht gespeichert, aber nicht von einem echten
+                  Wert zu unterscheiden. Bei "Austritt" hiesse das: Jede
+                  Person sieht aus, als hätte sie heute gekündigt.
+                  Steht nichts in der Datenbank, gibt es hier auch kein
+                  Feld, sondern nur "+ Datum setzen". */}
               <div>
-                <label className="block text-xs text-gray-500 mb-1" htmlFor="eintritt">
-                  Eintritt
-                </label>
-                <DatumFeld
-                  id="eintritt"
-                  name="eintritt"
-                  defaultValue={person.eintritt ?? ""}
-                  disabled={!istAdmin}
-                  className="rounded border border-gray-300 px-2 py-1.5"
-                />
+                <span className="block text-xs text-gray-500 mb-1">Eintritt</span>
+                {istAdmin ? (
+                  <OptionalesDatumFeld name="eintritt" defaultValue={person.eintritt} />
+                ) : (
+                  <span className="text-sm">
+                    {person.eintritt ? formatDatumCH(person.eintritt) : "–"}
+                  </span>
+                )}
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1" htmlFor="austritt">
-                  Austritt
-                </label>
-                <DatumFeld
-                  id="austritt"
-                  name="austritt"
-                  defaultValue={person.austritt ?? ""}
-                  disabled={!istAdmin}
-                  className="rounded border border-gray-300 px-2 py-1.5"
-                />
+                <span className="block text-xs text-gray-500 mb-1">Austritt</span>
+                {istAdmin ? (
+                  <OptionalesDatumFeld name="austritt" defaultValue={person.austritt} />
+                ) : (
+                  <span className="text-sm">
+                    {person.austritt ? formatDatumCH(person.austritt) : "–"}
+                  </span>
+                )}
               </div>
               {istAdmin && (
                 <button
@@ -422,7 +426,7 @@ export default async function MitarbeitendeDetailPage({
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Bis (optional)</label>
-              <DatumFeld name="bis"  className="rounded border border-gray-300 px-2 py-1.5" />
+              <OptionalesDatumFeld name="bis" />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Art</label>

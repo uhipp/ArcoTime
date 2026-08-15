@@ -7,6 +7,7 @@ import { FARBEN_OPTIONEN } from "@/lib/farben";
 import { formatDatumCH } from "@/lib/date-utils";
 import { ZeitFeld } from "@/components/zeit-feld";
 import { DatumFeld } from "@/components/datum-feld";
+import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import {
   updateOrganisation,
   ladeLogoHoch,
@@ -667,7 +668,7 @@ export default async function EinstellungenPage({
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Bis (optional)</label>
-            <DatumFeld name="bis"  className="rounded border border-gray-300 px-3 py-2 text-sm" />
+            <OptionalesDatumFeld name="bis" className="rounded border border-gray-300 px-3 py-2 text-sm" />
           </div>
           <input
             name="bezeichnung"
