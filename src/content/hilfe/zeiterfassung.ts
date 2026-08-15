@@ -20,6 +20,16 @@ Ein Zeiteintrag kann **nicht in der Zukunft liegen** – die Arbeit muss zuerst 
 
 Positionen eines noch offenen [Rapports](/hilfe/rapporte) erscheinen hier bewusst nicht. Sie sind Auftragsinhalt und werden im Rapport bearbeitet; erst mit dem Abschluss werden sie zu erfasster Zeit.
 
+
+## Wann ein Eintrag nicht mehr änderbar ist
+
+Zwei Ereignisse machen einen Zeiteintrag unveränderlich – für alle, auch für Administratoren:
+
+- **Der Export.** Wurde der Eintrag exportiert, liegt er in der Buchhaltung. Eine Korrektur läuft dort über den Beleg und nicht mehr über die Zeiterfassung.
+- **Der Monatsabschluss im [Zeitkonto](/hilfe/mitarbeitende).** Ist der Monat dieser Person abgeschlossen, sind ihre Stunden festgehalten. Eine Korrektur läuft über eine Buchung im Folgemonat – oder ein Admin öffnet den Monat wieder.
+
+Beide Sperren stehen in der Datenbank und nicht nur in der Oberfläche: Sie greifen auf jedem Weg, auch beim Bearbeiten einer Rapportposition.
+
 ## Zeit nachträglich erfassen
 
 1. **Projekt** wählen. Fehlt das Projekt noch? Über **"+ Neues Projekt"** direkt neben dem Feld kannst du es sofort anlegen, ohne die Seite zu verlassen (siehe [Durchgängige Schnellerfassung](/hilfe/anfragen)).

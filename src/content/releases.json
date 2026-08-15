@@ -281,6 +281,14 @@
         "text": "Navigation zum Kunden: Ein offener Rapport zeigt zuoberst die Kundenadresse mit einem Knopf „Navigation“ (Google Maps, daneben Apple Karten) und die Telefonnummer zum Antippen. Auf dem Telefon gestartet, läuft die Navigation auf CarPlay weiter. Die Adresse verlässt ArcoTime erst beim Antippen."
       },
       {
+        "typ": "fix",
+        "text": "Ein Monatsabschluss sperrt jetzt auch seine Grundlagen: Zeiteinträge der betroffenen Person in diesem Monat lassen sich weder ändern noch löschen noch ergänzen – auch nicht von Administratoren. Ebenso gesperrt sind Abschluss und Storno von Rapporten aus diesem Monat. Zusätzlich sind exportierte Zeiteinträge neu für alle unantastbar; bisher konnten Admins sie noch ändern. Ohne diese Sperren hätten Auswertung und Zeitkonto verschiedene Zahlen zeigen können."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Ein Monat lässt sich nicht mehr abschliessen, solange Rapporte dieser Person darin offen sind – ihre Stunden zählen erst mit dem Rapportabschluss und hätten sonst dauerhaft gefehlt. Vorher war das nur eine Warnung."
+      },
+      {
         "typ": "neu",
         "text": "Monatsabschluss im Zeitkonto: Soll, Ist, Saldo und Ferien werden je Person und Monat eingefroren, damit eine spätere Korrektur die Zahlen der Lohnbuchhaltung nicht mehr verschiebt. Vor dem Abschluss meldet die Seite die noch offenen Rapporte des Monats. Dazu zwei Auswertungen als PDF im Querformat: das Einzelblatt je Person mit Unterschriftszeilen und die Übersicht über alle."
       },

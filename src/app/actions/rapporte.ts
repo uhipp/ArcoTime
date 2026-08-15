@@ -20,6 +20,7 @@ import { ladeRapportDokument } from "@/lib/rapport-dokument-daten";
 import { RapportPdf } from "@/lib/rapport-pdf";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { legeStandardpositionenAn } from "@/lib/standardpositionen";
+import { monatGesperrt } from "@/lib/zeitkonto";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -327,6 +328,11 @@ export async function fuegePositionHinzu(
     rabatt_prozent: Number(formData.get("rabatt_prozent") ?? 0),
   };
 
+  // Abgeschlossener Monat: Die Datenbank lehnt ab (0059), hier steht der
+  // Grund im Klartext.
+  const gesperrt = await monatGesperrt(supabase, werte.mitarbeiter_id, werte.datum);
+  if (gesperrt) return { fehler: gesperrt };
+
   const fehler = await pruefeGegenDienstleistung(supabase, werte);
   if (fehler) {
     return { fehler };
@@ -406,6 +412,22 @@ export async function aktualisierePosition(
     beschreibung: str(formData.get("beschreibung")),
     rabatt_prozent: Number(formData.get("rabatt_prozent") ?? 0),
   };
+
+  // Abgeschlossener Monat: Die Datenbank lehnt ab (0059), hier steht der
+  // Grund im Klartext. Gefragt wird nach der Person der Position – bei
+  // einem Team hat jede ihr eigenes Zeitkonto.
+  const { data: bisherigePerson } = await supabase
+    .from("zeiteintraege")
+    .select("mitarbeiter_id, datum")
+    .eq("id", zeiteintragId)
+    .maybeSingle();
+
+  const gesperrt = await monatGesperrt(
+    supabase,
+    bisherigePerson?.mitarbeiter_id ?? rapport.mitarbeiter_id,
+    bisherigePerson?.datum ?? rapport.datum
+  );
+  if (gesperrt) return { fehler: gesperrt };
 
   const fehler = await pruefeGegenDienstleistung(supabase, werte);
   if (fehler) {

@@ -119,11 +119,12 @@ export default async function AbschlussPage({
       {error && <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
 
       <p className="text-sm text-gray-500 max-w-3xl">
-        Der Abschluss hält Soll, Ist, Saldo und Ferien fest, wie sie jetzt
-        sind. Danach rechnet das Zeitkonto den Folgemonat auf diesem Stand
-        weiter, und eine spätere Korrektur an einem alten Zeiteintrag
-        verschiebt die Zahl nicht mehr, die an die Lohnbuchhaltung ging.
-        Korrekturen laufen dann über eine Buchung im Folgemonat.
+        Der Abschluss hält Soll, Ist, Saldo und Ferien fest – und{" "}
+        <strong>sperrt die Zeiteinträge dieser Person in diesem Monat</strong>:
+        Sie lassen sich danach weder ändern noch löschen noch ergänzen, auch
+        nicht von Administratoren. Nur so kann die Auswertung nicht etwas
+        anderes zeigen als das Zeitkonto. Korrekturen laufen über eine Buchung
+        im Folgemonat – oder der Monat wird wieder geöffnet.
       </p>
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -158,9 +159,10 @@ export default async function AbschlussPage({
             {offeneGesamt} {offeneGesamt === 1 ? "Rapport ist" : "Rapporte sind"} in diesem
             Monat noch offen.
           </strong>{" "}
-          Ihre Stunden zählen erst mit dem Abschluss des Rapports – wird der
-          Monat jetzt eingefroren, fehlen sie dauerhaft. Der typische Fall ist
-          der Einsatz vom Monatsletzten, der erst ein paar Tage später
+          Ihre Stunden zählen erst mit dem Abschluss des Rapports. Diese
+          Personen lassen sich deshalb <strong>nicht abschliessen</strong> –
+          bitte zuerst die Rapporte abschliessen. Der typische Fall ist der
+          Einsatz vom Monatsletzten, der erst ein paar Tage später
           abgeschlossen wird.
         </p>
       )}
@@ -237,21 +239,30 @@ export default async function AbschlussPage({
                       confirmText="Diesen Monat wieder öffnen? Die festgehaltenen Zahlen werden verworfen und neu gerechnet – auch der Saldo aller Folgemonate ändert sich damit."
                     />
                   ) : (
-                    <form
-                      action={schliesseMonatAb.bind(
-                        null,
-                        gewaehltesJahr,
-                        gewaehlterMonat,
-                        person.id
-                      )}
-                    >
-                      <button
-                        type="submit"
-                        className="rounded bg-arcos-steel px-3 py-1.5 text-xs font-medium text-white hover:bg-arcos-navy"
+                    offen > 0 ? (
+                      <span
+                        className="text-xs text-gray-400"
+                        title="Erst alle Rapporte des Monats abschliessen – ihre Stunden zählen sonst nicht mit."
                       >
-                        Abschliessen
-                      </button>
-                    </form>
+                        gesperrt
+                      </span>
+                    ) : (
+                      <form
+                        action={schliesseMonatAb.bind(
+                          null,
+                          gewaehltesJahr,
+                          gewaehlterMonat,
+                          person.id
+                        )}
+                      >
+                        <button
+                          type="submit"
+                          className="rounded bg-arcos-steel px-3 py-1.5 text-xs font-medium text-white hover:bg-arcos-navy"
+                        >
+                          Abschliessen
+                        </button>
+                      </form>
+                    )
                   )}
                 </td>
               </tr>

@@ -288,6 +288,19 @@ export async function schliesseMonatAb(
     .gte("datum", `${jahr}-${String(monat).padStart(2, "0")}-01`)
     .lte("datum", `${jahr}-${String(monat).padStart(2, "0")}-${letzterTag}`);
 
+  // Sperre statt Warnung: Solange ein Rapport des Monats offen ist,
+  // zählen seine Stunden nicht – und mit dem Abschluss würden sie
+  // dauerhaft fehlen. Erst alle Rapporte abschliessen, dann den Monat.
+  // Nebenbei kann damit der Fall gar nicht entstehen, dass ein Rapport
+  // in einem bereits abgeschlossenen Monat noch abgeschlossen wird.
+  if ((count ?? 0) > 0) {
+    redirect(
+      `${pfad}&error=${encodeURIComponent(
+        `Für diese Person ${count === 1 ? "ist noch 1 Rapport" : `sind noch ${count} Rapporte`} in diesem Monat offen. Ihre Stunden zählen erst mit dem Abschluss des Rapports – bitte zuerst dort abschliessen.`
+      )}`
+    );
+  }
+
   const { error } = await supabase.from("monatsabschluesse").insert({
     mitarbeiter_id: mitarbeiterId,
     jahr,

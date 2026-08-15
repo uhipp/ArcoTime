@@ -93,7 +93,10 @@ Rollenmodell und dürfen bei dessen Einführung **nicht** dorthin wandern.
 
 | Regel | Begründung | Wo |
 |---|---|---|
-| Exportierte Positionen sind unantastbar | Verrechnete Zeit ändert man nicht nachträglich | `zeiteintraege_update/delete` (0046) |
+| Exportierte Positionen sind unantastbar – **auch für Admins** | Verrechnete Zeit liegt in der Buchhaltung; Korrektur läuft über den Beleg | `zeiteintraege_update/delete` (0059, vorher mit Admin-Ausnahme in 0046) |
+| Zeiteinträge eines abgeschlossenen Monats sind unveränderlich – auch für Admins | Ein Abschluss, dessen Grundlagen sich noch ändern, ist eine Behauptung | `zeiteintraege_insert/update/delete` über `monat_abgeschlossen()` (0059) |
+| Ein Rapport lässt sich nicht abschliessen oder stornieren, wenn seine Stunden in einem abgeschlossenen Monat liegen | Beides verändert rückwirkend, was als geleistet gilt | `schliesse_rapport()`, `storniere_rapport()` (0059) |
+| Ein Monat lässt sich nicht abschliessen, solange Rapporte der Person darin offen sind | Ihre Stunden zählen erst mit dem Rapportabschluss und fehlten sonst dauerhaft | `schliesseMonatAb` (Anwendung) |
 | Ein abgeschlossener Rapport ist unveränderlich | Der Kunde hat unterschrieben | `rapporte_update_offen` (0026) |
 | Ein Rapport wird von der verantwortlichen Person abgeschlossen | Sie war dabei und steht auf dem Dokument | `schliesse_rapport()` (0047) |
 | Stornieren ist bewusst **nicht** eingeschränkt | Korrektur des Büros, oft gerade dann nötig, wenn die verantwortliche Person fehlt | `storniere_rapport()` (0043) |

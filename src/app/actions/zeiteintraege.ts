@@ -11,6 +11,7 @@ import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
+import { monatGesperrt } from "@/lib/zeitkonto";
 
 function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -76,6 +77,17 @@ export async function createZeiteintrag(
   if (zukunft) {
     return { fehler: zukunft };
   }
+
+  // Abgeschlossener Monat: Die Datenbank lehnt ohnehin ab (0059), sagt
+  // aber nur "null Zeilen betroffen". Hier steht der Grund im Klartext –
+  // und zwar für BEIDE Monate: den, in dem der Eintrag steht, und den,
+  // in den er verschoben werden soll.
+  const gesperrt = await monatGesperrt(
+    supabase,
+    values.mitarbeiter_id ?? "",
+    values.datum
+  );
+  if (gesperrt) return { fehler: gesperrt };
 
   const fehler = await pruefeGegenDienstleistung(supabase, values);
   if (fehler) {

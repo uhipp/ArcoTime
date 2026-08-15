@@ -374,3 +374,31 @@ export function stundenText(wert: number): string {
 }
 
 export { iso };
+
+// Ist der Monat dieser Person abgeschlossen? Für Meldungen in der
+// Anwendung.
+//
+// Die harte Grenze steht in der Datenbank (0059) – dort lehnt die Regel
+// ab, egal über welchen Weg jemand kommt. Sie meldet allerdings nur
+// "null Zeilen betroffen", und daraus lässt sich keine verständliche
+// Erklärung bauen. Deshalb hier vorher fragen und im Klartext antworten.
+export async function monatGesperrt(
+  supabase: Client,
+  mitarbeiterId: string,
+  datum: string
+): Promise<string | null> {
+  const jahr = Number(datum.slice(0, 4));
+  const monat = Number(datum.slice(5, 7));
+
+  const { data } = await supabase
+    .from("monatsabschluesse")
+    .select("abgeschlossen_am")
+    .eq("mitarbeiter_id", mitarbeiterId)
+    .eq("jahr", jahr)
+    .eq("monat", monat)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  return `Das Zeitkonto für ${String(monat).padStart(2, "0")}/${jahr} ist abgeschlossen – die Stunden dieses Monats sind festgehalten und lassen sich nicht mehr ändern. Eine Korrektur läuft über eine Buchung im Folgemonat; wer den Monat wieder öffnen will, findet das unter Einstellungen → Monatsabschluss.`;
+}
