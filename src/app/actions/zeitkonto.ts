@@ -188,3 +188,63 @@ export async function speichereFerienanspruch(mitarbeiterId: string, formData: F
   revalidatePath(pfad);
   redirect(mitErfolg(`${pfad}?fokus=neuer_anspruch`, "Ferienanspruch gespeichert."));
 }
+
+// ---------------------------------------------------------
+// Manuelle Buchungen im Zeitkonto (0057)
+// ---------------------------------------------------------
+export async function erfasseZeitkontoBuchung(mitarbeiterId: string, formData: FormData) {
+  const pfad = `/mitarbeiter/${mitarbeiterId}/zeitkonto`;
+  await nurAdmin(pfad);
+  const supabase = await createClient();
+
+  const datum = String(formData.get("datum") ?? "").trim();
+  const stunden = zahl(formData, "stunden");
+  const grund = String(formData.get("grund") ?? "").trim();
+
+  if (!datum || stunden === null || stunden === 0 || !grund) {
+    redirect(
+      `${pfad}?error=${encodeURIComponent(
+        "Bitte Datum, eine Stundenzahl ungleich null und einen Grund angeben."
+      )}`
+    );
+  }
+
+  const { error } = await supabase.from("zeitkonto_buchungen").insert({
+    mitarbeiter_id: mitarbeiterId,
+    datum,
+    stunden,
+    grund,
+  });
+
+  if (error) redirect(`${pfad}?error=${encodeURIComponent(error.message)}`);
+
+  revalidatePath(pfad);
+  redirect(
+    mitErfolg(
+      `${pfad}?jahr=${datum.slice(0, 4)}&fokus=buchung_datum`,
+      "Buchung erfasst."
+    )
+  );
+}
+
+export async function loescheZeitkontoBuchung(mitarbeiterId: string, buchungId: string) {
+  const pfad = `/mitarbeiter/${mitarbeiterId}/zeitkonto`;
+  await nurAdmin(pfad);
+  const supabase = await createClient();
+
+  const { data: geloescht, error } = await supabase
+    .from("zeitkonto_buchungen")
+    .delete()
+    .eq("id", buchungId)
+    .select("id");
+
+  if (error) redirect(`${pfad}?error=${encodeURIComponent(error.message)}`);
+  if (!geloescht || geloescht.length === 0) {
+    redirect(
+      `${pfad}?error=${encodeURIComponent("Die Buchung wurde nicht entfernt – dafür fehlen dir die Rechte.")}`
+    );
+  }
+
+  revalidatePath(pfad);
+  redirect(mitErfolg(pfad, "Buchung entfernt."));
+}

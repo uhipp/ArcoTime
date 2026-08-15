@@ -29,6 +29,19 @@ Das Feld **Tage/Woche** braucht nur, wer die Teilzeit auf wenige ganze Tage vert
 
 **Ferienanspruch** je Jahr in Tagen, dazu der **Übertrag** aus dem Vorjahr.
 
+## Das Zeitkonto (Zusatzmodul)
+
+Über **„Zeitkonto öffnen"** auf der Detailseite. Jede Person sieht ihr eigenes, Administratoren alle.
+
+Zwölf Monatszeilen mit **Soll**, **Ist**, **Differenz** und fortlaufendem **Saldo**, dazu das Ferienguthaben. So wird gerechnet:
+
+- **Soll** = Sollstunden des Monats, auf die Arbeitstage verteilt und mit dem Pensum gerechnet, abzüglich bezahlter Absenzen. Gerechnet wird tageweise – deshalb stimmen auch ein Eintritt am 15. und ein Pensumswechsel mitten im Monat.
+- **Ist** = erfasste Arbeitszeit. Positionen offener Rapporte zählen **erst mit deren Abschluss**: Solange ein Rapport offen ist, stehen dort Schätzungen und keine geleistete Zeit.
+- **Abbau** = Stunden aus Abwesenheiten, die den Saldo belasten (Überstundenabbau).
+- **Betriebsferien** reduzieren das Soll und kosten Ferientage. Wer während der Betriebsferien krank ist, verbraucht dagegen keine Ferientage – die erfasste Abwesenheit hat Vorrang.
+
+**Manuelle Buchungen** sind für alles, was weder erfasste Zeit noch Abwesenheit ist: den **Startsaldo** bei der Einführung, die Auszahlung von Überstunden, eine Kürzung zum Jahreswechsel. Eine Buchung mit einem Datum **vor dem 1. Januar** des angezeigten Jahres wirkt als Startsaldo und wandert von Jahr zu Jahr mit. Jede Buchung verlangt einen Grund – in einem Jahr ist sie sonst niemandem mehr erklärbar. Erfassen darf nur ein Admin.
+
 ## Ein Mensch, ein Konto
 
 Jede Person arbeitet mit dem **eigenen Login** – auch die Chefin, auch das Büro. Ein gemeinsames Verwaltungskonto („Admin"), mit dem mehrere Leute konfigurieren, wirkt praktisch und kostet zwei Dinge:

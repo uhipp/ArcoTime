@@ -282,6 +282,10 @@
       },
       {
         "typ": "neu",
+        "text": "Das Zeitkonto ist da (Zusatzmodul): zwölf Monatszeilen mit Soll, Ist, Differenz und fortlaufendem Saldo, dazu Ferienanspruch, Bezug und Rest. Gerechnet wird tageweise, deshalb stimmen auch Eintritt mitten im Monat und Pensumswechsel. Manuelle Buchungen decken Startsaldo, Auszahlung und Kürzung ab."
+      },
+      {
+        "typ": "neu",
         "text": "Schliesstage unterscheiden neu zwischen Feiertag und Betriebsferien: Betriebsferien gehen vom Ferienanspruch der Mitarbeitenden ab (Art. 329c Abs. 2 OR), Feiertage und Brückentage nicht. Umschalten direkt in der Zeile."
       },
       {

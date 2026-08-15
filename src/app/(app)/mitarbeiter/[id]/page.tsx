@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { ladeDokumente } from "@/lib/dokumente-laden";
@@ -95,6 +96,18 @@ export default async function MitarbeitendeDetailPage({
           nur der Admin pflegt sie; die Person sieht ihre eigenen Werte. */}
       {organisation?.modul_zeitkonto && (
         <div className="max-w-2xl space-y-8">
+          <div className="rounded-lg border bg-white p-4 flex flex-wrap items-center gap-3">
+            <span className="flex-1 min-w-[14rem] text-sm text-gray-600">
+              Soll gegen Ist je Monat, fortlaufender Saldo und Ferienguthaben.
+            </span>
+            <Link
+              href={`/mitarbeiter/${id}/zeitkonto`}
+              className="rounded bg-arcos-steel px-4 py-2 text-sm font-medium text-white hover:bg-arcos-navy"
+            >
+              Zeitkonto öffnen
+            </Link>
+          </div>
+
           <div>
             <h2 className="text-lg font-medium mb-1">Anstellung</h2>
             <p className="text-sm text-gray-500 mb-4">
