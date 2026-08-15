@@ -664,6 +664,26 @@ export default async function EinstellungenPage({
           Person trotzdem als einsatzfähig – etwa bei einer Weiterbildung im
           Betrieb.
         </p>
+        {organisation?.modul_zeitkonto && (
+          <div className="rounded bg-blue-50 text-blue-900 text-xs px-3 py-2 mb-3 space-y-1">
+            <p>
+              Die drei Häkchen rechts sagen, wie eine Abwesenheit im{" "}
+              <strong>Zeitkonto</strong> wirkt – unabhängig voneinander:
+            </p>
+            <p>
+              <strong>Soll</strong>: Die Sollstunden des Tages entfallen
+              (bezahlte Absenz). · <strong>Ferien</strong>: Zieht Tage vom
+              Ferienguthaben ab. · <strong>Saldo</strong>: Bucht die Stunden
+              vom Zeitsaldo ab.
+            </p>
+            <p>
+              Ferien haben Soll und Ferien, Krankheit nur Soll,
+              Überstundenabbau nur Saldo – wer Überstunden abbaut, schuldet
+              die Zeit weiterhin, er hat sie nur vorher geleistet. Homeoffice
+              hat keines der drei: Dort wird gearbeitet.
+            </p>
+          </div>
+        )}
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {abwesenheitsarten?.map((a) => (
             <li key={a.id} className="px-4 py-2 text-sm">
@@ -697,6 +717,47 @@ export default async function EinstellungenPage({
                   <input type="checkbox" name="blockiert" defaultChecked={a.blockiert} />
                   blockiert
                 </label>
+                {/* Wirkung auf das Zeitkonto (0055). Nur mit gebuchtem
+                    Modul – ohne Auswertung sagen die drei Häkchen nichts
+                    und wären bloss drei Fragen mehr beim Einrichten. */}
+                {organisation?.modul_zeitkonto && (
+                  <>
+                    <input type="hidden" name="wirkung_erfasst" value="1" />
+                    <label
+                      className="flex items-center gap-1 text-xs whitespace-nowrap"
+                      title="Die Sollstunden des Tages entfallen – bezahlte Absenz."
+                    >
+                      <input
+                        type="checkbox"
+                        name="reduziert_soll"
+                        defaultChecked={a.reduziert_soll ?? true}
+                      />
+                      Soll
+                    </label>
+                    <label
+                      className="flex items-center gap-1 text-xs whitespace-nowrap"
+                      title="Zieht Tage vom Ferienguthaben ab."
+                    >
+                      <input
+                        type="checkbox"
+                        name="belastet_ferien"
+                        defaultChecked={a.belastet_ferien ?? false}
+                      />
+                      Ferien
+                    </label>
+                    <label
+                      className="flex items-center gap-1 text-xs whitespace-nowrap"
+                      title="Bucht die Stunden vom Zeitsaldo ab – der Fall Überstundenabbau."
+                    >
+                      <input
+                        type="checkbox"
+                        name="belastet_zeitsaldo"
+                        defaultChecked={a.belastet_zeitsaldo ?? false}
+                      />
+                      Saldo
+                    </label>
+                  </>
+                )}
                 <input
                   name="sortierung"
                   type="number"

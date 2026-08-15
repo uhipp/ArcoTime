@@ -282,6 +282,10 @@
       },
       {
         "typ": "neu",
+        "text": "Abwesenheitsarten sagen neu, wie sie im Zeitkonto wirken: ob die Sollstunden des Tages entfallen, ob Ferientage abgezogen werden und ob der Zeitsaldo belastet wird – drei unabhängige Häkchen. Neu dabei ist die Art „Überstundenabbau“, die den Saldo belastet und das Soll stehen lässt."
+      },
+      {
+        "typ": "neu",
         "text": "Rechenhilfe für die Sollstunden: Je Monat lässt sich ein Kalenderfenster öffnen, das jeden Tag einzeln zeigt – Werktage mit dem Tagesanteil vorbelegt, Wochenenden und Schliesstage mit null. Einzelne Tage wie Brückentage korrigiert man direkt dort, „Daten übernehmen“ schreibt die Summe in die Monatszeile."
       },
       {

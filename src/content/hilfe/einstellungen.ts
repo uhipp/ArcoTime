@@ -90,6 +90,16 @@ Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) �
 
 Das Häkchen **"blockiert die Planung"** entscheidet, ob die Art in der Disposition wirkt: Ist es gesetzt, fällt der Zeitraum aus den freien Zeiten heraus. Ohne Häkchen ist die Abwesenheit reine Information und die Person bleibt einplanbar – gedacht für Fälle wie Homeoffice oder Aussendienst.
 
+
+**Mit gebuchtem Zeitkonto** kommen drei weitere Häkchen dazu. Sie sagen, wie eine Abwesenheit im Zeitkonto wirkt, und sind unabhängig voneinander:
+
+- **Soll** – die Sollstunden dieses Tages entfallen. Das gilt für jede bezahlte Absenz: Ferien, Krankheit, Unfall, Militär.
+- **Ferien** – zieht Tage vom Ferienguthaben ab. Nur bei Ferien selbst.
+- **Saldo** – bucht die Stunden vom Zeitsaldo ab. Das ist der **Überstundenabbau**: Wer kompensiert, schuldet die Zeit weiterhin, er hat sie nur vorher geleistet. Deshalb hat diese Art **kein** Häkchen bei „Soll".
+
+Homeoffice und Aussendienst haben keines der drei – dort wird gearbeitet.
+
+Die bestehenden Arten wurden bei der Umstellung sinnvoll vorbelegt, und die Art **„Überstundenabbau"** ist neu dazugekommen. Bitte einmal durchsehen, ob es für euren Betrieb stimmt.
 ## Arbeitszeit-Grundlagen und Sollstunden (Zusatzmodul Zeitkonto)
 
 Nur mit gebuchtem **Zeitkonto** sichtbar. Zwei Angaben bilden die Grundlage:

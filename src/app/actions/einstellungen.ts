@@ -551,6 +551,15 @@ export async function updateAbwesenheitsart(id: string, formData: FormData) {
       bezeichnung,
       farbe: String(formData.get("farbe") ?? "").trim() || "bg-gray-300",
       blockiert: formData.get("blockiert") === "on",
+      // Wirkung auf das Zeitkonto (0055). Die Felder fehlen im Formular,
+      // wenn das Modul nicht gebucht ist – dann bleiben sie unangetastet.
+      ...(formData.has("wirkung_erfasst")
+        ? {
+            reduziert_soll: formData.get("reduziert_soll") === "on",
+            belastet_ferien: formData.get("belastet_ferien") === "on",
+            belastet_zeitsaldo: formData.get("belastet_zeitsaldo") === "on",
+          }
+        : {}),
       sortierung: sortierungAus(formData),
     },
     "Abwesenheitsart gespeichert."
