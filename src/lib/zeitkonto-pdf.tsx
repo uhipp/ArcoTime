@@ -59,8 +59,22 @@ export function ZeitkontoPdf({
   konto: Jahresauswertung;
   organisation: string;
 }) {
-  const spalten = [2.6, 1.9, 1.9, 1.6, 1.9, 1.9, 1.9, 1.6];
-  const kopf = ["Monat", "Soll", "Ist", "Abbau", "Buchungen", "Differenz", "Saldo", "Ferien"];
+  // Eine eigene Spalte statt eines Hakens im Monatsnamen: Zeichen wie
+  // "✓" gibt es in der Standardschrift des PDF-Erzeugers nicht, und er
+  // lässt sie wortlos weg – der Abschluss war im PDF damit unsichtbar.
+  // Klartext ist hier ohnehin besser: Das Blatt wird unterschrieben.
+  const spalten = [2.6, 1.9, 1.9, 1.6, 1.9, 1.9, 1.9, 1.6, 3.2];
+  const kopf = [
+    "Monat",
+    "Soll",
+    "Ist",
+    "Abbau",
+    "Buchungen",
+    "Differenz",
+    "Saldo",
+    "Ferien",
+    "Status",
+  ];
 
   const summeSoll = konto.zeilen.reduce((s, x) => s + x.soll, 0);
   const summeIst = konto.zeilen.reduce((s, x) => s + x.ist, 0);
@@ -113,7 +127,6 @@ export function ZeitkontoPdf({
           <View key={m.monat} style={stil.zeile}>
             <Text style={[stil.zellLinks, { width: spalten[0] * CM }]}>
               {MONATE[m.monat - 1]}
-              {m.abgeschlossenAm ? " ✓" : ""}
             </Text>
             <Text style={[stil.zellRechts, { width: spalten[1] * CM }]}>{z(m.soll)}</Text>
             <Text style={[stil.zellRechts, { width: spalten[2] * CM }]}>{z(m.ist)}</Text>
@@ -129,6 +142,11 @@ export function ZeitkontoPdf({
             </Text>
             <Text style={[stil.zellRechts, { width: spalten[7] * CM }]}>
               {m.ferienTage ? m.ferienTage.toFixed(1) : "–"}
+            </Text>
+            <Text style={[stil.zellLinks, { width: spalten[8] * CM, paddingLeft: 6 }]}>
+              {m.abgeschlossenAm
+                ? `abgeschlossen ${new Date(m.abgeschlossenAm).toLocaleDateString("de-CH")}`
+                : ""}
             </Text>
           </View>
         ))}
@@ -150,11 +168,12 @@ export function ZeitkontoPdf({
           <Text style={[stil.zellRechts, stil.fett, { width: spalten[7] * CM }]}>
             {konto.ferienBezogen.toFixed(1)}
           </Text>
+          <Text style={[stil.zellLinks, { width: spalten[8] * CM }]}> </Text>
         </View>
 
         <Text style={stil.fuss}>
-          Ein Haken beim Monat bedeutet: abgeschlossen – die Zahlen sind
-          festgehalten. Soll = Sollstunden des Monats, auf die Arbeitstage
+          „Abgeschlossen“ bedeutet: Die Zahlen dieses Monats sind
+          festgehalten und die Zeiteinträge gesperrt. Soll = Sollstunden des Monats, auf die Arbeitstage
           verteilt und mit dem Pensum gerechnet, abzüglich bezahlter Absenzen.
           Ist = erfasste Arbeitszeit; Positionen offener Rapporte zählen erst
           mit deren Abschluss. Abbau = Stunden aus Abwesenheiten, die den Saldo
