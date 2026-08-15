@@ -106,7 +106,7 @@ export async function ladeZeitkonto(
     { data: eintraege },
     { data: buchungen },
     { data: organisation },
-    { data: abschluesse },
+    { data: abschluesse, error: abschlussFehler },
   ] = await Promise.all([
     supabase.from("profiles").select("eintritt, austritt").eq("id", mitarbeiterId).single(),
     supabase.from("soll_monate").select("monat, sollstunden").eq("jahr", jahr),
@@ -256,6 +256,16 @@ export async function ladeZeitkonto(
   if (letzterVorjahr) startsaldo = Number(letzterVorjahr.saldo_ende);
 
   const hinweise: string[] = [];
+
+  // Scheitert die Abfrage der Abschlüsse, sähe jeder abgeschlossene Monat
+  // aus wie ein offener – ohne dass jemand etwas merkt. Genau diese
+  // Sorte Stille hat dieses Projekt schon zweimal Stunden gekostet
+  // (Abwesenheitsprüfung, Standardpositionen). Deshalb melden.
+  if (abschlussFehler) {
+    hinweise.push(
+      `Die Monatsabschlüsse liessen sich nicht lesen – abgeschlossene Monate erscheinen deshalb als offen: ${abschlussFehler.message}`
+    );
+  }
   const zeilen: Monatszeile[] = [];
   let laufenderSaldo = startsaldo;
   let ferienBezogen = 0;
