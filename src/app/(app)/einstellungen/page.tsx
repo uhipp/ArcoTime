@@ -326,6 +326,13 @@ export default async function EinstellungenPage({
                 >
                   Sollstunden je Monat erfassen →
                 </Link>
+                <br />
+                <Link
+                  href="/einstellungen/zeitkonto/abschluss"
+                  className="text-sm text-arcos-steel hover:underline"
+                >
+                  Monatsabschluss →
+                </Link>
               </p>
             </div>
           )}

@@ -282,6 +282,10 @@
       },
       {
         "typ": "neu",
+        "text": "Monatsabschluss im Zeitkonto: Soll, Ist, Saldo und Ferien werden je Person und Monat eingefroren, damit eine spätere Korrektur die Zahlen der Lohnbuchhaltung nicht mehr verschiebt. Vor dem Abschluss meldet die Seite die noch offenen Rapporte des Monats. Dazu zwei Auswertungen als PDF im Querformat: das Einzelblatt je Person mit Unterschriftszeilen und die Übersicht über alle."
+      },
+      {
+        "typ": "neu",
         "text": "Das Zeitkonto ist da (Zusatzmodul): zwölf Monatszeilen mit Soll, Ist, Differenz und fortlaufendem Saldo, dazu Ferienanspruch, Bezug und Rest. Gerechnet wird tageweise, deshalb stimmen auch Eintritt mitten im Monat und Pensumswechsel. Manuelle Buchungen decken Startsaldo, Auszahlung und Kürzung ab."
       },
       {

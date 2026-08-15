@@ -123,6 +123,16 @@ export default async function ZeitkontoPage({
             {j}
           </Link>
         ))}
+        {/* Kein <Link>: Das PDF ist eine Datei und keine Seite der
+            Anwendung – der Router soll sie nicht abzufangen versuchen. */}
+        <a
+          href={`/mitarbeiter/${id}/zeitkonto/pdf?jahr=${gewaehltesJahr}`}
+          target="_blank"
+          rel="noopener"
+          className="ml-auto rounded border bg-white px-3 py-1.5 hover:bg-gray-50"
+        >
+          Als PDF (A4 quer)
+        </a>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

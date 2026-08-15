@@ -248,3 +248,91 @@ export async function loescheZeitkontoBuchung(mitarbeiterId: string, buchungId: 
   revalidatePath(pfad);
   redirect(mitErfolg(pfad, "Buchung entfernt."));
 }
+
+// ---------------------------------------------------------
+// Monatsabschluss (0058)
+// ---------------------------------------------------------
+// Friert Soll, Ist, Saldo und Ferien einer Person für einen Monat ein.
+// Ab dann rechnet das Zeitkonto den Folgemonat auf diesem Stand weiter.
+//
+// Offene Rapporte des Monats werden mitgeschrieben und nicht bloss
+// vorher gemeldet: Wer den Monat später ansieht, soll erkennen können,
+// ob Stunden fehlen könnten. Der Einsatz vom 31. März, abgeschlossen am
+// 2. April, ist der Fall, der sonst dauerhaft verschwindet.
+export async function schliesseMonatAb(
+  jahr: number,
+  monat: number,
+  mitarbeiterId: string
+) {
+  const pfad = `/einstellungen/zeitkonto/abschluss?jahr=${jahr}&monat=${monat}`;
+  await nurAdmin(pfad);
+  const supabase = await createClient();
+
+  const { ladeZeitkonto } = await import("@/lib/zeitkonto");
+  const konto = await ladeZeitkonto(supabase, mitarbeiterId, jahr);
+  const zeile = konto.zeilen.find((z) => z.monat === monat);
+
+  if (!zeile) {
+    redirect(`${pfad}&error=${encodeURIComponent("Monat nicht gefunden.")}`);
+  }
+  if (zeile.abgeschlossenAm) {
+    redirect(`${pfad}&error=${encodeURIComponent("Dieser Monat ist bereits abgeschlossen.")}`);
+  }
+
+  const letzterTag = new Date(jahr, monat, 0).getDate();
+  const { count } = await supabase
+    .from("rapporte")
+    .select("id", { count: "exact", head: true })
+    .eq("mitarbeiter_id", mitarbeiterId)
+    .eq("status", "offen")
+    .gte("datum", `${jahr}-${String(monat).padStart(2, "0")}-01`)
+    .lte("datum", `${jahr}-${String(monat).padStart(2, "0")}-${letzterTag}`);
+
+  const { error } = await supabase.from("monatsabschluesse").insert({
+    mitarbeiter_id: mitarbeiterId,
+    jahr,
+    monat,
+    soll_stunden: zeile.soll,
+    ist_stunden: zeile.ist,
+    kompensation_stunden: zeile.kompensation,
+    buchungen_stunden: zeile.buchungen,
+    saldo_vortrag: zeile.saldo - zeile.bewegung,
+    saldo_ende: zeile.saldo,
+    ferien_bezogen_tage: zeile.ferienTage,
+    ferien_rest_tage: konto.ferienRest,
+    offene_rapporte: count ?? 0,
+  });
+
+  if (error) redirect(`${pfad}&error=${encodeURIComponent(error.message)}`);
+
+  revalidatePath(pfad);
+  revalidatePath(`/mitarbeiter/${mitarbeiterId}/zeitkonto`);
+  redirect(mitErfolg(pfad, "Monat abgeschlossen."));
+}
+
+// Wieder öffnen: Der Abschluss verschwindet, die Zahlen werden neu
+// gerechnet. Bewusst möglich – ein Abschluss ist eine Arbeitsroutine und
+// kein Rechtsakt; wer zu früh abgeschlossen hat, soll das gerade rücken
+// können. Das Änderungsprotokoll hält beides fest.
+export async function oeffneMonatWieder(jahr: number, monat: number, abschlussId: string) {
+  const pfad = `/einstellungen/zeitkonto/abschluss?jahr=${jahr}&monat=${monat}`;
+  await nurAdmin(pfad);
+  const supabase = await createClient();
+
+  const { data: geloescht, error } = await supabase
+    .from("monatsabschluesse")
+    .delete()
+    .eq("id", abschlussId)
+    .select("mitarbeiter_id");
+
+  if (error) redirect(`${pfad}&error=${encodeURIComponent(error.message)}`);
+  if (!geloescht || geloescht.length === 0) {
+    redirect(
+      `${pfad}&error=${encodeURIComponent("Der Abschluss wurde nicht geöffnet – dafür fehlen dir die Rechte.")}`
+    );
+  }
+
+  revalidatePath(pfad);
+  revalidatePath(`/mitarbeiter/${geloescht[0].mitarbeiter_id}/zeitkonto`);
+  redirect(mitErfolg(pfad, "Monat wieder geöffnet – die Zahlen werden neu gerechnet."));
+}

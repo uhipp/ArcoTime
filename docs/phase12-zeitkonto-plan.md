@@ -1,7 +1,13 @@
 # Phase 12: Zeitkonto und Arbeitszeitauswertung
 
-Stand: 15.08.2026 · Planungsdokument, noch nicht umgesetzt · **zweites
-kostenpflichtiges Zusatzmodul**
+Stand: 15.08.2026 · **Etappen A bis D umgesetzt** · zweites
+kostenpflichtiges Zusatzmodul
+
+> Umgesetzt mit den Migrationen 0054 (Grundlagen), 0055 (Wirkung der
+> Abwesenheiten), 0056 (Betriebsferien), 0057 (manuelle Buchungen) und
+> 0058 (Monatsabschluss). Zwei Korrekturen gegenüber dem ursprünglichen
+> Entwurf sind unten vermerkt: Positionen offener Rapporte zählen NICHT
+> mit, und Betriebsferien belasten das Ferienguthaben.
 
 ## Ausgangslage
 

@@ -115,6 +115,18 @@ Das Häkchen **„Feiertage sind in den Sollstunden bereits enthalten"** ist wic
 
 Die Angaben **je Person** – Eintritt, Austritt, Pensum und Ferienanspruch – stehen bei [Mitarbeitende](/hilfe/mitarbeitende) → Details.
 
+## Monatsabschluss (Zusatzmodul Zeitkonto)
+
+Über „Monatsabschluss" bei den Arbeitszeit-Grundlagen. Die Seite zeigt einen Monat über **alle Mitarbeitenden** mit Soll, Ist, Saldo und Ferienrest.
+
+Der Abschluss **hält die Zahlen fest**, wie sie jetzt sind. Danach rechnet das Zeitkonto den Folgemonat auf diesem Stand weiter, und eine spätere Korrektur an einem alten Zeiteintrag verschiebt die Zahl nicht mehr, die an die Lohnbuchhaltung ging. Korrekturen laufen dann über eine **Buchung im Folgemonat**.
+
+**Vor dem Abschluss zeigt die Seite die noch offenen Rapporte des Monats.** Ihre Stunden zählen erst mit dem Abschluss des Rapports – wird der Monat vorher eingefroren, fehlen sie dauerhaft. Der typische Fall ist der Einsatz vom Monatsletzten, der erst ein paar Tage später abgeschlossen wird. Wie viele offen waren, bleibt am Abschluss vermerkt.
+
+Abgeschlossen wird **je Person** und nicht für alle auf einmal: Wer bei einer Person noch etwas nachtragen will, soll die übrigen trotzdem abschliessen können. Ein Abschluss lässt sich **wieder öffnen** – das [Änderungsprotokoll](/hilfe/einstellungen) hält beides fest.
+
+Die **Übersicht als PDF** (A4 quer) enthält alle Mitarbeitenden des Monats – das Blatt für die Betriebsleitung und die Lohnbuchhaltung. Andere Dateiformate kommen, wenn ein Lohnsystem sie verlangt.
+
 ## Datenpflege
 
 Ein eigener Bereich unter Einstellungen, erreichbar über **„Datenpflege öffnen"**. Er enthält zweierlei.

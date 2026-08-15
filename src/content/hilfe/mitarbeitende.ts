@@ -40,6 +40,8 @@ Zwölf Monatszeilen mit **Soll**, **Ist**, **Differenz** und fortlaufendem **Sal
 - **Abbau** = Stunden aus Abwesenheiten, die den Saldo belasten (Überstundenabbau).
 - **Betriebsferien** reduzieren das Soll und kosten Ferientage. Wer während der Betriebsferien krank ist, verbraucht dagegen keine Ferientage – die erfasste Abwesenheit hat Vorrang.
 
+**Als PDF** (A4 quer) über den Knopf oben rechts – für die Personalakte und die Unterschrift bei der Jahresbesprechung. Ein Haken beim Monat bedeutet: abgeschlossen, die Zahlen sind festgehalten.
+
 **Manuelle Buchungen** sind für alles, was weder erfasste Zeit noch Abwesenheit ist: den **Startsaldo** bei der Einführung, die Auszahlung von Überstunden, eine Kürzung zum Jahreswechsel. Eine Buchung mit einem Datum **vor dem 1. Januar** des angezeigten Jahres wirkt als Startsaldo und wandert von Jahr zu Jahr mit. Jede Buchung verlangt einen Grund – in einem Jahr ist sie sonst niemandem mehr erklärbar. Erfassen darf nur ein Admin.
 
 ## Ein Mensch, ein Konto

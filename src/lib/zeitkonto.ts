@@ -22,6 +22,11 @@ export type Monatszeile = {
   arbeitstage: number;
   /** Sollstunden laut Tabelle, bevor Pensum und Absenzen wirken. */
   sollTabelle: number | null;
+  /** Gesetzt, sobald der Monat abgeschlossen ist – dann gelten die
+   *  eingefrorenen Zahlen und nicht die neu gerechneten. */
+  abgeschlossenAm: string | null;
+  /** Offene Rapporte beim Abschluss. */
+  offeneRapporte: number;
 };
 
 export type Jahresauswertung = {
@@ -101,6 +106,7 @@ export async function ladeZeitkonto(
     { data: eintraege },
     { data: buchungen },
     { data: organisation },
+    { data: abschluesse },
   ] = await Promise.all([
     supabase.from("profiles").select("eintritt, austritt").eq("id", mitarbeiterId).single(),
     supabase.from("soll_monate").select("monat, sollstunden").eq("jahr", jahr),
@@ -146,6 +152,13 @@ export async function ladeZeitkonto(
       .select("feiertage_im_sollstunden_enthalten")
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("monatsabschluesse")
+      .select("*")
+      .eq("mitarbeiter_id", mitarbeiterId)
+      .lte("jahr", jahr)
+      .order("jahr")
+      .order("monat"),
   ]);
 
   const artVon = new Map((arten ?? []).map((a) => [a.wert, a as Art]));
@@ -207,6 +220,35 @@ export async function ladeZeitkonto(
     }
   }
 
+  // Abgeschlossene Monate gelten, wie sie festgehalten wurden.
+  //
+  // Das ist der ganze Zweck des Abschlusses: Eine spätere Korrektur an
+  // einem alten Zeiteintrag darf die Zahl nicht mehr verschieben, die
+  // damals an die Lohnbuchhaltung ging. Der letzte Abschluss VOR diesem
+  // Jahr bestimmt deshalb den Start ins Jahr – er schlägt die Summe der
+  // Buchungen.
+  type Abschluss = {
+    jahr: number;
+    monat: number;
+    soll_stunden: number;
+    ist_stunden: number;
+    kompensation_stunden: number;
+    buchungen_stunden: number;
+    saldo_vortrag: number;
+    saldo_ende: number;
+    ferien_bezogen_tage: number;
+    offene_rapporte: number;
+    abgeschlossen_am: string;
+  };
+
+  const abschlussVon = new Map<string, Abschluss>();
+  let letzterVorjahr: Abschluss | null = null;
+  for (const a of (abschluesse ?? []) as Abschluss[]) {
+    if (a.jahr === jahr) abschlussVon.set(`${a.jahr}-${a.monat}`, a);
+    else letzterVorjahr = a;
+  }
+  if (letzterVorjahr) startsaldo = Number(letzterVorjahr.saldo_ende);
+
   const hinweise: string[] = [];
   const zeilen: Monatszeile[] = [];
   let laufenderSaldo = startsaldo;
@@ -239,6 +281,7 @@ export async function ladeZeitkonto(
     let kompensation = 0;
     let ferienTage = 0;
 
+
     for (const tag of arbeitstage) {
       if (!angestelltAm(tag)) continue;
 
@@ -264,8 +307,20 @@ export async function ladeZeitkonto(
       }
     }
 
-    const ist = tage.reduce((s, t) => s + (istProTag.get(t) ?? 0), 0);
-    const buchung = buchungProMonat.get(monat) ?? 0;
+    let ist = tage.reduce((s, t) => s + (istProTag.get(t) ?? 0), 0);
+    let buchung = buchungProMonat.get(monat) ?? 0;
+
+    // Ist der Monat abgeschlossen, gelten seine festgehaltenen Zahlen.
+    const abschluss = abschlussVon.get(`${jahr}-${monat}`);
+    if (abschluss) {
+      soll = Number(abschluss.soll_stunden);
+      ist = Number(abschluss.ist_stunden);
+      kompensation = Number(abschluss.kompensation_stunden);
+      buchung = Number(abschluss.buchungen_stunden);
+      ferienTage = Number(abschluss.ferien_bezogen_tage);
+      laufenderSaldo = Number(abschluss.saldo_vortrag);
+    }
+
     const bewegung = ist - soll - kompensation + buchung;
     laufenderSaldo += bewegung;
     ferienBezogen += ferienTage;
@@ -287,6 +342,8 @@ export async function ladeZeitkonto(
       ferienTage,
       arbeitstage: arbeitstage.length,
       sollTabelle: monatsSoll,
+      abgeschlossenAm: abschluss?.abgeschlossen_am ?? null,
+      offeneRapporte: abschluss?.offene_rapporte ?? 0,
     });
   }
 
