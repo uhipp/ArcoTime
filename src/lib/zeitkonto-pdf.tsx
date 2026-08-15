@@ -34,7 +34,7 @@ const stil = StyleSheet.create({
   zellRechts: { textAlign: "right" },
   fett: { fontWeight: "bold" },
   kasten: { flexDirection: "row", gap: 12, marginBottom: 14 },
-  kachel: { borderWidth: 0.5, borderColor: "#ccc", padding: 8, width: 5.5 * CM },
+  kachel: { borderWidth: 0.5, borderColor: "#ccc", padding: 8, width: 8.4 * CM },
   kachelWert: { fontSize: 14, marginTop: 2 },
   klein: { fontSize: 7, color: "#666" },
   fuss: { marginTop: 16, fontSize: 7, color: "#666" },
@@ -65,12 +65,17 @@ export function ZeitkontoPdf({
   // "✓" gibt es in der Standardschrift des PDF-Erzeugers nicht, und er
   // lässt sie wortlos weg – der Abschluss war im PDF damit unsichtbar.
   // Klartext ist hier ohnehin besser: Das Blatt wird unterschrieben.
-  // Breiten in Zentimetern. A4 quer bietet 26,7 cm zwischen den Rändern;
-  // die Summe hier ist 21,3 cm – die Statusspalte muss "abgeschlossen
-  // 15.08.2026" auf EINER Zeile fassen. Bricht sie um, wird jede Zeile
-  // doppelt hoch, und bei zwölf abgeschlossenen Monaten passt die
-  // Tabelle nicht mehr auf die Seite.
-  const spalten = [2.6, 1.9, 1.9, 1.6, 1.9, 1.9, 1.9, 1.6, 6.0];
+  // Breiten in Zentimetern, zusammen 26,7 cm – genau der Satzspiegel von
+  // A4 quer (29,7 cm abzüglich zweimal 1,5 cm Rand).
+  //
+  // Die Tabelle nutzt die Breite bewusst aus: Zusammengedrängte Spalten
+  // mit acht Zentimetern Weiss daneben sind schwerer zu lesen als
+  // luftige, weil das Auge die Zeile schlechter hält. Die Statusspalte
+  // bleibt die breiteste – sie muss "abgeschlossen 15.08.2026" auf EINER
+  // Zeile fassen; bricht sie um, wird jede Zeile doppelt hoch und die
+  // Tabelle passt bei zwölf abgeschlossenen Monaten nicht mehr aufs
+  // Blatt.
+  const spalten = [3.0, 2.6, 2.6, 2.4, 2.6, 2.6, 2.8, 2.3, 5.8];
   const kopf = [
     "Monat",
     "Soll",
@@ -227,7 +232,7 @@ export function AbschlussUebersichtPdf({
 }) {
   // Dieselbe Überlegung wie oben: Der Status steht in Klartext und darf
   // nicht umbrechen.
-  const spalten = [6.5, 3, 3, 3, 3, 7.5];
+  const spalten = [7.2, 3, 3, 3, 3, 7.5];
   const kopf = ["Person", "Soll", "Ist", "Saldo Ende", "Ferien Rest", "Status"];
 
   return (
