@@ -191,8 +191,30 @@ export default async function ZeitkontoPage({
             {konto.zeilen.map((z) => {
               const leer = z.soll === 0 && z.ist === 0 && z.buchungen === 0;
               return (
-                <tr key={z.monat} className={leer ? "text-gray-400" : ""}>
-                  <td className="px-4 py-2">{MONATE[z.monat - 1]}</td>
+                <tr
+                  key={z.monat}
+                  className={
+                    z.abgeschlossenAm
+                      ? "bg-gray-50"
+                      : leer
+                        ? "text-gray-400"
+                        : ""
+                  }
+                >
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {MONATE[z.monat - 1]}
+                    {/* Der Abschluss muss man dem Monat ansehen: Seine
+                        Zahlen sind festgehalten, und die Zeiteinträge
+                        dahinter sind gesperrt. */}
+                    {z.abgeschlossenAm && (
+                      <span
+                        title={`Abgeschlossen am ${new Date(z.abgeschlossenAm).toLocaleDateString("de-CH")} – die Zahlen sind festgehalten und die Zeiteinträge dieses Monats gesperrt.`}
+                        className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-700"
+                      >
+                        ✓ abgeschlossen
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     {z.soll.toFixed(2)}
                   </td>
@@ -236,6 +258,13 @@ export default async function ZeitkontoPage({
           </tfoot>
         </table>
       </div>
+
+      <p className="text-xs text-gray-400">
+        Ein abgeschlossener Monat ist grau hinterlegt und mit „✓ abgeschlossen“
+        gekennzeichnet: Seine Zahlen sind festgehalten, und die Zeiteinträge
+        dieses Monats lassen sich nicht mehr ändern. Wieder öffnen geht unter
+        Einstellungen → Monatsabschluss.
+      </p>
 
       <p className="text-xs text-gray-400">
         Soll = Sollstunden des Monats, auf die Arbeitstage verteilt und mit dem
