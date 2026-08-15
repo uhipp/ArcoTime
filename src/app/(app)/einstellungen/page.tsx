@@ -40,6 +40,9 @@ import {
   updateGruppe,
   toggleGruppe,
   setzeGruppenMitglieder,
+  createStandardposition,
+  updateStandardposition,
+  toggleStandardposition,
 } from "@/app/actions/einstellungen";
 
 // Minuten seit Mitternacht als HH:MM, für die Anzeige der gespeicherten
@@ -73,6 +76,8 @@ export default async function EinstellungenPage({
     { data: gruppen },
     { data: gruppenMitglieder },
     { data: mitarbeitende },
+    { data: dienstleistungen },
+    { data: standardpositionen },
   ] = await Promise.all([
     supabase.from("dienstleistungsklassen").select("*").order("sortierung"),
     supabase.from("einheiten").select("*").order("sortierung"),
@@ -90,6 +95,15 @@ export default async function EinstellungenPage({
       .select("id, name")
       .is("deaktiviert_am", null)
       .order("name"),
+    supabase
+      .from("dienstleistungen")
+      .select("id, bezeichnung, einheit, zaehlt_als_arbeitszeit")
+      .eq("aktiv", true)
+      .order("bezeichnung"),
+    supabase
+      .from("rapport_standardpositionen")
+      .select("*, dienstleistungen(id, bezeichnung, einheit, zaehlt_als_arbeitszeit)")
+      .order("sortierung"),
   ]);
 
   // Mitglieder je Gruppe, damit die Häkchen ohne Suche in einer Liste
@@ -722,6 +736,111 @@ export default async function EinstellungenPage({
             required
             placeholder="Neue Gruppe…"
             className="flex-1 min-w-[10rem] rounded border border-gray-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+          >
+            Hinzufügen
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium mb-3">Standardpositionen für neue Rapporte</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Womit ein neuer Arbeitsrapport beginnt. In vielen Betrieben ist
+          das immer dasselbe – Anfahrt, Fahrzeit, manchmal eine
+          Kleinmaterialpauschale. Wer hier nichts pflegt, bekommt wie bisher
+          einen leeren Rapport.
+        </p>
+        <p className="rounded bg-blue-50 text-blue-900 text-xs px-3 py-2 mb-3">
+          Die Menge ist eine <strong>Annahme</strong>, die vor Ort korrigiert
+          wird – bei Leistungen, die als Arbeitszeit zählen, in{" "}
+          <strong>Minuten</strong>, sonst in der Einheit der Leistung. Trägt
+          die Leistung das Häkchen „Anreise zum Kunden“, schlägt die beim
+          Kunden hinterlegte Anfahrt diese Vorgabe.
+        </p>
+        <ul className="bg-white rounded-lg border divide-y mb-4">
+          {standardpositionen?.map((sp) => (
+            <li key={sp.id} className="px-4 py-2 text-sm">
+              <form
+                action={updateStandardposition.bind(null, sp.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <span className={`flex-1 min-w-[10rem] ${sp.aktiv ? "" : "text-gray-400"}`}>
+                  {sp.dienstleistungen?.bezeichnung ?? "Gelöschte Leistung"}
+                </span>
+                <input
+                  name="vorgabe"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  defaultValue={Number(sp.vorgabe)}
+                  aria-label="Menge"
+                  className="w-24 rounded border border-gray-300 px-2 py-1"
+                />
+                <span className="text-xs text-gray-400 w-12">
+                  {sp.dienstleistungen?.zaehlt_als_arbeitszeit
+                    ? "Min."
+                    : sp.dienstleistungen?.einheit ?? ""}
+                </span>
+                <input
+                  name="sortierung"
+                  type="number"
+                  defaultValue={sp.sortierung ?? 0}
+                  aria-label="Sortierung"
+                  title="Sortierung"
+                  className="w-16 rounded border border-gray-300 px-2 py-1"
+                />
+                <button type="submit" className="text-xs text-arcos-steel hover:underline">
+                  speichern
+                </button>
+              </form>
+              <form
+                action={toggleStandardposition.bind(null, sp.id, !sp.aktiv)}
+                className="mt-1"
+              >
+                <button type="submit" className="text-xs text-gray-400 hover:text-arcos-steel">
+                  {sp.aktiv ? "deaktivieren" : "aktivieren"}
+                </button>
+              </form>
+            </li>
+          ))}
+          {(!standardpositionen || standardpositionen.length === 0) && (
+            <li className="px-4 py-3 text-sm text-gray-400">
+              Noch keine Standardpositionen – neue Rapporte entstehen leer.
+            </li>
+          )}
+        </ul>
+        <form action={createStandardposition} className="flex flex-wrap items-end gap-2">
+          <select
+            id="neue_standardposition"
+            name="dienstleistung_id"
+            required
+            defaultValue=""
+            className="flex-1 min-w-[12rem] rounded border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="" disabled>
+              Leistung wählen…
+            </option>
+            {dienstleistungen?.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.bezeichnung}
+              </option>
+            ))}
+          </select>
+          <input
+            name="vorgabe"
+            type="number"
+            step="0.01"
+            min="0.01"
+            required
+            defaultValue="1"
+            aria-label="Menge"
+            title="Menge bzw. Minuten"
+            className="w-24 rounded border border-gray-300 px-3 py-2 text-sm"
           />
           <button
             type="submit"

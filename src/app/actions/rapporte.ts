@@ -19,6 +19,7 @@ import { sendeMail } from "@/lib/email";
 import { ladeRapportDokument } from "@/lib/rapport-dokument-daten";
 import { RapportPdf } from "@/lib/rapport-pdf";
 import { renderToBuffer } from "@react-pdf/renderer";
+import { legeStandardpositionenAn } from "@/lib/standardpositionen";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -114,10 +115,30 @@ export async function erstelleRapport(
       { onConflict: "rapport_id,mitarbeiter_id" }
     );
 
+  // Womit ein Rapport beginnt, legt die Organisation fest (0051).
+  const angelegt = await legeStandardpositionenAn(
+    supabase,
+    {
+      id: neuer.id,
+      projekt_id: werte.projekt_id ?? null,
+      kunde_id: werte.kunde_id,
+      datum: werte.datum,
+      mitarbeiter_id: werte.mitarbeiter_id ?? userData.user?.id ?? "",
+    },
+    userData.user?.id
+  );
+
   revalidatePath("/rapporte");
   // Direkt auf die Detailseite: Ohne Positionen ist ein Rapport nutzlos,
   // der nächste Schritt ist immer das Erfassen der ersten Position.
-  redirect(mitErfolg(`/rapporte/${neuer.id}`, "Rapport angelegt – jetzt Positionen erfassen."));
+  redirect(
+    mitErfolg(
+      `/rapporte/${neuer.id}`,
+      angelegt > 0
+        ? `Rapport angelegt, ${angelegt} Standardposition${angelegt > 1 ? "en" : ""} übernommen.`
+        : "Rapport angelegt – jetzt Positionen erfassen."
+    )
+  );
 }
 
 export async function aktualisiereRapport(

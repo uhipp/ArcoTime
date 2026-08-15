@@ -90,6 +90,16 @@ Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) �
 
 Das Häkchen **"blockiert die Planung"** entscheidet, ob die Art in der Disposition wirkt: Ist es gesetzt, fällt der Zeitraum aus den freien Zeiten heraus. Ohne Häkchen ist die Abwesenheit reine Information und die Person bleibt einplanbar – gedacht für Fälle wie Homeoffice oder Aussendienst.
 
+## Standardpositionen für neue Rapporte
+
+Womit ein neuer [Arbeitsrapport](/hilfe/rapporte) beginnt. In vielen Betrieben ist das immer dasselbe – Anfahrt, Fahrzeit, manchmal eine Kleinmaterialpauschale. Wer hier nichts pflegt, bekommt wie bisher einen leeren Rapport.
+
+Je Zeile eine Leistung und eine **Menge**. Diese Menge ist eine **Annahme**, die vor Ort korrigiert wird – bei Leistungen, die als Arbeitszeit zählen, in **Minuten**, sonst in der Einheit der Leistung. Eine Vorgabe ist zwingend: Eine Position ohne Wert lässt sich nicht speichern.
+
+Trägt die Leistung das Häkchen **„Anreise zum Kunden"** (siehe [Dienstleistungen](/hilfe/dienstleistungen)), schlägt die beim Kunden hinterlegte Anfahrt diese Vorgabe. Der Rapport für einen Kunden mit 24 hinterlegten Kilometern beginnt also mit genau diesen 24 – ohne dass jemand etwas eintippt.
+
+Angelegt werden die Positionen nur, wenn der Rapport ein **Projekt** hat; ohne Projekt lässt sich nichts verrechnen. Wird eine Leistung nicht mehr gebraucht, wird die Zeile **deaktiviert** statt gelöscht.
+
 ## Gruppen
 
 Fasst Mitarbeitende zusammen – „Team Ost“, „Sanitär“, „Lernende“. Eine Gruppe wird angelegt wie jede andere Auswahlliste; die Mitglieder werden darunter mit Häkchen zugeteilt und mit **„Mitglieder speichern“** übernommen.

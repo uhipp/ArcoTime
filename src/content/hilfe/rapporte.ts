@@ -33,6 +33,8 @@ Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der �
 
 Nach dem Anlegen landest du direkt auf der Detailseite, wo du die Positionen erfasst.
 
+Hat ein Admin unter [Einstellungen](/hilfe/einstellungen) **Standardpositionen** hinterlegt, bringt der neue Rapport diese bereits mit – etwa Anfahrt und Fahrzeit. Die Mengen sind Annahmen und werden vor Ort korrigiert; bei der Anfahrt steht gleich die beim Kunden hinterlegte Kilometerzahl.
+
 Datum und ausführende Person gelten für den **ganzen Rapport** – sie stehen deshalb nur im Kopf und nicht bei den Positionen. Änderst du sie oben, ziehen die bereits erfassten Positionen automatisch nach.
 
 ## Druckansicht

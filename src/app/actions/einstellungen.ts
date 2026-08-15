@@ -717,3 +717,82 @@ export async function setzeGruppenMitglieder(gruppeId: string, formData: FormDat
   revalidatePath("/disposition");
   redirect(mitErfolg("/einstellungen", "Gruppe gespeichert."));
 }
+
+// ---------------------------------------------------------
+// Standardpositionen für neue Rapporte (0051)
+// ---------------------------------------------------------
+// Womit ein Einsatz beginnt, ist in vielen Betrieben immer dasselbe:
+// Anfahrt, Fahrzeit, manchmal eine Kleinmaterialpauschale. Diese Liste
+// sagt es einmal, statt dass es jemand bei jedem Rapport tippt.
+
+export async function createStandardposition(formData: FormData) {
+  const supabase = await createClient();
+  const dienstleistungId = String(formData.get("dienstleistung_id") ?? "").trim();
+  const vorgabe = Number(formData.get("vorgabe") ?? 0);
+
+  if (!dienstleistungId) return;
+  if (!(vorgabe > 0)) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent(
+        "Bitte eine Menge grösser als null angeben – ohne Wert lässt sich keine Position anlegen."
+      )}`
+    );
+  }
+
+  // Freundlich statt roher Datenbankfehler: Die Bedingung unique
+  // (organisation_id, dienstleistung_id) verhindert Dubletten, und eine
+  // bereits deaktivierte Zeile ist der wahrscheinlichere Fall.
+  const { data: bestehend } = await supabase
+    .from("rapport_standardpositionen")
+    .select("id, aktiv")
+    .eq("dienstleistung_id", dienstleistungId)
+    .maybeSingle();
+
+  if (bestehend) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent(
+        bestehend.aktiv
+          ? "Diese Leistung steht bereits in der Liste."
+          : "Diese Leistung steht bereits in der Liste – sie ist nur deaktiviert."
+      )}`
+    );
+  }
+
+  const { error } = await supabase.from("rapport_standardpositionen").insert({
+    dienstleistung_id: dienstleistungId,
+    vorgabe,
+    sortierung: await naechsteSortierung(supabase, "rapport_standardpositionen"),
+  });
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen?fokus=neue_standardposition", "Standardposition hinzugefügt."));
+}
+
+export async function updateStandardposition(id: string, formData: FormData) {
+  const vorgabe = Number(formData.get("vorgabe") ?? 0);
+  if (!(vorgabe > 0)) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent("Die Menge muss grösser als null sein.")}`
+    );
+  }
+  await speichereListeneintrag(
+    "rapport_standardpositionen",
+    id,
+    { vorgabe, sortierung: sortierungAus(formData) },
+    "Standardposition gespeichert."
+  );
+}
+
+export async function toggleStandardposition(id: string, aktiv: boolean) {
+  const supabase = await createClient();
+  await supabase.from("rapport_standardpositionen").update({ aktiv }).eq("id", id);
+  revalidatePath("/einstellungen");
+  redirect(
+    mitErfolg(
+      "/einstellungen",
+      aktiv ? "Standardposition aktiviert." : "Standardposition deaktiviert."
+    )
+  );
+}
