@@ -212,7 +212,21 @@ export type Rapport = {
   geplant_fuer: string | null;
   storniert_am: string | null;
   storno_grund: string | null;
-  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "email" | "anreise_km"> | null;
+  kunden?: Pick<
+    Kunde,
+    | "id"
+    | "name"
+    | "vorname"
+    | "email"
+    | "anreise_km"
+    // Für Navigation und Anruf vom Rapport aus (Phase 11, Etappe D).
+    | "strasse"
+    | "hausnummer"
+    | "plz"
+    | "ort"
+    | "land"
+    | "telefon"
+  > | null;
   projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
   profiles?: { id: string; name: string } | null;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).

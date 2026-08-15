@@ -37,6 +37,14 @@ Hat ein Admin unter [Einstellungen](/hilfe/einstellungen) **Standardpositionen**
 
 Datum und ausführende Person gelten für den **ganzen Rapport** – sie stehen deshalb nur im Kopf und nicht bei den Positionen. Änderst du sie oben, ziehen die bereits erfassten Positionen automatisch nach.
 
+## Navigation und Anruf
+
+Bei einem offenen Rapport steht zuoberst die Adresse des Kunden mit einem Knopf **„Navigation"**. Er übergibt die Adresse an die Karten-App: auf dem Telefon an Google Maps, sofern installiert, sonst an den Browser. Daneben führt der kleine Link **„Apple Karten"** zur Karten-App von Apple. Wird die Navigation dort gestartet, läuft sie auf **CarPlay** oder **Android Auto** weiter.
+
+Daneben steht die **Telefonnummer** als Knopf – ein Tippen wählt sie („bin in zehn Minuten da").
+
+Die Adresse verlässt ArcoTime dabei erst, wenn du tippst: Es wird nichts im Hintergrund abgefragt und kein fremder Code auf der Seite geladen. Ist beim Kunden keine Adresse hinterlegt, erscheint auch kein Knopf – ein Navigationslink, der auf einen blossen Firmennamen zeigt, führt irgendwohin.
+
 ## Druckansicht
 
 Über **„Druckansicht"** oben am Rapport öffnet sich die Fassung, die der Kunde bekommt: Kundenadresse, Einsatz, Positionen mit Mengen und ein Feld für die Bestätigung. **Ohne Preise** – der Rapport ist ein Leistungsnachweis, keine Rechnung.

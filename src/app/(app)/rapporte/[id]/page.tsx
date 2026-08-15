@@ -8,6 +8,7 @@ import { DeleteButton } from "@/components/delete-button";
 import { RapportKopfForm } from "@/components/rapport-kopf-form";
 import { DispoTagesspalte } from "@/components/dispo-tagesspalte";
 import { PositionsTimer } from "@/components/positions-timer";
+import { KundenKontakt } from "@/components/kunden-kontakt";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { RapportPositionForm } from "@/components/rapport-position-form";
@@ -62,7 +63,7 @@ export default async function RapportDetailPage({
     getCurrentOrganisation(),
     supabase
       .from("rapporte")
-      .select("*, kunden(id, name, vorname, email, anreise_km), projekte(id, bezeichnung), profiles!rapporte_mitarbeiter_id_fkey(id, name)")
+      .select("*, kunden(id, name, vorname, email, anreise_km, strasse, hausnummer, plz, ort, land, telefon), projekte(id, bezeichnung), profiles!rapporte_mitarbeiter_id_fkey(id, name)")
       .eq("id", id)
       .single(),
     supabase
@@ -184,6 +185,11 @@ export default async function RapportDetailPage({
           zählen nicht mehr, bleiben aber zum Nachvollziehen erhalten.
         </div>
       )}
+
+      {/* Navigation und Anruf zuoberst: Das ist der Moment vor der
+          Abfahrt, und der Monteur soll dafür nicht durch den Rapport
+          scrollen müssen. */}
+      {offen && <KundenKontakt kunde={rapport.kunden} />}
 
       {/* Bei gebuchter Disposition liegt der Tagesplan neben dem Formular –
           der Platz rechts war ohnehin ungenutzt, und beim Planen wechselt

@@ -1,6 +1,11 @@
 # Phase 11: Anfahrt und Reisezeit
 
-Stand: 15.08.2026 · Planungsdokument, noch nicht umgesetzt
+Stand: 15.08.2026 · **Etappen A bis D umgesetzt**
+
+> Umgesetzt am 15.08.2026 mit den Migrationen 0050 (Anreise-Kilometer)
+> und 0051 (Standardpositionen). Zwei Abweichungen vom Plan sind unten
+> vermerkt: Die Vorgabe einer Standardposition ist zwingend, und für neue
+> Mandanten wird keine Leistung „Reise-km“ ausgeliefert.
 
 ## Ausgangslage
 
@@ -127,6 +132,16 @@ nutzbar und deckt Modell 1 und 3 vollständig ab.
 
 **B — Standardpositionen.** Pflege unter Einstellungen, Anlage beim
 neuen Rapport.
+
+*Abweichung beim Bauen:* Die Vorgabe ist **zwingend und grösser als
+null**. Die Bedingung `zeiteintraege_menge_oder_dauer` lässt keine
+Position ohne Wert zu (ausser mit laufendem Timer, und der läuft beim
+Anlegen noch nicht). Für die Fahrzeit trägt das Büro also eine Annahme
+ein, die der Monteur korrigiert oder der Timer überschreibt – was zum
+vorbereiteten Rapport ohnehin besser passt. Ausserdem verlangt ein
+Rapport seither ein **Projekt**: Ohne Projekt lassen sich weder
+Positionen erfassen noch Standardpositionen anlegen, und der Rapport
+sah trotzdem aus wie einer.
 
 **C — Timer auf Rapportpositionen.** Zwei Bedingungen, sonst wird es
 gefährlich statt praktisch:
