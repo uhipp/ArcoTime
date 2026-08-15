@@ -201,13 +201,27 @@ enthalten"** als Häkchen.
 Alle Zeiteinträge der Person im Monat, deren Leistung als Arbeitszeit
 zählt. Mengenartikel (Kilometer, Material) zählen nicht.
 
-**Entscheidung: Positionen offener Rapporte zählen mit.** Heute gelten
-sie als Absicht und erscheinen weder in Auswertungen noch im Export – für
-das Zeitkonto ist das falsch. Der Monteur hat gearbeitet, auch wenn der
-Rapport noch offen ist; sein Saldo liefe sonst grundlos ins Minus.
-Verrechenbarkeit und Arbeitszeit sind zwei verschiedene Fragen.
-Ausgenommen bleiben stornierte Rapporte. Der Monatsabschluss zeigt
-zusätzlich, wie viele Rapporte des Monats noch offen sind.
+**Positionen offener Rapporte zählen NICHT mit** – die bestehende Regel
+gilt unverändert, und zwar aus einem Grund, der beim Planen dieser Phase
+zuerst übersehen wurde.
+
+Ein offener Rapport ist ein **Entwurf**: Die Disposition bereitet den
+Auftrag vor, oft mit geschätzten Positionen, die bei der Ausführung
+korrigiert werden. Zählte man sie mit, stünden **Schätzungen als
+geleistete Arbeitszeit** im Zeitkonto – schlimmer als die Lücke, die man
+damit schliessen wollte.
+
+Der Abschluss liegt in der Verantwortung der ausführenden Person und ist
+überhaupt erst die Voraussetzung dafür, dass die Organisation
+fakturieren kann. Ob dann alles verrechnet wird, entscheidet meist nicht
+der Monteur – aber **für geleistete Arbeit gibt es keinen Grund, den
+Rapport nicht abzuschliessen.** Ein Saldo, der ins Minus läuft, ist
+folglich kein Modellfehler, sondern ein liegengebliebener Rapport, und
+dafür gibt es bereits die tägliche Erinnerung und den Zähler in der
+Navigation.
+
+Damit hat diese Erinnerung eine zweite Aufgabe: Sie schützt das
+Zeitkonto.
 
 **Saldo**
 
@@ -234,7 +248,14 @@ Person, Spalten je Monat mit dem Saldo. Das ist die Ansicht für die
 Betriebsleitung; das Einzelblatt bekommt die mitarbeitende Person.
 
 **Monatsabschluss mit Export für die Buchhaltung**, im ersten Schritt als
-**PDF**. Andere Dateiformate erst, wenn ein Kunde sie verlangt – welches
+**PDF**.
+
+Weil offene Rapporte nicht zählen, hat der Abschluss eine Pflicht: Er
+**nennt die noch offenen Rapporte des Monats, bevor er einfriert**, und
+verlangt eine ausdrückliche Bestätigung, wenn welche vorhanden sind. Der
+typische Fall ist der Einsatz vom 31. März, der am 2. April abgeschlossen
+wird – wird der März blind eingefroren, fehlen diese Stunden dauerhaft.
+Wer trotzdem abschliesst, korrigiert im Folgemonat über eine Buchung. Andere Dateiformate erst, wenn ein Kunde sie verlangt – welches
 Format das wäre, hängt vom Lohnsystem des Kunden ab, und ein auf Verdacht
 gebautes Format trifft es nie.
 
@@ -256,8 +277,9 @@ Vorgaben (Ferien belastet Ferien, Krankheit nur Soll, eine neue Art
 **C — Das Zeitkonto.** Berechnung von Soll, Ist und Saldo, Anzeige auf
 der Personenseite, manuelle Buchungen.
 
-**D — Monatsabschluss und Auswertung.** Einfrieren je Person und Monat,
-Einzelblatt und Übersicht als PDF.
+**D — Monatsabschluss und Auswertung.** Einfrieren je Person und Monat –
+mit der Warnung über offene Rapporte des Monats –, Einzelblatt und
+Übersicht als PDF.
 
 ## Offene Fragen
 
