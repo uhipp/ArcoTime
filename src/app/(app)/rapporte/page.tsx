@@ -6,6 +6,7 @@ import { ListenTabelle } from "@/components/listen-tabelle";
 import { SpaltenWahl } from "@/components/spalten-wahl";
 import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
+import { getCurrentProfile } from "@/lib/get-profile";
 
 const STATUS_STIL: Record<RapportStatus, string> = {
   offen: "bg-amber-100 text-amber-800",
@@ -27,17 +28,32 @@ function uhrzeit(zeitstempel: string | null): string | null {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-const SPALTEN: Spalte<Rapport>[] = [
+// Der Katalog braucht den laufenden Timer, deshalb eine Funktion –
+// dasselbe Muster wie in der Mitarbeitendenliste.
+function spalten(timerSeit: Map<string, string>): Spalte<Rapport>[] {
+  return [
   {
     key: "nummer",
     titel: "Nummer",
     fest: true,
     wert: (r) => (r.jahr && r.nummer ? r.jahr * 100000 + r.nummer : null),
     klasse: "px-4 py-2 whitespace-nowrap",
+    // Der Hinweis steht in der Nummernspalte, weil die immer sichtbar
+    // ist: Sie lässt sich nicht abwählen.
     zelle: (r) => (
-      <Link href={`/rapporte/${r.id}`} className="text-arcos-steel hover:underline">
-        {rapportNummer(r)}
-      </Link>
+      <span className="inline-flex items-center gap-2">
+        <Link href={`/rapporte/${r.id}`} className="text-arcos-steel hover:underline">
+          {rapportNummer(r)}
+        </Link>
+        {timerSeit.has(r.id) && (
+          <span
+            title={`Timer läuft seit ${new Date(timerSeit.get(r.id)!).toLocaleTimeString("de-CH", { hour: "2-digit", minute: "2-digit" })} Uhr`}
+            className="inline-flex items-center rounded bg-red-600 px-1.5 py-0.5 text-xs font-medium text-white"
+          >
+            ⏱ läuft
+          </span>
+        )}
+      </span>
     ),
   },
   {
@@ -120,7 +136,8 @@ const SPALTEN: Spalte<Rapport>[] = [
       </span>
     ),
   },
-];
+  ];
+}
 
 export default async function RapportePage({
   searchParams,
@@ -130,6 +147,7 @@ export default async function RapportePage({
   const params = await searchParams;
   const { error, status, sort, richtung } = params;
   const supabase = await createClient();
+  const profile = await getCurrentProfile();
 
   let query = supabase
     .from("rapporte")
@@ -139,11 +157,35 @@ export default async function RapportePage({
 
   if (status) query = query.eq("status", status);
 
+  // Welcher Rapport hat einen laufenden Timer? Das rote Zeichen in der
+  // Navigation sagt, DASS einer läuft – wer ihn stoppen will, muss aber
+  // wissen, welcher. In der Liste zu suchen hiesse, jeden Rapport zu
+  // öffnen.
+  const { data: laufende } = await supabase
+    .from("zeiteintraege")
+    .select("id, rapport_id, timer_gestartet_um, mitarbeiter_id, dienstleistung_id")
+    .not("timer_gestartet_um", "is", null)
+    .not("rapport_id", "is", null);
+
+  const timerJeRapport = new Map<string, string>();
+  for (const z of laufende ?? []) {
+    if (z.rapport_id) timerJeRapport.set(z.rapport_id, z.timer_gestartet_um);
+  }
+
+  const SPALTEN = spalten(timerJeRapport);
+
   const { data } = await query;
   // Ohne Sortierwunsch bleibt die Reihenfolge der Abfrage: neueste zuerst.
   const rapporte = sortiere((data as Rapport[] | null) ?? [], SPALTEN, sort, richtung);
 
   const { sichtbar, gewaehlt } = await sichtbareSpalten("rapporte", SPALTEN);
+
+  // Der eigene laufende Timer bekommt ein Band über der Liste: Er ist
+  // der einzige, den man von hier aus stoppen würde.
+  const eigenerTimer = (laufende ?? []).find((z) => z.mitarbeiter_id === profile?.id);
+  const eigenerRapport = eigenerTimer
+    ? rapporte.find((r) => r.id === eigenerTimer.rapport_id)
+    : undefined;
 
   return (
     <div>
@@ -194,6 +236,28 @@ export default async function RapportePage({
         />
       </div>
 
+      {eigenerTimer && eigenerRapport && (
+        <div className="mb-4 rounded-lg border-2 border-red-500 bg-red-50 p-4 flex flex-wrap items-center gap-3">
+          <span className="flex-1 min-w-[14rem] text-sm text-red-800">
+            <strong>Dein Timer läuft</strong> seit{" "}
+            {new Date(eigenerTimer.timer_gestartet_um).toLocaleTimeString("de-CH", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}{" "}
+            Uhr – {eigenerRapport.kunden?.name ?? "Rapport"}
+            {eigenerRapport.projekte?.bezeichnung
+              ? ` · ${eigenerRapport.projekte.bezeichnung}`
+              : ""}
+          </span>
+          <Link
+            href={`/rapporte/${eigenerRapport.id}`}
+            className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Rapport öffnen und stoppen
+          </Link>
+        </div>
+      )}
+
       {rapporte.length === 0 ? (
         <p className="text-sm text-gray-500 bg-white rounded-lg border p-6">
           Noch keine Rapporte erfasst. Ein Rapport fasst die Positionen eines
@@ -206,6 +270,9 @@ export default async function RapportePage({
           basis="/rapporte"
           params={params}
           leerText="Keine Rapporte gefunden."
+          zeilenKlasse={(r) =>
+            timerJeRapport.has(r.id) ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"
+          }
         />
       )}
     </div>

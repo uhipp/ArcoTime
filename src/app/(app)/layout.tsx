@@ -113,20 +113,25 @@ export default async function AppLayout({
           </div>
 
           <nav className="flex flex-wrap gap-4 text-sm py-3">
-            <Link
-              href="/zeiterfassung"
-              className="hover:text-arcos-navy flex items-center gap-1.5"
-            >
-              Zeiterfassung
-              {timerInZeiterfassung && (
-                <span
-                  title="Es läuft ein Timer"
-                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium"
+            {/* Das Zeichen ist ein eigener Link auf den laufenden Eintrag,
+                nicht bloss ein Hinweis: Zu wissen, DASS ein Timer läuft,
+                nützt wenig, wenn man ihn dann suchen muss. Zwei
+                verschachtelte Links gehen nicht, also stehen sie
+                nebeneinander. */}
+            <span className="flex items-center gap-1.5">
+              <Link href="/zeiterfassung" className="hover:text-arcos-navy">
+                Zeiterfassung
+              </Link>
+              {timerInZeiterfassung && laufenderTimer && (
+                <Link
+                  href={`/zeiterfassung/${laufenderTimer.id}`}
+                  title="Es läuft ein Timer – hier stoppen"
+                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium hover:bg-red-700"
                 >
                   ⏱
-                </span>
+                </Link>
               )}
-            </Link>
+            </span>
             <Link href="/anfragen" className="hover:text-arcos-navy flex items-center gap-1.5">
               Anfragen
               {Boolean(faelligeWiedervorlagen) && (
@@ -138,15 +143,18 @@ export default async function AppLayout({
             {/* Ziel bleibt die ganze Liste: Ein Link, der je nach Zustand
                 woanders hinführt, verwirrt mehr, als der eine gesparte
                 Klick nützt. Den Filter setzt der Zähler daneben. */}
-            <Link href="/rapporte" className="hover:text-arcos-navy flex items-center gap-1.5">
-              Rapporte
-              {timerAmRapport && (
-                <span
-                  title="An einem Rapport läuft ein Timer"
-                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium"
+            <span className="flex items-center gap-1.5">
+              <Link href="/rapporte" className="hover:text-arcos-navy">
+                Rapporte
+              </Link>
+              {timerAmRapport && laufenderTimer?.rapport_id && (
+                <Link
+                  href={`/rapporte/${laufenderTimer.rapport_id}`}
+                  title="An diesem Rapport läuft ein Timer – hier stoppen"
+                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium hover:bg-red-700"
                 >
                   ⏱
-                </span>
+                </Link>
               )}
               {Boolean(offeneRapporte) && (
                 <span
@@ -156,7 +164,7 @@ export default async function AppLayout({
                   {offeneRapporte}
                 </span>
               )}
-            </Link>
+            </span>
             {organisation?.modul_disposition && (
               <Link href="/disposition" className="hover:text-arcos-navy">
                 Disposition
