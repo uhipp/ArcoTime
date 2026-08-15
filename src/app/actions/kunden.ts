@@ -35,6 +35,9 @@ function kundeFromForm(formData: FormData) {
       100,
       Math.max(0, num(formData.get("standard_rabatt_prozent")) ?? 0)
     ),
+    // Leer bleibt leer: Ein 0 hier wäre die Aussage "null Kilometer" und
+    // würde später einen Vorschlag 0 machen, wo gar keiner gemeint ist.
+    anreise_km: num(formData.get("anreise_km")),
     notizen: str(formData.get("notizen")),
   };
 }

@@ -14,7 +14,13 @@ import type { Dienstleistung, ZeiteintragMitDetails } from "@/lib/types";
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 type DienstleistungOption = Pick<
   Dienstleistung,
-  "id" | "bezeichnung" | "aktiv" | "einheit" | "zaehlt_als_arbeitszeit" | "rabatt_erlaubt"
+  | "id"
+  | "bezeichnung"
+  | "aktiv"
+  | "einheit"
+  | "zaehlt_als_arbeitszeit"
+  | "rabatt_erlaubt"
+  | "menge_aus_anreise"
 >;
 
 // Eine Position zum Rapport hinzufügen. Bewusst schlanker als die
@@ -30,6 +36,7 @@ export function RapportPositionForm({
   mitarbeiterId,
   datum,
   beteiligte,
+  anreiseKm,
 }: {
   dienstleistungen: DienstleistungOption[];
   rabattsaetze: Rabattsatz[];
@@ -41,6 +48,9 @@ export function RapportPositionForm({
   // für den ganzen Einsatz.
   mitarbeiterId: string;
   datum: string;
+  // Anfahrt-Kilometer des Kunden dieses Rapports (0050). Wird bei
+  // Leistungen mit dem Häkchen "Anreise" als Menge vorgeschlagen.
+  anreiseKm?: number | null;
   // Beteiligte des Einsatzes (0045). Bei mehreren wird die Person je
   // Stundenposition gewählt – sonst laufen alle Stunden auf die
   // verantwortliche Person und jede Auswertung je Mitarbeitendem
@@ -68,6 +78,25 @@ export function RapportPositionForm({
   const [dauerManuell, setDauerManuell] = useState(bearbeiten);
 
   const gewaehlt = dienstleistungen.find((d) => d.id === dienstleistungId);
+
+  // Anreise-Kilometer als Menge vorschlagen – dieselbe Regel wie in der
+  // Zeiterfassung: Ein Vorschlag darf nie überschreiben, was jemand
+  // selbst eingetragen hat. Ersetzt wird nur ein leeres Feld oder der
+  // Vorschlag der zuvor gewählten Leistung.
+  const anreiseVorschlag = anreiseKm != null ? String(Number(anreiseKm)) : "";
+
+  function waehleDienstleistung(neueId: string) {
+    const alte = dienstleistungen.find((d) => d.id === dienstleistungId);
+    const neue = dienstleistungen.find((d) => d.id === neueId);
+    setDienstleistungId(neueId);
+
+    if (!neue?.menge_aus_anreise || anreiseVorschlag === "") return;
+    setMengeText((aktuell) => {
+      const alterVorschlag = alte?.menge_aus_anreise ? anreiseVorschlag : "";
+      if (aktuell !== "" && aktuell !== alterVorschlag) return aktuell;
+      return anreiseVorschlag;
+    });
+  }
   const istMengenartikel = gewaehlt != null && !gewaehlt.zaehlt_als_arbeitszeit;
   const einheit = gewaehlt?.einheit ?? "Stück";
 
@@ -137,7 +166,7 @@ export function RapportPositionForm({
           name="dienstleistung_id"
           required
           value={dienstleistungId}
-          onChange={(e) => setDienstleistungId(e.target.value)}
+          onChange={(e) => waehleDienstleistung(e.target.value)}
           className="w-full max-w-md rounded border border-gray-300 px-3 py-2 text-sm"
         >
           <option value="" disabled>

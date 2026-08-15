@@ -38,6 +38,14 @@ Dafür gibt es das Kennzeichen **"Zählt als Arbeitszeit"**:
 
 Die **Einheit** ist frei wählbar – Stunde, Pauschale, Stück, km, was ihr braucht. Sie ist reine Beschriftung; ob nach Zeit oder Menge erfasst wird, entscheidet allein das Kennzeichen oben.
 
+## Anreise zum Kunden
+
+Das Häkchen **„Anreise zum Kunden"** macht aus einer Leistung eine Anfahrtsposition: Beim Erfassen wird dann die bei diesem [Kunden](/hilfe/kunden) hinterlegte Anfahrt in Kilometern als **Menge vorgeschlagen** – überschreibbar und danach am Eintrag eingefroren.
+
+Bewusst ein Häkchen an beliebigen Leistungen statt einer fest eingebauten Position „Reise-km": Die eine Firma nennt es Wegpauschale, die andere Kilometergeld, und manche haben mehrere Sätze für verschiedene Fahrzeuge. Setze das Häkchen bei allen davon.
+
+Wer eine **Anfahrtspauschale** statt Kilometern verrechnet, braucht das Häkchen nicht – das ist eine gewöhnliche Leistung, die mit Menge 1 erfasst wird.
+
 ## Rabatt zulässig
 
 Bei manchen Positionen soll kein Rabatt gewährt werden – Reisespesen sind das typische Beispiel. Ist **"Rabatt zulässig"** nicht angehakt, bietet die Zeiterfassung für diese Dienstleistung nur noch **0%** und **100%** an, und ein Kunden- oder Klassenrabatt greift nicht.

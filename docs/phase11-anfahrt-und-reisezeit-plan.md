@@ -40,9 +40,9 @@ darf.
 
 **Stattdessen ein Häkchen an der Dienstleistung.** Beliebig viele
 Leistungen dürfen es tragen, jede heisst, wie die Organisation will, und
-wer es nicht braucht, setzt es nicht. Für neue Mandanten wird eine
-Leistung „Reise-km“ mit gesetztem Häkchen ausgeliefert – vorhanden, aber
-nicht verdrahtet.
+wer es nicht braucht, setzt es nicht. Neue Mandanten legen ihren
+Leistungskatalog ohnehin selbst an – dort ist es ein Häkchen mehr beim
+Erfassen und keine Vorgabe, die jemand wieder wegräumen muss.
 
 **Modell 3 fällt damit gratis an.** Eine Anfahrtspauschale ist eine
 Leistung mit fester Menge 1, ohne dass ArcoTime davon wissen muss.
@@ -137,6 +137,37 @@ gefährlich statt praktisch:
 - **Ein laufender Timer muss unübersehbar sein** – am Rapport, in der
   Liste und als Zähler in der Navigation. Der vergessene Timer vom
   Freitagabend ist sonst der erste Supportfall.
+
+**D — Navigation zum Kunden.** Ein Link am Rapport, der die
+Kundenadresse an die Karten-App übergibt. Gehört hierher, weil es
+derselbe Moment ist: einsteigen, Rapport öffnen, Timer starten,
+losfahren.
+
+Technisch ein Link und sonst nichts – keine Programmschnittstelle, kein
+Schlüssel, keine laufenden Kosten:
+
+```
+https://www.google.com/maps/dir/?api=1&destination=<Adresse, urlencodiert>
+https://maps.apple.com/?daddr=<Adresse, urlencodiert>
+```
+
+Auf dem Telefon öffnet der erste Link die Google-Maps-App, sofern
+installiert, sonst den Browser; der zweite führt zu Apple Karten. Wird
+die Navigation dort gestartet, läuft sie auf **CarPlay** weiter – von
+ArcoTime aus braucht das nichts.
+
+Angeboten wird **ein grosser Knopf „Navigation"** und daneben klein
+„Apple Karten". Im Auto zählt jede Berührung, und eine Auswahl zwischen
+zwei gleich grossen Knöpfen ist eine zu viel. Ohne hinterlegte Adresse
+erscheint kein Knopf – ein Link, der auf „Musterfirma" navigiert, führt
+irgendwohin. Daneben gehört ein `tel:`-Link auf die Telefonnummer des
+Kunden („bin in zehn Minuten da").
+
+Datenschutz: Die Adresse geht **erst beim Antippen** zur Karten-App –
+kein Aufruf im Hintergrund, kein fremder Programmcode auf der Seite,
+kein zusätzliches Tracking. Das ist der Unterschied zum Kartendienst für
+die Distanzberechnung weiter unten, bei dem der *Server* für *jeden*
+Kunden abfragen würde.
 
 ## Offene Fragen für später
 

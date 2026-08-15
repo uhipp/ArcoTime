@@ -266,6 +266,10 @@
       },
       {
         "typ": "neu",
+        "text": "Anfahrt: Beim Kunden lassen sich die je Einsatz verrechneten Kilometer hinterlegen. Leistungen mit dem neuen Häkchen „Anreise zum Kunden“ schlagen diesen Wert beim Erfassen als Menge vor – in der Zeiterfassung wie im Rapport, überschreibbar und danach am Eintrag eingefroren."
+      },
+      {
+        "typ": "neu",
         "text": "Erinnerung an offene Rapporte: Bleibt ein Rapport nach seinem Einsatztag offen, bekommt die Person unter „Ausgeführt von“ täglich um 07:30 Uhr eine E-Mail mit allen betroffenen Rapporten. Ein roter Zähler neben „Rapporte“ zeigt die Anzahl auch in der Navigation. Ein offener Rapport zählt nirgends – er ist unverrechnete Arbeit, die sonst niemandem auffällt."
       },
       {

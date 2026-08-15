@@ -22,6 +22,7 @@ function dienstleistungFromForm(formData: FormData) {
     // vorhanden" heisst hier also false.
     zaehlt_als_arbeitszeit: formData.get("zaehlt_als_arbeitszeit") === "on",
     rabatt_erlaubt: formData.get("rabatt_erlaubt") === "on",
+    menge_aus_anreise: formData.get("menge_aus_anreise") === "on",
     konto: str(formData.get("konto")),
     mwst_code_id: str(formData.get("mwst_code_id")),
     aktiv: formData.get("aktiv") === "on",

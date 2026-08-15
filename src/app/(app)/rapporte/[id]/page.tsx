@@ -59,7 +59,7 @@ export default async function RapportDetailPage({
     getCurrentOrganisation(),
     supabase
       .from("rapporte")
-      .select("*, kunden(id, name, vorname, email), projekte(id, bezeichnung), profiles!rapporte_mitarbeiter_id_fkey(id, name)")
+      .select("*, kunden(id, name, vorname, email, anreise_km), projekte(id, bezeichnung), profiles!rapporte_mitarbeiter_id_fkey(id, name)")
       .eq("id", id)
       .single(),
     supabase
@@ -72,7 +72,7 @@ export default async function RapportDetailPage({
     supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
     supabase
       .from("dienstleistungen")
-      .select("id, bezeichnung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt")
+      .select("id, bezeichnung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, menge_aus_anreise")
       .eq("aktiv", true)
       .order("bezeichnung"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
@@ -298,6 +298,7 @@ export default async function RapportDetailPage({
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
             beteiligte={beteiligte}
+            anreiseKm={rapport.kunden?.anreise_km ?? null}
             abbrechenHref={`/rapporte/${id}`}
           />
         )}
@@ -309,6 +310,7 @@ export default async function RapportDetailPage({
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
             beteiligte={beteiligte}
+            anreiseKm={rapport.kunden?.anreise_km ?? null}
           />
         )}
       </div>

@@ -1,6 +1,12 @@
 # Phase 10: Mehrtägige Einsätze
 
-Stand: 14.08.2026 · Planungsdokument, noch nicht umgesetzt
+Stand: 15.08.2026 · Planungsdokument · **zurückgestellt**
+
+> Zurückgestellt am 15.08.2026, bis eine Kundenanforderung dafür
+> vorliegt. Der Anlass war eine Überlegung und kein gemeldeter Bedarf: In
+> vielen Betrieben gibt es ohnehin einen Rapport pro Tag, und das deckt
+> die heutige Anwendung ab. Das Modell unten bleibt gültig – wenn die
+> Anforderung kommt, ist die Vorarbeit getan.
 
 ## Ausgangslage
 

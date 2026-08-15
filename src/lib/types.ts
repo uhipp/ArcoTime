@@ -32,6 +32,8 @@ export type Kunde = {
   // Vorbelegung des Rabatts bei neuen Zeiteinträgen dieses Kunden. Wirkt
   // nicht rückwirkend – der Rabatt wird pro Eintrag gespeichert.
   standard_rabatt_prozent: number;
+  // Zu verrechnende Kilometer je Einsatz – Vorschlag beim Erfassen (0050).
+  anreise_km: number | null;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;
 };
@@ -89,6 +91,8 @@ export type Dienstleistung = {
   // false = kein Teilrabatt möglich (Reisespesen o.ä.). 100% bleibt
   // erlaubt, damit nicht verrechnete Arbeit erfassbar bleibt.
   rabatt_erlaubt: boolean;
+  // Schlägt die Anreise-Kilometer des Kunden als Menge vor (0050).
+  menge_aus_anreise: boolean;
   konto: string | null;
   mwst_code_id: string | null;
   aktiv: boolean;
@@ -208,7 +212,7 @@ export type Rapport = {
   geplant_fuer: string | null;
   storniert_am: string | null;
   storno_grund: string | null;
-  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "email"> | null;
+  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "email" | "anreise_km"> | null;
   projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
   profiles?: { id: string; name: string } | null;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).

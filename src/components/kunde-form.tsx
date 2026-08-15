@@ -107,11 +107,27 @@ export function KundeForm({
             type="number"
             defaultValue={kunde?.standard_rabatt_prozent ?? 0}
           />
+          {/* "Verrechnet je Einsatz" und nicht "Distanz": Sonst trägt der
+              eine die einfache Strecke ein und der andere Hin und
+              Zurück – beides sieht plausibel aus, und niemand merkt es. */}
+          <Field
+            label="Anfahrt km (verrechnet je Einsatz)"
+            name="anreise_km"
+            type="number"
+            step="0.1"
+            defaultValue={kunde?.anreise_km ?? ""}
+          />
         </div>
         <p className="text-xs text-gray-400 mt-2">
           Der Standardrabatt wird bei neuen Zeiteinträgen dieses Kunden
           vorgeschlagen und kann pro Eintrag überschrieben werden. Eine
           spätere Änderung wirkt nicht auf bereits erfasste Einträge.
+        </p>
+        <p className="text-xs text-gray-400 mt-1">
+          Die Anfahrt-Kilometer werden bei Leistungen vorgeschlagen, die
+          unter Dienstleistungen als Anreise gekennzeichnet sind – in der
+          Regel Hin- und Rückfahrt. Auch dieser Wert lässt sich pro Eintrag
+          überschreiben.
         </p>
       </section>
 
@@ -148,6 +164,7 @@ function Field({
   name,
   defaultValue,
   type = "text",
+  step,
   required,
   hint,
   className,
@@ -156,6 +173,7 @@ function Field({
   name: string;
   defaultValue?: string | number | null;
   type?: string;
+  step?: string;
   required?: boolean;
   hint?: string;
   className?: string;
@@ -169,6 +187,7 @@ function Field({
         id={name}
         name={name}
         type={type}
+        step={step}
         required={required}
         defaultValue={defaultValue ?? ""}
         className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"

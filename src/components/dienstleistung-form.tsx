@@ -156,6 +156,28 @@ export function DienstleistungForm({
             </span>
           </span>
         </label>
+
+        {/* Bewusst ein Häkchen an beliebigen Leistungen statt einer fest
+            verdrahteten Position "Reise-km": Die eine Organisation nennt
+            es Wegpauschale, die andere Kilometergeld, manche haben
+            mehrere Sätze für verschiedene Fahrzeuge. */}
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="menge_aus_anreise"
+            defaultChecked={dienstleistung?.menge_aus_anreise ?? false}
+            className="mt-0.5"
+          />
+          <span>
+            <span className="block text-sm font-medium">Anreise zum Kunden</span>
+            <span className="block text-xs text-gray-500 mt-0.5">
+              Angehakt: Beim Erfassen wird die beim Kunden hinterlegte
+              Anfahrt in Kilometern als Menge vorgeschlagen – überschreibbar
+              und danach am Eintrag eingefroren. Mehrere Leistungen dürfen
+              das tragen, etwa für verschiedene Fahrzeuge.
+            </span>
+          </span>
+        </label>
       </div>
 
       <div>

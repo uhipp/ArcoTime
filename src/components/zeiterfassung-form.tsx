@@ -23,6 +23,8 @@ type ProjektOption = Pick<Projekt, "id" | "bezeichnung" | "status" | "kunde_id">
     vorname: string | null;
     // Vorbelegung des Rabatts, siehe kunden.standard_rabatt_prozent.
     standard_rabatt_prozent?: number | null;
+    // Vorbelegung der Menge bei Anreise-Leistungen (0050).
+    anreise_km?: number | null;
   } | null;
 };
 type DienstleistungOption = Pick<
@@ -35,6 +37,7 @@ type DienstleistungOption = Pick<
   | "zaehlt_als_arbeitszeit"
   | "rabatt_erlaubt"
   | "klasse_id"
+  | "menge_aus_anreise"
 >;
 
 // Rabatt eines Kunden auf eine ganze Dienstleistungsklasse.
@@ -273,8 +276,43 @@ export function ZeiterfassungForm({
     return standard != null ? String(Number(standard)) : null;
   }
 
+  // Anreise-Kilometer des Kunden als Menge vorschlagen (0050).
+  //
+  // Dieselbe Regel wie bei der Beschreibung: Ein Vorschlag darf nie
+  // etwas überschreiben, das jemand selbst eingetragen hat. Ersetzt wird
+  // deshalb nur ein leeres Feld oder der zuvor gemachte Vorschlag –
+  // etwa wenn nachträglich ein anderes Projekt gewählt wird.
+  const anreiseVon = (projektIdNeu: string): string =>
+    projekteListe.find((p) => p.id === projektIdNeu)?.kunden?.anreise_km != null
+      ? String(Number(projekteListe.find((p) => p.id === projektIdNeu)!.kunden!.anreise_km))
+      : "";
+
+  function mengeMitAnreise(
+    aktuell: string,
+    alteProjektId: string,
+    alteDienstleistungId: string,
+    neueProjektId: string,
+    neueDienstleistungId: string
+  ): string {
+    const neueTraegt =
+      dienstleistungen.find((d) => d.id === neueDienstleistungId)?.menge_aus_anreise ?? false;
+    if (!neueTraegt) return aktuell;
+
+    const alteTraegt =
+      dienstleistungen.find((d) => d.id === alteDienstleistungId)?.menge_aus_anreise ?? false;
+    const alterVorschlag = alteTraegt ? anreiseVon(alteProjektId) : "";
+    if (aktuell !== "" && aktuell !== alterVorschlag) return aktuell;
+
+    const neuerVorschlag = anreiseVon(neueProjektId);
+    return neuerVorschlag === "" ? aktuell : neuerVorschlag;
+  }
+
   function onProjektChange(neueProjektId: string) {
+    const alteProjektId = projektId;
     setProjektId(neueProjektId);
+    setMengeText((aktuell) =>
+      mengeMitAnreise(aktuell, alteProjektId, dienstleistungId, neueProjektId, dienstleistungId)
+    );
     if (!istNeu) return;
     const vorschlag = vorschlagFuer(neueProjektId, dienstleistungId);
     if (vorschlag != null) setRabatt(vorschlag);
@@ -312,6 +350,9 @@ export function ZeiterfassungForm({
     const alteId = dienstleistungId;
     setDienstleistungId(neueId);
     setBeschreibung((aktuell) => mitVorgabe(aktuell, alteId, neueId));
+    setMengeText((aktuell) =>
+      mengeMitAnreise(aktuell, projektId, alteId, projektId, neueId)
+    );
 
     if (istNeu) {
       const vorschlag = vorschlagFuer(projektId, neueId);

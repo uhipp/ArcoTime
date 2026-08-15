@@ -18,6 +18,10 @@ Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfas
 
 Auf **"+ Neuer Kunde"** klicken und die Felder ausfüllen. Pflichtfeld ist nur der **Name** (Nach- oder Firmenname); alles andere kann später ergänzt werden.
 
+**Anfahrt km (verrechnet je Einsatz)**: Die Kilometer, die bei einem Einsatz bei diesem Kunden verrechnet werden – in der Regel Hin- und Rückfahrt. Der Wert wird beim Erfassen als **Menge vorgeschlagen**, sobald eine Leistung gewählt wird, die unter [Dienstleistungen](/hilfe/dienstleistungen) als Anreise gekennzeichnet ist. Wie beim Standardrabatt gilt: Es ist ein Vorschlag, überschreibbar, und eine spätere Änderung wirkt nicht auf bereits erfasste Einträge.
+
+Das Feld heisst bewusst „verrechnet je Einsatz" und nicht „Distanz" – sonst trägt die eine Person die einfache Strecke ein und die andere Hin und Zurück, und niemand merkt es, weil beides plausibel aussieht.
+
 **Strasse und Nummer** sind zwei getrennte Felder, ebenso **PLZ** und **Ort**. Das hält die Adresse auswertbar und sortierbar. Im Export erscheint die Strasse wieder als eine Angabe („Bahnhofstrasse 12"), weil das Comatic-Format eine einzige Spalte dafür vorsieht.
 
 **PLZ-Autofill**: Trägst du eine Schweizer Postleitzahl ein, schlägt ArcoTime automatisch den passenden Ort vor – spart Tipparbeit und vermeidet Tippfehler.
