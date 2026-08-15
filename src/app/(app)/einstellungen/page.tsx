@@ -141,6 +141,21 @@ export default async function EinstellungenPage({
         </Link>
       </div>
 
+      <div className="rounded-lg border bg-white p-5">
+        <h2 className="text-lg font-medium mb-1">Änderungsprotokoll</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Jede Änderung an euren Stammdaten, Belegen und Konten – wer, wann und
+          was. Aufgezeichnet in der Datenbank selbst, damit auch Eingriffe
+          sichtbar sind, die nicht über die Oberfläche laufen.
+        </p>
+        <Link
+          href="/einstellungen/aenderungsprotokoll"
+          className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+        >
+          Protokoll öffnen
+        </Link>
+      </div>
+
       <p className="text-sm text-gray-500">
         Das schmale Zahlenfeld rechts in jeder Zeile ist die{" "}
         <strong>Sortierung</strong>: Sie bestimmt die Reihenfolge in den

@@ -104,6 +104,18 @@ Ausgeführte Läufe bleiben unten stehen – auch rückgängig gemachte. Die Spu
 
 Ausgenommen bleiben Fehler, die Daten beschädigen, sowie Sicherheits- und Gesetzesanpassungen: Die laufen sofort für alle, mit Information danach statt Zustimmung davor.
 
+## Änderungsprotokoll
+
+Jede Änderung an euren Stammdaten, Belegen und Konten – wer, wann und was. Erreichbar über **„Protokoll öffnen"**, sichtbar nur für Administratoren der eigenen Organisation.
+
+Aufgezeichnet wird in der **Datenbank selbst** und nicht in der Anwendung. Das ist der entscheidende Punkt: So erscheinen auch Eingriffe, die nicht über die Oberfläche laufen – etwa eine Korrektur durch Arcos im Rahmen des Supports. Ein solcher Eingriff hat kein Benutzerkonto und steht deshalb ausdrücklich als **„Arcos (direkter Datenbankzugriff)"** da.
+
+Warum das so gelöst ist und nicht über weniger Zugriff: Als Auftragsbearbeiter braucht Arcos vollen Zugriff auf die Datenbank – für Sicherungen, für Fehlerkorrekturen, für Migrationen. Das zu verschleiern wäre schlechter, als es zu benennen. Vertrauen entsteht über Nachvollziehbarkeit.
+
+Bei einer Änderung stehen die **betroffenen Felder** mit altem und neuem Wert da. Ein Speichern, das nichts verändert hat, erzeugt keinen Eintrag.
+
+Das Protokoll **lässt sich nicht bearbeiten und nicht löschen**, auch nicht von Administratoren – ein Protokoll, das sich ändern lässt, wäre keines. Es beginnt mit seiner Einrichtung; frühere Änderungen sind nicht rückwirkend erfasst.
+
 ## Standardpositionen für neue Rapporte
 
 Womit ein neuer [Arbeitsrapport](/hilfe/rapporte) beginnt. In vielen Betrieben ist das immer dasselbe – Anfahrt, Fahrzeit, manchmal eine Kleinmaterialpauschale. Wer hier nichts pflegt, bekommt wie bisher einen leeren Rapport.
