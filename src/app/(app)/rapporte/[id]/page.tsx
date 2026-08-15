@@ -216,6 +216,16 @@ export default async function RapportDetailPage({
 
       <div>
         <h2 className="text-lg font-medium mb-1">Positionen</h2>
+        {/* Rapporte aus einer Anfrage können ohne Projekt entstehen, wenn
+            die Anfrage keines hatte. Ohne Projekt geht hier gar nichts –
+            das muss dastehen und nicht erst beim ersten Versuch kommen. */}
+        {offen && !rapport.projekt_id && (
+          <p className="mb-4 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Diesem Rapport fehlt das <strong>Projekt</strong>. Solange es fehlt,
+            lassen sich weder Positionen erfassen noch Standardpositionen
+            übernehmen – bitte oben im Kopf eines wählen.
+          </p>
+        )}
         <p className="text-sm text-gray-500 mb-4">
           Anfahrt, Arbeitszeit und Material des Einsatzes. Jede Position ist ein
           Zeiteintrag und wird ganz normal verrechnet und exportiert.

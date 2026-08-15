@@ -27,7 +27,7 @@ Ein Rapport ist **optional**. Fernwartung, Büroarbeit, interne Zeit oder eine t
 
 Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der Übersicht. Im Kopf legst du fest:
 
-- **Kunde** und **Projekt** – zur Auswahl stehen nur Projekte dieses Kunden
+- **Kunde** und **Projekt** – zur Auswahl stehen nur Projekte dieses Kunden. Beides ist **zwingend**: Ohne Projekt lässt sich keine Leistung verrechnen, der Rapport könnte also nichts. Fehlt das passende Projekt, legst du es direkt im Auswahlfeld an.
 - **Einsatzdatum** und **ausgeführt von** – beides gilt für alle Positionen, du musst es nicht je Zeile wiederholen
 - **Bemerkung** – erscheint später auf dem Rapport
 
@@ -106,7 +106,11 @@ Je nach gewählter Leistung erscheint das passende Feld:
 
 Welche Leistungen als Arbeitszeit zählen, legt ein Admin unter [Dienstleistungen](/hilfe/dienstleistungen) fest. Preis, MWSt-Satz und Rabatt werden beim Hinzufügen eingefroren – eine spätere Änderung an den Stammdaten verändert einen bestehenden Rapport nicht.
 
-Einen Timer gibt es hier bewusst nicht: Wer einen Rapport schreibt, ist mit der Arbeit fertig.
+**Timer für die Fahrzeit**: An jeder Position, die als Arbeitszeit zählt, steht bei einem offenen Rapport ein Knopf **„▶ Timer starten"**. Gedacht ist er für die Anfahrt: Der Monteur sitzt im Fahrzeug, öffnet den Rapport des Kunden, startet den Timer und fährt los. Bei der Ankunft stoppt er ihn – die gemessene Zeit ersetzt die Dauer dieser Position.
+
+Solange er läuft, steht ein breiter Knopf **„■ Ankunft – Timer stoppen"** mit der laufenden Zeit zuoberst über den Positionen; wer bei der Ankunft erst die richtige Zeile suchen müsste, täte es während der Fahrt. Zusätzlich erscheint ein rotes ⏱ in der Navigation, damit kein Timer über Nacht weiterläuft.
+
+Gerechnet wird ab dem gespeicherten Startzeitpunkt – die Zeit stimmt also auch, wenn das Telefon zwischendurch im Ruhezustand war oder du den Rapport auf einem anderen Gerät öffnest. Es läuft **ein Timer je Person**; ist bereits einer aktiv, sagt die Meldung, wo. Kilometer und Material bekommen keinen Timer – die misst man nicht mit der Uhr.
 
 Der zweite Weg führt über eine [Anfrage](/hilfe/anfragen): Dort schliesst **"Erledigen mit Rapport"** die Anfrage ab und legt gleichzeitig den passenden Rapport-Entwurf an – Kunde, Projekt und zuständige Person sind bereits gesetzt, Titel und Beschreibung stehen als Bemerkung drin. Der übliche Ablauf, wenn aus einer Kundenanfrage ein Einsatz vor Ort wird.
 

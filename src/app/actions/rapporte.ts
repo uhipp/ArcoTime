@@ -92,6 +92,14 @@ export async function erstelleRapport(
   if (!werte.kunde_id) {
     return { fehler: "Bitte einen Kunden wählen." };
   }
+  // Auch serverseitig: Ohne Projekt lässt sich keine Position erfassen –
+  // der Rapport wäre eine Hülle, die aussieht, als könnte sie etwas.
+  if (!werte.projekt_id) {
+    return {
+      fehler:
+        "Bitte ein Projekt wählen – ohne Projekt lässt sich keine Leistung verrechnen. Neue Projekte legst du direkt im Auswahlfeld an.",
+    };
+  }
 
   const { data: neuer, error } = await supabase
     .from("rapporte")
@@ -158,6 +166,13 @@ export async function aktualisiereRapport(
 ): Promise<FormularErgebnis> {
   const supabase = await createClient();
   const werte = rapportFromForm(formData);
+
+  if (!werte.projekt_id) {
+    return {
+      fehler:
+        "Bitte ein Projekt wählen – ohne Projekt lässt sich keine Leistung verrechnen. Neue Projekte legst du direkt im Auswahlfeld an.",
+    };
+  }
 
   // Konfliktprüfung – siehe lib/konflikt.
   const stand = String(formData.get(STAND_FELD) ?? "") || null;

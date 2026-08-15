@@ -177,6 +177,7 @@ export function RapportKopfForm({
           <select
             id="projekt_id"
             name="projekt_id"
+            required
             disabled={gesperrt}
             value={projektId}
             onChange={(e) => {
@@ -187,7 +188,13 @@ export function RapportKopfForm({
             }}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
           >
-            <option value="">Kein Projekt</option>
+            {/* Kein "Kein Projekt" mehr: Ohne Projekt lässt sich keine
+                Position erfassen und keine Standardposition anlegen – ein
+                solcher Rapport kann nichts und sieht doch aus wie einer.
+                Genau das ist im Test passiert. */}
+            <option value="" disabled>
+              Bitte wählen…
+            </option>
             {projekteDesKunden.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.bezeichnung}

@@ -266,6 +266,14 @@
       },
       {
         "typ": "neu",
+        "text": "Timer an der Rapportposition: für die Fahrzeit. Im Fahrzeug den Rapport öffnen, an der Position „▶ Timer starten“ drücken, bei der Ankunft stoppen – die gemessene Zeit ersetzt die Dauer. Solange er läuft, steht ein breiter Stopp-Knopf über den Positionen und ein rotes ⏱ in der Navigation."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Ein Rapport verlangt jetzt ein Projekt. Ohne Projekt liessen sich weder Positionen erfassen noch Standardpositionen übernehmen – der Rapport sah aus wie einer, konnte aber nichts."
+      },
+      {
+        "typ": "neu",
         "text": "Standardpositionen für neue Rapporte: Unter Einstellungen lässt sich festlegen, womit ein Rapport beginnt – etwa Anfahrt und Fahrzeit. Die Mengen sind Annahmen und werden vor Ort korrigiert; bei einer Anreise-Leistung steht gleich die beim Kunden hinterlegte Kilometerzahl. Wer nichts pflegt, bekommt wie bisher einen leeren Rapport."
       },
       {
