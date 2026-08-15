@@ -281,6 +281,10 @@
         "text": "Navigation zum Kunden: Ein offener Rapport zeigt zuoberst die Kundenadresse mit einem Knopf „Navigation“ (Google Maps, daneben Apple Karten) und die Telefonnummer zum Antippen. Auf dem Telefon gestartet, läuft die Navigation auf CarPlay weiter. Die Adresse verlässt ArcoTime erst beim Antippen."
       },
       {
+        "typ": "neu",
+        "text": "Grundlagen für das Zeitkonto (neues Zusatzmodul, Etappe 1): Wochenstunden und Arbeitstage pro Woche in den Einstellungen, Sollstunden je Monat und Jahr, sowie je Person Eintritt, Austritt, Pensum mit Gültigkeitsdatum und Ferienanspruch. Die Auswertung folgt in den nächsten Etappen – die Angaben sind schon jetzt nützlich."
+      },
+      {
         "typ": "verbessert",
         "text": "Die Mitarbeitendenseite nennt die Zahl der Konten mit Administratorrechten und erklärt, dass diese Rechte an Personen gehören und nicht an ein gemeinsames Verwaltungskonto – sonst steht im Änderungsprotokoll „Admin“ statt der Person, die es war."
       },

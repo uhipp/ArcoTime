@@ -130,6 +130,7 @@ export async function aktualisiereOrganisation(id: string, formData: FormData) {
       // Kostenpflichtiges Zusatzmodul. Freischaltung vorerst nur hier durch
       // Arcos – die Selbstbuchung über Stripe folgt als eigenes Paket.
       modul_disposition: formData.get("modul_disposition") === "on",
+      modul_zeitkonto: formData.get("modul_zeitkonto") === "on",
       naechster_zahltermin: naechsterZahlterminRoh || null,
       // Ein manuelles Speichern im Platform-Admin-Bereich gilt als bewusste
       // Entscheidung – ein evtl. vorher gesetzter automatischer Sperrgrund

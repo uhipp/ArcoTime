@@ -42,6 +42,11 @@ export type OrganisationDaten = {
   warnung_ab_minuten_pro_tag: number | null;
   sperre_ab_minuten_pro_tag: number | null;
   modul_disposition: boolean;
+  // Zusatzmodul Zeitkonto (0054) und die Grundlagen des Tages-Solls.
+  modul_zeitkonto: boolean;
+  wochenstunden: number;
+  arbeitstage_pro_woche: number;
+  feiertage_im_sollstunden_enthalten: boolean;
   arbeitstag_von_minuten: number;
   arbeitstag_bis_minuten: number;
   // Absenderangaben für Dokumente, die beim Kunden bleiben (0042).
@@ -63,7 +68,7 @@ export const getCurrentOrganisation = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag, modul_disposition, arbeitstag_von_minuten, arbeitstag_bis_minuten, strasse, hausnummer, plz, ort, telefon, email, webseite, logo_pfad)")
+      .select("*, organisationen(id, name, zeige_auf_login, warnung_ab_minuten_pro_tag, sperre_ab_minuten_pro_tag, modul_disposition, modul_zeitkonto, wochenstunden, arbeitstage_pro_woche, feiertage_im_sollstunden_enthalten, arbeitstag_von_minuten, arbeitstag_bis_minuten, strasse, hausnummer, plz, ort, telefon, email, webseite, logo_pfad)")
       .eq("id", user.id)
       .single();
 

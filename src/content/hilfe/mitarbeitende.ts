@@ -17,6 +17,18 @@ Nur Admins sehen diese Seite – hier werden Mitarbeitende verwaltet und eingela
 **Spalten wählen**: Über „Spalten“ oben rechts blendest du nicht benötigte Angaben aus. Die Auswahl gilt nur für deine Anmeldung. Vorname und die beiden Spalten ganz rechts bleiben sichtbar – dort hängen das Bearbeitungsformular und die Knöpfe.
 
 
+## Anstellung, Pensum und Ferienanspruch (Zusatzmodul Zeitkonto)
+
+Auf der Detailseite einer Person, nur mit gebuchtem **Zeitkonto**. Der Admin pflegt die Werte, die Person sieht ihre eigenen.
+
+**Eintritt und Austritt** bestimmen, ab wann und bis wann Sollstunden und Ferienanspruch anteilig gerechnet werden.
+
+**Pensum**: Ein neues Pensum **ersetzt das alte nicht**, es beginnt an einem Datum. Wechselt jemand per 1. Juli von 100 auf 80 Prozent, trägst du einen zweiten Eintrag „ab 01.07., 80 %" ein – der erste bleibt stehen. Nur so rechnet eine Auswertung des ersten Halbjahres weiterhin mit 100 Prozent. Ohne jeden Eintrag gilt 100 Prozent.
+
+Das Feld **Tage/Woche** braucht nur, wer die Teilzeit auf wenige ganze Tage verteilt: 60 Prozent an drei ganzen Tagen ergibt ein anderes Tages-Soll als 60 Prozent an fünf kurzen – und damit einen anders bewerteten Ferientag. Leer heisst „wie die Organisation".
+
+**Ferienanspruch** je Jahr in Tagen, dazu der **Übertrag** aus dem Vorjahr.
+
 ## Ein Mensch, ein Konto
 
 Jede Person arbeitet mit dem **eigenen Login** – auch die Chefin, auch das Büro. Ein gemeinsames Verwaltungskonto („Admin"), mit dem mehrere Leute konfigurieren, wirkt praktisch und kostet zwei Dinge:

@@ -17,6 +17,7 @@ type Organisation = {
   lizenzen_gebucht: number | null;
   abrechnungszyklus: string;
   modul_disposition: boolean;
+  modul_zeitkonto: boolean;
   preis_pro_zyklus: number | null;
   waehrung: string;
   test_endet_am: string | null;
@@ -155,6 +156,7 @@ export default async function PlattformPage({
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Lizenzen (genutzt/gebucht)</th>
               <th className="px-3 py-2">Dispo</th>
+              <th className="px-3 py-2">Zeitkonto</th>
               <th className="px-3 py-2">Zyklus</th>
               <th className="px-3 py-2">Preis</th>
               <th className="px-3 py-2">Testphase bis</th>
@@ -205,7 +207,7 @@ export default async function PlattformPage({
                     />
                   </td>
                   <td className="px-2 py-2">
-                    {/* Kostenpflichtiges Zusatzmodul – Freischaltung
+                    {/* Kostenpflichtige Zusatzmodule – Freischaltung
                         vorerst nur hier, Selbstbuchung folgt. */}
                     <input
                       type="checkbox"
@@ -213,6 +215,15 @@ export default async function PlattformPage({
                       defaultChecked={org.modul_disposition}
                       form={formId}
                       title="Zusatzmodul Disposition"
+                    />
+                  </td>
+                  <td className="px-2 py-2">
+                    <input
+                      type="checkbox"
+                      name="modul_zeitkonto"
+                      defaultChecked={org.modul_zeitkonto}
+                      form={formId}
+                      title="Zusatzmodul Zeitkonto"
                     />
                   </td>
                   <td className="px-2 py-2">

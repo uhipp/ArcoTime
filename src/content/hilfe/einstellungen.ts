@@ -90,6 +90,17 @@ Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) �
 
 Das Häkchen **"blockiert die Planung"** entscheidet, ob die Art in der Disposition wirkt: Ist es gesetzt, fällt der Zeitraum aus den freien Zeiten heraus. Ohne Häkchen ist die Abwesenheit reine Information und die Person bleibt einplanbar – gedacht für Fälle wie Homeoffice oder Aussendienst.
 
+## Arbeitszeit-Grundlagen und Sollstunden (Zusatzmodul Zeitkonto)
+
+Nur mit gebuchtem **Zeitkonto** sichtbar. Zwei Angaben bilden die Grundlage:
+
+- **Wochenstunden bei 100 %** und **Arbeitstage pro Woche** – daraus entsteht das **Tages-Soll** (bei 42 Stunden auf 5 Tage also 8,4 Stunden). Mit diesem Wert werden einzelne Ferien- und Absenztage bewertet.
+- **Sollstunden je Monat**, über „Sollstunden je Monat erfassen" auf einer eigenen Seite je Jahr. Das ist die verbindliche Summe, in der Praxis vom Treuhänder geliefert. Ein leeres Feld heisst „nicht erfasst" und nicht „null Stunden".
+
+Das Häkchen **„Feiertage sind in den Sollstunden bereits enthalten"** ist wichtig: Eine Treuhänder-Tabelle hat die Feiertage abgezogen, und ArcoTime kennt die Schliesstage ebenfalls. Ohne das Häkchen würden sie ein zweites Mal abgezogen – die häufigste Fehlerquelle in solchen Auswertungen.
+
+Die Angaben **je Person** – Eintritt, Austritt, Pensum und Ferienanspruch – stehen bei [Mitarbeitende](/hilfe/mitarbeitende) → Details.
+
 ## Datenpflege
 
 Ein eigener Bereich unter Einstellungen, erreichbar über **„Datenpflege öffnen"**. Er enthält zweierlei.

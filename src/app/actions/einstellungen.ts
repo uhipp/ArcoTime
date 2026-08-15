@@ -96,6 +96,18 @@ export async function updateOrganisation(formData: FormData) {
     .update({
       name,
       zeige_auf_login: zeigeAufLogin,
+      // Grundlage des Tages-Solls im Zeitkonto (0054). Die Felder fehlen
+      // im Formular, wenn das Modul nicht gebucht ist – dann bleiben sie
+      // unangetastet, wie bei den Planzeiten des Rapports.
+      ...(formData.has("wochenstunden")
+        ? {
+            wochenstunden: Number(String(formData.get("wochenstunden") ?? "42").replace(",", ".")) || 42,
+            arbeitstage_pro_woche:
+              Number(String(formData.get("arbeitstage_pro_woche") ?? "5").replace(",", ".")) || 5,
+            feiertage_im_sollstunden_enthalten:
+              formData.get("feiertage_im_sollstunden_enthalten") === "on",
+          }
+        : {}),
       warnung_ab_minuten_pro_tag: alsMinuten("warnung_ab_stunden"),
       // Arbeitszeitfenster: Rahmen für die Vorschläge freier Zeiten in der
       // Disposition. Als Uhrzeit erfasst, in Minuten gespeichert – so lässt

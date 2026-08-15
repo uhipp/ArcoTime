@@ -8,6 +8,14 @@ import { ZeitFeld } from "@/components/zeit-feld";
 import { erfasseAbwesenheit, loescheAbwesenheit } from "@/app/actions/abwesenheiten";
 import { DatumFeld } from "@/components/datum-feld";
 import { darf } from "@/lib/berechtigungen";
+import { getCurrentOrganisation } from "@/lib/get-profile";
+import { DeleteButton } from "@/components/delete-button";
+import {
+  speichereAnstellung,
+  erfassePensum,
+  loeschePensum,
+  speichereFerienanspruch,
+} from "@/app/actions/zeitkonto";
 
 // Erreichbar für Admin (jede Person) oder die Person selbst (nur die
 // eigene) – Personal-Dokumente sind sensibel, siehe Phase-7-Plan.
@@ -32,8 +40,15 @@ export default async function MitarbeitendeDetailPage({
     { dokumente, kategorien },
     { data: abwesenheiten },
     { data: arten },
+    organisation,
+    { data: pensen },
+    { data: ansprueche },
   ] = await Promise.all([
-    supabase.from("profiles").select("id, name, vorname, nachname, email, role").eq("id", id).single(),
+    supabase
+      .from("profiles")
+      .select("id, name, vorname, nachname, email, role, eintritt, austritt")
+      .eq("id", id)
+      .single(),
     ladeDokumente(supabase, "mitarbeitende", id),
     // Vergangenes bleibt sichtbar, aber die Planung interessiert sich für
     // das Kommende – deshalb ab heute, absteigend nach Beginn.
@@ -48,6 +63,17 @@ export default async function MitarbeitendeDetailPage({
       .select("wert, bezeichnung, farbe")
       .eq("aktiv", true)
       .order("sortierung"),
+    getCurrentOrganisation(),
+    supabase
+      .from("pensen")
+      .select("*")
+      .eq("mitarbeiter_id", id)
+      .order("ab_datum", { ascending: false }),
+    supabase
+      .from("ferienanspruch")
+      .select("*")
+      .eq("mitarbeiter_id", id)
+      .order("jahr", { ascending: false }),
   ]);
 
   if (!person) notFound();
@@ -63,6 +89,262 @@ export default async function MitarbeitendeDetailPage({
           {person.email ?? "–"} · {person.role === "admin" ? "Admin" : "Mitarbeitende"}
         </p>
       </div>
+
+      {/* Anstellung, Pensum und Ferienanspruch – die Grundlagen des
+          Zeitkontos (Phase 12, Etappe A). Nur mit gebuchtem Modul, und
+          nur der Admin pflegt sie; die Person sieht ihre eigenen Werte. */}
+      {organisation?.modul_zeitkonto && (
+        <div className="max-w-2xl space-y-8">
+          <div>
+            <h2 className="text-lg font-medium mb-1">Anstellung</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Ein- und Austritt bestimmen, ab wann und bis wann Sollstunden und
+              Ferienanspruch anteilig gerechnet werden.
+            </p>
+            <form
+              action={speichereAnstellung.bind(null, id)}
+              className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4 text-sm"
+            >
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="eintritt">
+                  Eintritt
+                </label>
+                <DatumFeld
+                  id="eintritt"
+                  name="eintritt"
+                  defaultValue={person.eintritt ?? ""}
+                  disabled={!istAdmin}
+                  className="rounded border border-gray-300 px-2 py-1.5"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="austritt">
+                  Austritt
+                </label>
+                <DatumFeld
+                  id="austritt"
+                  name="austritt"
+                  defaultValue={person.austritt ?? ""}
+                  disabled={!istAdmin}
+                  className="rounded border border-gray-300 px-2 py-1.5"
+                />
+              </div>
+              {istAdmin && (
+                <button
+                  type="submit"
+                  className="rounded bg-arcos-steel px-4 py-2 text-sm font-medium text-white hover:bg-arcos-navy"
+                >
+                  Speichern
+                </button>
+              )}
+            </form>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-medium mb-1">Pensum</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Ein neues Pensum <strong>ersetzt das alte nicht</strong>, es
+              beginnt an einem Datum. Die Geschichte bleibt stehen, damit eine
+              Auswertung des Vorjahres mit dem Pensum rechnet, das damals galt.
+            </p>
+            <ul className="divide-y rounded-lg border bg-white mb-4">
+              {pensen?.map((p) => (
+                <li key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-2 text-sm">
+                  <span className="w-28 font-mono text-xs text-gray-500">
+                    ab {formatDatumCH(p.ab_datum)}
+                  </span>
+                  <span className="flex-1 min-w-[8rem]">
+                    <strong>{Number(p.pensum_prozent)} %</strong>
+                    {p.arbeitstage_pro_woche
+                      ? ` · ${Number(p.arbeitstage_pro_woche)} Tage/Woche`
+                      : ""}
+                    {p.bemerkung ? (
+                      <span className="block text-xs text-gray-500">{p.bemerkung}</span>
+                    ) : null}
+                  </span>
+                  {istAdmin && (
+                    <DeleteButton
+                      action={loeschePensum.bind(null, id, p.id)}
+                      label="entfernen"
+                      confirmText="Diesen Pensum-Eintrag entfernen? Auswertungen ab diesem Datum rechnen danach mit dem vorherigen Pensum."
+                    />
+                  )}
+                </li>
+              ))}
+              {(!pensen || pensen.length === 0) && (
+                <li className="px-4 py-3 text-sm text-gray-400">
+                  Noch kein Pensum erfasst – ohne Eintrag gilt 100 %.
+                </li>
+              )}
+            </ul>
+
+            {istAdmin && (
+              <form
+                action={erfassePensum.bind(null, id)}
+                className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4 text-sm"
+              >
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="neues_pensum">
+                    Gültig ab
+                  </label>
+                  <DatumFeld
+                    id="neues_pensum"
+                    name="ab_datum"
+                    required
+                    className="rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="pensum_prozent">
+                    Pensum %
+                  </label>
+                  <input
+                    id="pensum_prozent"
+                    name="pensum_prozent"
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    max="100"
+                    required
+                    defaultValue="100"
+                    className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-xs text-gray-500 mb-1"
+                    htmlFor="arbeitstage_pro_woche"
+                  >
+                    Tage/Woche
+                  </label>
+                  <input
+                    id="arbeitstage_pro_woche"
+                    name="arbeitstage_pro_woche"
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    max="7"
+                    placeholder={String(Number(organisation.arbeitstage_pro_woche ?? 5))}
+                    title="Leer = wie die Organisation. Nur nötig, wenn jemand die Teilzeit auf wenige ganze Tage verteilt."
+                    className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <div className="flex-1 min-w-[10rem]">
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="pensum_bemerkung">
+                    Bemerkung
+                  </label>
+                  <input
+                    id="pensum_bemerkung"
+                    name="bemerkung"
+                    placeholder="z.B. Reduktion auf eigenen Wunsch"
+                    className="w-full rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="rounded bg-arcos-steel px-4 py-2 text-sm font-medium text-white hover:bg-arcos-navy"
+                >
+                  Hinzufügen
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-lg font-medium mb-1">Ferienanspruch</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Je Jahr in Tagen – 20, 25, fünf Wochen für Lernende. Der Übertrag
+              ist das, was aus dem Vorjahr stehen geblieben ist.
+            </p>
+            <ul className="divide-y rounded-lg border bg-white mb-4">
+              {ansprueche?.map((a) => (
+                <li key={a.jahr} className="flex flex-wrap items-center gap-3 px-4 py-2 text-sm">
+                  <span className="w-16 font-mono text-xs text-gray-500">{a.jahr}</span>
+                  <span className="flex-1 min-w-[8rem]">
+                    <strong>{Number(a.tage)} Tage</strong>
+                    {Number(a.uebertrag_tage) !== 0
+                      ? ` · Übertrag ${Number(a.uebertrag_tage)} Tage`
+                      : ""}
+                    {a.bemerkung ? (
+                      <span className="block text-xs text-gray-500">{a.bemerkung}</span>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+              {(!ansprueche || ansprueche.length === 0) && (
+                <li className="px-4 py-3 text-sm text-gray-400">
+                  Noch kein Anspruch erfasst.
+                </li>
+              )}
+            </ul>
+
+            {istAdmin && (
+              <form
+                action={speichereFerienanspruch.bind(null, id)}
+                className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4 text-sm"
+              >
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="neuer_anspruch">
+                    Jahr
+                  </label>
+                  <input
+                    id="neuer_anspruch"
+                    name="jahr"
+                    type="number"
+                    required
+                    defaultValue={new Date().getFullYear()}
+                    className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="anspruch_tage">
+                    Tage
+                  </label>
+                  <input
+                    id="anspruch_tage"
+                    name="tage"
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    required
+                    defaultValue="25"
+                    className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="uebertrag_tage">
+                    Übertrag
+                  </label>
+                  <input
+                    id="uebertrag_tage"
+                    name="uebertrag_tage"
+                    type="number"
+                    step="0.5"
+                    defaultValue="0"
+                    className="w-24 rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <div className="flex-1 min-w-[10rem]">
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="anspruch_bemerkung">
+                    Bemerkung
+                  </label>
+                  <input
+                    id="anspruch_bemerkung"
+                    name="bemerkung"
+                    className="w-full rounded border border-gray-300 px-2 py-1.5"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="rounded bg-arcos-steel px-4 py-2 text-sm font-medium text-white hover:bg-arcos-navy"
+                >
+                  Speichern
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {istAdmin && (
         <div className="max-w-2xl">

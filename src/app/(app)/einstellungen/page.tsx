@@ -255,6 +255,79 @@ export default async function EinstellungenPage({
             vorschlägt. Termine ausserhalb bleiben von Hand erfassbar.
           </p>
 
+          {/* Nur mit gebuchtem Zeitkonto: Aus Wochenstunden und
+              Arbeitstagen entsteht das Tages-Soll, mit dem einzelne
+              Ferien- und Absenztage bewertet werden. */}
+          {organisation?.modul_zeitkonto && (
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-1">Arbeitszeit-Grundlagen (Zeitkonto)</p>
+              <p className="text-xs text-gray-400 mb-3">
+                Grundlage für das Tages-Soll. Nicht jeder Betrieb arbeitet 42
+                Stunden in fünf Tagen.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1" htmlFor="wochenstunden">
+                    Wochenstunden bei 100 %
+                  </label>
+                  <input
+                    id="wochenstunden"
+                    name="wochenstunden"
+                    type="number"
+                    step="0.25"
+                    min="1"
+                    defaultValue={Number(organisation.wochenstunden ?? 42)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-xs text-gray-500 mb-1"
+                    htmlFor="arbeitstage_pro_woche"
+                  >
+                    Arbeitstage pro Woche
+                  </label>
+                  <input
+                    id="arbeitstage_pro_woche"
+                    name="arbeitstage_pro_woche"
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    max="7"
+                    defaultValue={Number(organisation.arbeitstage_pro_woche ?? 5)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <label className="mt-3 flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="feiertage_im_sollstunden_enthalten"
+                  defaultChecked={organisation.feiertage_im_sollstunden_enthalten ?? true}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm font-medium">
+                    Feiertage sind in den Sollstunden bereits enthalten
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-0.5">
+                    Trifft auf jede Tabelle vom Treuhänder zu. Ohne dieses
+                    Häkchen zieht ArcoTime die Schliesstage ein zweites Mal ab –
+                    die häufigste Fehlerquelle in solchen Auswertungen.
+                  </span>
+                </span>
+              </label>
+              <p className="mt-3">
+                <Link
+                  href="/einstellungen/zeitkonto"
+                  className="text-sm text-arcos-steel hover:underline"
+                >
+                  Sollstunden je Monat erfassen →
+                </Link>
+              </p>
+            </div>
+          )}
+
           {/* Absenderangaben. Sie erscheinen auf der Druckansicht eines
               Rapports und später im PDF und im Begleitmail – deshalb an
               einer Stelle gepflegt und nicht je Dokument. */}
