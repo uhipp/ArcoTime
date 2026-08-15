@@ -26,6 +26,8 @@ const stil = StyleSheet.create({
   titel: { fontSize: 16, marginBottom: 2 },
   untertitel: { fontSize: 9, color: "#555", marginBottom: 12 },
   kopfzeile: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: "#333", paddingBottom: 3, marginBottom: 3 },
+  // wrap: false – eine Monatszeile gehört zusammen und darf nicht über
+  // einen Seitenumbruch zerfallen.
   zeile: { flexDirection: "row", paddingVertical: 2.5, borderBottomWidth: 0.5, borderBottomColor: "#ddd" },
   summenzeile: { flexDirection: "row", paddingVertical: 4, borderTopWidth: 1, borderTopColor: "#333", marginTop: 2 },
   zellLinks: { textAlign: "left" },
@@ -63,7 +65,12 @@ export function ZeitkontoPdf({
   // "✓" gibt es in der Standardschrift des PDF-Erzeugers nicht, und er
   // lässt sie wortlos weg – der Abschluss war im PDF damit unsichtbar.
   // Klartext ist hier ohnehin besser: Das Blatt wird unterschrieben.
-  const spalten = [2.6, 1.9, 1.9, 1.6, 1.9, 1.9, 1.9, 1.6, 3.2];
+  // Breiten in Zentimetern. A4 quer bietet 26,7 cm zwischen den Rändern;
+  // die Summe hier ist 21,3 cm – die Statusspalte muss "abgeschlossen
+  // 15.08.2026" auf EINER Zeile fassen. Bricht sie um, wird jede Zeile
+  // doppelt hoch, und bei zwölf abgeschlossenen Monaten passt die
+  // Tabelle nicht mehr auf die Seite.
+  const spalten = [2.6, 1.9, 1.9, 1.6, 1.9, 1.9, 1.9, 1.6, 6.0];
   const kopf = [
     "Monat",
     "Soll",
@@ -133,7 +140,7 @@ export function ZeitkontoPdf({
         </View>
 
         {konto.zeilen.map((m) => (
-          <View key={m.monat} style={stil.zeile}>
+          <View key={m.monat} style={stil.zeile} wrap={false}>
             <Text style={[stil.zellLinks, { width: spalten[0] * CM }]}>
               {MONATE[m.monat - 1]}
             </Text>
@@ -218,7 +225,9 @@ export function AbschlussUebersichtPdf({
     offeneRapporte: number;
   }[];
 }) {
-  const spalten = [7, 3, 3, 3, 3, 4.5];
+  // Dieselbe Überlegung wie oben: Der Status steht in Klartext und darf
+  // nicht umbrechen.
+  const spalten = [6.5, 3, 3, 3, 3, 7.5];
   const kopf = ["Person", "Soll", "Ist", "Saldo Ende", "Ferien Rest", "Status"];
 
   return (
@@ -245,7 +254,7 @@ export function AbschlussUebersichtPdf({
         </View>
 
         {zeilen.map((r) => (
-          <View key={r.name} style={stil.zeile}>
+          <View key={r.name} style={stil.zeile} wrap={false}>
             <Text style={[stil.zellLinks, { width: spalten[0] * CM }]}>{r.name}</Text>
             <Text style={[stil.zellRechts, { width: spalten[1] * CM }]}>{z(r.soll)}</Text>
             <Text style={[stil.zellRechts, { width: spalten[2] * CM }]}>{z(r.ist)}</Text>
