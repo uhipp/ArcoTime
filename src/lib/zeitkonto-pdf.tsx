@@ -109,18 +109,27 @@ export function ZeitkontoPdf({
         </View>
 
         <View style={stil.kopfzeile}>
-          {kopf.map((t, i) => (
-            <Text
-              key={t}
-              style={[
-                i === 0 ? stil.zellLinks : stil.zellRechts,
-                stil.fett,
-                { width: spalten[i] * CM },
-              ]}
-            >
-              {t}
-            </Text>
-          ))}
+          {kopf.map((t, i) => {
+            // Die Statusspalte enthält Text und ist deshalb linksbündig –
+            // die Überschrift muss es auch sein, samt demselben Abstand.
+            // Rechtsbündig stand sie drei Zentimeter neben ihrem Inhalt.
+            const textspalte = i === 0 || i === kopf.length - 1;
+            return (
+              <Text
+                key={t}
+                style={[
+                  textspalte ? stil.zellLinks : stil.zellRechts,
+                  stil.fett,
+                  {
+                    width: spalten[i] * CM,
+                    paddingLeft: i === kopf.length - 1 ? 6 : 0,
+                  },
+                ]}
+              >
+                {t}
+              </Text>
+            );
+          })}
         </View>
 
         {konto.zeilen.map((m) => (
