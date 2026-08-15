@@ -265,6 +265,10 @@
         "text": "„Person ersetzen“ tauscht jemanden im ganzen Rapport aus – samt aller bereits erfassten Stunden. Exportierte Positionen bleiben unangetastet."
       },
       {
+        "typ": "verbessert",
+        "text": "Rückwege ergänzt: Die Übersicht zeigt neu auch Rapporte, Disposition, Mitarbeitende und Einstellungen. Anfrage und Projekt haben einen Link „Zur Übersicht“. Wer aus der Disposition einen Rapport öffnet, kommt über „Zur Disposition“ in dieselbe Ansicht und denselben Tag zurück; wer aus den Auswertungen einen Zeiteintrag öffnet, findet dort „Zu den Auswertungen“ und „Zur Zeiterfassung“."
+      },
+      {
         "typ": "neu",
         "text": "Navigation zum Kunden: Ein offener Rapport zeigt zuoberst die Kundenadresse mit einem Knopf „Navigation“ (Google Maps, daneben Apple Karten) und die Telefonnummer zum Antippen. Auf dem Telefon gestartet, läuft die Navigation auf CarPlay weiter. Die Adresse verlässt ArcoTime erst beim Antippen."
       },

@@ -322,7 +322,10 @@ export default async function DispositionPage({
       // stehen im Tooltip.
       farbe: farbeVon(r.mitarbeiter_id ?? null),
       titelZeile: kunde,
-      href: `/rapporte/${r.id}`,
+      // Herkunft mitgeben: Wer aus der Disposition einen Balken
+      // öffnet, will danach in dieselbe Ansicht und denselben Tag
+      // zurück – nicht in die Rapportliste.
+      href: `/rapporte/${r.id}?von=disposition&ansicht=${ansicht}&datum=${bezugsdatum}`,
       konflikt: konfliktGruende.has(r.id),
       konfliktGrund: konfliktGruende.get(r.id)?.join(" · "),
       datum: r.datum,
@@ -530,7 +533,7 @@ export default async function DispositionPage({
                       >
                         <span className="font-mono text-gray-500 w-24 shrink-0">{zeit}</span>
                         <Link
-                          href={`/rapporte/${r.id}`}
+                          href={`/rapporte/${r.id}?von=disposition&ansicht=${ansicht}&datum=${bezugsdatum}`}
                           className="text-arcos-steel hover:underline"
                         >
                           {rapportNummer(r)}

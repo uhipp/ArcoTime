@@ -323,7 +323,11 @@ export default async function AuswertungenPage({
                           <span className="text-xs text-gray-400">exportiert</span>
                         ) : (
                           <Link
-                            href={`/zeiterfassung/${z.id}`}
+                            // Herkunft mitgeben, damit die Detailseite
+                            // den Rückweg hierher anbieten kann – mit
+                            // Ansicht und Datum, sonst landet man in einer
+                            // anderen Woche als der, aus der man kam.
+                            href={`/zeiterfassung/${z.id}?von=auswertungen&ansicht=${ansicht}&datum=${bezugsdatum}`}
                             className={
                               laeuft
                                 ? "font-medium text-red-700 hover:underline"

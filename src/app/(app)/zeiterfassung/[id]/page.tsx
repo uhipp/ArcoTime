@@ -6,6 +6,7 @@ import { ZeiterfassungForm } from "@/components/zeiterfassung-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { bearbeiteZeiteintrag, deleteZeiteintrag } from "@/app/actions/zeiteintraege";
 import { DeleteButton } from "@/components/delete-button";
+import { ZurueckLinks } from "@/components/zurueck-links";
 import type { Zeiteintrag } from "@/lib/types";
 import Link from "next/link";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
@@ -15,10 +16,10 @@ export default async function ZeiteintragDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; von?: string; ansicht?: string; datum?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, von, ansicht, datum } = await searchParams;
   const supabase = await createClient();
 
   const [
@@ -64,6 +65,25 @@ export default async function ZeiteintragDetailPage({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold">Zeiteintrag bearbeiten</h1>
+          <ZurueckLinks
+            links={[
+              // Der Weg zurück dorthin, wo man herkam, steht zuerst.
+              ...(von === "auswertungen"
+                ? [
+                    {
+                      href: `/auswertungen?${new URLSearchParams(
+                        Object.entries({ ansicht, datum }).filter(([, v]) => v) as [
+                          string,
+                          string,
+                        ][]
+                      ).toString()}`,
+                      text: "Zu den Auswertungen",
+                    },
+                  ]
+                : []),
+              { href: "/zeiterfassung", text: "Zur Zeiterfassung" },
+            ]}
+          />
           {herkunft && (
             <p className="text-sm text-gray-500 mt-1">
               <Link

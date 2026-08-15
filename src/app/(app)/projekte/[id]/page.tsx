@@ -6,6 +6,7 @@ import { ProjektForm } from "@/components/projekt-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateProjekt, deleteProjekt } from "@/app/actions/projekte";
 import { DeleteButton } from "@/components/delete-button";
+import { ZurueckLinks } from "@/components/zurueck-links";
 import { ProjektTeam } from "@/components/projekt-team";
 import type { Projekt } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
@@ -58,7 +59,10 @@ export default async function ProjektDetailPage({
     <div className="space-y-10">
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">{projekt.bezeichnung}</h1>
+          <div>
+            <h1 className="text-2xl font-semibold">{projekt.bezeichnung}</h1>
+            <ZurueckLinks links={[{ href: "/projekte", text: "Zur Übersicht" }]} />
+          </div>
           {/* Löschen bleibt beim Admin – siehe 0031. */}
           {istAdmin && (
             <DeleteButton

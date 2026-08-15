@@ -38,10 +38,17 @@ export default async function RapportDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; bearbeiten?: string; tag?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    bearbeiten?: string;
+    tag?: string;
+    von?: string;
+    ansicht?: string;
+    datum?: string;
+  }>;
 }) {
   const { id } = await params;
-  const { error, bearbeiten, tag } = await searchParams;
+  const { error, bearbeiten, tag, von, ansicht, datum } = await searchParams;
   const supabase = await createClient();
 
   const [
@@ -153,6 +160,16 @@ export default async function RapportDetailPage({
           >
             PDF
           </a>
+          {von === "disposition" && (
+            <Link
+              href={`/disposition?${new URLSearchParams(
+                Object.entries({ ansicht, datum }).filter(([, v]) => v) as [string, string][]
+              ).toString()}`}
+              className="text-sm text-arcos-steel hover:underline"
+            >
+              Zur Disposition
+            </Link>
+          )}
           <Link href="/rapporte" className="text-sm text-arcos-steel hover:underline">
             Zur Übersicht
           </Link>

@@ -6,6 +6,7 @@ import { ladeDokumente } from "@/lib/dokumente-laden";
 import { AnfrageForm } from "@/components/anfrage-form";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { DeleteButton } from "@/components/delete-button";
+import { ZurueckLinks } from "@/components/zurueck-links";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import { rabattLabel } from "@/lib/rabatt";
 import { ohneNamenszeile } from "@/lib/mitarbeiter-praefix";
@@ -78,7 +79,10 @@ export default async function AnfrageDetailPage({
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Anfrage bearbeiten</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">Anfrage bearbeiten</h1>
+          <ZurueckLinks links={[{ href: "/anfragen", text: "Zur Übersicht" }]} />
+        </div>
         {profile?.role === "admin" && (
           <DeleteButton action={deleteAction} label="Anfrage löschen" />
         )}

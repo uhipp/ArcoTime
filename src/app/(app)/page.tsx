@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/get-profile";
+import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import type { Anfrage } from "@/lib/types";
 
 export default async function DashboardPage() {
-  const profile = await getCurrentProfile();
+  const [profile, organisation] = await Promise.all([
+    getCurrentProfile(),
+    getCurrentOrganisation(),
+  ]);
   const isAdmin = profile?.role === "admin";
   const supabase = await createClient();
   const heute = heuteIso();
@@ -85,6 +88,22 @@ export default async function DashboardPage() {
           <div className="text-sm text-gray-500">Kundenanfragen & Wiedervorlagen</div>
         </Link>
         <Link
+          href="/rapporte"
+          className="block rounded-lg border bg-white p-5 hover:shadow"
+        >
+          <div className="font-medium">Rapporte</div>
+          <div className="text-sm text-gray-500">Arbeitsrapporte & Nachweise</div>
+        </Link>
+        {organisation?.modul_disposition && (
+          <Link
+            href="/disposition"
+            className="block rounded-lg border bg-white p-5 hover:shadow"
+          >
+            <div className="font-medium">Disposition</div>
+            <div className="text-sm text-gray-500">Einsätze planen & verschieben</div>
+          </Link>
+        )}
+        <Link
           href="/auswertungen"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
@@ -121,11 +140,29 @@ export default async function DashboardPage() {
         </Link>
         {isAdmin && (
           <Link
+            href="/mitarbeiter"
+            className="block rounded-lg border bg-white p-5 hover:shadow"
+          >
+            <div className="font-medium">Mitarbeitende</div>
+            <div className="text-sm text-gray-500">Konten, Rollen & Abwesenheiten</div>
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
             href="/export"
             className="block rounded-lg border bg-white p-5 hover:shadow"
           >
             <div className="font-medium">Export</div>
             <div className="text-sm text-gray-500">Positionen als Excel exportieren</div>
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            href="/einstellungen"
+            className="block rounded-lg border bg-white p-5 hover:shadow"
+          >
+            <div className="font-medium">Einstellungen</div>
+            <div className="text-sm text-gray-500">Auswahllisten, Arbeitszeit & Gruppen</div>
           </Link>
         )}
       </div>
