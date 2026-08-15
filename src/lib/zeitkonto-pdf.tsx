@@ -134,7 +134,9 @@ export function ZeitkontoPdf({
                   stil.fett,
                   {
                     width: spalten[i] * CM,
-                    paddingLeft: i === kopf.length - 1 ? 6 : 0,
+                    // Kräftiger Einzug: Links davon steht eine
+                    // rechtsbündige Zahl, die sonst am Wort klebt.
+                    paddingLeft: i === kopf.length - 1 ? 18 : 0,
                   },
                 ]}
               >
@@ -164,7 +166,7 @@ export function ZeitkontoPdf({
             <Text style={[stil.zellRechts, { width: spalten[7] * CM }]}>
               {m.ferienTage ? m.ferienTage.toFixed(1) : "–"}
             </Text>
-            <Text style={[stil.zellLinks, { width: spalten[8] * CM, paddingLeft: 6 }]}>
+            <Text style={[stil.zellLinks, { width: spalten[8] * CM, paddingLeft: 18 }]}>
               {m.abgeschlossenAm
                 ? `abgeschlossen ${new Date(m.abgeschlossenAm).toLocaleDateString("de-CH")}`
                 : ""}
@@ -250,7 +252,7 @@ export function AbschlussUebersichtPdf({
               style={[
                 i === 0 || i === 5 ? stil.zellLinks : stil.zellRechts,
                 stil.fett,
-                { width: spalten[i] * CM },
+                { width: spalten[i] * CM, paddingLeft: i === 5 ? 18 : 0 },
               ]}
             >
               {t}
@@ -269,7 +271,7 @@ export function AbschlussUebersichtPdf({
             <Text style={[stil.zellRechts, { width: spalten[4] * CM }]}>
               {r.ferienRest.toFixed(1)}
             </Text>
-            <Text style={[stil.zellLinks, { width: spalten[5] * CM }]}>
+            <Text style={[stil.zellLinks, { width: spalten[5] * CM, paddingLeft: 18 }]}>
               {r.abgeschlossen ? "abgeschlossen" : "offen"}
               {r.offeneRapporte > 0 ? ` · ${r.offeneRapporte} Rapporte offen` : ""}
             </Text>
