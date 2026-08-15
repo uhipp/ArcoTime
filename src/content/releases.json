@@ -281,6 +281,10 @@
         "text": "Navigation zum Kunden: Ein offener Rapport zeigt zuoberst die Kundenadresse mit einem Knopf „Navigation“ (Google Maps, daneben Apple Karten) und die Telefonnummer zum Antippen. Auf dem Telefon gestartet, läuft die Navigation auf CarPlay weiter. Die Adresse verlässt ArcoTime erst beim Antippen."
       },
       {
+        "typ": "verbessert",
+        "text": "Ein laufender Timer ist jetzt auffindbar statt nur sichtbar: Das rote ⏱ in der Navigation führt direkt zum betroffenen Rapport, in der Rapportliste ist dessen Zeile rot markiert und mit „⏱ läuft“ versehen, und über der Liste steht ein Band mit Startzeit und Kunde."
+      },
+      {
         "typ": "neu",
         "text": "Timer an der Rapportposition: für die Fahrzeit. Im Fahrzeug den Rapport öffnen, an der Position „▶ Timer starten“ drücken, bei der Ankunft stoppen – die gemessene Zeit ersetzt die Dauer. Solange er läuft, steht ein breiter Stopp-Knopf über den Positionen und ein rotes ⏱ in der Navigation."
       },

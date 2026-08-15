@@ -116,6 +116,8 @@ Welche Leistungen als Arbeitszeit zählen, legt ein Admin unter [Dienstleistunge
 
 **Timer für die Fahrzeit**: An jeder Position, die als Arbeitszeit zählt, steht bei einem offenen Rapport ein Knopf **„▶ Timer starten"**. Gedacht ist er für die Anfahrt: Der Monteur sitzt im Fahrzeug, öffnet den Rapport des Kunden, startet den Timer und fährt los. Bei der Ankunft stoppt er ihn – die gemessene Zeit ersetzt die Dauer dieser Position.
 
+Wo der Timer läuft, ist von überall zu sehen: Das rote ⏱ in der Navigation **führt direkt zu diesem Rapport**, in der Rapportliste ist die Zeile rot und mit „⏱ läuft" markiert, und über der Liste steht ein Band mit Startzeit und Kunde.
+
 Solange er läuft, steht ein breiter Knopf **„■ Ankunft – Timer stoppen"** mit der laufenden Zeit zuoberst über den Positionen; wer bei der Ankunft erst die richtige Zeile suchen müsste, täte es während der Fahrt. Zusätzlich erscheint ein rotes ⏱ in der Navigation, damit kein Timer über Nacht weiterläuft.
 
 Gerechnet wird ab dem gespeicherten Startzeitpunkt – die Zeit stimmt also auch, wenn das Telefon zwischendurch im Ruhezustand war oder du den Rapport auf einem anderen Gerät öffnest. Es läuft **ein Timer je Person**; ist bereits einer aktiv, sagt die Meldung, wo. Kilometer und Material bekommen keinen Timer – die misst man nicht mit der Uhr.
