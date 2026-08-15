@@ -490,7 +490,14 @@ export async function createSchliesstag(formData: FormData) {
     );
   }
 
-  const { error } = await supabase.from("schliesstage").insert({ von, bis, bezeichnung });
+  const { error } = await supabase.from("schliesstage").insert({
+    von,
+    bis,
+    bezeichnung,
+    // Betriebsferien gehen vom Ferienanspruch ab (Art. 329c Abs. 2 OR),
+    // Feiertage nicht (0056).
+    belastet_ferien: formData.get("belastet_ferien") === "on",
+  });
   if (error) {
     redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
   }
@@ -814,6 +821,27 @@ export async function toggleStandardposition(id: string, aktiv: boolean) {
     mitErfolg(
       "/einstellungen",
       aktiv ? "Standardposition aktiviert." : "Standardposition deaktiviert."
+    )
+  );
+}
+
+
+// Betriebsferien oder Feiertag? Das Häkchen entscheidet, ob die Tage vom
+// Ferienanspruch der Mitarbeitenden abgehen. Umgeschaltet wird es direkt
+// in der Zeile – ein Schliesstag hat sonst nichts zu bearbeiten.
+export async function toggleSchliesstagFerien(id: string, belastetFerien: boolean) {
+  const supabase = await createClient();
+  await supabase
+    .from("schliesstage")
+    .update({ belastet_ferien: belastetFerien })
+    .eq("id", id);
+  revalidatePath("/einstellungen");
+  redirect(
+    mitErfolg(
+      "/einstellungen",
+      belastetFerien
+        ? "Gilt neu als Betriebsferien – die Tage gehen vom Ferienanspruch ab."
+        : "Gilt neu als Feiertag – die Tage kosten keine Ferientage."
     )
   );
 }

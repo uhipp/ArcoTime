@@ -189,6 +189,18 @@ Sollstunden des Monats (Tabelle) × Pensum
 
 Halbe Tage zählen halb – die Abwesenheit kennt bereits Uhrzeiten.
 
+**Betriebsferien belasten das Ferienguthaben.** Der Arbeitgeber darf den
+Zeitpunkt der Ferien bestimmen (Art. 329c Abs. 2 OR); die Tage gehen
+deshalb ganz normal vom Jahresanspruch ab. Damit brauchen die
+Schliesstage eine Unterscheidung, die sie bisher nicht hatten: Ein
+Feiertag kostet keine Ferientage, Betriebsferien kosten welche – beides
+stand in derselben Tabelle und sah gleich aus. Umgesetzt in 0056 als
+Häkchen am Schliesstag.
+
+Wie viele Tage eine Betriebsferienwoche kostet, ergibt sich aus den
+Arbeitstagen der Person: Wer zu 60 Prozent an drei Tagen arbeitet,
+verliert für eine geschlossene Woche drei Tage und nicht fünf.
+
 **Feiertage nicht doppelt.** Die Schliesstage gibt es schon. Sind sie in
 der Monatstabelle bereits berücksichtigt – und das sind sie in einer
 Treuhänder-Tabelle immer –, dürfen sie kein zweites Mal abgezogen werden.

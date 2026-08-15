@@ -13,6 +13,7 @@ import {
   entferneLogo,
   createSchliesstag,
   loescheSchliesstag,
+  toggleSchliesstagFerien,
   createAbwesenheitsart,
   updateAbwesenheitsart,
   toggleAbwesenheitsart,
@@ -610,19 +611,46 @@ export default async function EinstellungenPage({
           diesen Tagen keine Termine vor. Als Zeitraum erfasst – für einen
           einzelnen Feiertag genügt das Startdatum.
         </p>
+        {organisation?.modul_zeitkonto && (
+          <p className="rounded bg-blue-50 text-blue-900 text-xs px-3 py-2 mb-3">
+            <strong>Betriebsferien</strong> gehen vom Ferienanspruch der
+            Mitarbeitenden ab – der Arbeitgeber darf den Zeitpunkt der Ferien
+            bestimmen (Art. 329c Abs. 2 OR). <strong>Feiertage</strong> und
+            Brückentage kosten dagegen keine Ferientage. Das Häkchen in der
+            Zeile sagt, was von beidem gemeint ist.
+          </p>
+        )}
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {schliesstage?.length === 0 && (
             <li className="px-4 py-3 text-sm text-gray-400">Keine Schliesstage erfasst.</li>
           )}
           {schliesstage?.map((t) => (
             <li key={t.id} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span>
+              <span className="flex flex-wrap items-center gap-2">
                 <strong>{t.bezeichnung}</strong>
                 <span className="text-gray-500">
-                  {" "}
                   · {formatDatumCH(t.von)}
                   {t.bis !== t.von ? ` bis ${formatDatumCH(t.bis)}` : ""}
                 </span>
+                {organisation?.modul_zeitkonto && (
+                  <form action={toggleSchliesstagFerien.bind(null, t.id, !t.belastet_ferien)}>
+                    <button
+                      type="submit"
+                      title={
+                        t.belastet_ferien
+                          ? "Betriebsferien: Die Tage gehen vom Ferienanspruch ab. Klicken, um daraus einen Feiertag zu machen."
+                          : "Feiertag: kostet keine Ferientage. Klicken, um daraus Betriebsferien zu machen."
+                      }
+                      className={`rounded px-2 py-0.5 text-xs ${
+                        t.belastet_ferien
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {t.belastet_ferien ? "Betriebsferien" : "Feiertag"}
+                    </button>
+                  </form>
+                )}
               </span>
               <form action={loescheSchliesstag.bind(null, t.id)}>
                 <button type="submit" className="text-xs text-gray-400 hover:text-red-600">
@@ -647,6 +675,12 @@ export default async function EinstellungenPage({
             placeholder="z.B. Bundesfeier"
             className="flex-1 min-w-[10rem] rounded border border-gray-300 px-3 py-2 text-sm"
           />
+          {organisation?.modul_zeitkonto && (
+            <label className="flex items-center gap-1 text-xs whitespace-nowrap pb-2">
+              <input type="checkbox" name="belastet_ferien" />
+              Betriebsferien
+            </label>
+          )}
           <button
             type="submit"
             className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"

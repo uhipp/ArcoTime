@@ -84,6 +84,8 @@ Feiertage, Betriebsferien und alles andere, an dem die ganze Firma zu ist. Ein S
 
 Schliesstage sperren die Zeiterfassung **nicht**: Wer am Feiertag arbeitet, kann seine Zeit ganz normal erfassen.
 
+**Feiertag oder Betriebsferien?** Mit gebuchtem [Zeitkonto](/hilfe/einstellungen) steht in jeder Zeile ein Schalter. **Betriebsferien** gehen vom Ferienanspruch der Mitarbeitenden ab – der Arbeitgeber darf den Zeitpunkt der Ferien bestimmen (Art. 329c Abs. 2 OR). **Feiertage** und Brückentage kosten dagegen keine Ferientage. Wie viele Tage eine Betriebsferienwoche kostet, richtet sich nach den Arbeitstagen der Person: Wer zu 60 % an drei Tagen arbeitet, verliert drei Tage und nicht fünf.
+
 ## Abwesenheitsarten
 
 Die Auswahl, die bei einer Person unter [Mitarbeitende](/hilfe/mitarbeitende) → "Details" zur Verfügung steht – z.B. Ferien, Krankheit, Militär, Kurs, Homeoffice.
