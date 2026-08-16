@@ -110,8 +110,13 @@ Arcos trifft angemessene Massnahmen zur Datensicherheit, insbesondere:
   Unterauftragsbearbeiter ist mit Zwei-Faktor-Authentisierung geschützt.
 - **Verschlüsselung**: durchgehende Transportverschlüsselung (TLS);
   Verschlüsselung der Datenbank und der Sicherungskopien im Ruhezustand.
-- **Verfügbarkeit**: tägliche Sicherungen mit einer Aufbewahrung von mindestens
-  sieben Tagen.
+- **Verfügbarkeit und Wiederherstellung**: Die Datenbank wird **täglich
+  gesichert**; die Sicherungen werden **sieben Tage** aufbewahrt. Eine
+  Wiederherstellung erfolgt auf den Stand der letzten Sicherung. Dabei können
+  die seither erfassten Änderungen – **längstens eines Tages** – verloren
+  gehen. Eine Wiederherstellung auf einen beliebigen Zeitpunkt
+  (Point-in-Time-Recovery) ist nicht eingerichtet; sie kann gegen Aufpreis
+  vereinbart werden.
 - **Nachvollziehbarkeit**: fälschungssicheres, nur schreibend geführtes
   Änderungsprotokoll über Änderungen an zentralen Daten, mit Zeitpunkt und
   auslösendem Konto.
@@ -153,9 +158,9 @@ Angaben.
 ## 9. Rückgabe und Löschung
 
 Nach Vertragsende bleiben die Daten **30 Tage** abrufbereit, damit der Kunde
-sie exportieren kann. Danach löscht Arcos sämtliche Daten des Kunden.
-Sicherungskopien werden im normalen Rhythmus überschrieben, längstens innert
-weiterer 30 Tage.
+sie exportieren kann. Danach löscht Arcos sämtliche Daten des Kunden. Die
+Sicherungskopien werden innert weiterer **sieben Tage** überschrieben; bis
+dahin sind die Daten dort noch enthalten, aber nicht mehr zugänglich.
 
 Auf schriftlichen Wunsch löscht Arcos früher oder stellt die Daten einmalig als
 Datei zur Verfügung. Eine gesetzliche Aufbewahrungspflicht bleibt vorbehalten;

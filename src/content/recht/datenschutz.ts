@@ -116,8 +116,7 @@ Betriebsdaten werden gelöscht, sobald der Zweck entfällt:
 - **Registrierungs- und Abrechnungsdaten**: zehn Jahre, entsprechend der
   Aufbewahrungspflicht nach Art. 958f OR.
 - **Serverprotokolle**: wenige Tage bis Wochen, je nach Dienstleister.
-- **Sicherungskopien**: werden im normalen Rhythmus überschrieben, längstens
-  nach dreissig Tagen.
+- **Sicherungskopien**: werden nach sieben Tagen überschrieben.
 
 ## 9. Datensicherheit
 
@@ -125,7 +124,10 @@ Zum Schutz der Daten setzt Arcos unter anderem ein: durchgehende
 Transportverschlüsselung (TLS), Verschlüsselung der Datenbank und der
 Sicherungskopien im Ruhezustand, Passwörter ausschliesslich als Hashwert,
 strikte Trennung der Mandanten auf Datenbankebene, ein fälschungssicheres
-Änderungsprotokoll sowie tägliche Sicherungen. Zugriff auf Kundendaten haben
+Änderungsprotokoll sowie tägliche Sicherungen, die sieben Tage aufbewahrt
+werden. Eine Wiederherstellung erfolgt auf den Stand der letzten Sicherung;
+dabei können die Daten des letzten Tages verloren gehen. Zugriff auf
+Kundendaten haben
 nur namentlich bekannte Personen der Arcos Group, und nur soweit Betrieb,
 Fehlersuche oder ein Supportfall es erfordern.
 

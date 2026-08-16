@@ -144,9 +144,17 @@ keine Rechte und verwendet sie nicht für eigene Zwecke.
 Der Kunde kann seine Daten während der Vertragsdauer jederzeit selbst in einem
 gängigen elektronischen Format exportieren.
 
+**Datensicherung.** Arcos sichert die Datenbank **täglich** und bewahrt die
+Sicherungen **sieben Tage** auf. Muss auf eine Sicherung zurückgegriffen
+werden, wird der Stand der letzten Sicherung wiederhergestellt; seither
+erfasste Daten – **längstens die eines Tages** – können dabei verloren gehen.
+Eine weitergehende Wiederherstellung schuldet Arcos nicht. Dem Kunden wird
+empfohlen, für ihn wesentliche Auswertungen zusätzlich selbst zu exportieren
+und aufzubewahren.
+
 Nach Vertragsende bleiben die Daten **30 Tage** abrufbereit, damit der Kunde
-einen Export vornehmen kann. Danach werden sie gelöscht; Sicherungskopien
-werden im normalen Rhythmus überschrieben, längstens innert weiterer 30 Tage.
+einen Export vornehmen kann. Danach werden sie gelöscht; die Sicherungskopien
+werden innert weiterer **sieben Tage** überschrieben.
 Auf schriftlichen Wunsch löscht Arcos die Daten früher oder stellt sie einmalig
 als Datei zur Verfügung.
 
