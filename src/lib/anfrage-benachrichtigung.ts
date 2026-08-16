@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server";
 import { sendeMail } from "@/lib/email";
+import { APP_URL } from "@/lib/app-url";
 
 // Benachrichtigt eine Person per E-Mail, wenn ihr eine Anfrage zugewiesen
 // wurde – wird sowohl beim Erstellen (Zuweisung direkt bei Erfassung) als
@@ -39,11 +40,11 @@ export async function benachrichtigeZuweisung({
     if (!empfaenger?.email) return;
 
     const zugewiesenVonName = absender?.name ?? "jemand";
-    const appUrl = process.env.APP_URL ?? "https://arco-time.vercel.app";
-    const url = `${appUrl}/anfragen/${anfrageId}`;
+    const url = `${APP_URL}/anfragen/${anfrageId}`;
 
     await sendeMail({
       an: empfaenger.email,
+      systemAntwort: true,
       betreff: `Dir wurde eine Anfrage zugewiesen: ${titel}`,
       html: `
         <div style="font-family:sans-serif;color:#111827;">

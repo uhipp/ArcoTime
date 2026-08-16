@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { stripe, STRIPE_PREIS_ID } from "@/lib/stripe";
 import { abgerechneteMenge } from "@/lib/lizenzpreise";
+import { APP_URL } from "@/lib/app-url";
 
 // Öffentliche Aktion (kein Login nötig – das IST die Selbstregistrierung).
 // Erzeugt eine Stripe-Checkout-Session und leitet direkt dorthin weiter.
@@ -33,8 +34,6 @@ export async function starteRegistrierung(formData: FormData) {
   // der Stripe-Checkout den korrekten Betrag zeigt.
   const abgerechnet = abgerechneteMenge(anzahlBenutzer, zyklus);
 
-  const appUrl = process.env.APP_URL ?? "https://arco-time.vercel.app";
-
   // Gemeinsame Metadaten – landen auf der Session UND auf dem Abo selbst
   // (subscription_data.metadata), da spätere Webhook-Events (Verlängerung,
   // Zahlungsfehler, Kündigung) sich auf das Abo/den Kunden beziehen, nicht
@@ -61,8 +60,8 @@ export async function starteRegistrierung(formData: FormData) {
       metadata,
     },
     metadata,
-    success_url: `${appUrl}/registrieren/erfolg?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/registrieren?abgebrochen=1`,
+    success_url: `${APP_URL}/registrieren/erfolg?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${APP_URL}/registrieren?abgebrochen=1`,
     locale: "de",
   });
 

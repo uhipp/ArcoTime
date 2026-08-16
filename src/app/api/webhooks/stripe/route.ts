@@ -34,6 +34,7 @@ async function meldeGescheiterteEinladung({
       if (!person.email) continue;
       await sendeMail({
         an: person.email,
+        systemAntwort: true,
         betreff: `ArcoTime: Einladung für "${firmenname}" konnte nicht zugestellt werden`,
         html: `
           <div style="font-family:sans-serif;color:#111827;">
@@ -207,6 +208,7 @@ export async function POST(request: NextRequest) {
             if (!person.email) continue;
             await sendeMail({
               an: person.email,
+              systemAntwort: true,
               betreff: `Zahlung fehlgeschlagen – ${organisation.name} bei ArcoTime gesperrt`,
               html: `
                 <div style="font-family:sans-serif;color:#111827;">

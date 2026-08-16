@@ -109,6 +109,7 @@ export async function erinnereAnOffeneRapporte(appUrl: string) {
 
     await sendeMail({
       an: person.email,
+      systemAntwort: true,
       betreff: mehrzahl
         ? `${eigene.length} offene Arbeitsrapporte in ArcoTime`
         : "Ein offener Arbeitsrapport in ArcoTime",

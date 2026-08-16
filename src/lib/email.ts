@@ -25,11 +25,23 @@ function transporter() {
   });
 }
 
+// Absender mit Anzeigename: Die Systemmails laufen über die Plattformdomain
+// (arcocloud.ch), die künftig alle Arco-Produkte bedient. Der Empfänger soll
+// trotzdem das Produkt sehen, das er benutzt – deshalb "ArcoTime <…>".
+function absenderMitNamen(): string | undefined {
+  const adresse = process.env.SMTP_FROM ?? process.env.SMTP_USER;
+  const name = process.env.SMTP_ABSENDER_NAME ?? "ArcoTime";
+  if (!adresse) return undefined;
+  if (adresse.includes("<")) return adresse; // Name steckt schon in der Variable
+  return `"${name}" <${adresse}>`;
+}
+
 export async function sendeMail({
   an,
   betreff,
   html,
   antwortAn,
+  systemAntwort,
   anhaenge,
 }: {
   an: string;
@@ -39,13 +51,19 @@ export async function sendeMail({
   // dasselbe Postfach, aber antworten soll der Kunde der Firma, die den
   // Rapport geschickt hat – nicht einem Systempostfach.
   antwortAn?: string | null;
+  // Nur für Mails, die von ArcoTime selbst kommen (Erinnerungen, Hinweise an
+  // die Organisation). Dann darf die Antwort im Support-Postfach landen.
+  // Bewusst nicht als Fallback für antwortAn: Hat eine Organisation keine
+  // Absenderadresse hinterlegt, würde die Antwort ihres Kunden sonst bei
+  // Arcos landen statt bei ihr.
+  systemAntwort?: boolean;
   anhaenge?: { dateiname: string; inhalt: Buffer; typ?: string }[];
 }) {
-  const absender = process.env.SMTP_FROM ?? process.env.SMTP_USER;
+  const support = process.env.SMTP_ANTWORT_AN;
   await transporter().sendMail({
-    from: absender,
+    from: absenderMitNamen(),
     to: an,
-    replyTo: antwortAn ?? undefined,
+    replyTo: antwortAn ?? (systemAntwort ? support : undefined),
     subject: betreff,
     html,
     attachments: anhaenge?.map((a) => ({

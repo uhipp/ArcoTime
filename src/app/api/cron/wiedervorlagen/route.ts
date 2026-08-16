@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { heuteIso } from "@/lib/date-utils";
 import { sendeMail } from "@/lib/email";
 import { erinnereAnOffeneRapporte } from "@/lib/cron/offene-rapporte";
+import { APP_URL } from "@/lib/app-url";
 
 // Die täglichen Meldungen von ArcoTime (über Vercel Cron, siehe
 // vercel.json): fällige Wiedervorlagen und offene Rapporte vergangener
@@ -58,7 +59,6 @@ export async function GET(request: NextRequest) {
 
   const supabase = createAdminClient();
   const heute = heuteIso();
-  const appUrl = process.env.APP_URL ?? "https://arco-time.vercel.app";
 
   // Bewusst OHNE "zugewiesen_an is not null"-Filter: auch nicht zugewiesene
   // Anfragen sollen bei Fälligkeit ins Kanban-Board-Spalte "Wiedervorlage"
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
   // Kein früher Ausstieg mehr, wenn es keine Wiedervorlagen gibt: Die
   // Rapport-Erinnerung hängt nicht an ihnen und lief sonst nie.
   if (zeilen.length === 0) {
-    const rapporte = await erinnereAnOffeneRapporte(appUrl);
+    const rapporte = await erinnereAnOffeneRapporte(APP_URL);
     return NextResponse.json({
       versendet: 0,
       verschoben: 0,
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         return `
           <tr style="border-bottom:1px solid #e5e7eb;">
             <td style="padding:8px 12px;">
-              <a href="${appUrl}/anfragen/${z.id}" style="color:#1D3557;text-decoration:none;font-weight:600;">${z.titel}</a>
+              <a href="${APP_URL}/anfragen/${z.id}" style="color:#1D3557;text-decoration:none;font-weight:600;">${z.titel}</a>
               <div style="color:#6b7280;font-size:13px;">${kunde}${projekt}</div>
             </td>
             <td style="padding:8px 12px;white-space:nowrap;color:${ueberfaellig ? "#b91c1c" : "#6b7280"};font-weight:${ueberfaellig ? "600" : "400"};">
@@ -156,18 +156,19 @@ export async function GET(request: NextRequest) {
         <p>Hallo ${mitarbeiter.name},</p>
         <p>du hast ${eigene.length} fällige Wiedervorlage${eigene.length > 1 ? "n" : ""} in ArcoTime:</p>
         <table style="width:100%;border-collapse:collapse;margin:12px 0;">${zeilenHtml}</table>
-        <p><a href="${appUrl}/" style="color:#457B9D;">Zur Übersicht öffnen</a></p>
+        <p><a href="${APP_URL}/" style="color:#457B9D;">Zur Übersicht öffnen</a></p>
       </div>`;
 
     await sendeMail({
       an: mitarbeiter.email,
+      systemAntwort: true,
       betreff: `${eigene.length} fällige Wiedervorlage${eigene.length > 1 ? "n" : ""} in ArcoTime`,
       html,
     });
     versendet += 1;
   }
 
-  const rapporte = await erinnereAnOffeneRapporte(appUrl);
+  const rapporte = await erinnereAnOffeneRapporte(APP_URL);
 
   return NextResponse.json({
     versendet,
