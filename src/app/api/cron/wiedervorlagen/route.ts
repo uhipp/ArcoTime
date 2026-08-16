@@ -29,11 +29,18 @@ export async function GET(request: NextRequest) {
   }
 
   // Vercel Cron kennt nur feste UTC-Zeiten (keine Zeitzone/Sommerzeit). Damit
-  // der Versand ganzjährig um 07:30 Schweizer Ortszeit bleibt, feuern in
+  // der Versand ganzjährig am Morgen Schweizer Ortszeit bleibt, feuern in
   // vercel.json zwei Einträge (06:30 UTC für die Winterzeit, 05:30 UTC für
   // die Sommerzeit) – hier wird anhand der aktuellen Zürcher Ortszeit
   // entschieden, welcher der beiden gerade "der richtige" ist. Der jeweils
   // falsche Aufruf bricht einfach ohne Versand ab.
+  //
+  // Geprüft wird nur die STUNDE, nicht die Minute: Auf dem Hobby-Tarif löst
+  // Vercel Cron-Jobs nur stundengenau aus (dokumentiert als "Per-hour, ±59
+  // min"). Ein Fenster von 07:15 bis 07:45 hätte die Erinnerung an rund der
+  // Hälfte der Tage still verschluckt – ohne Fehler, ohne Meldung. Über die
+  // Stunde kann ohnehin nur einer der beiden Einträge treffen, der andere
+  // liegt garantiert eine Stunde daneben.
   const zuercherZeit = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Zurich",
     hour: "2-digit",
@@ -42,7 +49,7 @@ export async function GET(request: NextRequest) {
   }).formatToParts(new Date());
   const stunde = Number(zuercherZeit.find((t) => t.type === "hour")?.value ?? "0");
   const minute = Number(zuercherZeit.find((t) => t.type === "minute")?.value ?? "0");
-  const istZielzeit = stunde === 7 && minute >= 15 && minute <= 45;
+  const istZielzeit = stunde === 7;
 
   // Manueller Test-Aufruf (z.B. zum Prüfen, ob SMTP-Variablen in der
   // aktuellen Produktions-Version ankommen): überspringt NUR den

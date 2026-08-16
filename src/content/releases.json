@@ -289,6 +289,10 @@
         "text": "Die kostenlose Testphase dauert neu 30 statt 14 Tage. Das Zahlungsmittel wird bei der Registrierung hinterlegt, belastet wird erst danach."
       },
       {
+        "typ": "behoben",
+        "text": "Die morgendlichen Erinnerungsmails prüfen nur noch die Stunde statt ein Fenster von 30 Minuten. Beim bisherigen Hosting-Tarif löst der Zeitplan nur stundengenau aus – rund die Hälfte der Läufe wäre still ohne Versand abgebrochen."
+      },
+      {
         "typ": "geaendert",
         "text": "ArcoTime läuft neu unter arcotime.ch. Links in Systemmails, die Rückkehr aus der Zahlung und die Kontaktadresse zeigen auf die neue Adresse."
       },

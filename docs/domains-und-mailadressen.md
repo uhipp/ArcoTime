@@ -86,12 +86,14 @@ Die Schritte hängen voneinander ab; in dieser Reihenfolge abarbeiten.
 
 ### 1. Hostpoint (Mail)
 
-- [ ] Postfach `noreply@arcotime.ch` anlegen, SMTP-Passwort notieren
-- [ ] Postfach `support@arcotime.ch` anlegen (oder Weiterleitung auf ein
+- [x] Postfach `noreply@arcotime.ch` anlegen, SMTP-Passwort notieren
+- [x] Postfach `support@arcotime.ch` anlegen (oder Weiterleitung auf ein
       betreutes Postfach)
-- [ ] DKIM für `arcotime.ch` aktivieren
-- [ ] DMARC-Eintrag für `arcotime.ch` setzen; als TXT auf `_dmarc.arcotime.ch`:
-      `v=DMARC1; p=quarantine; rua=mailto:support@arcotime.ch`
+- [x] DKIM für `arcotime.ch` aktivieren
+- [x] DMARC-Eintrag für `arcotime.ch` – war als Hostpoint-Standard bereits
+      gesetzt (`v=DMARC1; p=quarantine;`)
+- [ ] DMARC um `rua=mailto:support@arcotime.ch` ergänzen – ohne Berichte
+      läuft `p=quarantine` blind
 - [ ] DKIM für `arcocloud.ch` prüfen – war beim Entscheid unter den üblichen
       Selektoren nicht auffindbar
 
@@ -103,11 +105,11 @@ dig +short TXT arcotime.ch; dig +short TXT _dmarc.arcotime.ch
 
 ### 2. Vercel (Domain)
 
-- [ ] `arcotime.ch` und `www.arcotime.ch` im Projekt hinzufügen
-- [ ] Die von Vercel angezeigten DNS-Werte bei Hostpoint eintragen (A-Eintrag
+- [x] `arcotime.ch` und `www.arcotime.ch` im Projekt hinzufügen
+- [x] Die von Vercel angezeigten DNS-Werte bei Hostpoint eintragen (A-Eintrag
       für die Wurzel, CNAME für www). **Die MX-Einträge dabei nicht anfassen** –
       sonst steht die Mail still.
-- [ ] Warten, bis Vercel das Zertifikat ausgestellt hat
+- [x] Warten, bis Vercel das Zertifikat ausgestellt hat
 
 Prüfen:
 
@@ -117,12 +119,12 @@ curl -sSI https://arcotime.ch | head -3
 
 ### 3. Vercel (Umgebungsvariablen)
 
-- [ ] `APP_URL=https://arcotime.ch`
-- [ ] `SMTP_USER`, `SMTP_FROM` auf `noreply@arcotime.ch`, `SMTP_PASSWORD` neu
-- [ ] `SMTP_ABSENDER_NAME=ArcoTime`
-- [ ] `SMTP_ANTWORT_AN=support@arcotime.ch`
-- [ ] `SUPPORT_MAIL=support@arcotime.ch` – erst wenn das Postfach betreut wird
-- [ ] Neu deployen, sonst greifen die Werte nicht
+- [x] `APP_URL=https://arcotime.ch`
+- [x] `SMTP_USER`, `SMTP_FROM` auf `noreply@arcotime.ch`, `SMTP_PASSWORD` neu
+- [x] `SMTP_ABSENDER_NAME=ArcoTime`
+- [x] `SMTP_ANTWORT_AN=support@arcotime.ch`
+- [x] `SUPPORT_MAIL=support@arcotime.ch` – erst wenn das Postfach betreut wird
+- [x] Neu deployen, sonst greifen die Werte nicht
 
 ### 4. Supabase (Auth)
 
@@ -130,11 +132,11 @@ Der Schritt, den man am ehesten vergisst – und er bricht Einladungen und
 Passwort-Zurücksetzen, ohne dass etwas fehlschlägt: Die Links zeigen einfach
 weiter auf die alte Adresse.
 
-- [ ] Authentication → URL Configuration → Site URL auf `https://arcotime.ch`
-- [ ] Redirect-Allowlist: `https://arcotime.ch/**` ergänzen
-- [ ] Die Vercel-Adresse vorerst in der Allowlist stehen lassen, bis alles läuft
-- [ ] Auth-SMTP: Absender auf `noreply@arcotime.ch` umstellen
-- [ ] Test: eine Person einladen und prüfen, wohin der Link führt
+- [x] Authentication → URL Configuration → Site URL auf `https://arcotime.ch`
+- [x] Redirect-Allowlist: `https://arcotime.ch/**` ergänzen
+- [x] Die Vercel-Adresse vorerst in der Allowlist stehen lassen, bis alles läuft
+- [x] Auth-SMTP: Absender auf `noreply@arcotime.ch` umstellen
+- [x] Test: eine Person einladen und prüfen, wohin der Link führt
 
 ### 5. Stripe
 
@@ -150,3 +152,20 @@ weiter auf die alte Adresse.
 - [ ] Flyer verteilen (zeigt bereits auf arcotime.ch/registrieren)
 - [ ] Freie Produktdomains sichern: arcoimmo.ch, arcolohn.ch, arcodesk.ch.
       `arcofakt.ch` ist bereits vergeben – klären, an wen.
+
+## Stand 16.08.2026, nach der Umstellung
+
+Erledigt und von aussen geprüft: A-Eintrag, Zertifikat (Let's Encrypt, gültig
+bis 14.11.2026), www als 308 auf die Wurzel, SPF, drei DKIM-Schlüssel, DMARC,
+Mailversand über `noreply@arcotime.ch` (Systemmail und Auth-Mail getrennt
+konfiguriert, beide getestet), Supabase Site-URL und Allowlist.
+
+Offen, ohne Eile:
+
+- Wildcard `*.arcotime.ch` löschen – er zeigt jetzt auf Vercel statt auf
+  Hostpoint, ist also harmlos, aber unnötig.
+- `rua=` beim DMARC ergänzen.
+- **Vercel-Tarif**: Das Konto läuft auf Hobby. Vercels Fair-Use-Richtlinie
+  beschränkt Hobby auf nicht-kommerzielle Nutzung – mit den ersten zahlenden
+  Kunden muss Pro her. Zweiter Grund: Auf Hobby lösen Cron-Jobs nur
+  stundengenau aus.
