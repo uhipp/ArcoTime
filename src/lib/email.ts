@@ -25,9 +25,10 @@ function transporter() {
   });
 }
 
-// Absender mit Anzeigename: Die Systemmails laufen über die Plattformdomain
-// (arcocloud.ch), die künftig alle Arco-Produkte bedient. Der Empfänger soll
-// trotzdem das Produkt sehen, das er benutzt – deshalb "ArcoTime <…>".
+// Absender mit Anzeigename: Systemmails laufen über die Produktdomain
+// (arcotime.ch), damit der Empfänger den Absender wiedererkennt. Der
+// Anzeigename steht in einer Variable, weil ein weiteres Arco-Produkt
+// dieselbe Funktion mit anderem Namen benutzt.
 function absenderMitNamen(): string | undefined {
   const adresse = process.env.SMTP_FROM ?? process.env.SMTP_USER;
   const name = process.env.SMTP_ABSENDER_NAME ?? "ArcoTime";

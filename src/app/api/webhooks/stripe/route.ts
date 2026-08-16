@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendeMail } from "@/lib/email";
 import { siteOrigin } from "@/lib/site-origin";
+import { SUPPORT_MAIL } from "@/lib/kontakt";
 
 function unixZuDatum(unixSekunden: number | null | undefined): string | null {
   return unixSekunden ? new Date(unixSekunden * 1000).toISOString().slice(0, 10) : null;
@@ -217,7 +218,7 @@ export async function POST(request: NextRequest) {
                   verarbeitet werden. Der Zugriff auf ArcoTime wurde deshalb vorübergehend
                   gesperrt.</p>
                   <p>Bitte aktualisiere dein Zahlungsmittel, damit der Zugriff wieder
-                  freigeschaltet wird, oder melde dich bei uns: uhipp@arcos.ch</p>
+                  freigeschaltet wird, oder melde dich bei uns: ${SUPPORT_MAIL}</p>
                 </div>`,
             });
           }

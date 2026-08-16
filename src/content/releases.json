@@ -289,6 +289,14 @@
         "text": "Die kostenlose Testphase dauert neu 30 statt 14 Tage. Das Zahlungsmittel wird bei der Registrierung hinterlegt, belastet wird erst danach."
       },
       {
+        "typ": "geaendert",
+        "text": "ArcoTime läuft neu unter arcotime.ch. Links in Systemmails, die Rückkehr aus der Zahlung und die Kontaktadresse zeigen auf die neue Adresse."
+      },
+      {
+        "typ": "geaendert",
+        "text": "Systemmails kommen neu von \"ArcoTime <noreply@arcotime.ch>\"; Antworten darauf landen im Support-Postfach. Antworten auf einen versendeten Arbeitsrapport gehen weiterhin an die Organisation, die ihn geschickt hat."
+      },
+      {
         "typ": "fix",
         "text": "Ein Monatsabschluss sperrt jetzt auch seine Grundlagen: Zeiteinträge der betroffenen Person in diesem Monat lassen sich weder ändern noch löschen noch ergänzen – auch nicht von Administratoren. Ebenso gesperrt sind Abschluss und Storno von Rapporten aus diesem Monat. Zusätzlich sind exportierte Zeiteinträge neu für alle unantastbar; bisher konnten Admins sie noch ändern. Ohne diese Sperren hätten Auswertung und Zeitkonto verschiedene Zahlen zeigen können."
       },

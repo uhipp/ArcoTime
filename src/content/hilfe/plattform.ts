@@ -52,7 +52,7 @@ Pro Organisation lässt sich direkt in der Zeile bearbeiten und mit **"Speichern
 
 ## Was ein Kunde selbst sieht, wenn eine Organisation gesperrt ist
 
-Mitarbeitende einer gesperrten Organisation (ausser Platform-Admins) werden automatisch auf **/gesperrt** umgeleitet, mit einer zum Sperrgrund passenden Nachricht und dem Kontakt \`uhipp@arcos.ch\`. Sie können sich weiterhin abmelden, aber keine andere Seite mehr öffnen.
+Mitarbeitende einer gesperrten Organisation (ausser Platform-Admins) werden automatisch auf **/gesperrt** umgeleitet, mit einer zum Sperrgrund passenden Nachricht und der Kontaktadresse aus der Umgebungsvariable \`SUPPORT_MAIL\` (heute \`uhipp@arcos.ch\`, nach Einrichtung des Postfachs \`support@arcotime.ch\`). Sie können sich weiterhin abmelden, aber keine andere Seite mehr öffnen.
 
 ## Deaktivierte Mitarbeitenden-Konten
 

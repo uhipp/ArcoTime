@@ -2,10 +2,11 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { logout } from "@/app/actions/auth";
+import { SUPPORT_MAIL } from "@/lib/kontakt";
 
 const NACHRICHTEN: Record<string, string> = {
   test_abgelaufen:
-    "Deine 14-tägige Testphase ist abgelaufen. Bitte wähle ein Abo, damit dein Team ArcoTime weiter nutzen kann.",
+    "Deine 30-tägige Testphase ist abgelaufen. Bitte wähle ein Abo, damit dein Team ArcoTime weiter nutzen kann.",
   zahlung_fehlgeschlagen:
     "Die letzte Zahlung konnte nicht verarbeitet werden. Bitte aktualisiere dein Zahlungsmittel, damit der Zugriff wieder freigeschaltet wird.",
   manuell_pausiert: "Dieses Konto wurde vorübergehend pausiert.",
@@ -43,8 +44,8 @@ export default async function GesperrtPage() {
         <p className="text-sm text-gray-600 mb-6">{nachricht}</p>
         <p className="text-xs text-gray-400 mb-6">
           Fragen? Wende dich an Arcos Group:{" "}
-          <a href="mailto:uhipp@arcos.ch" className="text-arcos-steel hover:underline">
-            uhipp@arcos.ch
+          <a href={`mailto:${SUPPORT_MAIL}`} className="text-arcos-steel hover:underline">
+            {SUPPORT_MAIL}
           </a>
         </p>
         <form action={logout}>

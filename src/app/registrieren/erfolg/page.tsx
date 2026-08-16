@@ -17,7 +17,7 @@ export default async function RegistrierungErfolgPage({
   if (session_id) {
     try {
       // Abo mitladen: Nur daran ist erkennbar, ob gerade wirklich bezahlt
-      // wurde oder ob die 14-tägige Testphase läuft (Status "trialing", die
+      // wurde oder ob die 30-tägige Testphase läuft (Status "trialing", die
       // Belastung erfolgt dann erst zum Testende).
       const session = await stripe.checkout.sessions.retrieve(session_id, {
         expand: ["subscription"],
