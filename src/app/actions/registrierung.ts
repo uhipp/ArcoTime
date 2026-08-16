@@ -57,7 +57,7 @@ export async function starteRegistrierung(formData: FormData) {
     line_items: [{ price: STRIPE_PREIS_ID[zyklus], quantity: abgerechnet }],
     customer_email: adminEmail,
     subscription_data: {
-      ...(testphase ? { trial_period_days: 14 } : {}),
+      ...(testphase ? { trial_period_days: 30 } : {}),
       metadata,
     },
     metadata,

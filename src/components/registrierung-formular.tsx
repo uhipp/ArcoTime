@@ -75,7 +75,7 @@ export function RegistrierungFormular() {
               <span className="text-sm font-normal text-gray-500"> / Monat</span>
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              CHF {proBenutzerMonat.toFixed(2)} pro Benutzer, inkl. MWST
+              CHF {proBenutzerMonat.toFixed(2)} pro Benutzer, exkl. MWST
             </div>
           </label>
 
@@ -98,7 +98,7 @@ export function RegistrierungFormular() {
               <span className="text-sm font-normal text-gray-500"> / Jahr</span>
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              CHF {proBenutzerJahr.toFixed(2)} pro Benutzer, inkl. MWST
+              CHF {proBenutzerJahr.toFixed(2)} pro Benutzer, exkl. MWST
             </div>
           </label>
         </div>
@@ -129,9 +129,9 @@ export function RegistrierungFormular() {
           className="mt-0.5"
         />
         <span>
-          <span className="block text-sm font-medium">14 Tage kostenlos testen</span>
+          <span className="block text-sm font-medium">30 Tage kostenlos testen</span>
           <span className="block text-xs text-gray-500 mt-0.5">
-            Zahlungsmittel wird jetzt hinterlegt, aber erst nach 14 Tagen
+            Zahlungsmittel wird jetzt hinterlegt, aber erst nach 30 Tagen
             automatisch belastet. Du erhältst 2 Tage vorher eine Erinnerung.
           </span>
         </span>
@@ -199,7 +199,7 @@ export function RegistrierungFormular() {
         {wirdGesendet
           ? "Weiterleitung zur Zahlung…"
           : testphase
-            ? "Weiter zur Zahlungsmethode (14 Tage kostenlos testen)"
+            ? "Weiter zur Zahlungsmethode (30 Tage kostenlos testen)"
             : "Weiter zur Zahlung"}
       </button>
       <p className="text-xs text-gray-400 text-center">
