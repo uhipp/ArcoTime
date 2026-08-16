@@ -165,7 +165,7 @@ Offen, ohne Eile:
 - Wildcard `*.arcotime.ch` löschen – er zeigt jetzt auf Vercel statt auf
   Hostpoint, ist also harmlos, aber unnötig.
 - `rua=` beim DMARC ergänzen.
-- **Vercel-Tarif**: Das Konto läuft auf Hobby. Vercels Fair-Use-Richtlinie
-  beschränkt Hobby auf nicht-kommerzielle Nutzung – mit den ersten zahlenden
-  Kunden muss Pro her. Zweiter Grund: Auf Hobby lösen Cron-Jobs nur
-  stundengenau aus.
+Erledigt am 16.08.2026: **Vercel und Supabase laufen auf Pro.** Damit ist die
+kommerzielle Nutzung gedeckt (Hobby ist auf nicht-kommerzielle Nutzung
+beschränkt), Cron-Jobs lösen minutengenau aus, und die Datenbank wird täglich
+gesichert.
