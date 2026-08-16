@@ -29,7 +29,7 @@ Meldet sich ein Kunde selbst über die öffentliche Seite **/registrieren** an u
 
 ### Bestpreis-Garantie bei der Selbstregistrierung
 
-Weil die Staffel (bis 9 Benutzer CHF 9.–, ab 10 CHF 8.–, ab 20 CHF 7.– pro Benutzer und Monat) für **alle** Lizenzen den Satz der erreichten Stufe verwendet, wären einzelne Mengen sonst teurer als grössere: 9 Benutzer kosteten 81.–, 10 Benutzer nur 80.–. Die Registrierung rundet deshalb automatisch auf die günstigere Menge auf.
+Weil die Staffel (bis 9 Benutzer CHF 15.–, ab 10 CHF 13.–, ab 20 CHF 11.– pro Benutzer und Monat, exkl. MWST) für **alle** Lizenzen den Satz der erreichten Stufe verwendet, wären einzelne Mengen sonst teurer als grössere: 9 Benutzer kosteten 135.–, 10 Benutzer nur 130.–. Die Registrierung rundet deshalb automatisch auf die günstigere Menge auf.
 
 Konkret betrifft das die Bestellmengen **9** (wird zu 10 Lizenzen), **18** und **19** (werden zu 20). Steht bei einer selbst registrierten Organisation also ein höheres Kontingent als erwartet, ist das kein Fehler – die Kundin zahlt dafür weniger, als sie für die kleinere Menge bezahlt hätte, und darf die zusätzlichen Konten auch nutzen.
 
@@ -42,6 +42,10 @@ Pro Organisation lässt sich direkt in der Zeile bearbeiten und mit **"Speichern
 - **Status**: \`aktiv\`, \`test\`, \`pausiert\` oder \`gekündigt\`. Nur \`aktiv\` und \`test\` erlauben den Mitarbeitenden dieser Organisation den Zugriff – bei allen anderen Werten landen sie beim nächsten Seitenaufruf automatisch auf der Sperrseite (siehe unten). Wird der Status auf \`aktiv\` gesetzt, wird ein evtl. hinterlegter Sperrgrund automatisch gelöscht.
 - **Lizenzen genutzt/gebucht**: Anzahl aktiver Mitarbeitenden-Konten vs. gebuchtes Kontingent. Erscheint rot, wenn mehr Konten aktiv sind als gebucht wurden. Leer/\`∞\` = unbegrenzt (nur für Arcos selbst gedacht).
 - **Zyklus & Preis**: Abrechnungszyklus (monatlich/jährlich) und der vereinbarte Preis pro Zyklus.
+
+**Zusatzmodule**: Disposition CHF 49.– je Monat und Organisation (unabhängig von der Anzahl Lizenzen), Zeitkonto CHF 4.– je Lizenz und Monat. Im Jahresabo kosten beide zehn Monatspreise, wie die Basis. Die beiden Bezugsgrössen sind mit Absicht verschieden: Die Disposition bedient das Büro, ihr Nutzen wächst nicht mit der Kopfzahl; das Zeitkonto führt für jede Person ein eigenes Konto.
+
+**Einführungspreis**: 15 % Rabatt im ersten Jahr für alle, die bis zum 31.12.2026 buchen. Der Rabatt läuft über einen Stripe-Gutschein und ist in ArcoTime nicht hinterlegt.
 - **Testphase bis / Nächster Zahltermin**: optionale Datumsfelder (erscheinen erst nach Klick auf "+ Datum setzen").
 - **Sperrgrund**: Freitext, der bestimmt, welche Nachricht die Organisation auf der Sperrseite sieht (z.B. \`test_abgelaufen\`, \`zahlung_fehlgeschlagen\`, \`manuell_pausiert\`).
 - **"Als bezahlt markieren"**: für Zahlungen per klassischer Rechnung/QR-Rechnung, die Stripe nicht automatisch erkennen kann – schaltet die Organisation manuell wieder frei, nachdem der Zahlungseingang geprüft wurde.

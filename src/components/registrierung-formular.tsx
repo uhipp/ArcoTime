@@ -14,8 +14,8 @@ export function RegistrierungFormular() {
 
   // Bestpreis-Garantie: An den Stufengrenzen wird auf die günstigere Menge
   // aufgerundet. Der Satz "pro Benutzer" muss sich deshalb auf die
-  // abgerechnete Menge beziehen, sonst stünde neben einem Total von 80.–
-  // ein Satz von 9.– (siehe lizenzpreise.ts).
+  // abgerechnete Menge beziehen, sonst stünde neben einem Total von 130.–
+  // ein Satz von 15.– (siehe lizenzpreise.ts).
   const mengeMonat = abgerechneteMenge(anzahlGueltig, "monatlich");
   const mengeJahr = abgerechneteMenge(anzahlGueltig, "jaehrlich");
   const proBenutzerMonat = preisProBenutzer(mengeMonat, "monatlich");
