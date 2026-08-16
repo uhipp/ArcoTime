@@ -15,6 +15,7 @@ export function RegistrierungFormular() {
   const [testphase, setTestphase] = useState(true);
   const [wirdGesendet, setWirdGesendet] = useState(false);
   const [agbAkzeptiert, setAgbAkzeptiert] = useState(false);
+  const [land, setLand] = useState("CH");
 
   const anzahlGueltig = Math.max(1, Math.floor(anzahl) || 1);
 
@@ -157,6 +158,69 @@ export function RegistrierungFormular() {
             required
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1" htmlFor="strasse">
+            Strasse und Nummer
+          </label>
+          <input
+            id="strasse"
+            name="strasse"
+            required
+            autoComplete="street-address"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1" htmlFor="plz">
+              PLZ
+            </label>
+            <input
+              id="plz"
+              name="plz"
+              required
+              autoComplete="postal-code"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs text-gray-500 mb-1" htmlFor="ort">
+              Ort
+            </label>
+            <input
+              id="ort"
+              name="ort"
+              required
+              autoComplete="address-level2"
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1" htmlFor="land">
+            Sitzland
+          </label>
+          <select
+            id="land"
+            name="land"
+            value={land}
+            onChange={(e) => setLand(e.target.value)}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+          >
+            <option value="CH">Schweiz</option>
+            <option value="LI">Liechtenstein</option>
+            <option value="DE">Deutschland</option>
+            <option value="AT">Österreich</option>
+          </select>
+          {land !== "CH" && land !== "LI" && (
+            <p className="text-xs text-gray-500 mt-2">
+              Für Unternehmen ausserhalb der Schweiz stellen wir netto ohne
+              Schweizer Mehrwertsteuer in Rechnung; die Steuer schuldet der
+              Leistungsempfänger (Reverse Charge). Dafür brauchen wir im
+              nächsten Schritt deine USt-IdNr.
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

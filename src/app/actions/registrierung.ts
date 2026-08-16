@@ -20,6 +20,10 @@ export async function starteRegistrierung(formData: FormData) {
   const adminVorname = String(formData.get("admin_vorname") ?? "").trim();
   const adminNachname = String(formData.get("admin_nachname") ?? "").trim();
   const adminEmail = String(formData.get("admin_email") ?? "").trim();
+  const strasse = String(formData.get("strasse") ?? "").trim();
+  const plz = String(formData.get("plz") ?? "").trim();
+  const ort = String(formData.get("ort") ?? "").trim();
+  const land = String(formData.get("land") ?? "CH").trim().toUpperCase();
   const agbAkzeptiert = formData.get("agb_akzeptiert") === "on";
 
   if (!anzahlBenutzer || anzahlBenutzer < 1) {
@@ -27,6 +31,9 @@ export async function starteRegistrierung(formData: FormData) {
   }
   if (!firmenname || !adminVorname || !adminNachname || !adminEmail) {
     redirect(`/registrieren?error=${encodeURIComponent("Bitte alle Firmen- und Kontaktangaben ausfüllen.")}`);
+  }
+  if (!strasse || !plz || !ort || !land) {
+    redirect(`/registrieren?error=${encodeURIComponent("Bitte die vollständige Rechnungsadresse angeben.")}`);
   }
   // Serverseitig prüfen, nicht nur im Formular: Ohne Zustimmung ist unklar,
   // was vereinbart wurde – und ein Häkchen im Browser lässt sich umgehen.
@@ -62,6 +69,10 @@ export async function starteRegistrierung(formData: FormData) {
     // Welcher Fassung zugestimmt wurde. Bleibt bei Stripe am Abo hängen und
     // ist damit auch dann noch nachweisbar, wenn die Texte später ändern.
     vertragsfassung: VERTRAGSFASSUNG,
+    strasse,
+    plz,
+    ort,
+    land,
     zyklus,
   };
 
@@ -69,6 +80,18 @@ export async function starteRegistrierung(formData: FormData) {
     mode: "subscription",
     line_items: [{ price: STRIPE_PREIS_ID[zyklus], quantity: abgerechnet }],
     customer_email: adminEmail,
+    // MWST: Stripe Tax entscheidet anhand des Sitzlands. Kunden in der
+    // Schweiz und in Liechtenstein zahlen 8,1 %; bei Unternehmen in der EU
+    // liegt der Leistungsort am Sitz des Empfängers – dann Nettorechnung mit
+    // Übergang der Steuerschuld. Voraussetzung dafür ist eine gültige
+    // USt-IdNr., die Stripe im Checkout erhebt und prüft.
+    automatic_tax: { enabled: true },
+    tax_id_collection: { enabled: true },
+    // Ohne Adresse kann Stripe die Steuer nicht bestimmen. customer_update
+    // wäre hier falsch: Das ist nur erlaubt, wenn ein bestehender Kunde
+    // übergeben wird – bei customer_email legt Stripe ihn selbst an und
+    // übernimmt die im Checkout erfasste Adresse von sich aus.
+    billing_address_collection: "required",
     subscription_data: {
       ...(testphase ? { trial_period_days: 30 } : {}),
       metadata,

@@ -101,6 +101,13 @@ export async function POST(request: NextRequest) {
           .insert({
             name: meta.firmenname,
             status: "aktiv",
+            // Rechnungsadresse aus der Registrierung. Sie steht auch bei
+            // Stripe, wird hier aber mitgeführt, damit ArcoTime seine
+            // Kundinnen ohne Umweg über das Stripe-Dashboard kennt.
+            strasse: meta.strasse ?? null,
+            plz: meta.plz ?? null,
+            ort: meta.ort ?? null,
+            land: meta.land ?? "CH",
             lizenzen_gebucht: Number(meta.anzahl_benutzer) || 1,
             abrechnungszyklus: meta.zyklus === "jaehrlich" ? "jaehrlich" : "monatlich",
             stripe_customer_id: String(session.customer),

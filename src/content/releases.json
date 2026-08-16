@@ -294,6 +294,14 @@
       },
       {
         "typ": "neu",
+        "text": "Die Registrierung erhebt neu die vollständige Rechnungsadresse samt Sitzland. Sie steht in der Organisation und auf der Rechnung."
+      },
+      {
+        "typ": "neu",
+        "text": "Mehrwertsteuer wird automatisch bestimmt: Kunden in der Schweiz und Liechtenstein zahlen 8,1 %, Unternehmen in der EU erhalten eine Nettorechnung mit Übergang der Steuerschuld. Die USt-IdNr. wird beim Bezahlen erhoben und geprüft."
+      },
+      {
+        "typ": "neu",
         "text": "Impressum, Datenschutzerklärung, AGB und Auftragsbearbeitungsvertrag sind unter arcotime.ch/impressum, /datenschutz, /agb und /avv öffentlich abrufbar – ohne Anmeldung."
       },
       {
