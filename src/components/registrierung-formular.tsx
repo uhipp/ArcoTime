@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import { starteRegistrierung } from "@/app/actions/registrierung";
-import { preisProBenutzer, gesamtpreis, abgerechneteMenge } from "@/lib/lizenzpreise";
+import {
+  preisProBenutzer,
+  gesamtpreis,
+  abgerechneteMenge,
+  staffelBeschreibung,
+} from "@/lib/lizenzpreise";
 
 export function RegistrierungFormular() {
   const [anzahl, setAnzahl] = useState(5);
   const [zyklus, setZyklus] = useState<"monatlich" | "jaehrlich">("monatlich");
   const [testphase, setTestphase] = useState(true);
   const [wirdGesendet, setWirdGesendet] = useState(false);
+  const [agbAkzeptiert, setAgbAkzeptiert] = useState(false);
 
   const anzahlGueltig = Math.max(1, Math.floor(anzahl) || 1);
 
@@ -111,9 +117,8 @@ export function RegistrierungFormular() {
           </p>
         )}
         <p className="text-xs text-gray-400 mt-2">
-          Ab 10 Benutzern CHF 8.–, ab 20 Benutzern CHF 7.– pro Benutzer und Monat
-          (bzw. CHF 80.– / CHF 70.– pro Jahr). Du zahlst nie mehr, als eine
-          grössere Anzahl kosten würde.
+          {staffelBeschreibung()} Du zahlst nie mehr, als eine grössere Anzahl
+          kosten würde.
         </p>
       </div>
 
@@ -191,9 +196,39 @@ export function RegistrierungFormular() {
         </div>
       </div>
 
+      {/* --------------------------------------------------------------- */}
+      {/* Schritt 5: Zustimmung                                            */}
+      {/* --------------------------------------------------------------- */}
+      <label className="flex items-start gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          name="agb_akzeptiert"
+          required
+          checked={agbAkzeptiert}
+          onChange={(e) => setAgbAkzeptiert(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span className="text-xs text-gray-600">
+          Ich habe die{" "}
+          <a href="/agb" target="_blank" className="text-arcos-steel hover:underline">
+            Allgemeinen Geschäftsbedingungen
+          </a>{" "}
+          und den{" "}
+          <a href="/avv" target="_blank" className="text-arcos-steel hover:underline">
+            Auftragsbearbeitungsvertrag
+          </a>{" "}
+          gelesen und akzeptiere sie. Die{" "}
+          <a href="/datenschutz" target="_blank" className="text-arcos-steel hover:underline">
+            Datenschutzerklärung
+          </a>{" "}
+          habe ich zur Kenntnis genommen. Ich bin berechtigt, für meine
+          Organisation zu handeln.
+        </span>
+      </label>
+
       <button
         type="submit"
-        disabled={wirdGesendet}
+        disabled={wirdGesendet || !agbAkzeptiert}
         className="w-full rounded-full bg-arcos-steel text-white text-sm font-semibold py-3 hover:bg-arcos-navy disabled:opacity-60"
       >
         {wirdGesendet

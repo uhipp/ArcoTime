@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { stripe, STRIPE_PREIS_ID } from "@/lib/stripe";
 import { abgerechneteMenge } from "@/lib/lizenzpreise";
 import { APP_URL } from "@/lib/app-url";
+import { VERTRAGSFASSUNG } from "@/content/recht";
 
 // Öffentliche Aktion (kein Login nötig – das IST die Selbstregistrierung).
 // Erzeugt eine Stripe-Checkout-Session und leitet direkt dorthin weiter.
@@ -19,12 +20,22 @@ export async function starteRegistrierung(formData: FormData) {
   const adminVorname = String(formData.get("admin_vorname") ?? "").trim();
   const adminNachname = String(formData.get("admin_nachname") ?? "").trim();
   const adminEmail = String(formData.get("admin_email") ?? "").trim();
+  const agbAkzeptiert = formData.get("agb_akzeptiert") === "on";
 
   if (!anzahlBenutzer || anzahlBenutzer < 1) {
     redirect(`/registrieren?error=${encodeURIComponent("Bitte eine gültige Anzahl Benutzer angeben.")}`);
   }
   if (!firmenname || !adminVorname || !adminNachname || !adminEmail) {
     redirect(`/registrieren?error=${encodeURIComponent("Bitte alle Firmen- und Kontaktangaben ausfüllen.")}`);
+  }
+  // Serverseitig prüfen, nicht nur im Formular: Ohne Zustimmung ist unklar,
+  // was vereinbart wurde – und ein Häkchen im Browser lässt sich umgehen.
+  if (!agbAkzeptiert) {
+    redirect(
+      `/registrieren?error=${encodeURIComponent(
+        "Bitte AGB und Auftragsbearbeitungsvertrag akzeptieren."
+      )}`
+    );
   }
 
   // Bestpreis-Garantie: An den Stufengrenzen ist eine grössere Menge
@@ -48,6 +59,9 @@ export async function starteRegistrierung(formData: FormData) {
     // verrechnet, sonst dürfte die Organisation weniger Konten anlegen als
     // bezahlt.
     anzahl_benutzer: String(abgerechnet),
+    // Welcher Fassung zugestimmt wurde. Bleibt bei Stripe am Abo hängen und
+    // ist damit auch dann noch nachweisbar, wenn die Texte später ändern.
+    vertragsfassung: VERTRAGSFASSUNG,
     zyklus,
   };
 

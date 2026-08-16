@@ -30,6 +30,24 @@ export const MODULPREISE = {
 
 export type Modul = keyof typeof MODULPREISE;
 
+/**
+ * Beschreibung der Staffel für die Anzeige – abgeleitet aus STUFEN, damit
+ * der Text nicht getrennt von den Zahlen gepflegt werden muss. Genau das
+ * war schiefgegangen: Nach der Preisänderung vom 16.08.2026 stand im
+ * Registrierungsformular noch die alte Staffel.
+ */
+export function staffelBeschreibung(): string {
+  const teile = STUFEN.map((stufe, i) => {
+    const abAnzahl = i === 0 ? 1 : STUFEN[i - 1].bisEinschliesslich + 1;
+    const satz = `CHF ${stufe.monatlich}.– (CHF ${stufe.jaehrlich}.– pro Jahr)`;
+    return i === 0
+      ? `Bis ${stufe.bisEinschliesslich} Benutzer ${satz}`
+      : `ab ${abAnzahl} Benutzern ${satz}`;
+  });
+  return `${teile.join(", ")} pro Benutzer und Monat, exkl. MWST.`;
+}
+
+
 // Jahrespreis = zehn Monatspreise: Zwei Monate sind geschenkt. Das gilt
 // für die Basis wie für beide Module – eine Ausnahme wäre in der
 // Rechnung nicht zu erklären.

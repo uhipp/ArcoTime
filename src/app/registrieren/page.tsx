@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { RegistrierungFormular } from "@/components/registrierung-formular";
+import { RechtsFussbereich } from "@/components/rechts-fussbereich";
 
 export default async function RegistrierenPage({
   searchParams,
@@ -33,6 +34,7 @@ export default async function RegistrierenPage({
         <div className="bg-white rounded-lg border p-6 sm:p-8">
           <RegistrierungFormular />
         </div>
+        <RechtsFussbereich className="mt-8" />
       </div>
     </div>
   );

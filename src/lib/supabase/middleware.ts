@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { RECHTS_PFADE } from "@/content/recht/pfade";
 
 // Hält die Supabase-Session in jedem Request frisch und leitet nicht
 // eingeloggte Nutzer auf /login um (ausser die Login-Seite selbst).
@@ -54,6 +55,15 @@ export async function updateSession(request: NextRequest) {
   // bei /login, aber auch kein Zwang zum Login) – auch bereits eingeloggte
   // Personen dürfen sich z.B. eine zweite Organisation registrieren.
   if (request.nextUrl.pathname.startsWith("/registrieren")) {
+    return response;
+  }
+
+  // Die Rechtsseiten müssen für JEDEN erreichbar sein – ohne Session, weil
+  // ein Interessent sie vor der Buchung liest, und mit Session, weil ein
+  // Kunde die AGB nachschlagen können muss, ohne sich abzumelden. Die Liste
+  // kommt aus src/content/recht, damit ein neues Dokument nicht versehentlich
+  // hinter dem Login landet.
+  if (RECHTS_PFADE.some((p) => request.nextUrl.pathname === p)) {
     return response;
   }
 

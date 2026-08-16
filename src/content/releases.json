@@ -293,6 +293,18 @@
         "text": "Die morgendlichen Erinnerungsmails prüfen nur noch die Stunde statt ein Fenster von 30 Minuten. Beim bisherigen Hosting-Tarif löst der Zeitplan nur stundengenau aus – rund die Hälfte der Läufe wäre still ohne Versand abgebrochen."
       },
       {
+        "typ": "neu",
+        "text": "Impressum, Datenschutzerklärung, AGB und Auftragsbearbeitungsvertrag sind unter arcotime.ch/impressum, /datenschutz, /agb und /avv öffentlich abrufbar – ohne Anmeldung."
+      },
+      {
+        "typ": "neu",
+        "text": "Die Registrierung verlangt neu die Zustimmung zu AGB und Auftragsbearbeitungsvertrag. Welcher Fassung zugestimmt wurde, wird beim Abo festgehalten."
+      },
+      {
+        "typ": "behoben",
+        "text": "Im Registrierungsformular stand unter den Abrechnungsboxen noch die alte Preisstaffel (8.– / 7.–). Der Text wird jetzt aus den hinterlegten Preisen erzeugt und kann nicht mehr davon abweichen."
+      },
+      {
         "typ": "geaendert",
         "text": "ArcoTime läuft neu unter arcotime.ch. Links in Systemmails, die Rückkehr aus der Zahlung und die Kontaktadresse zeigen auf die neue Adresse."
       },

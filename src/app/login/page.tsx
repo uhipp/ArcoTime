@@ -2,6 +2,7 @@ import Image from "next/image";
 import { login } from "@/app/actions/auth";
 import { HashSessionHandler } from "@/components/hash-session-handler";
 import { getLoginMandantName } from "@/lib/login-mandant";
+import { RechtsFussbereich } from "@/components/rechts-fussbereich";
 
 export default async function LoginPage({
   searchParams,
@@ -81,6 +82,7 @@ export default async function LoginPage({
         >
           Passwort vergessen?
         </a>
+        <RechtsFussbereich className="mt-8" />
       </div>
     </div>
   );
