@@ -217,12 +217,12 @@ export function RegistrierungFormular() {
           <a href="/avv" target="_blank" className="text-arcos-steel hover:underline">
             Auftragsbearbeitungsvertrag
           </a>{" "}
-          gelesen und akzeptiere sie. Die{" "}
+          gelesen und verstanden und erkläre mich damit einverstanden. Von der{" "}
           <a href="/datenschutz" target="_blank" className="text-arcos-steel hover:underline">
             Datenschutzerklärung
           </a>{" "}
-          habe ich zur Kenntnis genommen. Ich bin berechtigt, für meine
-          Organisation zu handeln.
+          habe ich Kenntnis genommen. Ich bin berechtigt, diesen Vertrag für
+          meine Organisation abzuschliessen.
         </span>
       </label>
 
