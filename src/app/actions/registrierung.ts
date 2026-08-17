@@ -76,10 +76,37 @@ export async function starteRegistrierung(formData: FormData) {
     zyklus,
   };
 
+  // Den Stripe-Kunden mit der Adresse SELBST anlegen, bevor der Checkout
+  // öffnet.
+  //
+  // Vorher lief das über customer_email, und Stripe legte den Kunden selbst
+  // an – ohne Adresse. Das hatte zwei Folgen, die beide gegen uns arbeiten:
+  // Die Kundin musste ihre Adresse ein zweites Mal eintippen, obwohl sie
+  // im Formular schon dastand, und Stripe konnte die MWST bis dahin nicht
+  // berechnen ("automatic_tax.status: requires_location_inputs"). Die
+  // Zusammenfassung zeigte also den Nettobetrag, und die 8,1 % kamen erst
+  // spät dazu – genau an der Stelle, an der jemand abbricht, weil er
+  // glaubt, der Preis sei noch nicht endgültig.
+  //
+  // Mit einem Kunden, der die Adresse schon trägt, steht die MWST von der
+  // ersten Sekunde in der Summe und die Felder sind vorgefüllt.
+  //
+  // Bricht die Kundin ab, bleibt ein Stripe-Kunde ohne Abo zurück. Das ist
+  // der Preis dafür und in Kauf genommen: Ein leerer Kundeneintrag stört
+  // niemanden, eine verlorene Registrierung schon. Die Metadaten machen
+  // solche Fälle im Dashboard erkennbar.
+  const kunde = await stripe.customers.create({
+    name: firmenname,
+    email: adminEmail,
+    address: { line1: strasse, postal_code: plz, city: ort, country: land },
+    metadata,
+  });
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: [{ price: STRIPE_PREIS_ID[zyklus], quantity: abgerechnet }],
-    customer_email: adminEmail,
+    // Kunde statt customer_email – beides zusammen lehnt Stripe ab.
+    customer: kunde.id,
     // MWST: Stripe Tax entscheidet anhand des Sitzlands. Kunden in der
     // Schweiz und in Liechtenstein zahlen 8,1 %; bei Unternehmen in der EU
     // liegt der Leistungsort am Sitz des Empfängers – dann Nettorechnung mit
@@ -87,11 +114,18 @@ export async function starteRegistrierung(formData: FormData) {
     // USt-IdNr., die Stripe im Checkout erhebt und prüft.
     automatic_tax: { enabled: true },
     tax_id_collection: { enabled: true },
-    // Ohne Adresse kann Stripe die Steuer nicht bestimmen. customer_update
-    // wäre hier falsch: Das ist nur erlaubt, wenn ein bestehender Kunde
-    // übergeben wird – bei customer_email legt Stripe ihn selbst an und
-    // übernimmt die im Checkout erfasste Adresse von sich aus.
-    billing_address_collection: "required",
+    // billing_address_collection bleibt auf "auto" – gemessen im Checkout:
+    // Mit "required" erzwingt Stripe den Adressblock und füllt daraus NUR
+    // das Land vor; Strasse, PLZ und Ort müssten trotz Kundeneintrag ein
+    // zweites Mal eingetippt werden. Auf "auto" entfällt der Block ganz,
+    // weil die Adresse am Kunden schon vollständig ist. Unser eigenes
+    // Formular verlangt sie ohnehin zwingend.
+    // Ändert die Kundin ihre Adresse im Checkout, wird sie an den Kunden
+    // zurückgeschrieben – sonst stünde bei Stripe weiter die alte, und die
+    // Rechnung ginge an die falsche Adresse. Das ist nur mit einem
+    // übergebenen Kunden erlaubt; mit customer_email hätte dieselbe Zeile
+    // jede Registrierung scheitern lassen.
+    customer_update: { address: "auto", name: "auto" },
     subscription_data: {
       ...(testphase ? { trial_period_days: 30 } : {}),
       metadata,
