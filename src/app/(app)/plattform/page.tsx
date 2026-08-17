@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import { getCurrentProfile } from "@/lib/get-profile";
 import {
@@ -46,7 +47,13 @@ export default async function PlattformPage({
 
   const [{ data: organisationen }, { data: profile }] = await Promise.all([
     supabase.from("organisationen").select("*").order("erstellt_am"),
-    supabase.from("profiles").select("id, name, organisation_id, deaktiviert_am, role").order("name"),
+    // Profile ALLER Mandanten – seit 0070 nur noch über den Dienstschlüssel
+    // erreichbar, siehe die Begründung dort. Die Berechtigung ist oben
+    // geprüft.
+    createAdminClient()
+      .from("profiles")
+      .select("id, name, organisation_id, deaktiviert_am, role")
+      .order("name"),
   ]);
 
   const orgs = (organisationen as Organisation[] | null) ?? [];

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/get-profile";
 import {
   bearbeiteMitarbeiterPlattform,
@@ -33,13 +34,25 @@ export default async function OrganisationDetailPage({
   const { error, loeschen } = await searchParams;
   const supabase = await createClient();
 
+  // Die Profile eines FREMDEN Mandanten liest bewusst der Dienstschlüssel.
+  //
+  // Seit 0070 sind Profile strikt mandantengebunden – auch für Arcos. Vorher
+  // erlaubte die RLS-Regel Plattform-Admins den Zugriff pauschal, und diese
+  // Ausnahme wirkte in der ganzen Anwendung: fremde Mitarbeitende standen in
+  // der eigenen Liste und in jeder Auswahl. Der Zugriff gehört an diese
+  // Stelle, wo er gewollt und sichtbar ist, und nirgendwo sonst.
+  //
+  // Die Berechtigung ist oben geprüft (ist_platform_admin), und die
+  // Organisation selbst kommt weiter über den RLS-geprüften Weg.
+  const admin = createAdminClient();
+
   const [{ data: organisation }, { data: mitarbeitende }] = await Promise.all([
     supabase
       .from("organisationen")
       .select("id, name, lizenzen_gebucht, status, nachfrist_bis")
       .eq("id", id)
       .single(),
-    supabase
+    admin
       .from("profiles")
       .select("id, name, vorname, nachname, email, role, deaktiviert_am")
       .eq("organisation_id", id)

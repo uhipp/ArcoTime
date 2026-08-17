@@ -6,6 +6,10 @@
     "eintraege": [
       {
         "typ": "behoben",
+        "text": "Profile sind jetzt strikt an den eigenen Betrieb gebunden – auch für Arcos. Vorher sahen Arcos-Mitarbeitende fremde Personen in ihren eigenen Auswahllisten; der Zugriff auf fremde Mandanten läuft nun ausschliesslich über den Plattform-Bereich."
+      },
+      {
+        "typ": "behoben",
         "text": "Eine E-Mail-Adresse kann nur zu einem Betrieb gehören. Wird jemand eingeladen, dessen Adresse anderswo schon erfasst ist, sagt ArcoTime das jetzt klar – vorher wurde die Einladung angenommen und die Person landete beim Anmelden im falschen Betrieb."
       },
       {
