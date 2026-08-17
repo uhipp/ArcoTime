@@ -51,21 +51,25 @@ console.log(`  status  ${org.status}, ${org.lizenzen_gebucht ?? "?"} Lizenz(en)`
 console.log(`  stripe  ${org.stripe_customer_id ?? "—"}`);
 
 // Umfang zeigen, bevor etwas passiert.
-const tabellen = [
-  "profiles", "zeiteintraege", "rapporte", "kunden", "projekte", "anfragen",
-  "dienstleistungen", "abwesenheiten", "dokumente", "aenderungsprotokoll",
-];
+//
+// Die Zählung kommt aus derselben Quelle wie die Löschung (Migration 0064),
+// nicht aus einer hier gepflegten Tabellenliste. Eine solche Liste hatte
+// beim Löschen der zweiten Testorganisation drei Zeilen angekündigt und
+// vierzehn gelöscht – ein Probelauf, der zu wenig zeigt, beruhigt falsch.
+const { data: umfang, error: ue } = await db.rpc("zaehle_organisation_daten", {
+  p_organisation: org.id,
+});
+if (ue) {
+  console.error("Umfang liess sich nicht ermitteln:", ue.message);
+  console.error("Abbruch: Ohne verlässliche Vorschau wird nicht gelöscht.");
+  process.exit(1);
+}
 console.log("\nBetroffene Datensätze:");
-for (const t of tabellen) {
-  const { count, error } = await db
-    .from(t)
-    .select("id", { count: "exact", head: true })
-    .eq("organisation_id", org.id);
-  if (error) {
-    console.log(`  ${t.padEnd(20)} Prüfung fehlgeschlagen – ${error.message}`);
-    continue;
-  }
-  if (count) console.log(`  ${t.padEnd(20)} ${count}`);
+if (!umfang.length) {
+  console.log("  keine");
+}
+for (const zeile of umfang) {
+  console.log(`  ${zeile.tabelle.padEnd(20)} ${zeile.anzahl}`);
 }
 
 const { data: konten, error: ke } = await db
