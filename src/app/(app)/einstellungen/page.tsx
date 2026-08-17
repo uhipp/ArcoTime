@@ -145,6 +145,21 @@ export default async function EinstellungenPage({
       </div>
 
       <div className="rounded-lg border bg-white p-5">
+        <h2 className="text-lg font-medium mb-1">Abonnement</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Euer Vertrag mit der Arcos Group: gebuchte Lizenzen, nächste
+          Verlängerung, alle Rechnungen als PDF – und der Weg, jederzeit auf
+          das Ende der laufenden Periode zu kündigen.
+        </p>
+        <Link
+          href="/einstellungen/abo"
+          className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+        >
+          Abonnement öffnen
+        </Link>
+      </div>
+
+      <div className="rounded-lg border bg-white p-5">
         <h2 className="text-lg font-medium mb-1">Änderungsprotokoll</h2>
         <p className="text-sm text-gray-500 mb-3">
           Jede Änderung an euren Stammdaten, Belegen und Konten – wer, wann und

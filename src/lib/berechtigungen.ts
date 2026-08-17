@@ -32,6 +32,11 @@ export type Recht =
   | "einstellungen.verwalten"
   | "datenpflege.verwalten"
   | "protokoll.lesen"
+  // Abonnement, Rechnungen und Kündigung. Eigenes Recht und nicht unter
+  // einstellungen.verwalten: Das hier ist der Vertrag mit Arcos, nicht die
+  // Konfiguration des Betriebs – wer Auswahllisten pflegt, muss nicht
+  // kündigen dürfen.
+  | "abo.verwalten"
   | "export.ausfuehren"
   // Auswertungen und Kalender über alle Personen statt nur die eigenen.
   | "auswertungen.alle"

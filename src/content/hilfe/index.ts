@@ -12,6 +12,7 @@ import { exportArtikel } from "./export";
 import { dokumente } from "./dokumente";
 import { mitarbeitende } from "./mitarbeitende";
 import { einstellungen } from "./einstellungen";
+import { abo } from "./abo";
 import { benachrichtigungen } from "./benachrichtigungen";
 import { plattform } from "./plattform";
 import { aenderungen } from "./aenderungen";
@@ -36,6 +37,7 @@ export const ALLE_HILFE_ARTIKEL = [
   ...benachrichtigungen,
   ...mitarbeitende,
   ...einstellungen,
+  ...abo,
   ...exportArtikel,
   ...plattform,
 ];

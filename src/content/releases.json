@@ -6,6 +6,10 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "Neue Seite Einstellungen → Abonnement: gebuchte Lizenzen, nächste Verlängerung, alle Rechnungen als PDF zum Herunterladen – und die Kündigung auf das Ende der laufenden Abrechnungsperiode, mit der Möglichkeit, sie bis dahin wieder zurückzuziehen."
+      },
+      {
+        "typ": "neu",
         "text": "ArcoTime stellt die Rechnung neu selbst: Nach jeder bezahlten Abrechnung geht eine PDF im Arcos-Layout an die Admins der Organisation – mit ausgewiesener MWST, eigener fortlaufender Nummer und bei Kunden ausserhalb der Schweiz mit Reverse-Charge-Vermerk."
       },
       {
