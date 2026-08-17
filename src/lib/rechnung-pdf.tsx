@@ -27,7 +27,10 @@ const stil = StyleSheet.create({
   },
   kopf: { height: 7 * CM, position: "relative" },
   absender: { position: "absolute", top: 0, right: 0, width: 7 * CM, alignItems: "flex-end" },
-  logo: { width: 4.5 * CM, objectFit: "contain", marginBottom: 8 },
+  // 3.2 cm ist die SICHTBARE Breite. Die Bilddatei hatte rechts einen
+  // leeren Rand von 35 %, dadurch stand das Logo trotz bündigem Rahmen
+  // optisch zu weit links; sie ist jetzt auf den Inhalt zugeschnitten.
+  logo: { width: 3.2 * CM, objectFit: "contain", marginBottom: 10 },
   absenderName: { fontFamily: "Helvetica-Bold", color: "#1D3557", textAlign: "right" },
   absenderZeile: { color: "#555555", fontSize: 9, textAlign: "right" },
   anschrift: { position: "absolute", top: 3.5 * CM, left: 0, width: 8 * CM },
