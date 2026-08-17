@@ -235,6 +235,10 @@ export async function erstelleUndVersendeRechnung(invoice: Stripe.Invoice): Prom
     await sendeMail({
       an: empfaengerListe.join(", "),
       systemAntwort: true,
+      // Beleg-Kopie an Arcos. Das PDF liegt zwar ohnehin im Ablagebereich,
+      // aber eine Ausgangsrechnung soll auch dort ankommen, wo die
+      // Buchhaltung sie erwartet, ohne dass jemand sie holen muss.
+      kopieAn: FIRMA.rechnungsKopieEmail,
       betreff: `Rechnung ${nummerText} – ArcoTime`,
       html,
       anhaenge: [

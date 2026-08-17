@@ -29,4 +29,8 @@ export const FIRMA = {
   web: "www.arcos.ch",
   datenschutzEmail: "datenschutz@arcocloud.ch",
   supportEmail: "support@arcotime.ch",
+  // Blindkopie jeder Ausgangsrechnung. Eigener Eintrag, weil das eine
+  // Buchhaltungsadresse ist und nicht dieselbe Aufgabe hat wie der Support –
+  // sie lässt sich hier wechseln, ohne den Support mitzuverschieben.
+  rechnungsKopieEmail: "support@arcotime.ch",
 } as const;

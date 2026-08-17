@@ -43,6 +43,7 @@ export async function sendeMail({
   html,
   antwortAn,
   systemAntwort,
+  kopieAn,
   anhaenge,
 }: {
   an: string;
@@ -58,6 +59,10 @@ export async function sendeMail({
   // Absenderadresse hinterlegt, würde die Antwort ihres Kunden sonst bei
   // Arcos landen statt bei ihr.
   systemAntwort?: boolean;
+  // Stille Kopie an Arcos. Bewusst blind: Die Empfängerin einer Rechnung
+  // muss nicht sehen, an welches interne Postfach der Beleg zusätzlich
+  // geht – sichtbar wäre es eine Adresse, an die sie irrtümlich antwortet.
+  kopieAn?: string | null;
   anhaenge?: { dateiname: string; inhalt: Buffer; typ?: string }[];
 }) {
   const support = process.env.SMTP_ANTWORT_AN;
@@ -65,6 +70,7 @@ export async function sendeMail({
     from: absenderMitNamen(),
     to: an,
     replyTo: antwortAn ?? (systemAntwort ? support : undefined),
+    bcc: kopieAn ?? undefined,
     subject: betreff,
     html,
     attachments: anhaenge?.map((a) => ({
