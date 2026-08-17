@@ -47,6 +47,35 @@ export async function sendeEinladung({
   const admin = createAdminClient();
   const origin = await siteOrigin();
 
+  // Ist die Adresse schon vergeben?
+  //
+  // Eine E-Mail-Adresse gehört bauartbedingt zu genau EINER Organisation:
+  // ein Anmeldekonto, ein Profil, eine Organisation. generateLink prüft das
+  // nicht – es nimmt eine zweite Einladung derselben Adresse klaglos an,
+  // gibt dieselbe Konto-ID zurück und überschreibt dabei die Metadaten mit
+  // der neuen Organisation. Das Profil bleibt aber beim ersten Betrieb.
+  //
+  // Folge ohne diese Prüfung: Der einladende Admin liest "Einladung
+  // gesendet", die Person bekommt eine Mail, klickt – und landet im
+  // falschen Betrieb. Kein Fehler, keine Meldung, nur ein falsches
+  // Ergebnis. Genau deshalb wird hier vorher nachgesehen.
+  const { data: vorhanden } = await admin
+    .from("profiles")
+    .select("organisation_id, organisationen!profiles_organisation_id_fkey(name)")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (vorhanden) {
+    const bestehende = (vorhanden.organisationen as unknown as { name: string } | null)?.name;
+    return {
+      fehler:
+        vorhanden.organisation_id === organisationId
+          ? `${email} ist in diesem Betrieb bereits erfasst.`
+          : `${email} gehört bereits zu einem anderen Betrieb${bestehende ? ` (${bestehende})` : ""}. ` +
+            "Eine E-Mail-Adresse kann nur zu einem Betrieb gehören – bitte eine andere Adresse verwenden.",
+    };
+  }
+
   // generateLink legt das Konto an – wie inviteUserByEmail – verschickt
   // aber nichts. Die Benutzerdaten landen wie bisher in den Metadaten und
   // werden beim ersten Anmelden vom Trigger ins Profil übernommen.

@@ -5,6 +5,10 @@
     "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
     "eintraege": [
       {
+        "typ": "behoben",
+        "text": "Eine E-Mail-Adresse kann nur zu einem Betrieb gehören. Wird jemand eingeladen, dessen Adresse anderswo schon erfasst ist, sagt ArcoTime das jetzt klar – vorher wurde die Einladung angenommen und die Person landete beim Anmelden im falschen Betrieb."
+      },
+      {
         "typ": "verbessert",
         "text": "Einladungen verschickt ArcoTime neu selbst – mit Textteil, eigenem Absender und einem Link auf arcotime.ch statt auf eine fremde Adresse. Das verbessert die Zustellbarkeit; die erste Einladung an ein iCloud-Postfach war im Spam gelandet."
       },

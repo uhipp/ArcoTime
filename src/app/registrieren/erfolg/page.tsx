@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { stripe } from "@/lib/stripe";
 
 export default async function RegistrierungErfolgPage({
@@ -82,9 +81,18 @@ export default async function RegistrierungErfolgPage({
             kündigen.
           </p>
         )}
-        <Link href="/login" className="text-sm text-arcos-steel hover:underline">
-          Zur Anmeldeseite
-        </Link>
+        {/* Bewusst KEIN Link zur Anmeldeseite: Ein Konto gibt es zu diesem
+            Zeitpunkt zwar, aber noch kein Passwort. Wer hier klickt, steht
+            vor einem Anmeldeformular, an dem er nur scheitern kann – und
+            zweifelt dann daran, ob die Zahlung überhaupt angekommen ist.
+            Der Weg hinein führt ausschliesslich über den Link in der Mail. */}
+        <p className="text-xs text-gray-400">
+          Keine E-Mail erhalten? Bitte auch im Spam-Ordner nachsehen und sich sonst bei{" "}
+          <a href="mailto:support@arcotime.ch" className="text-arcos-steel hover:underline">
+            support@arcotime.ch
+          </a>{" "}
+          melden.
+        </p>
       </div>
     </div>
   );

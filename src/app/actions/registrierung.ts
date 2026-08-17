@@ -5,6 +5,8 @@ import { stripe, STRIPE_PREIS_ID } from "@/lib/stripe";
 import { abgerechneteMenge } from "@/lib/lizenzpreise";
 import { APP_URL } from "@/lib/app-url";
 import { VERTRAGSFASSUNG } from "@/content/recht";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { SUPPORT_MAIL } from "@/lib/kontakt";
 
 // Öffentliche Aktion (kein Login nötig – das IST die Selbstregistrierung).
 // Erzeugt eine Stripe-Checkout-Session und leitet direkt dorthin weiter.
@@ -41,6 +43,28 @@ export async function starteRegistrierung(formData: FormData) {
     redirect(
       `/registrieren?error=${encodeURIComponent(
         "Bitte AGB und Auftragsbearbeitungsvertrag akzeptieren."
+      )}`
+    );
+  }
+
+  // Ist die Adresse schon vergeben? Vor der Bezahlung prüfen, nicht danach.
+  //
+  // Eine E-Mail-Adresse gehört zu genau einer Organisation. Fiele das erst
+  // beim Anlegen des Kontos auf – also NACH der Zahlung –, stünde die
+  // Kundin mit einer belasteten Karte und ohne Zugang da, und die
+  // Organisation wäre bereits angelegt. Dieser Zustand ist von Hand nur
+  // mühsam aufzulösen; die Prüfung hier kostet dagegen nichts.
+  const { data: bestehendesKonto } = await createAdminClient()
+    .from("profiles")
+    .select("id")
+    .eq("email", adminEmail)
+    .maybeSingle();
+
+  if (bestehendesKonto) {
+    redirect(
+      `/registrieren?error=${encodeURIComponent(
+        `Für ${adminEmail} besteht bereits ein ArcoTime-Zugang. Eine E-Mail-Adresse kann nur zu einem Betrieb gehören. ` +
+          `Bitte eine andere Adresse verwenden oder sich unter ${SUPPORT_MAIL} melden.`
       )}`
     );
   }
