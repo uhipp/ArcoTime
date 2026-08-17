@@ -46,6 +46,16 @@ export async function updateSession(request: NextRequest) {
 
   // Stripe ruft den Webhook ohne jede Session auf – Absicherung läuft dort
   // über die kryptografische Signatur, nicht über Login.
+  // Musterrechnung zum Prüfen des Layouts – nur in der Entwicklung. Die
+  // Route selbst antwortet in Produktion mit 404; ohne diese Ausnahme
+  // würde sie hier vorher auf /login umgeleitet.
+  if (
+    process.env.NODE_ENV !== "production" &&
+    request.nextUrl.pathname.startsWith("/api/rechnung-muster")
+  ) {
+    return response;
+  }
+
   if (request.nextUrl.pathname.startsWith("/api/webhooks/")) {
     return response;
   }

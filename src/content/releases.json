@@ -6,6 +6,10 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "ArcoTime stellt die Rechnung neu selbst: Nach jeder bezahlten Abrechnung geht eine PDF im Arcos-Layout an die Admins der Organisation – mit ausgewiesener MWST, eigener fortlaufender Nummer und bei Kunden ausserhalb der Schweiz mit Reverse-Charge-Vermerk."
+      },
+      {
+        "typ": "neu",
         "text": "Arbeitsrapporte: mehrere Leistungen eines Einsatzes unter einer Rapportnummer, als Nachweis für den Kunden. Preise stehen bewusst nicht darauf – der Rapport ist ein Leistungsnachweis, keine Rechnung."
       },
       {

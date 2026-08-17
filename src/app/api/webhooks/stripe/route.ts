@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendeMail } from "@/lib/email";
+import { erstelleUndVersendeRechnung } from "@/lib/rechnung-erstellen";
 import { siteOrigin } from "@/lib/site-origin";
 import { SUPPORT_MAIL } from "@/lib/kontakt";
 
@@ -181,6 +182,25 @@ export async function POST(request: NextRequest) {
             naechster_zahltermin: unixZuDatum(subscription.items.data[0]?.current_period_end),
           })
           .eq("stripe_subscription_id", subscriptionId);
+
+        // Eigene Rechnung erzeugen und versenden. Bewusst NACH der
+        // Freischaltung: Der Zugang darf nicht davon abhängen, ob eine
+        // PDF erzeugt werden konnte. Ein Fehler wird protokolliert, aber
+        // nicht an Stripe zurückgemeldet – sonst stellt Stripe dasselbe
+        // Ereignis wieder und wieder zu, während die Organisation längst
+        // aktiv ist. Die Rechnung lässt sich nachträglich erzeugen.
+        try {
+          const ergebnis = await erstelleUndVersendeRechnung(invoice);
+          if (ergebnis.status === "fehler") {
+            console.error("Rechnung nicht erstellt", { invoice: invoice.id, fehler: ergebnis.fehler });
+          } else if (ergebnis.status === "uebersprungen") {
+            console.log("Rechnung übersprungen", { invoice: invoice.id, grund: ergebnis.grund });
+          } else {
+            console.log("Rechnung erstellt", { invoice: invoice.id, nummer: ergebnis.nummer });
+          }
+        } catch (fehler) {
+          console.error("Rechnung: unerwarteter Fehler", { invoice: invoice.id, fehler });
+        }
         break;
       }
 

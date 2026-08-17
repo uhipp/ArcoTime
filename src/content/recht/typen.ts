@@ -21,6 +21,8 @@ export const FIRMA = {
   plzOrt: "4447 Känerkinden",
   land: "Schweiz",
   uid: "CHE-116.097.916",
+  // Mit dem Zusatz MWST – so gehört sie auf eine Rechnung (Art. 26 MWSTG).
+  mwstNummer: "CHE-116.097.916 MWST",
   vertretung: "Urs Hipp, Geschäftsführer",
   email: "info@arcos.ch",
   telefon: "+41 79 761 13 85",
