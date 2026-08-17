@@ -49,7 +49,7 @@ export default async function OrganisationDetailPage({
   const [{ data: organisation }, { data: mitarbeitende }] = await Promise.all([
     supabase
       .from("organisationen")
-      .select("id, name, lizenzen_gebucht, status, nachfrist_bis")
+      .select("id, name, lizenzen_gebucht, status, nachfrist_bis, stripe_subscription_id")
       .eq("id", id)
       .single(),
     admin
@@ -351,11 +351,14 @@ export default async function OrganisationDetailPage({
             </h3>
 
             {organisation.status === "aktiv" ? (
+              // Ohne Abo ist es ein Gratismandant (Demo, intern, Testzugang) –
+              // dann wäre "entzieht ihr eine bezahlte Leistung" schlicht falsch.
               <p className="text-sm text-gray-700">
-                Das Abonnement von <strong>{organisation.name}</strong> ist{" "}
-                <strong>aktiv</strong>. Die Kundin arbeitet mit ArcoTime und hat vollen
-                Anspruch auf ihre Daten. Eine Löschung jetzt entzieht ihr eine bezahlte
-                Leistung.
+                <strong>{organisation.name}</strong> ist <strong>aktiv</strong> und wird
+                genutzt.{" "}
+                {organisation.stripe_subscription_id
+                  ? "Die Kundin hat ein laufendes Abonnement und vollen Anspruch auf ihre Daten; eine Löschung jetzt entzieht ihr eine bezahlte Leistung."
+                  : "Für diese Organisation läuft kein Abonnement (Demo- oder Gratiszugang) – die Daten darin sind trotzdem echte Arbeit."}
               </p>
             ) : (
               <p className="text-sm text-gray-700">
