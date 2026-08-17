@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import ExcelJS from "exceljs";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentOrganisation, getCurrentProfile } from "@/lib/get-profile";
 import { darf } from "@/lib/berechtigungen";
