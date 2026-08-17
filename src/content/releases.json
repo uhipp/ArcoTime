@@ -5,6 +5,10 @@
     "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
     "eintraege": [
       {
+        "typ": "verbessert",
+        "text": "Einladungen verschickt ArcoTime neu selbst – mit Textteil, eigenem Absender und einem Link auf arcotime.ch statt auf eine fremde Adresse. Das verbessert die Zustellbarkeit; die erste Einladung an ein iCloud-Postfach war im Spam gelandet."
+      },
+      {
         "typ": "neu",
         "text": "Neu unter Export: „Alle Daten herunterladen“ – der vollständige Bestand der Organisation als Excel- oder JSON-Datei. Der Download verändert nichts und lässt sich beliebig wiederholen."
       },

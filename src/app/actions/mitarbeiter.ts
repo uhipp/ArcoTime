@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { mitErfolg } from "@/lib/erfolg";
-import { siteOrigin } from "@/lib/site-origin";
+import { sendeEinladung } from "@/lib/einladung";
 import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { darf } from "@/lib/berechtigungen";
@@ -119,7 +118,7 @@ export async function ladeMitarbeitendeEin(formData: FormData) {
   // eine deaktivierte Lizenz gilt als wieder frei.
   const { data: organisation } = await supabase
     .from("organisationen")
-    .select("lizenzen_gebucht")
+    .select("name, lizenzen_gebucht")
     .eq("id", eigenesProfil.organisation_id)
     .single();
 
@@ -140,25 +139,20 @@ export async function ladeMitarbeitendeEin(formData: FormData) {
     }
   }
 
-  const origin = await siteOrigin();
-  const admin = createAdminClient();
-
-  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${origin}/auth/confirm`,
-    data: {
-      vorname,
-      nachname,
-      organisation_id: eigenesProfil.organisation_id,
-    },
+  const { fehler } = await sendeEinladung({
+    email,
+    vorname,
+    nachname,
+    organisationId: eigenesProfil.organisation_id,
+    rolle: "mitarbeiter",
+    organisationName: organisation?.name,
   });
 
-  if (error) {
+  if (fehler) {
     // Die Originalmeldung ins Serverlog, damit sie beim Nachforschen da
     // ist – der Anwender bekommt den verständlichen Text.
-    console.error("Einladung fehlgeschlagen", { email, fehler: error.message });
-    redirect(
-      `/mitarbeiter?error=${encodeURIComponent(versandFehlerText(error.message, email))}`
-    );
+    console.error("Einladung fehlgeschlagen", { email, fehler });
+    redirect(`/mitarbeiter?error=${encodeURIComponent(versandFehlerText(fehler, email))}`);
   }
 
   revalidatePath("/mitarbeiter");

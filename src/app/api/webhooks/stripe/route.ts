@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendeMail } from "@/lib/email";
 import { erstelleUndVersendeRechnung } from "@/lib/rechnung-erstellen";
+import { sendeEinladung } from "@/lib/einladung";
 import { siteOrigin } from "@/lib/site-origin";
 import { SUPPORT_MAIL } from "@/lib/kontakt";
 import { formatDatumCH } from "@/lib/date-utils";
@@ -163,39 +164,36 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        const origin = await siteOrigin();
-        const { error: einladungsFehler } = await admin.auth.admin.inviteUserByEmail(
-          meta.admin_email,
-          {
-            redirectTo: `${origin}/auth/confirm`,
-            data: {
-              vorname: meta.admin_vorname,
-              nachname: meta.admin_nachname,
-              organisation_id: neueOrg.id,
-              rolle_bei_einladung: "admin",
-            },
-          }
-        );
+        const { fehler: einladungsFehler } = await sendeEinladung({
+          email: meta.admin_email,
+          vorname: meta.admin_vorname ?? "",
+          nachname: meta.admin_nachname ?? "",
+          organisationId: neueOrg.id,
+          // Direkt als Admin der neuen Organisation – ohne das müsste die
+          // Rolle nachträglich von Hand hochgestuft werden.
+          rolle: "admin",
+          organisationName: meta.firmenname,
+        });
 
-        // Scheitert der Mailversand (SMTP-Problem, Rate-Limit, Empfänger vom
-        // Zielserver abgelehnt), legt Supabase den Auth-Nutzer gar nicht erst
-        // an: Die Organisation existiert dann und wird bereits belastet, aber
-        // niemand kann sich jemals anmelden – und die Kundin sieht nur die
-        // Erfolgsseite mit "Du erhältst in Kürze eine E-Mail". Das darf nicht
-        // stillschweigend passieren, deshalb Log + Alarm an die Platform-
-        // Admins über den eigenen SMTP-Weg (unabhängig vom Supabase-Mailer).
-        // Bewusst KEIN Fehler-Status an Stripe: das Abo ist gültig zustande
-        // gekommen, ein Retry würde nur dieselbe Einladung erneut versenden.
+        // Scheitert der Versand (SMTP-Problem, Rate-Limit, Empfänger vom
+        // Zielserver abgelehnt), existiert die Organisation, wird belastet –
+        // und niemand kann sich anmelden, während die Kundin auf der
+        // Erfolgsseite "Du erhältst in Kürze eine E-Mail" liest. Das darf
+        // nicht stillschweigend passieren, deshalb Log + Alarm an die
+        // Platform-Admins, die die Einladung von Hand nachholen können.
+        //
+        // Bewusst KEIN Fehler-Status an Stripe: Das Abo ist gültig zustande
+        // gekommen, ein Wiederholungsversuch würde nur dasselbe nochmals tun.
         if (einladungsFehler) {
           console.error(
             `Webhook checkout.session.completed: Einladung an ${meta.admin_email} fehlgeschlagen:`,
-            einladungsFehler.message
+            einladungsFehler
           );
           await meldeGescheiterteEinladung({
             admin,
             firmenname: meta.firmenname,
             adminEmail: meta.admin_email,
-            grund: einladungsFehler.message,
+            grund: einladungsFehler,
           });
         }
         break;

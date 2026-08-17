@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { mitErfolg } from "@/lib/erfolg";
-import { siteOrigin } from "@/lib/site-origin";
 import { sendeMail } from "@/lib/email";
+import { sendeEinladung } from "@/lib/einladung";
 import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 
 // Alle Aktionen hier sind ausschliesslich Platform-Admins vorbehalten
@@ -71,26 +71,23 @@ export async function erstelleOrganisation(formData: FormData) {
     redirect(`/plattform?error=${encodeURIComponent(error?.message ?? "Unbekannter Fehler.")}`);
   }
 
-  const origin = await siteOrigin();
-  const admin = createAdminClient();
-  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(adminEmail, {
-    redirectTo: `${origin}/auth/confirm`,
-    data: {
-      vorname: adminVorname,
-      nachname: adminNachname,
-      organisation_id: neueOrg.id,
-      // Direkt als Admin ihrer neuen Organisation anlegen – ohne das müsste
-      // erst manuell die Rolle nachträglich hochgestuft werden.
-      rolle_bei_einladung: "admin",
-    },
+  const { fehler: inviteError } = await sendeEinladung({
+    email: adminEmail,
+    vorname: adminVorname,
+    nachname: adminNachname,
+    organisationId: neueOrg.id,
+    // Direkt als Admin ihrer neuen Organisation anlegen – ohne das müsste
+    // erst manuell die Rolle nachträglich hochgestuft werden.
+    rolle: "admin",
+    organisationName: name,
   });
 
   if (inviteError) {
-    console.error("Einladung fehlgeschlagen", { email: adminEmail, fehler: inviteError.message });
+    console.error("Einladung fehlgeschlagen", { email: adminEmail, fehler: inviteError });
     redirect(
       `/plattform?error=${encodeURIComponent(
         `Organisation "${name}" angelegt, aber ` +
-          versandFehlerText(inviteError.message, adminEmail)
+          versandFehlerText(inviteError, adminEmail)
       )}`
     );
   }
@@ -248,7 +245,7 @@ export async function ladePersonEinPlattform(organisationId: string, formData: F
 
   const { data: organisation } = await admin
     .from("organisationen")
-    .select("lizenzen_gebucht")
+    .select("name, lizenzen_gebucht")
     .eq("id", organisationId)
     .single();
 
@@ -289,14 +286,17 @@ export async function ladePersonEinPlattform(organisationId: string, formData: F
     redirect(`/plattform/${organisationId}?error=${encodeURIComponent(adressFehler)}`);
   }
 
-  const origin = await siteOrigin();
-  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${origin}/auth/confirm`,
-    data: { vorname, nachname, organisation_id: organisationId, rolle_bei_einladung: role },
+  const { fehler } = await sendeEinladung({
+    email,
+    vorname,
+    nachname,
+    organisationId,
+    rolle: role as "admin" | "mitarbeiter",
+    organisationName: organisation?.name,
   });
 
-  if (error) {
-    redirect(`/plattform?error=${encodeURIComponent(error.message)}`);
+  if (fehler) {
+    redirect(`/plattform?error=${encodeURIComponent(fehler)}`);
   }
 
   revalidatePath("/plattform");
