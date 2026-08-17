@@ -101,18 +101,45 @@ export async function updateSession(request: NextRequest) {
   // abgelaufen, Zahlung fehlgeschlagen, gekündigt, manuell pausiert).
   // Platform-Admins (Arcos selbst) sind bewusst ausgenommen, damit sie sich
   // nie selbst aussperren können.
+  //
+  // Ausnahme davon ist die NACHFRIST: Nach Vertragsende sagt AGB Ziffer 10
+  // dreissig Tage zu, in denen die Daten "abrufbereit" bleiben, damit der
+  // Kunde exportieren kann. In dieser Zeit ist die Anwendung lesend offen
+  // und schreibend zu.
+  //
+  // Die Trennung läuft über die HTTP-Methode: Lesen ist GET, jede Änderung
+  // in dieser Anwendung ist ein POST (Server Actions und Formulare). Das
+  // ist eine grobe, aber verlässliche Grenze – sie kennt keine Ausnahmen,
+  // die man vergessen könnte, und sie gilt auch für Wege, die erst später
+  // dazukommen.
+  //
+  // WICHTIG: Das ist eine Sperre der Anwendung, nicht der Datenbank. Die
+  // RLS-Regeln lassen Schreibzugriffe in der Nachfrist weiterhin zu. Für
+  // den vorgesehenen Zweck reicht das; wer mit eigenen Werkzeugen an der
+  // API vorbeigeht, ist damit nicht aufgehalten.
   if (data.user && request.nextUrl.pathname !== "/gesperrt") {
     const { data: profil } = await supabase
       .from("profiles")
-      .select("ist_platform_admin, organisationen(status)")
+      .select("ist_platform_admin, organisationen(status, nachfrist_bis)")
       .eq("id", data.user.id)
       .single();
 
-    const organisation = profil?.organisationen as unknown as { status: string } | null;
+    const organisation = profil?.organisationen as unknown as {
+      status: string;
+      nachfrist_bis: string | null;
+    } | null;
+
     if (!profil?.ist_platform_admin && organisation && organisation.status !== "aktiv") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/gesperrt";
-      return NextResponse.redirect(url);
+      const heute = new Date().toISOString().slice(0, 10);
+      const inNachfrist = Boolean(
+        organisation.nachfrist_bis && organisation.nachfrist_bis >= heute
+      );
+
+      if (!inNachfrist || request.method !== "GET") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/gesperrt";
+        return NextResponse.redirect(url);
+      }
     }
   }
 

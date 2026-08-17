@@ -6,6 +6,7 @@ import { sendeMail } from "@/lib/email";
 import { erstelleUndVersendeRechnung } from "@/lib/rechnung-erstellen";
 import { siteOrigin } from "@/lib/site-origin";
 import { SUPPORT_MAIL } from "@/lib/kontakt";
+import { formatDatumCH } from "@/lib/date-utils";
 
 function unixZuDatum(unixSekunden: number | null | undefined): string | null {
   return unixSekunden ? new Date(unixSekunden * 1000).toISOString().slice(0, 10) : null;
@@ -308,10 +309,58 @@ export async function POST(request: NextRequest) {
       // -----------------------------------------------------------------
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        await admin
+
+        // Vertragsende. Ab hier läuft die Nachfrist aus AGB Ziffer 10:
+        // dreissig Tage lesenden Zugriff, damit der Kunde exportieren kann.
+        // Gerechnet ab heute und nicht ab dem Periodenende – zugestellt
+        // wird dieses Ereignis am Ende der Periode, und wäre es einmal
+        // verspätet, dürfte die Frist des Kunden davon nicht kürzer werden.
+        const nachfristBis = new Date();
+        nachfristBis.setDate(nachfristBis.getDate() + 30);
+
+        const { data: beendet } = await admin
           .from("organisationen")
-          .update({ status: "gekuendigt", sperrgrund: null })
-          .eq("stripe_subscription_id", subscription.id);
+          .update({
+            status: "gekuendigt",
+            sperrgrund: null,
+            nachfrist_bis: nachfristBis.toISOString().slice(0, 10),
+          })
+          .eq("stripe_subscription_id", subscription.id)
+          .select("id, name");
+
+        // Die Kundin erfährt vom Ende der Frist, solange sie noch etwas
+        // tun kann. Eine Löschzusage, von der niemand rechtzeitig weiss,
+        // ist eine Falle.
+        const origin = await siteOrigin();
+        for (const organisation of beendet ?? []) {
+          const { data: admins } = await admin
+            .from("profiles")
+            .select("name, email")
+            .eq("organisation_id", organisation.id)
+            .eq("role", "admin");
+
+          for (const person of admins ?? []) {
+            if (!person.email) continue;
+            await sendeMail({
+              an: person.email,
+              systemAntwort: true,
+              betreff: `Vertragsende – Daten von ${organisation.name} noch 30 Tage abrufbar`,
+              html: `
+                <div style="font-family:sans-serif;color:#111827;">
+                  <p>Hallo ${person.name},</p>
+                  <p>Das Abonnement von <strong>${organisation.name}</strong> ist beendet.
+                  Vielen Dank für die Zeit mit ArcoTime.</p>
+                  <p>Eure Daten bleiben noch bis zum
+                  <strong>${formatDatumCH(nachfristBis.toISOString().slice(0, 10))}</strong>
+                  abrufbar. In dieser Zeit könnt ihr euch anmelden und alles ansehen und
+                  herunterladen – neu erfassen lässt sich nichts mehr.</p>
+                  <p><a href="${origin}/export">Jetzt Daten exportieren</a></p>
+                  <p>Nach diesem Datum werden die Daten gelöscht. Wenn ihr weitermachen
+                  möchtet oder etwas braucht: ${SUPPORT_MAIL}</p>
+                </div>`,
+            });
+          }
+        }
         break;
       }
 

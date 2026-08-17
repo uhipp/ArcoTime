@@ -106,6 +106,40 @@ export default async function ExportPage({
     <div>
       <h1 className="text-2xl font-semibold mb-6">Export</h1>
 
+      {/* Zwei grundverschiedene Dinge heissen beide "Export", deshalb stehen
+          sie hier klar getrennt: unten der Comatic-Export für die
+          Buchhaltung, der Einträge fixiert – und hier der vollständige
+          Datenexport, der nichts verändert. Ohne diese Trennung sucht
+          jemand, der "alle unsere Daten" will, an der falschen Stelle. */}
+      <div className="rounded-lg border bg-white p-5 mb-8">
+        <h2 className="text-lg font-medium mb-1">Alle Daten herunterladen</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Der vollständige Bestand eurer Organisation – Zeiteinträge, Rapporte, Kunden,
+          Projekte, Stammdaten und das Änderungsprotokoll. Es wird dabei nichts verändert
+          und nichts als exportiert markiert; der Download lässt sich beliebig oft
+          wiederholen.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/api/export/vollstaendig?format=xlsx"
+            className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Als Excel-Datei
+          </a>
+          <a
+            href="/api/export/vollstaendig"
+            className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Als JSON-Datei
+          </a>
+        </div>
+        <p className="text-xs text-gray-500 mt-3">
+          Die Excel-Datei ist zum Anschauen und Weiterarbeiten – eine Tabelle je Bereich.
+          Die JSON-Datei enthält dieselben Daten verlustfrei; nur aus ihr lässt sich ein
+          Stand später wieder einspielen. Bewahrt beide auf, wenn ihr ArcoTime verlasst.
+        </p>
+      </div>
+
       {params.error && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2 mb-4">
           {params.error}

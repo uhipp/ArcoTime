@@ -3,12 +3,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { createClient } from "@/lib/supabase/server";
-import { heuteIso } from "@/lib/date-utils";
+import { formatDatumCH, heuteIso } from "@/lib/date-utils";
 import { logout } from "@/app/actions/auth";
 import { Toast } from "@/components/toast";
 import { AutoFokus } from "@/components/auto-fokus";
 import { KontextHilfeLink } from "@/components/kontext-hilfe-link";
 import { darf } from "@/lib/berechtigungen";
+
+async function ladeNachfrist(organisationId: string | undefined) {
+  if (!organisationId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("organisationen")
+    .select("status, nachfrist_bis")
+    .eq("id", organisationId)
+    .single();
+
+  if (!data?.nachfrist_bis || data.status === "aktiv") return null;
+  return data.nachfrist_bis >= heuteIso() ? data.nachfrist_bis : null;
+}
 
 export default async function AppLayout({
   children,
@@ -20,6 +33,12 @@ export default async function AppLayout({
     getCurrentOrganisation(),
   ]);
   const isAdmin = darf(profile, "einstellungen.verwalten");
+
+  // Nachfrist nach Vertragsende (AGB Ziffer 10): lesen ja, erfassen nein.
+  // Der Hinweis steht über ALLEN Seiten und nicht nur auf einer – wer in
+  // dieser Zeit hereinkommt, soll nicht erst durch einen fehlgeschlagenen
+  // Speicherversuch erfahren, woran er ist.
+  const nachfristBis = await ladeNachfrist(organisation?.id);
 
   // Zähler für fällige Wiedervorlagen direkt in der Navigation, damit man
   // sie sofort sieht statt sie nur auf der Übersichtsseite zu entdecken.
@@ -66,6 +85,18 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {nachfristBis && (
+        <div className="bg-amber-100 text-amber-900 text-sm px-4 py-3 print:hidden">
+          <div className="max-w-5xl mx-auto">
+            <strong>Nur-Lese-Modus.</strong> Das Abonnement ist beendet. Ihr könnt eure
+            Daten noch bis zum {formatDatumCH(nachfristBis)} ansehen und herunterladen –
+            neu erfassen lässt sich nichts mehr. Danach werden die Daten gelöscht.{" "}
+            <Link href="/export" className="underline font-medium">
+              Jetzt exportieren
+            </Link>
+          </div>
+        </div>
+      )}
       <header className="bg-white border-b-2 border-arcos-steel print:hidden">
         <div className="max-w-5xl mx-auto px-4 pt-3">
           {/* Erste Zeile: Mandant + Benutzer/Abmelden links, Logo rechts.
