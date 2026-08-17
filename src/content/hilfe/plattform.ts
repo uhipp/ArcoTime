@@ -61,6 +61,20 @@ Kunden können einzelne Mitarbeitende selbst deaktivieren (siehe [Mitarbeitende]
 ## Auf der Organisations-Detailseite
 
 Klick auf den Namen einer Organisation öffnet deren Detailseite: dort lassen sich Vorname, Nachname, **E-Mail (= Login)** und Rolle jeder Person bearbeiten (auch cross-organisatorisch, z.B. um einen Tippfehler in der E-Mail-Adresse eines Kunden-Admins zu korrigieren), sowie über **"Person einladen"** eine weitere Person direkt in diese bestehende Organisation einladen – inklusive Rolle (auch als zweiter Admin, maximal zwei Admin-Konten je Organisation).
+
+## Einen Mandanten löschen
+
+Ganz unten auf der Detailseite steht **"Mandant löschen"**. Die Löschung entfernt die Organisation mit allen Daten und Benutzerkonten und **lässt sich nicht rückgängig machen** – es gibt keinen Papierkorb. Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen; sie sind Belege und zehn Jahre aufzubewahren.
+
+Der Ablauf hat drei Stufen:
+
+1. **Sicherungskopie herunterladen** – als JSON (verlustfrei) oder Excel. Ein Klick daneben, und die Daten sind weg; die Kopie kostet zehn Sekunden.
+2. **Der Umfang wird angezeigt** – jede betroffene Tabelle mit Anzahl und die betroffenen Konten mit E-Mail-Adresse. Gezählt aus derselben Quelle, aus der gelöscht wird.
+3. **Der Name muss abgetippt werden.** Gegen den Griff auf die falsche Zeile hilft keine Rückfrage mit "OK", sondern nur etwas, das man nicht aus Versehen tut.
+
+Läuft die Frist der Kundin noch – das Abonnement ist aktiv oder die 30-tägige Nachfrist ist nicht abgelaufen –, erscheint zuerst ein **Fenster**, das den Weg versperrt. Es nennt das Datum, bis zu dem die Kundin nach AGB Ziffer 10 Anspruch auf ihre Daten hat. Löschen ist danach weiterhin möglich (etwa bei einem Testmandanten oder auf ausdrücklichen Wunsch der Kundin), aber nur nach ausdrücklicher Bestätigung.
+
+Wann eine Löschung fällig wird, musst du nicht im Kopf behalten: Eine tägliche Prüfung meldet dir per E-Mail, welche Mandanten die Nachfrist überschritten haben. **Gelöscht wird nie automatisch** – das entscheidet immer ein Mensch.
 `,
   },
 ];

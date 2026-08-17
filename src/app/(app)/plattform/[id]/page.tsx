@@ -25,13 +25,13 @@ export default async function OrganisationDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; loeschen?: string }>;
+  searchParams: Promise<{ error?: string; loeschen?: string; frist?: string }>;
 }) {
   const profil = await getCurrentProfile();
   if (!profil?.ist_platform_admin) redirect("/");
 
   const { id } = await params;
-  const { error, loeschen } = await searchParams;
+  const { error, loeschen, frist } = await searchParams;
   const supabase = await createClient();
 
   // Die Profile eines FREMDEN Mandanten liest bewusst der Dienstschlüssel.
@@ -77,6 +77,14 @@ export default async function OrganisationDetailPage({
   const nochGeschuetzt =
     organisation.status === "aktiv" ||
     Boolean(organisation.nachfrist_bis && organisation.nachfrist_bis >= heute);
+
+  // Läuft die Frist der Kundin noch, steht vor der Löschung ein Fenster, das
+  // man wegklicken muss. Ein Hinweis IM Formular wird überlesen – wer schon
+  // auf "löschen" geklickt hat, liest nicht mehr, sondern sucht den nächsten
+  // Knopf. Der Weg dahin führt über einen zweiten Klick, der als Adresse
+  // sichtbar ist (?frist=verstanden), damit die Bestätigung nicht durch ein
+  // versehentliches Klicken neben das Fenster verlorengeht.
+  const fristHinweisOffen = loeschen === "1" && nochGeschuetzt && frist !== "verstanden";
 
   const liste = (mitarbeitende as MitarbeiterZeile[] | null) ?? [];
   const genutzt = liste.filter((m) => !m.deaktiviert_am).length;
@@ -271,7 +279,7 @@ export default async function OrganisationDetailPage({
           </a>
         </div>
 
-        {loeschen !== "1" ? (
+        {loeschen !== "1" || fristHinweisOffen ? (
           <Link
             href={`/plattform/${organisation.id}?loeschen=1`}
             className="inline-block rounded border border-red-300 text-red-700 px-4 py-2 text-sm hover:bg-red-50"
@@ -280,17 +288,6 @@ export default async function OrganisationDetailPage({
           </Link>
         ) : (
           <div className="rounded bg-red-50 border border-red-200 p-4 space-y-4">
-            {nochGeschuetzt && (
-              <p className="text-sm text-red-900 font-medium">
-                Achtung: Diese Organisation ist{" "}
-                {organisation.status === "aktiv"
-                  ? "noch aktiv"
-                  : `noch bis ${organisation.nachfrist_bis} in der Nachfrist`}
-                . Die Kundin hat also noch Anspruch auf ihre Daten. Nur fortfahren, wenn
-                das ausdrücklich so gewollt ist.
-              </p>
-            )}
-
             <div>
               <p className="text-sm font-medium text-red-900 mb-2">
                 Gelöscht werden {summe} Datensätze und {liste.length} Benutzerkonten:
@@ -342,6 +339,71 @@ export default async function OrganisationDetailPage({
           </div>
         )}
       </div>
+
+      {/* --------------------------------------------------------------- */}
+      {/* Fenster: die Frist der Kundin läuft noch                         */}
+      {/* --------------------------------------------------------------- */}
+      {fristHinweisOffen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-red-700">
+              Die Frist dieser Kundin läuft noch
+            </h3>
+
+            {organisation.status === "aktiv" ? (
+              <p className="text-sm text-gray-700">
+                Das Abonnement von <strong>{organisation.name}</strong> ist{" "}
+                <strong>aktiv</strong>. Die Kundin arbeitet mit ArcoTime und hat vollen
+                Anspruch auf ihre Daten. Eine Löschung jetzt entzieht ihr eine bezahlte
+                Leistung.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-700">
+                Nach AGB Ziffer 10 bleiben die Daten <strong>30 Tage abrufbereit</strong>,
+                damit die Kundin sie herunterladen kann. Diese Frist läuft noch bis zum{" "}
+                <strong>
+                  {organisation.nachfrist_bis
+                    ? new Date(organisation.nachfrist_bis).toLocaleDateString("de-CH", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </strong>
+                . Wer jetzt löscht, nimmt ihr diese Möglichkeit.
+              </p>
+            )}
+
+            <p className="text-sm text-gray-700">
+              Die Löschung ist <strong>nicht umkehrbar</strong>. Wenn es trotzdem sein
+              muss – etwa bei einem Testmandanten oder auf ausdrücklichen Wunsch der
+              Kundin – lade vorher die Sicherungskopie herunter.
+            </p>
+
+            <a
+              href={`/api/export/vollstaendig?organisation=${organisation.id}`}
+              className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Sicherungskopie herunterladen
+            </a>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2 border-t">
+              <Link
+                href={`/plattform/${organisation.id}`}
+                className="rounded bg-arcos-navy text-white px-4 py-2 text-sm hover:opacity-90"
+              >
+                Abbrechen
+              </Link>
+              <Link
+                href={`/plattform/${organisation.id}?loeschen=1&frist=verstanden`}
+                className="text-sm text-red-700 underline"
+              >
+                Verstanden – trotzdem löschen
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
