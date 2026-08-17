@@ -4,10 +4,15 @@ export function DeleteButton({
   action,
   label = "Löschen",
   confirmText = "Wirklich löschen?",
+  // Rot ist die Voreinstellung, weil der Knopf meistens etwas entfernt.
+  // Für harmlose Vorgänge mit Rückfrage – etwa das Senden eines neuen
+  // Zugangslinks – wäre Rot eine falsche Warnung.
+  harmlos = false,
 }: {
   action: (formData: FormData) => void;
   label?: string;
   confirmText?: string;
+  harmlos?: boolean;
 }) {
   return (
     <form
@@ -16,7 +21,7 @@ export function DeleteButton({
         if (!confirm(confirmText)) e.preventDefault();
       }}
     >
-      <button type="submit" className="text-sm text-red-600 hover:underline">
+      <button type="submit" className={`text-sm hover:underline ${harmlos ? "text-arcos-steel" : "text-red-600"}`}>
         {label}
       </button>
     </form>

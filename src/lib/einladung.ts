@@ -148,3 +148,81 @@ export async function sendeEinladung({
 
   return { fehler: null };
 }
+
+// Einen neuen Zugangslink schicken – für Konten, die es schon gibt.
+//
+// Der Anlass: Ein Einladungslink ist 24 Stunden gültig. Wer ihn liegen
+// lässt, kam bisher nur wieder hinein, indem der Admin das Konto löschen
+// und neu einladen liess. Das ist ein absurder Umweg für einen abgelaufenen
+// Link – und er kostet die bereits erfassten Daten der Person.
+//
+// Bewusst als "recovery" und nicht als zweite Einladung: Eine erneute
+// Einladung würde die Metadaten des Kontos überschreiben (Vorname,
+// Nachname, Organisation, Rolle) – also genau das, was der Admin
+// zwischenzeitlich vielleicht korrigiert hat. Recovery fasst nur das
+// Passwort an. Für jemanden, der noch nie eines gesetzt hat, ist das
+// derselbe Weg; für alle anderen ist es das Zurücksetzen, das Admins
+// ohnehin regelmässig brauchen.
+export async function sendeZugangslink({
+  email,
+  vorname,
+  organisationName,
+}: {
+  email: string;
+  vorname?: string | null;
+  organisationName?: string | null;
+}): Promise<{ fehler: string | null }> {
+  const admin = createAdminClient();
+  const origin = await siteOrigin();
+
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: { redirectTo: `${origin}/auth/confirm` },
+  });
+
+  if (error || !data?.properties?.hashed_token) {
+    return { fehler: error?.message ?? "Zugangslink konnte nicht erzeugt werden." };
+  }
+
+  const link = `${origin}/auth/confirm?token_hash=${encodeURIComponent(
+    data.properties.hashed_token
+  )}&type=recovery`;
+
+  const html = `
+    <div style="font-family:sans-serif;color:#111827;line-height:1.5;">
+      <p>Hallo${vorname ? ` ${vorname}` : ""}</p>
+      <p>
+        Hier ist ein neuer Link für deinen Zugang zu <strong>ArcoTime</strong>${
+          organisationName ? ` bei <strong>${organisationName}</strong>` : ""
+        }. Damit setzt du dein Passwort und meldest dich an.
+      </p>
+      <p style="margin:24px 0;">
+        <a href="${link}" style="background:#1D3557;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">
+          Passwort setzen
+        </a>
+      </p>
+      <p style="font-size:13px;color:#555555;">
+        Der Link ist 24 Stunden gültig. Funktioniert der Knopf nicht, kopiere diese Adresse
+        in den Browser:<br>${link}
+      </p>
+      <p style="font-size:13px;color:#555555;">
+        Du hast keinen Link angefordert? Dann ignoriere diese Nachricht – dein bisheriges
+        Passwort bleibt gültig. Bei Fragen: ${SUPPORT_MAIL}
+      </p>
+      <p>Freundliche Grüsse<br>${FIRMA.name}</p>
+    </div>`;
+
+  try {
+    await sendeMail({
+      an: email,
+      systemAntwort: true,
+      betreff: "Dein Zugang zu ArcoTime – neuer Link",
+      html,
+    });
+  } catch (fehler) {
+    return { fehler: `Der Link konnte nicht versendet werden: ${(fehler as Error).message}` };
+  }
+
+  return { fehler: null };
+}

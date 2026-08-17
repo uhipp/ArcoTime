@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
-import { sendeEinladung } from "@/lib/einladung";
+import { sendeEinladung, sendeZugangslink } from "@/lib/einladung";
 import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { darf } from "@/lib/berechtigungen";
@@ -191,4 +191,50 @@ export async function deaktiviereMitarbeiter(id: string) {
       "Konto deaktiviert, Lizenz freigegeben. Eine Reaktivierung ist nur durch Arcos möglich."
     )
   );
+}
+
+// Neuen Zugangslink an eine Person der eigenen Organisation.
+//
+// Deckt zwei Fälle mit demselben Knopf ab: den abgelaufenen Einladungslink
+// (24 Stunden) und das vergessene Passwort. Vorher gab es für den ersten
+// Fall nur den Umweg über Löschen und neu einladen – mitsamt Verlust der
+// bereits erfassten Daten der Person.
+export async function sendeZugangslinkErneut(profilId: string) {
+  const profil = await getCurrentProfile();
+  if (!darf(profil, "mitarbeitende.verwalten")) {
+    redirect(`/mitarbeiter?error=${encodeURIComponent("Nur Admins können Zugangslinks senden.")}`);
+  }
+
+  const supabase = await createClient();
+
+  // Über den RLS-geprüften Client: Wer nicht zur eigenen Organisation
+  // gehört, ist hier schlicht nicht sichtbar – und bekommt damit auch
+  // keinen Link. Die Grenze liegt in der Datenbank, nicht in einer
+  // Prüfung, die man vergessen kann.
+  const { data: person } = await supabase
+    .from("profiles")
+    .select("email, vorname, name, organisationen!profiles_organisation_id_fkey(name)")
+    .eq("id", profilId)
+    .maybeSingle();
+
+  if (!person?.email) {
+    redirect(
+      `/mitarbeiter?error=${encodeURIComponent(
+        "Person nicht gefunden oder ohne E-Mail-Adresse."
+      )}`
+    );
+  }
+
+  const { fehler } = await sendeZugangslink({
+    email: person.email,
+    vorname: person.vorname ?? person.name,
+    organisationName: (person.organisationen as unknown as { name: string } | null)?.name,
+  });
+
+  if (fehler) {
+    console.error("Zugangslink nicht versendet", { profilId, fehler });
+    redirect(`/mitarbeiter?error=${encodeURIComponent(versandFehlerText(fehler, person.email))}`);
+  }
+
+  redirect(mitErfolg("/mitarbeiter", `Neuer Zugangslink an ${person.email} gesendet.`));
 }

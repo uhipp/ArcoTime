@@ -5,6 +5,10 @@
     "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
     "eintraege": [
       {
+        "typ": "neu",
+        "text": "Neu bei den Mitarbeitenden: „Zugangslink senden“. Ist ein Einladungslink abgelaufen oder ein Passwort vergessen, schickt der Admin einen neuen Link – ohne das Konto löschen und neu einladen zu müssen."
+      },
+      {
         "typ": "behoben",
         "text": "Profile sind jetzt strikt an den eigenen Betrieb gebunden – auch für Arcos. Vorher sahen Arcos-Mitarbeitende fremde Personen in ihren eigenen Auswahllisten; der Zugriff auf fremde Mandanten läuft nun ausschliesslich über den Plattform-Bereich."
       },

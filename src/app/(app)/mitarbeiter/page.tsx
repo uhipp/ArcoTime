@@ -2,7 +2,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
-import { updateMitarbeiter, ladeMitarbeitendeEin, deaktiviereMitarbeiter } from "@/app/actions/mitarbeiter";
+import {
+  updateMitarbeiter,
+  ladeMitarbeitendeEin,
+  deaktiviereMitarbeiter,
+  sendeZugangslinkErneut,
+} from "@/app/actions/mitarbeiter";
 import { DeleteButton } from "@/components/delete-button";
 import type { Profile } from "@/lib/types";
 import { ListenTabelle } from "@/components/listen-tabelle";
@@ -138,6 +143,18 @@ function spalten(eigeneId: string): Spalte<MitarbeiterZeile>[] {
           <Link href={`/mitarbeiter/${m.id}`} className="text-arcos-steel hover:underline text-sm mr-3">
             Details
           </Link>
+          {!m.deaktiviert_am && (
+            // Deckt den abgelaufenen Einladungslink UND das vergessene
+            // Passwort ab. Ohne diesen Knopf blieb für einen abgelaufenen
+            // Link nur der Umweg über Löschen und neu einladen – und der
+            // kostet die bereits erfassten Daten der Person.
+            <DeleteButton
+              action={sendeZugangslinkErneut.bind(null, m.id)}
+              label="Zugangslink senden"
+              harmlos
+              confirmText={`Neuen Zugangslink an "${m.name}" senden? Die Person kann damit ihr Passwort setzen; ein bestehendes Passwort bleibt gültig, bis sie es ändert.`}
+            />
+          )}
           {!m.deaktiviert_am && m.id !== eigeneId && (
             <DeleteButton
               action={deaktiviereMitarbeiter.bind(null, m.id)}

@@ -95,6 +95,15 @@ Eine Abwesenheit hat eine Art, ein Von- und ein Bis-Datum sowie optional eine No
 Ist bei der Abwesenheitsart **"blockiert die Planung"** gesetzt, verschwindet der Zeitraum in der [Disposition](/hilfe/disposition) aus den freien Zeiten; die Person lässt sich dann für diese Tage nicht einplanen. Arten ohne dieses Häkchen (z.B. "Homeoffice") sind reine Information.
 
 Erfasst und gelöscht werden Abwesenheiten nur von Admins. Sehen kann sie das ganze Team – die Disposition braucht diese Information.
+
+
+## Zugangslink erneut senden
+
+Ein Einladungslink ist **24 Stunden gültig**. Wird er nicht rechtzeitig geöffnet, braucht die Person einen neuen – dafür gibt es in der Zeile jeder aktiven Person **"Zugangslink senden"**.
+
+Derselbe Knopf hilft auch beim vergessenen Passwort. Die Person bekommt eine E-Mail, über die sie ihr Passwort setzt. Ein bestehendes Passwort bleibt gültig, bis sie tatsächlich ein neues vergibt – ein versehentlich gesendeter Link sperrt also niemanden aus.
+
+Das Konto muss dafür **nicht** gelöscht und neu eingeladen werden. Das wäre auch der falsche Weg: Mit dem Konto verschwänden die bereits erfassten Zeiten und Rapporte dieser Person.
 `,
   },
 ];
