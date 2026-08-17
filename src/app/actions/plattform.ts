@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { mitErfolg } from "@/lib/erfolg";
 import { siteOrigin } from "@/lib/site-origin";
+import { sendeMail } from "@/lib/email";
 import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
 
 // Alle Aktionen hier sind ausschliesslich Platform-Admins vorbehalten
@@ -318,4 +319,112 @@ export async function reaktiviereMitarbeiter(profilId: string) {
 
   revalidatePath("/plattform");
   if (error) throw new Error(error.message);
+}
+
+// ---------------------------------------------------------------------
+// Mandant löschen
+// ---------------------------------------------------------------------
+//
+// AGB Ziffer 10 und AVV Ziffer 9 sagen zu, dass die Daten einer Kundin nach
+// Vertragsende gelöscht werden. Die Löschung selbst ist bewusst KEIN
+// Automatismus: Ein täglicher Auftrag, der ohne Zeugen fremde Betriebsdaten
+// entfernt, ist eine Fehlkonstruktion – ein falsch gesetzter Status, ein
+// verspätetes Stripe-Ereignis, und die Arbeit eines Jahres ist weg. Die
+// tägliche Prüfung meldet nur; hier entscheidet ein Mensch.
+//
+// Drei Sicherungen, die zusammengehören:
+//   1. Der Umfang steht vorher da, gezählt aus derselben Quelle, aus der
+//      gelöscht wird (0064) – keine Vorschau, die zu wenig anzeigt.
+//   2. Der Name muss abgetippt werden. Gegen den Griff auf die falsche
+//      Zeile hilft keine Rückfrage mit "OK", sondern nur etwas, das man
+//      nicht aus Versehen tut.
+//   3. Die Sicherungskopie liegt einen Klick daneben.
+export async function loescheOrganisationPlattform(
+  organisationId: string,
+  formData: FormData
+) {
+  const profil = await pruefePlatformAdmin();
+  const admin = createAdminClient();
+  const zurueck = `/plattform/${organisationId}`;
+
+  const { data: organisation } = await admin
+    .from("organisationen")
+    .select("id, name, status, nachfrist_bis")
+    .eq("id", organisationId)
+    .single();
+
+  if (!organisation) {
+    redirect(`/plattform?error=${encodeURIComponent("Organisation nicht gefunden.")}`);
+  }
+
+  const bestaetigung = String(formData.get("bestaetigung") ?? "").trim();
+  if (bestaetigung !== organisation.name) {
+    redirect(
+      `${zurueck}?error=${encodeURIComponent(
+        `Der eingegebene Name stimmt nicht mit "${organisation.name}" überein. Es wurde nichts gelöscht.`
+      )}`
+    );
+  }
+
+  // Konten zuerst: Die Datenbankfunktion kann auth.users nicht anfassen,
+  // und ein Konto ohne Organisation wäre ein Zugang ins Nichts.
+  const { data: konten } = await admin
+    .from("profiles")
+    .select("id, email")
+    .eq("organisation_id", organisationId);
+
+  for (const konto of konten ?? []) {
+    const { error } = await admin.auth.admin.deleteUser(konto.id);
+    if (error) {
+      redirect(
+        `${zurueck}?error=${encodeURIComponent(
+          `Das Konto ${konto.email} liess sich nicht entfernen (${error.message}). Es wurde nichts weiter gelöscht.`
+        )}`
+      );
+    }
+  }
+
+  const { data: ergebnis, error: loeschFehler } = await admin.rpc("loesche_organisation", {
+    p_organisation: organisationId,
+  });
+
+  if (loeschFehler) {
+    redirect(
+      `${zurueck}?error=${encodeURIComponent(
+        `Die Organisation liess sich nicht löschen: ${loeschFehler.message}`
+      )}`
+    );
+  }
+
+  const zeilen = (ergebnis ?? []) as { tabelle: string; anzahl: number }[];
+  const summe = zeilen.reduce((s, z) => s + Number(z.anzahl), 0);
+
+  // Nachweis für uns selbst: Das Änderungsprotokoll der Organisation ist
+  // mitgelöscht worden, es kann also nichts mehr festhalten. Ohne diese
+  // Mail gäbe es keinerlei Spur, wer wann welchen Mandanten entfernt hat.
+  try {
+    await sendeMail({
+      an: profil.email ?? "",
+      systemAntwort: true,
+      betreff: `Mandant gelöscht: ${organisation.name}`,
+      html: `
+        <div style="font-family:sans-serif;color:#111827;">
+          <p><strong>${organisation.name}</strong> wurde von ${profil.name} gelöscht.</p>
+          <p>Entfernt wurden ${konten?.length ?? 0} Benutzerkonten und ${summe} Datensätze:</p>
+          <ul>${zeilen.map((z) => `<li>${z.tabelle}: ${z.anzahl}</li>`).join("")}</ul>
+          <p>Die Rechnungen der Arcos Group an diese Kundin bleiben als Belege bestehen
+          (Art. 958f OR).</p>
+        </div>`,
+    });
+  } catch (fehler) {
+    console.error("Meldung über die Löschung nicht versendet:", fehler);
+  }
+
+  revalidatePath("/plattform");
+  redirect(
+    mitErfolg(
+      "/plattform",
+      `"${organisation.name}" wurde gelöscht: ${konten?.length ?? 0} Konten und ${summe} Datensätze.`
+    )
+  );
 }

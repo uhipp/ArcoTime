@@ -6,6 +6,14 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "Neu unter Export: „Alle Daten herunterladen“ – der vollständige Bestand der Organisation als Excel- oder JSON-Datei. Der Download verändert nichts und lässt sich beliebig wiederholen."
+      },
+      {
+        "typ": "neu",
+        "text": "Nach dem Ende eines Abonnements bleiben die Daten neu 30 Tage lesend zugänglich, damit sie in Ruhe heruntergeladen werden können – mit Hinweis über allen Seiten und zwei Erinnerungen per E-Mail."
+      },
+      {
+        "typ": "neu",
         "text": "Neue Seite Einstellungen → Abonnement: gebuchte Lizenzen, nächste Verlängerung, alle Rechnungen als PDF zum Herunterladen – und die Kündigung auf das Ende der laufenden Abrechnungsperiode, mit der Möglichkeit, sie bis dahin wieder zurückzuziehen."
       },
       {

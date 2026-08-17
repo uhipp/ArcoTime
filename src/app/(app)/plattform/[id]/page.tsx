@@ -6,6 +6,7 @@ import {
   bearbeiteMitarbeiterPlattform,
   ladePersonEinPlattform,
   reaktiviereMitarbeiter,
+  loescheOrganisationPlattform,
 } from "@/app/actions/plattform";
 
 type MitarbeiterZeile = {
@@ -23,17 +24,21 @@ export default async function OrganisationDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; loeschen?: string }>;
 }) {
   const profil = await getCurrentProfile();
   if (!profil?.ist_platform_admin) redirect("/");
 
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, loeschen } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: organisation }, { data: mitarbeitende }] = await Promise.all([
-    supabase.from("organisationen").select("id, name, lizenzen_gebucht").eq("id", id).single(),
+    supabase
+      .from("organisationen")
+      .select("id, name, lizenzen_gebucht, status, nachfrist_bis")
+      .eq("id", id)
+      .single(),
     supabase
       .from("profiles")
       .select("id, name, vorname, nachname, email, role, deaktiviert_am")
@@ -42,6 +47,23 @@ export default async function OrganisationDetailPage({
   ]);
 
   if (!organisation) notFound();
+
+  // Umfang der Löschung – gezählt aus derselben Quelle, aus der gelöscht
+  // wird (0064). Nur laden, wenn die Bestätigung offen ist: Die Abfrage
+  // zählt jede abhängige Tabelle einzeln durch, und dafür gibt es beim
+  // blossen Ansehen der Seite keinen Grund.
+  const { data: loeschUmfang } =
+    loeschen === "1"
+      ? await supabase.rpc("zaehle_organisation_daten", { p_organisation: id })
+      : { data: null };
+
+  const umfang = (loeschUmfang ?? []) as { tabelle: string; anzahl: number }[];
+  const summe = umfang.reduce((s, z) => s + Number(z.anzahl), 0);
+
+  const heute = new Date().toISOString().slice(0, 10);
+  const nochGeschuetzt =
+    organisation.status === "aktiv" ||
+    Boolean(organisation.nachfrist_bis && organisation.nachfrist_bis >= heute);
 
   const liste = (mitarbeitende as MitarbeiterZeile[] | null) ?? [];
   const genutzt = liste.filter((m) => !m.deaktiviert_am).length;
@@ -205,6 +227,108 @@ export default async function OrganisationDetailPage({
         Änderung der E-Mail-Adresse ändert auch die Login-E-Mail – die Person
         meldet sich danach mit der neuen Adresse an.
       </p>
+
+      {/* ----------------------------------------------------------------- */}
+      {/* Mandant löschen                                                    */}
+      {/* ----------------------------------------------------------------- */}
+      <div className="bg-white rounded-lg border border-red-200 p-5 mt-10">
+        <h2 className="text-lg font-medium mb-1 text-red-700">Mandant löschen</h2>
+        <p className="text-sm text-gray-600 mb-3">
+          Entfernt diese Organisation mit allen Daten und Benutzerkonten. Nach AGB
+          Ziffer 10 ist das 30 Tage nach Vertragsende zu tun. <strong>Die Löschung
+          lässt sich nicht rückgängig machen</strong> – es gibt keinen Papierkorb.
+        </p>
+        <p className="text-sm text-gray-600 mb-4">
+          Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen: Sie sind
+          Belege und zehn Jahre aufzubewahren (Art. 958f OR).
+        </p>
+
+        <div className="flex flex-wrap gap-3 mb-4">
+          <a
+            href={`/api/export/vollstaendig?organisation=${organisation.id}`}
+            className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Sicherungskopie herunterladen (JSON)
+          </a>
+          <a
+            href={`/api/export/vollstaendig?organisation=${organisation.id}&format=xlsx`}
+            className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            als Excel
+          </a>
+        </div>
+
+        {loeschen !== "1" ? (
+          <Link
+            href={`/plattform/${organisation.id}?loeschen=1`}
+            className="inline-block rounded border border-red-300 text-red-700 px-4 py-2 text-sm hover:bg-red-50"
+          >
+            Löschung vorbereiten
+          </Link>
+        ) : (
+          <div className="rounded bg-red-50 border border-red-200 p-4 space-y-4">
+            {nochGeschuetzt && (
+              <p className="text-sm text-red-900 font-medium">
+                Achtung: Diese Organisation ist{" "}
+                {organisation.status === "aktiv"
+                  ? "noch aktiv"
+                  : `noch bis ${organisation.nachfrist_bis} in der Nachfrist`}
+                . Die Kundin hat also noch Anspruch auf ihre Daten. Nur fortfahren, wenn
+                das ausdrücklich so gewollt ist.
+              </p>
+            )}
+
+            <div>
+              <p className="text-sm font-medium text-red-900 mb-2">
+                Gelöscht werden {summe} Datensätze und {liste.length} Benutzerkonten:
+              </p>
+              {umfang.length > 0 ? (
+                <ul className="text-sm text-red-900 grid grid-cols-2 sm:grid-cols-3 gap-x-6">
+                  {umfang.map((z) => (
+                    <li key={z.tabelle}>
+                      {z.tabelle}: {z.anzahl}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-red-900">Keine Daten erfasst.</p>
+              )}
+              {liste.length > 0 && (
+                <p className="text-sm text-red-900 mt-2">
+                  Konten: {liste.map((m) => m.email ?? m.name).join(", ")}
+                </p>
+              )}
+            </div>
+
+            {/* Abtippen statt anklicken: Gegen den Griff auf die falsche
+                Zeile hilft keine Rückfrage mit "OK", sondern nur etwas, das
+                man nicht aus Versehen tut. */}
+            <form action={loescheOrganisationPlattform.bind(null, organisation.id)}>
+              <label className="block text-sm text-red-900 mb-1">
+                Zur Bestätigung den Namen der Organisation eintippen:{" "}
+                <strong>{organisation.name}</strong>
+              </label>
+              <div className="flex flex-wrap items-center gap-3">
+                <input
+                  name="bestaetigung"
+                  autoComplete="off"
+                  className="rounded border border-red-300 px-3 py-2 text-sm"
+                  placeholder={organisation.name}
+                />
+                <button
+                  type="submit"
+                  className="rounded bg-red-600 text-white px-4 py-2 text-sm hover:bg-red-700"
+                >
+                  Endgültig löschen
+                </button>
+                <Link href={`/plattform/${organisation.id}`} className="text-sm underline">
+                  Abbrechen
+                </Link>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

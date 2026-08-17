@@ -138,6 +138,12 @@ export default async function ExportPage({
           Die JSON-Datei enthält dieselben Daten verlustfrei; nur aus ihr lässt sich ein
           Stand später wieder einspielen. Bewahrt beide auf, wenn ihr ArcoTime verlasst.
         </p>
+        <p className="text-xs text-gray-500 mt-2">
+          <strong>Noch nicht enthalten:</strong> die hochgeladenen Dateien aus dem Bereich
+          Dokumente. Der Export listet sie mit Name und Zuordnung auf, die Dateien selbst
+          ladet ihr bitte einzeln herunter. Wenn ihr sie gesammelt braucht, meldet euch –
+          wir stellen sie euch zusammen.
+        </p>
       </div>
 
       {params.error && (

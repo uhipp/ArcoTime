@@ -8,7 +8,19 @@ export const exportArtikel: HilfeArtikel[] = [
     stichworte: ["comatic", "excel", "belegnummer", "buchhaltung", "rechnung"],
     routen: ["/export"],
     inhalt: `
-Über den Export (nur für Admins sichtbar) werden erfasste, noch nicht exportierte Zeiteinträge als Excel-Datei im für das Buchhaltungssystem **Comatic** passenden Format bereitgestellt.
+Auf der Seite Export (nur für Admins sichtbar) stehen **zwei verschiedene Dinge**, die man nicht verwechseln sollte:
+
+## Alle Daten herunterladen
+
+Der vollständige Bestand eurer Organisation – Zeiteinträge, Rapporte, Kunden, Projekte, Stammdaten und das Änderungsprotokoll. Zur Auswahl stehen eine **Excel-Datei** (eine Tabelle je Bereich, zum Anschauen und Weiterarbeiten) und eine **JSON-Datei** (dieselben Daten verlustfrei; nur aus ihr lässt sich ein Stand später wieder einspielen).
+
+Dieser Download verändert nichts und lässt sich beliebig oft wiederholen. Er funktioniert auch nach dem Ende eines Abonnements, solange die 30-tägige Frist läuft – dann ist er sogar der einzige Weg, an die Daten zu kommen.
+
+Noch nicht enthalten sind die hochgeladenen **Dateien** aus dem Bereich Dokumente; der Export listet sie mit Name und Zuordnung auf, die Dateien selbst ladet ihr einzeln herunter.
+
+## Export für die Buchhaltung (Comatic)
+
+Der untere Teil der Seite ist etwas anderes: Hier werden erfasste, noch nicht exportierte Zeiteinträge als Excel-Datei im für das Buchhaltungssystem **Comatic** passenden Format bereitgestellt – und dabei als exportiert **markiert**.
 
 ## Vorgehen
 

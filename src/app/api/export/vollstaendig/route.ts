@@ -27,8 +27,37 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Nicht berechtigt." }, { status: 403 });
   }
 
-  const organisation = await getCurrentOrganisation();
-  if (!organisation?.id) {
+  // Der Regelfall: die eigene Organisation aus der Sitzung. Ein Parameter
+  // aus der Adresse wäre hier die Einladung, fremde Mandanten abzuziehen.
+  //
+  // Ausnahme für Plattform-Admins (Arcos selbst): Sie brauchen die
+  // Sicherungskopie eines fremden Mandanten, BEVOR sie ihn löschen. Ohne
+  // diese Möglichkeit wäre die Löschung unter /plattform ein Sprung ohne
+  // Netz. Der Zugriff ist derselbe, den sie über die Datenbank ohnehin
+  // haben – neu ist nur, dass er hier stattfindet und nicht im Terminal.
+  const gewuenschte = new URL(request.url).searchParams.get("organisation");
+  const eigene = await getCurrentOrganisation();
+
+  let organisationId = eigene?.id;
+  let organisationName = eigene?.name ?? "Organisation";
+
+  if (gewuenschte && gewuenschte !== eigene?.id) {
+    if (!profile?.ist_platform_admin) {
+      return NextResponse.json({ error: "Nicht berechtigt." }, { status: 403 });
+    }
+    const { data: fremde } = await createAdminClient()
+      .from("organisationen")
+      .select("id, name")
+      .eq("id", gewuenschte)
+      .single();
+    if (!fremde) {
+      return NextResponse.json({ error: "Organisation nicht gefunden." }, { status: 404 });
+    }
+    organisationId = fremde.id;
+    organisationName = fremde.name;
+  }
+
+  if (!organisationId) {
     return NextResponse.json({ error: "Keine Organisation." }, { status: 404 });
   }
 
@@ -36,7 +65,7 @@ export async function GET(request: Request) {
   // erhöhten Rechten, weil sie über den Systemkatalog geht.
   const admin = createAdminClient();
   const { data: export_, error } = await admin.rpc("exportiere_organisation", {
-    p_organisation: organisation.id,
+    p_organisation: organisationId,
   });
 
   if (error || !export_) {
@@ -47,7 +76,7 @@ export async function GET(request: Request) {
   }
 
   const heute = new Date().toISOString().slice(0, 10);
-  const dateiname = `ArcoTime-Export-${organisation.name.replace(/[^\p{L}\p{N}]+/gu, "-")}-${heute}`;
+  const dateiname = `ArcoTime-Export-${organisationName.replace(/[^\p{L}\p{N}]+/gu, "-")}-${heute}`;
 
   const format = new URL(request.url).searchParams.get("format");
   if (format !== "xlsx") {

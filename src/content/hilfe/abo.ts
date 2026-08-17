@@ -45,6 +45,14 @@ Bis zum angezeigten Datum bleibt ArcoTime vollständig nutzbar, danach wird nich
 
 Eine Kündigung lässt sich bis zum Ablauf jederzeit mit **"Kündigung zurückziehen"** widerrufen – das Abonnement läuft dann unverändert weiter.
 
+## Nach dem Vertragsende: 30 Tage Nur-Lese-Modus
+
+Endet das Abonnement, bleibt ArcoTime **30 Tage lang lesend zugänglich**, damit ihr eure Daten in Ruhe herunterladen könnt. In dieser Zeit steht über allen Seiten ein Hinweis mit dem Enddatum. Ansehen, suchen und herunterladen geht weiter – erfassen, ändern und löschen nicht mehr.
+
+Ihr werdet zweimal erinnert: einmal direkt beim Vertragsende und ein zweites Mal eine Woche vor Ablauf der Frist. Danach werden die Daten gelöscht und lassen sich nicht mehr zurückholen.
+
+Braucht ihr mehr Zeit, genügt eine Nachricht an support@arcotime.ch.
+
 > **Vor dem Ablauf an den Export denken.** Die Daten werden 30 Tage nach Vertragsende gelöscht. Über [Export](/hilfe/export) holt ihr euch vorher, was ihr behalten wollt.
 
 Die Kündigung ist auch in Textform an support@arcotime.ch möglich; über die Anwendung geht es schneller und ihr habt das Enddatum sofort schwarz auf weiss.
