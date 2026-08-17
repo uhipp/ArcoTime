@@ -83,6 +83,26 @@ export function betraegeAusStripe(invoice: Stripe.Invoice) {
   };
 }
 
+/**
+ * Bezeichnung der Position.
+ *
+ * Bewusst NICHT die von Stripe erzeugte Beschreibung ("1 × ArcoTime Lizenz
+ * (Stufe 1 für CHF 15.00/month)"): Die wiederholt Menge und Einzelpreis, die
+ * auf unserer Rechnung eigene Spalten haben, und ist halb englisch. Den
+ * Zyklus haben wir beim Anlegen des Abos selbst als Metadatum gesetzt.
+ */
+export function bezeichnungAusStripe(invoice: Stripe.Invoice): string {
+  const zyklus = (
+    invoice as unknown as {
+      parent?: { subscription_details?: { metadata?: Record<string, string> | null } | null } | null;
+    }
+  ).parent?.subscription_details?.metadata?.zyklus;
+
+  if (zyklus === "monatlich") return "ArcoTime Lizenz – Monatsabonnement";
+  if (zyklus === "jaehrlich" || zyklus === "jährlich") return "ArcoTime Lizenz – Jahresabonnement";
+  return "ArcoTime Lizenz";
+}
+
 /** Zeitraum der Leistung, wie ihn Stripe an der Position führt. */
 export function zeitraumAusStripe(invoice: Stripe.Invoice): {
   von: string | null;

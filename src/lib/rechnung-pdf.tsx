@@ -164,7 +164,7 @@ export function RechnungPdf({ daten }: { daten: RechnungsDaten }) {
 
         <View style={stil.tabellenKopf}>
           <Text style={stil.spalteLeistung}>Leistung</Text>
-          <Text style={stil.spalteMenge}>Menge</Text>
+          <Text style={stil.spalteMenge}>Benutzer</Text>
           <Text style={stil.spaltePreis}>Einzelpreis</Text>
           <Text style={stil.spalteBetrag}>Betrag</Text>
         </View>

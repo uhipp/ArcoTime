@@ -40,7 +40,7 @@ export async function GET(request: Request) {
           steuernummer: "CHE-987.654.321 MWST",
         },
     position: {
-      bezeichnung: "ArcoTime Lizenz",
+      bezeichnung: "ArcoTime Lizenz – Monatsabonnement",
       zeitraum: "Leistungszeitraum 17.08.2026 bis 17.09.2026",
       menge: 12,
       einzelpreis: 13,

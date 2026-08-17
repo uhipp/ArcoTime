@@ -11,6 +11,43 @@ function unixZuDatum(unixSekunden: number | null | undefined): string | null {
   return unixSekunden ? new Date(unixSekunden * 1000).toISOString().slice(0, 10) : null;
 }
 
+/**
+ * Liest die Abo-Kennung aus einer Stripe-Rechnung.
+ *
+ * Stripe hat das Feld verschoben: Bis zur API-Version "basil" stand die
+ * Kennung direkt auf der Rechnung (invoice.subscription), seither liegt sie
+ * unter parent.subscription_details.subscription. Unser Konto läuft auf
+ * 2026-07-29.dahlia, dort gibt es das alte Feld nicht mehr.
+ *
+ * Das ist nicht theoretisch: Genau daran ist der erste Durchlauf gescheitert.
+ * Aufgefallen wäre es erst bei der ersten Folgezahlung – die Erstbuchung wird
+ * zusätzlich über checkout.session.completed freigeschaltet und hat den
+ * Fehler verdeckt. Deshalb hier alle bekannten Orte der Reihe nach, statt
+ * sich auf einen zu verlassen.
+ */
+function abonnementAusRechnung(invoice: Stripe.Invoice): string | null {
+  const rechnung = invoice as unknown as {
+    subscription?: string | { id?: string } | null;
+    parent?: { subscription_details?: { subscription?: string | { id?: string } | null } | null } | null;
+    lines?: {
+      data?: Array<{
+        parent?: {
+          subscription_item_details?: { subscription?: string | { id?: string } | null } | null;
+        } | null;
+      }>;
+    };
+  };
+
+  const alsText = (wert: string | { id?: string } | null | undefined): string | null =>
+    typeof wert === "string" ? wert : (wert?.id ?? null);
+
+  return (
+    alsText(rechnung.parent?.subscription_details?.subscription) ??
+    alsText(rechnung.subscription) ??
+    alsText(rechnung.lines?.data?.[0]?.parent?.subscription_item_details?.subscription)
+  );
+}
+
 // Eine bezahlte Registrierung ohne zustellbare Einladung ist der schlimmste
 // Zustand im Lizenzmodul (Kundin zahlt, kommt aber nicht rein) – darum geht
 // die Meldung an alle Platform-Admins, die die Einladung unter /plattform
@@ -170,18 +207,30 @@ export async function POST(request: NextRequest) {
       // -----------------------------------------------------------------
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = (invoice as unknown as { subscription?: string }).subscription;
-        if (!subscriptionId) break;
+        const subscriptionId = abonnementAusRechnung(invoice);
 
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        await admin
-          .from("organisationen")
-          .update({
-            status: "aktiv",
-            sperrgrund: null,
-            naechster_zahltermin: unixZuDatum(subscription.items.data[0]?.current_period_end),
-          })
-          .eq("stripe_subscription_id", subscriptionId);
+        // Freischaltung nur, wenn ein Abo dahintersteht. Fehlt es, wird
+        // trotzdem eine Rechnung gestellt: Bezahlt ist bezahlt, und ein
+        // Beleg darf nicht daran scheitern, dass wir das Abo nicht zuordnen
+        // können.
+        if (subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const { data: freigeschaltet } = await admin
+            .from("organisationen")
+            .update({
+              status: "aktiv",
+              sperrgrund: null,
+              naechster_zahltermin: unixZuDatum(subscription.items.data[0]?.current_period_end),
+            })
+            .eq("stripe_subscription_id", subscriptionId)
+            .select("id");
+
+          if (!freigeschaltet?.length) {
+            console.warn("invoice.paid: keine Organisation zu Abo", subscriptionId);
+          }
+        } else {
+          console.warn("invoice.paid: kein Abo an der Rechnung", invoice.id);
+        }
 
         // Eigene Rechnung erzeugen und versenden. Bewusst NACH der
         // Freischaltung: Der Zugang darf nicht davon abhängen, ob eine
@@ -215,7 +264,7 @@ export async function POST(request: NextRequest) {
         const naechsterVersuch = (invoice as unknown as { next_payment_attempt?: number | null }).next_payment_attempt;
         if (naechsterVersuch) break; // Stripe versucht es noch automatisch erneut
 
-        const subscriptionId = (invoice as unknown as { subscription?: string }).subscription;
+        const subscriptionId = abonnementAusRechnung(invoice);
         if (!subscriptionId) break;
 
         const { data: organisation } = await admin

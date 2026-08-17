@@ -7,6 +7,7 @@ import { FIRMA } from "@/content/recht";
 import { RechnungPdf } from "@/lib/rechnung-pdf";
 import {
   betraegeAusStripe,
+  bezeichnungAusStripe,
   landName,
   rechnungsNummer,
   zeitraumAusStripe,
@@ -71,6 +72,7 @@ export async function erstelleUndVersendeRechnung(invoice: Stripe.Invoice): Prom
 
   const betraege = betraegeAusStripe(invoice);
   const zeitraum = zeitraumAusStripe(invoice);
+  const bezeichnung = bezeichnungAusStripe(invoice);
   const position = invoice.lines?.data?.[0];
   const menge = position?.quantity ?? 1;
   const einzelpreis = menge > 0 ? Math.round((betraege.netto / menge) * 100) / 100 : betraege.netto;
@@ -87,7 +89,7 @@ export async function erstelleUndVersendeRechnung(invoice: Stripe.Invoice): Prom
 
   // Schritt 3: Nummer ziehen und Zeile anlegen – nur, wenn es sie noch
   // nicht gibt. Die Nummer wird genau einmal vergeben.
-  let jahr = vorhanden?.jahr ?? new Date().getFullYear();
+  const jahr = vorhanden?.jahr ?? new Date().getFullYear();
   let nummer = vorhanden?.nummer ?? 0;
   let rechnungId = vorhanden?.id ?? null;
 
@@ -118,7 +120,7 @@ export async function erstelleUndVersendeRechnung(invoice: Stripe.Invoice): Prom
         empfaenger_email: invoice.customer_email,
         stripe_invoice_id: invoice.id,
         stripe_customer_id: kundenId,
-        bezeichnung: position?.description ?? "ArcoTime Lizenz",
+        bezeichnung,
         menge,
         einzelpreis,
         periode_von: zeitraum.von,
@@ -160,7 +162,7 @@ export async function erstelleUndVersendeRechnung(invoice: Stripe.Invoice): Prom
       steuernummer,
     },
     position: {
-      bezeichnung: position?.description ?? "ArcoTime Lizenz",
+      bezeichnung,
       zeitraum: zeitraum.text,
       menge,
       einzelpreis,
