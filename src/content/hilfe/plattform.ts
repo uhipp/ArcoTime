@@ -64,7 +64,7 @@ Klick auf den Namen einer Organisation öffnet deren Detailseite: dort lassen si
 
 ## Einen Mandanten löschen
 
-Ganz unten auf der Detailseite steht **"Mandant löschen"**. Die Löschung entfernt die Organisation mit allen Daten und Benutzerkonten und **lässt sich nicht rückgängig machen** – es gibt keinen Papierkorb. Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen; sie sind Belege und zehn Jahre aufzubewahren.
+Ganz unten auf der Detailseite steht **"Mandant löschen"**. Die Löschung entfernt die Organisation mit allen Daten und Benutzerkonten, **beendet ein laufendes Abonnement bei Stripe** und **lässt sich nicht rückgängig machen** – es gibt keinen Papierkorb. Lässt sich das Abonnement nicht beenden, wird gar nichts gelöscht: Ein weiterlaufendes Abo ohne Mandant wäre der schlechtere Zustand. Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen; sie sind Belege und zehn Jahre aufzubewahren.
 
 Der Ablauf hat drei Stufen:
 

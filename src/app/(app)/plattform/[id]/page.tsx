@@ -260,6 +260,9 @@ export default async function OrganisationDetailPage({
           lässt sich nicht rückgängig machen</strong> – es gibt keinen Papierkorb.
         </p>
         <p className="text-sm text-gray-600 mb-4">
+          {organisation.stripe_subscription_id
+            ? "Ein laufendes Abonnement bei Stripe wird dabei beendet – sonst liefe die Belastung weiter, während es den Mandanten nicht mehr gibt. "
+            : ""}
           Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen: Sie sind
           Belege und zehn Jahre aufzubewahren (Art. 958f OR).
         </p>

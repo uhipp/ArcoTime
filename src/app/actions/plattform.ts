@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { stripe } from "@/lib/stripe";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { mitErfolg } from "@/lib/erfolg";
 import { sendeMail } from "@/lib/email";
@@ -349,7 +350,7 @@ export async function loescheOrganisationPlattform(
 
   const { data: organisation } = await admin
     .from("organisationen")
-    .select("id, name, status, nachfrist_bis")
+    .select("id, name, status, nachfrist_bis, stripe_subscription_id")
     .eq("id", organisationId)
     .single();
 
@@ -364,6 +365,39 @@ export async function loescheOrganisationPlattform(
         `Der eingegebene Name stimmt nicht mit "${organisation.name}" überein. Es wurde nichts gelöscht.`
       )}`
     );
+  }
+
+  // Zuerst das Abonnement beenden.
+  //
+  // Ohne diesen Schritt lief die Belastung weiter, während Organisation,
+  // Daten und Konten weg waren – die Kundin zahlt für einen Dienst, den es
+  // nicht mehr gibt, und gemerkt hätte es niemand bis zur Reklamation.
+  // Aufgefallen beim Aufräumen der Testmandanten: Dass es gutging, lag
+  // allein an der Reihenfolge (erst gekündigt, dann gelöscht).
+  //
+  // Beendet wird SOFORT und nicht auf das Periodenende: Ab hier gibt es
+  // nichts mehr zu nutzen. Ob eine Rückerstattung angebracht ist, ist eine
+  // kaufmännische Entscheidung und gehört nicht in eine Löschfunktion.
+  //
+  // Scheitert es, wird NICHT gelöscht. Ein weiterlaufendes Abo ohne
+  // Mandant ist der schlechtere von beiden Zuständen; die Löschung lässt
+  // sich wiederholen, eine unbemerkte Belastung nicht zurücknehmen.
+  if (organisation.stripe_subscription_id) {
+    try {
+      await stripe.subscriptions.cancel(organisation.stripe_subscription_id);
+    } catch (fehler) {
+      const meldung = (fehler as Error).message;
+      // Ein bereits beendetes Abo ist kein Hindernis - das ist der
+      // Normalfall, wenn die Kundin vorher selbst gekündigt hat.
+      if (!/No such subscription|already canceled|resource_missing/i.test(meldung)) {
+        redirect(
+          `${zurueck}?error=${encodeURIComponent(
+            `Das Abonnement bei Stripe liess sich nicht beenden (${meldung}). ` +
+              "Es wurde NICHTS gelöscht – sonst liefe die Belastung weiter."
+          )}`
+        );
+      }
+    }
   }
 
   // Konten zuerst: Die Datenbankfunktion kann auth.users nicht anfassen,
@@ -412,6 +446,7 @@ export async function loescheOrganisationPlattform(
           <p><strong>${organisation.name}</strong> wurde von ${profil.name} gelöscht.</p>
           <p>Entfernt wurden ${konten?.length ?? 0} Benutzerkonten und ${summe} Datensätze:</p>
           <ul>${zeilen.map((z) => `<li>${z.tabelle}: ${z.anzahl}</li>`).join("")}</ul>
+          <p>${organisation.stripe_subscription_id ? "Das Abonnement bei Stripe wurde beendet." : "Für diese Organisation lief kein Abonnement."}</p>
           <p>Die Rechnungen der Arcos Group an diese Kundin bleiben als Belege bestehen
           (Art. 958f OR).</p>
         </div>`,
