@@ -474,43 +474,39 @@ Lieferscheine mit Teillieferungen und eigenem Nummernkreis. **Offene Fragen
 
 ---
 
-## 12. Comatic als Vorbild — was ich mit der Demo-DB tun kann
+## 12. Comatic als Vorbild — **analysiert am 18.08.2026**
 
-Das Angebot ist angenommen: Eine **Access-Demo-DB von Comatic** ist die
-sinnvollste Grundlage, die wir haben können — der Nutzer kennt dort praktisch
-jede Tabelle, und ArcoTime exportiert ohnehin nach Comatic.
+Die Demo-DB (`DEMOAG_202608181745.cmt`) ist gelesen und ausgewertet:
+**[phase13-comatic-analyse.md](phase13-comatic-analyse.md)**. Die Grundregel
+galt dabei: Begriffe und Abläufe übernehmen, keine Tabellenlayouts.
 
-**Technisch geprüft, nicht angenommen:** `access-parser` (Python, nur lesend)
-ist installiert und lädt. Damit lassen sich Tabellen, Spalten und Inhalte
-lesen — ohne Access, ohne Treiber, ohne Schreibzugriff.
+Das Wichtigste in Kürze:
 
-Wo die Datei liegen soll: OneDrive unter `ArcoSoftware/` (`.mdb` oder
-`.accdb`). Bitte eine **Demo-DB ohne echte Personendaten**.
-
-Was ich daraus beantworten will:
-
-1. Wie modelliert Comatic **Positionsarten** — Titel, Optionen,
-   Einheitspreis-Positionen, Textzeilen?
-2. Wie **Rabattstufen und Konditionen**, und in welcher Reihenfolge gegen die
-   MWST?
-3. Wie die **Rundung** (das entscheidet 5.3, weil die Rechnung später dort
-   entsteht)?
-4. Wie die **Belegkette** Angebot → Auftrag → Lieferschein → Rechnung, und
-   welche Felder die Belege verbinden?
-5. Wie **Artikel und Lager** (Bewegungen, Bewertung, Reservierung)?
-6. Welche Felder am **Artikel** wirklich gepflegt werden — im Zweifel ist die
-   gelebte Praxis besser als jede Feldliste.
-
-Die Grundregel dabei: Wir übernehmen **Begriffe und Abläufe, nicht
-Tabellenlayouts**. ArcoTime ist mandantenfähig mit RLS, deutsch benannt, mit
-Schnappschüssen statt Verweisen auf veränderliche Stammdaten — und das bleibt
-so. Wo Comatic es einfacher löst, übernehmen wir die Idee; wo es aus einer
-Access-Vergangenheit stammt, lassen wir sie dort.
-
-Grenzen, die ich vorher nenne: `access-parser` liest Daten und Spalten
-zuverlässig, aber Beziehungen und Indizes gibt Access nur teilweise her, und
-verschlüsselte `.accdb` kann es nicht öffnen. Falls es klemmt, ist der
-Ausweg ein Schema- oder CSV-Export aus dem SQL Server.
+- **Drei Entscheidungen bestätigt:** optionale Positionen sind auch bei
+  Comatic ein Zeilenmerkmal (`Optionalcode`), Titel sind Positionszeilen
+  (`Gruppe`/`Gruppentitel`), und die Zeile trägt den Schnappschuss
+  (Bezeichnung, ME, MWST, Konto an der Position).
+- **Übernahme als Mengenzähler:** Comatic führt `Liefern`/`Geliefert`/
+  `Verrechnet` je Position. Für die Teilübernahme heisst das:
+  `uebernommen numeric` statt `bestellt boolean` — 60 von 100 m² können in
+  den ersten Rapport gehen, der Rest in den zweiten.
+- **„Konditionen" heisst bei Comatic Zahlungskondition** (Skonto, Frist,
+  Mahnzuschläge — „10 Tage 2% Skonto, 30 Tage netto" steht wörtlich in der
+  Demo). Einen kaskadierenden Dokumentrabatt kennt Comatic nicht — unsere
+  Stufen sind Neuland, und der Name muss anders lauten (Vorschlag
+  `rabattkonditionen`), sonst besetzen wir ein eingeführtes Wort doppelt.
+  Die Demo stützt zugleich die Vermutung, dass die „2" in „5 + 2" ein
+  **Skonto** ist → Frage 3 unten ist wichtiger geworden.
+- **Lager:** Comatic speichert an jeder Journalbewegung den **Bestand
+  nachher** (`BLagerstand`) — übernehmen wir für Phase 14; das Journal wird
+  damit gegen sich selbst prüfbar.
+- **„per"-Positionen kennt Comatic nicht** — echte ArcoTime-Ergänzung, ohne
+  Vorbild; Fusstext und Übernahmeverhalten definieren wir selbst.
+- **Die Demo enthält keine einzige Offerte** (nur Rechnungen und
+  Barzahlungen) — die Positions-Praxis bei Offerten liess sich nur aus der
+  Struktur ableiten, nicht aus Daten. Vier Comatic-Fragen an den Nutzer
+  stehen am Ende der Analyse (Buchungstyp-Codes, Status 7/8/9, Rundung,
+  Pendenzen-Bild).
 
 ---
 
