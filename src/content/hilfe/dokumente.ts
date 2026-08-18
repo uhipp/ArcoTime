@@ -18,6 +18,8 @@ Auf der Detailseite den Bereich "Dokumente" öffnen, Datei auswählen, optional 
 
 Jedes Dokument lässt sich einzeln herunterladen. Löschen ist je nach Bereich Admins oder der hochladenden Person vorbehalten.
 
+**Alle auf einmal:** Unter [Export](/hilfe/export) gibt es "Dokumente als ZIP" – sämtliche hochgeladenen Dateien des Betriebs in einem Archiv, sortiert nach Kunde, Projekt, Person, Anfrage, Rapport und Zeiteintrag. Das ist der Weg, wenn ihr eine Sicherung ausserhalb von ArcoTime haben oder umziehen wollt.
+
 ## Wo finde ich ein Dokument wieder?
 
 Dokumente sind immer an genau eine Stelle gebunden (z.B. an einen bestimmten Kunden) – es gibt keine zentrale, alles umfassende Dokumentenliste. Am Kunden hinterlegte Dokumente findest du also auf dessen Detailseite, nicht z.B. bei einem zugehörigen Projekt.

@@ -64,15 +64,17 @@ Klick auf den Namen einer Organisation öffnet deren Detailseite: dort lassen si
 
 ## Einen Mandanten löschen
 
-Ganz unten auf der Detailseite steht **"Mandant löschen"**. Die Löschung entfernt die Organisation mit allen Daten und Benutzerkonten, **beendet ein laufendes Abonnement bei Stripe** und **lässt sich nicht rückgängig machen** – es gibt keinen Papierkorb. Lässt sich das Abonnement nicht beenden, wird gar nichts gelöscht: Ein weiterlaufendes Abo ohne Mandant wäre der schlechtere Zustand. Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen; sie sind Belege und zehn Jahre aufzubewahren.
+Ganz unten auf der Detailseite steht **"Mandant löschen"**. Die Löschung entfernt die Organisation mit allen Daten, Benutzerkonten, den hochgeladenen Dateien und dem Firmenlogo, **beendet ein laufendes Abonnement bei Stripe** und **lässt sich nicht rückgängig machen** – es gibt keinen Papierkorb. Lässt sich das Abonnement nicht beenden, wird gar nichts gelöscht: Ein weiterlaufendes Abo ohne Mandant wäre der schlechtere Zustand. Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen; sie sind Belege und zehn Jahre aufzubewahren.
 
 Der Ablauf hat drei Stufen:
 
-1. **Sicherungskopie herunterladen** – als JSON (verlustfrei) oder Excel. Ein Klick daneben, und die Daten sind weg; die Kopie kostet zehn Sekunden.
-2. **Der Umfang wird angezeigt** – jede betroffene Tabelle mit Anzahl und die betroffenen Konten mit E-Mail-Adresse. Gezählt aus derselben Quelle, aus der gelöscht wird.
+1. **Sicherungskopie herunterladen** – als JSON (verlustfrei) oder Excel, dazu **"Dokumente als ZIP"** mit den hochgeladenen Dateien. Ein Klick daneben, und die Daten sind weg; die Kopie kostet zehn Sekunden.
+2. **Der Umfang wird angezeigt** – jede betroffene Tabelle mit Anzahl, die betroffenen Konten mit E-Mail-Adresse und die Anzahl der Dateien mit ihrer Grösse. Gezählt aus derselben Quelle, aus der gelöscht wird.
 3. **Der Name muss abgetippt werden.** Gegen den Griff auf die falsche Zeile hilft keine Rückfrage mit "OK", sondern nur etwas, das man nicht aus Versehen tut.
 
 Läuft die Frist der Kundin noch – das Abonnement ist aktiv oder die 30-tägige Nachfrist ist nicht abgelaufen –, erscheint zuerst ein **Fenster**, das den Weg versperrt. Es nennt das Datum, bis zu dem die Kundin nach AGB Ziffer 10 Anspruch auf ihre Daten hat. Löschen ist danach weiterhin möglich (etwa bei einem Testmandanten oder auf ausdrücklichen Wunsch der Kundin), aber nur nach ausdrücklicher Bestätigung.
+
+Die Dateien im Speicher werden **vor** den Datenbankzeilen entfernt, denn die Zeilen sind die Landkarte: Ihre Pfade sagen, welche Datei zu welchem Betrieb gehört. Lässt sich eine Datei nicht entfernen, bricht die Löschung ab und es geht nichts weiter verloren – der Vorgang lässt sich einfach wiederholen. Der umgekehrte Fall wäre nicht zu heilen: leere Datenbank, Dateien ohne Besitzer.
 
 Wann eine Löschung fällig wird, musst du nicht im Kopf behalten: Eine tägliche Prüfung meldet dir per E-Mail, welche Mandanten die Nachfrist überschritten haben. **Gelöscht wird nie automatisch** – das entscheidet immer ein Mensch.
 `,

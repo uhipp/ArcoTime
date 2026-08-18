@@ -1,6 +1,6 @@
 # ArcoTime – Projektstand
 
-Lebendes Dokument. Letzte Nachführung: **17.08.2026, abends.**
+Lebendes Dokument. Letzte Nachführung: **18.08.2026.**
 Es beantwortet drei Fragen: Wo stehen wir, wie arbeiten wir, was ist offen.
 
 ---
@@ -71,7 +71,40 @@ Kunden geschafft hätten.
 
 ---
 
-## 3. Wie wir arbeiten
+## 3. Was am 18.08.2026 entstanden ist
+
+**Die Dateien gehören dazu.** Bis heute erfasste der Vollexport nur die
+Datenbankzeilen zu Dokumenten, und beim Löschen eines Mandanten blieben die
+hochgeladenen Dateien im Speicher liegen. Damit ist nun auch die letzte offene
+Zusage aus AGB Ziffer 10 eingelöst:
+
+- **Dokumente als ZIP** unter Export (`/api/export/dokumente`) – alle Dateien
+  in Ordnern nach Kunde, Projekt, Person, Anfrage, Rapport und Zeiteintrag,
+  benannt wie beim Hochladen, dazu `Dokumentenliste.csv` für Menschen und
+  `dokumente.json` zum Zurückspielen. Gestreamt, ohne Komprimierung, ohne
+  jeden Schreibvorgang – funktioniert deshalb auch in der Nachfrist. Nur eine
+  Datei liegt zur Zeit im Arbeitsspeicher; das Archiv entsteht beim Senden.
+- **Fehlt eine Datei**, bricht der Download nicht ab, aber er schweigt auch
+  nicht: `!FEHLENDE-DATEIEN.txt` benennt sie.
+- **Die Löschung entfernt die Dateien** – vor den Datenbankzeilen, weil deren
+  Pfade die Landkarte sind. Scheitert es, wird nichts weiter gelöscht und der
+  Vorgang lässt sich wiederholen; der umgekehrte Fall (leere Datenbank, Dateien
+  ohne Besitzer) wäre nicht zu heilen. Das Firmenlogo geht mit, die
+  Rechnungs-PDF der Arcos Group bleiben (Art. 958f OR).
+- **Der angezeigte Umfang** vor der Löschung nennt neu Anzahl und Grösse der
+  Dateien, gelesen aus derselben Funktion, aus der gelöscht wird.
+- **Neues Werkzeug** `scripts/dokumente-pruefen.mjs`: vergleicht Dateien und
+  Zeilen in beide Richtungen und räumt auf Wunsch auf.
+
+Der erste Lauf des Werkzeugs zeigte, was der Fehler hinterlassen hat: **drei
+verwaiste Dateien (50 KB)** aus einem gelöschten Testmandanten liegen noch im
+Eimer, und **fünf Dokumente der Demo AG** hängen an Anfragen und Rapporten, die
+es nicht mehr gibt. Die verwaisten Dateien sind mit
+`--verwaiste-entfernen` wegzuräumen – das ist noch nicht geschehen.
+
+---
+
+## 4. Wie wir arbeiten
 
 - **Deutsch überall** – Variablen, Funktionen, Routen, Spalten, Commit-Texte.
 - **Kommentare erklären das Warum**, gern mit dem Vorfall, der zur Entscheidung
@@ -93,30 +126,41 @@ Kunden geschafft hätten.
 ```bash
 node --env-file=.env.local scripts/mandanten-pruefen.mjs          # Mandantentrennung
 node --env-file=.env.local scripts/mandant-loeschen.mjs "Name"    # Probelauf
+node --env-file=.env.local scripts/dokumente-pruefen.mjs          # Dateien vs. Zeilen
 find .next -name "* [0-9].*" -delete                              # OneDrive-Kopien vor tsc
 ```
 
 ---
 
-## 4. Was offen ist
+## 5. Was offen ist
 
-**Als Nächstes (18.08.2026)**
-1. **Dokumentdateien** in Vollexport und Löschung. Heute enthält der Export nur die
-   Datenbankzeilen zu Dokumenten, nicht die hochgeladenen Dateien; beim Löschen
-   bleiben die Dateien im Storage liegen. Das ist die einzige Zusage aus AGB
-   Ziffer 10, die aktuell nicht vollständig eingelöst ist.
-
-**Danach**
-2. **Bestehenden Mandanten auf ein bezahltes Abo umstellen.** Der Checkout legt heute
+**Als Nächstes**
+1. **Bestehenden Mandanten auf ein bezahltes Abo umstellen.** Der Checkout legt heute
    immer eine neue Organisation an – ein Testkunde, der bezahlen will, müsste von
    vorn anfangen.
+2. **Verwaiste Dateien wegräumen** (drei Stück, 50 KB, aus einem gelöschten
+   Testmandanten): `scripts/dokumente-pruefen.mjs --verwaiste-entfernen`.
+
+**Danach**
 3. **Import/Wiederherstellung aus dem Vollexport.** Anforderungen aus dem Szenario des
    Nutzers: alles oder nichts in einer Transaktion; fehlende Konten zuerst neu
    anlegen und alle Verweise darauf umschreiben; vorher zeigen, was dabei verloren
-   geht (ein Zurücksetzen ist selbst eine Löschung).
-4. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
+   geht (ein Zurücksetzen ist selbst eine Löschung). Die Dateien gehören dazu –
+   `dokumente.json` im ZIP hält die Zuordnung fest.
+4. **Dokumente einer gelöschten Anfrage oder eines gelöschten Rapports.**
+   `dokumente.bezug_id` trägt keinen Fremdschlüssel (die Ablage ist polymorph),
+   also bleiben die Dokumente stehen, wenn ihr Bezug gelöscht wird. In der
+   Anwendung sieht sie danach niemand; im Export landen sie unter „Ohne
+   Zuordnung", und beim Löschen des Mandanten gehen sie mit. Kein Datenverlust,
+   aber unaufgeräumt – in der Demo AG betrifft es fünf Dateien.
+5. **Word-Dokumentation nachführen.** `docs/ArcoTime-Projektdokumentation.docx`
+   ist auf dem Stand vom 16.08.: Kapitel 4.6 „Export" kennt nur den
+   Comatic-Export, und der ganze Lebenszyklus eines Mandanten (Nachfrist,
+   Vollexport, Dokumentenarchiv, Löschung) fehlt. Es gibt kein Erzeugerskript
+   im Repo – das Kapitel ist von Hand nachzuziehen.
+6. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
    löschen · Preview-Deployments auf die Stripe-Sandbox umstellen.
-5. Optional: Video fürs Schaufenster (Bildschirmaufnahmen macht der Nutzer, Drehbuch
+7. Optional: Video fürs Schaufenster (Bildschirmaufnahmen macht der Nutzer, Drehbuch
    und Einbau kommen von hier).
 
 **Bekannte Grenzen, kein Fehler**

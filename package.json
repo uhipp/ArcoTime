@@ -14,6 +14,8 @@
     "@react-pdf/renderer": "^4.6.1",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.2",
+    "@types/archiver": "^8.0.0",
+    "archiver": "^8.0.0",
     "exceljs": "^4.4.0",
     "marked": "^18.0.9",
     "next": "16.3.0",

@@ -6,6 +6,18 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "Neu unter Export: „Dokumente als ZIP“ – alle hochgeladenen Dateien des Betriebs in einem Archiv, in Ordnern nach Kunde, Projekt, Person, Anfrage, Rapport und Zeiteintrag, mit einer Liste dazu. Damit umfasst der Datenexport neu auch die Dateien und nicht nur ihre Namen."
+      },
+      {
+        "typ": "behoben",
+        "text": "Beim Löschen eines Mandanten werden neu auch die hochgeladenen Dateien und das Firmenlogo entfernt. Bisher blieben sie im Speicher liegen, ohne dass eine Zeile noch sagen konnte, wem sie gehören – die Löschzusage aus AGB Ziffer 10 ist damit vollständig eingelöst."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Vor dem Löschen eines Mandanten steht neu auch die Anzahl der Dateien und ihre Grösse im angezeigten Umfang, und die Sicherungskopie enthält einen Knopf für das Dokumentenarchiv."
+      },
+      {
+        "typ": "neu",
         "text": "Neu bei den Mitarbeitenden: „Zugangslink senden“. Ist ein Einladungslink abgelaufen oder ein Passwort vergessen, schickt der Admin einen neuen Link – ohne das Konto löschen und neu einladen zu müssen."
       },
       {

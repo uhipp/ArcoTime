@@ -72,6 +72,31 @@ for (const zeile of umfang) {
   console.log(`  ${zeile.tabelle.padEnd(20)} ${zeile.anzahl}`);
 }
 
+// Dateien im Speicher – sie stehen in keiner Zählung aus dem Katalog, weil
+// sie nicht in der Datenbank liegen. Vergessen wurden sie bis heute bei jeder
+// Löschung: Die dokumente-Zeilen verschwanden, die Dateien blieben als
+// verwaiste Bilder und Verträge liegen, zu denen keine Zeile mehr sagt, wem
+// sie gehören.
+const { data: dokumente, error: de } = await db
+  .from("dokumente")
+  .select("id, speicherpfad, groesse_bytes")
+  .eq("organisation_id", org.id)
+  .neq("speicherpfad", "pending");
+if (de) {
+  console.error("Dokumente liessen sich nicht lesen:", de.message);
+  console.error("Abbruch: Ohne die Liste der Dateien wird nicht gelöscht.");
+  process.exit(1);
+}
+
+const { data: orgDatei } = await db
+  .from("organisationen").select("logo_pfad").eq("id", org.id).single();
+
+const bytes = dokumente.reduce((s, d) => s + Number(d.groesse_bytes ?? 0), 0);
+console.log(
+  `\nDateien im Speicher: ${dokumente.length} Dokumente (${(bytes / 1024 / 1024).toFixed(1)} MB)` +
+    `${orgDatei?.logo_pfad ? ", dazu das Firmenlogo" : ""}`
+);
+
 const { data: konten, error: ke } = await db
   .from("profiles").select("id, email").eq("organisation_id", org.id);
 if (ke) {
@@ -86,6 +111,26 @@ if (!wirklich) {
 }
 
 console.log("\nLösche …");
+
+// Dateien vor der Datenbank: Die Pfade stehen in den dokumente-Zeilen. Sind
+// die Zeilen weg, findet niemand die Dateien mehr. Ein Fehler bricht hier ab,
+// bevor Zeilen verlorengehen – das Entfernen ist wiederholbar.
+for (let i = 0; i < dokumente.length; i += 100) {
+  const block = dokumente.slice(i, i + 100).map((d) => d.speicherpfad);
+  const { data, error } = await db.storage.from("dokumente").remove(block);
+  if (error) {
+    console.error(`  Dateien NICHT entfernt: ${error.message}`);
+    console.error("  Abbruch – es wurde nichts weiter gelöscht.");
+    process.exit(1);
+  }
+  console.log(`  ${data?.length ?? 0} Datei(en) entfernt`);
+}
+if (orgDatei?.logo_pfad) {
+  const { error } = await db.storage.from("logos").remove([orgDatei.logo_pfad]);
+  console.log(error ? `  Logo: FEHLER ${error.message}` : "  Firmenlogo entfernt");
+  if (error) process.exit(1);
+}
+
 for (const k of konten) {
   const { error } = await db.auth.admin.deleteUser(k.id);
   console.log(error ? `  ${k.email}: FEHLER ${error.message}` : `  ${k.email}: Konto entfernt`);

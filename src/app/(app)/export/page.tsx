@@ -6,6 +6,7 @@ import { erstelleExport } from "@/app/actions/export";
 import type { ZeiteintragMitDetails, BelegExport } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import { darf } from "@/lib/berechtigungen";
+import { formatBytes, summeBytes } from "@/lib/dokumente-archiv";
 
 export default async function ExportPage({
   searchParams,
@@ -96,6 +97,21 @@ export default async function ExportPage({
     erstellteBelege = (data as BelegExport[] | null) ?? [];
   }
 
+  // Umfang der Dokumentdateien, damit vor dem Klick klar ist, was da
+  // kommt: Ein Archiv von zwei Gigabyte lädt man nicht über das Handynetz.
+  // Die Abfrage läuft über den regulären, RLS-geprüften Client – Admins
+  // sehen damit auch die Personal-Dokumente, und genau die gehören mit ins
+  // Archiv.
+  const { data: dokumentGroessen } = await supabase
+    .from("dokumente")
+    .select("groesse_bytes")
+    .neq("speicherpfad", "pending");
+
+  const anzahlDokumente = dokumentGroessen?.length ?? 0;
+  const bytesDokumente = summeBytes(
+    (dokumentGroessen ?? []) as { groesse_bytes: number | null }[]
+  );
+
   const { data: historie } = await supabase
     .from("belege_exporte")
     .select("*, projekte(bezeichnung, kunden(name, vorname))")
@@ -132,18 +148,38 @@ export default async function ExportPage({
           >
             Als JSON-Datei
           </a>
+          {/* Die Dateien stehen als eigener Knopf da und nicht im selben
+              Download: Die Stammdaten sind in Sekunden geholt, das
+              Dokumentenarchiv kann Hunderte Megabyte sein. Zusammengelegt
+              wäre jeder Blick in die Kundenliste ein Gigabyte-Transfer. */}
+          {anzahlDokumente > 0 && (
+            <a
+              href="/api/export/dokumente"
+              className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Dokumente als ZIP ({anzahlDokumente} Dateien, {formatBytes(bytesDokumente)})
+            </a>
+          )}
         </div>
         <p className="text-xs text-gray-500 mt-3">
           Die Excel-Datei ist zum Anschauen und Weiterarbeiten – eine Tabelle je Bereich.
           Die JSON-Datei enthält dieselben Daten verlustfrei; nur aus ihr lässt sich ein
           Stand später wieder einspielen. Bewahrt beide auf, wenn ihr ArcoTime verlasst.
         </p>
-        <p className="text-xs text-gray-500 mt-2">
-          <strong>Noch nicht enthalten:</strong> die hochgeladenen Dateien aus dem Bereich
-          Dokumente. Der Export listet sie mit Name und Zuordnung auf, die Dateien selbst
-          ladet ihr bitte einzeln herunter. Wenn ihr sie gesammelt braucht, meldet euch –
-          wir stellen sie euch zusammen.
-        </p>
+        {anzahlDokumente > 0 ? (
+          <p className="text-xs text-gray-500 mt-2">
+            Das ZIP enthält die hochgeladenen <strong>Dateien</strong> aus dem Bereich
+            Dokumente, sortiert nach Kunde, Projekt, Person, Anfrage und Zeiteintrag –
+            dazu eine Liste (<code>Dokumentenliste.csv</code>), welche Datei wo gehört
+            hat. Bei vielen Dateien dauert der Download eine Weile; er beginnt sofort und
+            läuft dann weiter.
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500 mt-2">
+            Im Bereich Dokumente sind noch keine Dateien hochgeladen. Sobald es welche
+            gibt, erscheint hier zusätzlich ein ZIP-Download mit den Dateien selbst.
+          </p>
+        )}
       </div>
 
       {params.error && (

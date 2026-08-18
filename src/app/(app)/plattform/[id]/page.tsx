@@ -2,6 +2,11 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  dateienEinerOrganisation,
+  formatBytes,
+  summeBytes,
+} from "@/lib/dokumente-archiv";
 import { getCurrentProfile } from "@/lib/get-profile";
 import {
   bearbeiteMitarbeiterPlattform,
@@ -72,6 +77,13 @@ export default async function OrganisationDetailPage({
 
   const umfang = (loeschUmfang ?? []) as { tabelle: string; anzahl: number }[];
   const summe = umfang.reduce((s, z) => s + Number(z.anzahl), 0);
+
+  // Die Dateien im Speicher gehören zum Umfang. Sie stehen in keiner
+  // Zählung aus dem Postgres-Katalog, weil sie nicht in der Datenbank
+  // liegen – gelöscht werden sie trotzdem, und zwar aus derselben Quelle,
+  // die hier gelesen wird (dateienEinerOrganisation).
+  const dateien =
+    loeschen === "1" ? await dateienEinerOrganisation(admin, id) : null;
 
   const heute = new Date().toISOString().slice(0, 10);
   const nochGeschuetzt =
@@ -263,8 +275,9 @@ export default async function OrganisationDetailPage({
           {organisation.stripe_subscription_id
             ? "Ein laufendes Abonnement bei Stripe wird dabei beendet – sonst liefe die Belastung weiter, während es den Mandanten nicht mehr gibt. "
             : ""}
-          Die Rechnungen der Arcos Group an diese Kundin bleiben bestehen: Sie sind
-          Belege und zehn Jahre aufzubewahren (Art. 958f OR).
+          Mitgelöscht werden auch die hochgeladenen Dateien aus dem Bereich Dokumente
+          und das Firmenlogo. Die Rechnungen der Arcos Group an diese Kundin bleiben
+          bestehen: Sie sind Belege und zehn Jahre aufzubewahren (Art. 958f OR).
         </p>
 
         <div className="flex flex-wrap gap-3 mb-4">
@@ -280,6 +293,14 @@ export default async function OrganisationDetailPage({
           >
             als Excel
           </a>
+          {/* Die Dateien gehören zur Sicherungskopie. Ohne sie wäre die
+              Kopie unvollständig, und die Löschung entfernt sie mit. */}
+          <a
+            href={`/api/export/dokumente?organisation=${organisation.id}`}
+            className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            Dokumente als ZIP
+          </a>
         </div>
 
         {loeschen !== "1" || fristHinweisOffen ? (
@@ -293,7 +314,12 @@ export default async function OrganisationDetailPage({
           <div className="rounded bg-red-50 border border-red-200 p-4 space-y-4">
             <div>
               <p className="text-sm font-medium text-red-900 mb-2">
-                Gelöscht werden {summe} Datensätze und {liste.length} Benutzerkonten:
+                Gelöscht werden {summe} Datensätze, {liste.length} Benutzerkonten und{" "}
+                {dateien?.dokumente.length ?? 0} hochgeladene Dateien
+                {dateien && dateien.dokumente.length > 0
+                  ? ` (${formatBytes(summeBytes(dateien.dokumente))})`
+                  : ""}
+                {dateien?.logoPfad ? " sowie das Firmenlogo" : ""}:
               </p>
               {umfang.length > 0 ? (
                 <ul className="text-sm text-red-900 grid grid-cols-2 sm:grid-cols-3 gap-x-6">
@@ -386,12 +412,20 @@ export default async function OrganisationDetailPage({
               Kundin – lade vorher die Sicherungskopie herunter.
             </p>
 
-            <a
-              href={`/api/export/vollstaendig?organisation=${organisation.id}`}
-              className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
-            >
-              Sicherungskopie herunterladen
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={`/api/export/vollstaendig?organisation=${organisation.id}`}
+                className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Sicherungskopie herunterladen
+              </a>
+              <a
+                href={`/api/export/dokumente?organisation=${organisation.id}`}
+                className="inline-block rounded border px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                Dokumente als ZIP
+              </a>
+            </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-2 border-t">
               <Link

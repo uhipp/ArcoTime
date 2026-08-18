@@ -10,6 +10,12 @@ import { mitErfolg } from "@/lib/erfolg";
 import { sendeMail } from "@/lib/email";
 import { sendeEinladung } from "@/lib/einladung";
 import { emailFehler, versandFehlerText } from "@/lib/email-pruefung";
+import {
+  dateienEinerOrganisation,
+  entferneDateienAusSpeicher,
+  formatBytes,
+  summeBytes,
+} from "@/lib/dokumente-archiv";
 
 // Alle Aktionen hier sind ausschliesslich Platform-Admins vorbehalten
 // (Arcos Group selbst) – nicht den Admins einzelner Kunden-Organisationen.
@@ -339,7 +345,7 @@ export async function reaktiviereMitarbeiter(profilId: string) {
 //   2. Der Name muss abgetippt werden. Gegen den Griff auf die falsche
 //      Zeile hilft keine Rückfrage mit "OK", sondern nur etwas, das man
 //      nicht aus Versehen tut.
-//   3. Die Sicherungskopie liegt einen Klick daneben.
+//   3. Die Sicherungskopie liegt einen Klick daneben – Datenbank UND Dateien.
 export async function loescheOrganisationPlattform(
   organisationId: string,
   formData: FormData
@@ -400,7 +406,60 @@ export async function loescheOrganisationPlattform(
     }
   }
 
-  // Konten zuerst: Die Datenbankfunktion kann auth.users nicht anfassen,
+  // Dann die Dateien im Speicher.
+  //
+  // Vor der Datenbank, weil die Datenbank die Landkarte ist: Die Pfade der
+  // Dateien stehen in den dokumente-Zeilen. Sind die Zeilen weg, liegen die
+  // Dateien für immer als verwaiste Bilder und Verträge im Eimer, und
+  // niemand kann noch sagen, wem sie gehörten. Genau das ist bis heute bei
+  // jeder Löschung passiert.
+  //
+  // Scheitert es, wird NICHT weitergemacht – wie beim Abonnement. Das
+  // Entfernen ist wiederholbar (eine Datei, die schon weg ist, ist kein
+  // Fehler), die Löschung lässt sich also einfach nochmals starten. Nicht
+  // wiederholbar wäre der umgekehrte Fall: Datenbank leer, Dateien da.
+  let dateien;
+  try {
+    dateien = await dateienEinerOrganisation(admin, organisationId);
+  } catch (fehler) {
+    redirect(
+      `${zurueck}?error=${encodeURIComponent(
+        `Die Dateien dieser Organisation liessen sich nicht ermitteln (${(fehler as Error).message}). Es wurde nichts gelöscht.`
+      )}`
+    );
+  }
+
+  const bytesDateien = summeBytes(dateien.dokumente);
+
+  const { fehler: dokumenteFehler } = await entferneDateienAusSpeicher(
+    admin,
+    "dokumente",
+    dateien.dokumente.map((d) => d.speicherpfad)
+  );
+  if (dokumenteFehler) {
+    redirect(
+      `${zurueck}?error=${encodeURIComponent(
+        `Die hochgeladenen Dateien liessen sich nicht entfernen (${dokumenteFehler}). ` +
+          "Es wurde NICHTS weiter gelöscht – sonst blieben sie ohne Zuordnung liegen. " +
+          "Die Löschung lässt sich wiederholen."
+      )}`
+    );
+  }
+
+  if (dateien.logoPfad) {
+    const { fehler: logoFehler } = await entferneDateienAusSpeicher(admin, "logos", [
+      dateien.logoPfad,
+    ]);
+    if (logoFehler) {
+      redirect(
+        `${zurueck}?error=${encodeURIComponent(
+          `Das Firmenlogo liess sich nicht entfernen (${logoFehler}). Es wurde NICHTS weiter gelöscht.`
+        )}`
+      );
+    }
+  }
+
+  // Konten dann: Die Datenbankfunktion kann auth.users nicht anfassen,
   // und ein Konto ohne Organisation wäre ein Zugang ins Nichts.
   const { data: konten } = await admin
     .from("profiles")
@@ -444,7 +503,10 @@ export async function loescheOrganisationPlattform(
       html: `
         <div style="font-family:sans-serif;color:#111827;">
           <p><strong>${organisation.name}</strong> wurde von ${profil.name} gelöscht.</p>
-          <p>Entfernt wurden ${konten?.length ?? 0} Benutzerkonten und ${summe} Datensätze:</p>
+          <p>Entfernt wurden ${konten?.length ?? 0} Benutzerkonten, ${summe} Datensätze
+          und ${dateien.dokumente.length} hochgeladene Dateien (${formatBytes(bytesDateien)}${
+            dateien.logoPfad ? ", inkl. Firmenlogo" : ""
+          }):</p>
           <ul>${zeilen.map((z) => `<li>${z.tabelle}: ${z.anzahl}</li>`).join("")}</ul>
           <p>${organisation.stripe_subscription_id ? "Das Abonnement bei Stripe wurde beendet." : "Für diese Organisation lief kein Abonnement."}</p>
           <p>Die Rechnungen der Arcos Group an diese Kundin bleiben als Belege bestehen
@@ -459,7 +521,8 @@ export async function loescheOrganisationPlattform(
   redirect(
     mitErfolg(
       "/plattform",
-      `"${organisation.name}" wurde gelöscht: ${konten?.length ?? 0} Konten und ${summe} Datensätze.`
+      `"${organisation.name}" wurde gelöscht: ${konten?.length ?? 0} Konten, ${summe} Datensätze und ` +
+        `${dateien.dokumente.length} Dateien (${formatBytes(bytesDateien)}).`
     )
   );
 }

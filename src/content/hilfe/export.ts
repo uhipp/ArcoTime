@@ -16,7 +16,15 @@ Der vollständige Bestand eurer Organisation – Zeiteinträge, Rapporte, Kunden
 
 Dieser Download verändert nichts und lässt sich beliebig oft wiederholen. Er funktioniert auch nach dem Ende eines Abonnements, solange die 30-tägige Frist läuft – dann ist er sogar der einzige Weg, an die Daten zu kommen.
 
-Noch nicht enthalten sind die hochgeladenen **Dateien** aus dem Bereich Dokumente; der Export listet sie mit Name und Zuordnung auf, die Dateien selbst ladet ihr einzeln herunter.
+## Dokumente als ZIP
+
+Ein dritter Knopf lädt die hochgeladenen **Dateien** aus dem Bereich [Dokumente](/hilfe/dokumentenablage) als ZIP-Archiv herunter – daneben steht, wie viele es sind und wie viel sie wiegen. Im Archiv liegen sie in Ordnern nach Kunde, Projekt, Person, Anfrage, Rapport und Zeiteintrag, benannt wie beim Hochladen. Dazu kommt eine **Dokumentenliste.csv** mit Kategorie, Notiz, hochladender Person und Datum jeder Datei – falls die Ordnerstruktur einmal nicht genügt.
+
+Hängt eine Datei an einer Anfrage oder einem Rapport, die es nicht mehr gibt, liegt sie im Ordner **"Ohne Zuordnung"**. Sie gehört trotzdem euch und kommt deshalb mit.
+
+Bei vielen Dateien dauert der Download eine Weile: Er beginnt sofort und läuft dann weiter, während das Archiv entsteht. Auch dieser Download verändert nichts und funktioniert in der Nachfrist.
+
+Warum getrennt und nicht in einer Datei? Die Stammdaten sind in Sekunden geholt, das Dokumentenarchiv kann Hunderte Megabyte gross sein. Zusammengelegt wäre jeder Blick in die Kundenliste ein Gigabyte-Download. Wer ArcoTime verlässt, nimmt am besten **alle drei** mit: Excel, JSON und das ZIP.
 
 ## Export für die Buchhaltung (Comatic)
 

@@ -88,6 +88,10 @@ export async function pruefeNachfristen(): Promise<{
               <p>Danach werden sie gelöscht und lassen sich nicht mehr zurückholen. Wenn ihr
               etwas davon behalten wollt, ladet es bitte vorher herunter:</p>
               <p><a href="${APP_URL}/export">Alle Daten herunterladen</a></p>
+              <p style="font-size:13px;color:#4b5563;">Dort stehen drei Downloads: eine
+              Excel-Datei zum Anschauen, eine JSON-Datei mit allen Daten verlustfrei – und
+              ein ZIP mit den hochgeladenen Dateien aus dem Bereich Dokumente. Nehmt alle
+              drei mit; die Dateien sind sonst nicht dabei.</p>
               <p>Möchtet ihr weitermachen oder braucht ihr mehr Zeit? Eine kurze Nachricht an
               ${SUPPORT_MAIL} genügt.</p>
               <p>Freundliche Grüsse<br>${FIRMA.name}</p>
