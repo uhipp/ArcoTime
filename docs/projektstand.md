@@ -97,10 +97,11 @@ Zusage aus AGB Ziffer 10 eingelöst:
   Zeilen in beide Richtungen und räumt auf Wunsch auf.
 
 Der erste Lauf des Werkzeugs zeigte, was der Fehler hinterlassen hat: **drei
-verwaiste Dateien (50 KB)** aus einem gelöschten Testmandanten liegen noch im
-Eimer, und **fünf Dokumente der Demo AG** hängen an Anfragen und Rapporten, die
-es nicht mehr gibt. Die verwaisten Dateien sind mit
-`--verwaiste-entfernen` wegzuräumen – das ist noch nicht geschehen.
+verwaiste Dateien (50 KB)** aus einem am 9. August gelöschten Testmandanten, und
+**fünf Dokumente der Demo AG**, die an Anfragen und Rapporten hängen, die es
+nicht mehr gibt. Die verwaisten Dateien sind am 18.08. entfernt; der Eimer ist
+seither deckungsgleich mit der Datenbank (verwaiste Dateien 0, Zeilen ohne Datei
+0, verwaiste Logos 0).
 
 ---
 
@@ -138,29 +139,27 @@ find .next -name "* [0-9].*" -delete                              # OneDrive-Kop
 1. **Bestehenden Mandanten auf ein bezahltes Abo umstellen.** Der Checkout legt heute
    immer eine neue Organisation an – ein Testkunde, der bezahlen will, müsste von
    vorn anfangen.
-2. **Verwaiste Dateien wegräumen** (drei Stück, 50 KB, aus einem gelöschten
-   Testmandanten): `scripts/dokumente-pruefen.mjs --verwaiste-entfernen`.
 
 **Danach**
-3. **Import/Wiederherstellung aus dem Vollexport.** Anforderungen aus dem Szenario des
+2. **Import/Wiederherstellung aus dem Vollexport.** Anforderungen aus dem Szenario des
    Nutzers: alles oder nichts in einer Transaktion; fehlende Konten zuerst neu
    anlegen und alle Verweise darauf umschreiben; vorher zeigen, was dabei verloren
    geht (ein Zurücksetzen ist selbst eine Löschung). Die Dateien gehören dazu –
    `dokumente.json` im ZIP hält die Zuordnung fest.
-4. **Dokumente einer gelöschten Anfrage oder eines gelöschten Rapports.**
+3. **Dokumente einer gelöschten Anfrage oder eines gelöschten Rapports.**
    `dokumente.bezug_id` trägt keinen Fremdschlüssel (die Ablage ist polymorph),
    also bleiben die Dokumente stehen, wenn ihr Bezug gelöscht wird. In der
    Anwendung sieht sie danach niemand; im Export landen sie unter „Ohne
    Zuordnung", und beim Löschen des Mandanten gehen sie mit. Kein Datenverlust,
    aber unaufgeräumt – in der Demo AG betrifft es fünf Dateien.
-5. **Word-Dokumentation nachführen.** `docs/ArcoTime-Projektdokumentation.docx`
+4. **Word-Dokumentation nachführen.** `docs/ArcoTime-Projektdokumentation.docx`
    ist auf dem Stand vom 16.08.: Kapitel 4.6 „Export" kennt nur den
    Comatic-Export, und der ganze Lebenszyklus eines Mandanten (Nachfrist,
    Vollexport, Dokumentenarchiv, Löschung) fehlt. Es gibt kein Erzeugerskript
    im Repo – das Kapitel ist von Hand nachzuziehen.
-6. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
+5. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
    löschen · Preview-Deployments auf die Stripe-Sandbox umstellen.
-7. Optional: Video fürs Schaufenster (Bildschirmaufnahmen macht der Nutzer, Drehbuch
+6. Optional: Video fürs Schaufenster (Bildschirmaufnahmen macht der Nutzer, Drehbuch
    und Einbau kommen von hier).
 
 **Bekannte Grenzen, kein Fehler**
