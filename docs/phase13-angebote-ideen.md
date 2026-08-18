@@ -1,314 +1,391 @@
 # Phase 13: Angebote — Ideensammlung (Phase 1 von 3)
 
-Stand: 18.08.2026 · **noch nichts umgesetzt** · Grundlage ist ein Telefonat
-mit einem Interessenten, der ArcoTime kaufen würde, wenn er damit Angebote
-schreiben kann.
+Stand: 18.08.2026, abends · **noch nichts umgesetzt**
+
+Grundlage: ein Telefonat mit einem Interessenten — **Malergeschäft**, arbeitet
+heute mit **SelectLine** — und die Entscheidungen des Nutzers vom 18.08.2026
+(unten jeweils als **entschieden** markiert).
 
 > Dieses Dokument ist **Phase 1**: zusammentragen, ergänzen, Fragen stellen.
-> Es entscheidet nichts. Phase 2 ist das Plandokument mit Datenmodell und
-> Etappen, Phase 3 die Umsetzung.
+> Es entscheidet nichts von sich aus. Phase 2 ist das Plandokument mit
+> Datenmodell, Migrationen und Etappen, Phase 3 die Umsetzung.
 >
-> Alles unter **„Offene Fragen"** ist bewusst nicht beantwortet. Angebote
+> Was unter **„Offene Fragen"** steht, ist bewusst nicht beantwortet. Angebote
 > berühren Preisrecht, MWST und Buchhaltung; geraten wäre schlimmer als
 > gefragt.
 
 ---
 
-## 1. Was der Interessent gesagt hat
+## 1. Der Auftragsbestand an Anforderungen
 
-- Er braucht ein Modul, um **Angebote** zu erstellen.
-- Das Angebot ist dem Rapport **vorgelagert**.
-- Bei Auftragserteilung soll **alles oder ein Teil** des Angebots in den
-  Rapport übernommen werden.
-- Bei der Anfrage braucht es eine **dritte Option**: nicht direkt in den
-  Rapport, sondern ins Angebot.
-- Aus Dienstleistungen sollten **Dienstleistungen und Produkte** werden,
-  eventuell mit getrennten Masken, weil Produkte mehr Informationen brauchen.
-- Mit Produkten kommt eventuell **Lagerführung**: Verfügbarkeit (schon im
-  Angebot wichtig), Rückstandsmanagement, Lieferscheine mit Teillieferungen,
-  Inventur.
-- Bei den Kunden braucht es **Ansprechpersonen** (1 Firma – n Personen);
-  Anfragen und Rapporte sollen einer Ansprechperson zugewiesen werden.
-- Im Angebot braucht es **Wiedervorlagen**.
-- Abgerechnet und lizenziert wie die Disposition: **kostenpflichtiges
-  Zusatzmodul**.
+Aus dem Telefonat:
+
+- Modul, um **Angebote** zu erstellen; das Angebot ist dem Rapport
+  **vorgelagert**.
+- Bei Auftragserteilung wandert **alles oder ein Teil** in den Rapport.
+- Bei der Anfrage eine **dritte Option**: ins Angebot statt in den Rapport.
+- Aus Dienstleistungen werden **Dienstleistungen und Produkte**, eventuell
+  mit getrennten Masken.
+- Mit Produkten kommt eventuell **Lagerführung**.
+- Bei den Kunden **Ansprechpersonen** (1 Firma – n Personen), zuweisbar an
+  Anfragen und Rapporte.
+- Im Angebot **Wiedervorlagen**.
+- **Kostenpflichtiges Zusatzmodul** wie die Disposition.
+
+Dazu die Entscheidungen vom 18.08.:
+
+- Eigener Nummernkreis für Angebote; **jeder Rapport nennt das Angebot**, auf
+  das er sich bezieht.
+- Belegkette **Anfrage → Angebot → Rapport**; mit dem Erstellen des Angebots
+  ist die Anfrage erledigt.
+- Ein versendetes Angebot wird **als PDF eingefroren**; das Angebot selbst
+  bleibt änderbar und erhält beim nächsten Versand die Fassungsnummer
+  `2026-00001-01`.
+- **Optionale Positionen** (kursiv, nicht im Total).
+- **„per"-Positionen**: Einheitspreis ohne Menge, nicht im Total, mit Hinweis
+  im Fusstext.
+- **Pauschalrabatt** als Schlussposition nach dem Total.
+- **Handwerkerkonditionen** („5 + 2") als zweistufiger Rabatt nach dem
+  Pauschalrabatt, definiert in einer eigenen Tabelle.
+- **MWST immer exklusiv mit Ausweis**, ganz am Schluss gerechnet.
+- **Auftragsbestätigung** als eigenes Dokument.
+- **Lager** im Datenmodell mitdenken, Umsetzung später als eigenes
+  kostenpflichtiges Modul.
 
 ---
 
 ## 2. Was ArcoTime heute schon hat — die Bausteine, die tragen
 
-Das ist der Grund, warum das Modul realistisch ist: Fast jeder Baustein
-existiert und ist im Betrieb erprobt.
-
 | Vorhanden | Wo | Bedeutung fürs Angebot |
 |---|---|---|
-| Kunden mit Adresse, Währung, Zahlungskondition | `kunden` (0001) | Empfänger des Angebots |
-| Kundenpreise, gestaffelt ab Menge | `kundenpreise` (0022) | Preisfindung im Angebot |
-| Kundenrabatte je Leistungsklasse | `kundenrabatte` (0022) | Rabattvorschlag im Angebot |
-| Leistungen mit Preis, Einheit, MWST-Code, Konto | `dienstleistungen` (0001, 0022) | Angebotspositionen |
+| Kunden mit Adresse, Währung, Zahlungskondition | `kunden` (0001) | Empfänger |
+| Kundenpreise, gestaffelt ab Menge | `kundenpreise` (0022) | Preisfindung |
+| Kundenrabatte je Leistungsklasse | `kundenrabatte` (0022) | Rabattvorschlag |
+| Leistungen mit Preis, Einheit, MWST-Code, Konto | `dienstleistungen` (0001, 0022) | Positionen |
 | Mengenartikel (`zaehlt_als_arbeitszeit = false`) | 0022 | **Produkte gibt es im Ansatz schon** |
-| Freie Einheiten (Stück, km, kg …) | `einheiten` (0023) | Produktmengen |
-| MWST- und Preis-Schnappschuss an der Position | 0003, 0021 | Vorbild für den Angebots-Schnappschuss |
-| Rapport mit Nummernkreis je Jahr, Status, Unterschrift, Storno | `rapporte` (0026, 0043) | Vorbild für den Angebots-Lebenszyklus |
-| Rapportpositionen **sind Zeiteinträge** (`zeiteintraege.rapport_id`) | 0026 | entscheidend für die Übernahme, siehe 5 |
-| Vorläufige Positionen: vorbereitete Rapporte zählen nicht | 0036 | genau der Zustand, in dem ein übernommenes Angebot landet |
-| Standardpositionen für neue Rapporte | `rapport_standardpositionen` (0051) | Vorbild für Angebotsvorlagen |
-| Anfragen mit Kanal, Status, Priorität, Wiedervorlage, Zuweisung | `anfragen` (0013) | Startpunkt des Angebots |
+| Freie Einheiten (Stück, m², kg, km …) | `einheiten` (0023) | Mengen |
+| Preis- und MWST-Schnappschuss an der Position | 0003, 0021 | Vorbild für den Angebots-Schnappschuss |
+| Rapport mit Nummernkreis je Jahr, Status, Unterschrift, Storno | `rapporte` (0026, 0043) | Vorbild für den Lebenszyklus |
+| Rapportpositionen **sind Zeiteinträge** | 0026 | entscheidend für die Übernahme, siehe 6 |
+| Vorläufige Positionen: vorbereitete Rapporte zählen nicht | 0036 | der Zustand, in dem ein übernommenes Angebot landet |
+| Standardpositionen für neue Rapporte | 0051 | Vorbild für Angebotsvorlagen |
+| Anfragen mit Kanal, Status, Priorität, Wiedervorlage, Zuweisung | `anfragen` (0013) | Startpunkt |
 | Anfrage → Rapport / → Zeiteintrag, Dokumentübernahme | 0034 | Muster für Anfrage → Angebot |
+| Anfrage wieder öffnen | 0035 | Rückweg, falls doch nichts daraus wird |
 | Täglicher Auftrag für Wiedervorlagen | `/api/cron/wiedervorlagen` | Erinnerung an Angebote |
 | PDF im eigenen Layout mit Logo und Absender | `rapport-pdf.tsx`, `rechnung-pdf.tsx` | Angebots-PDF |
+| PDF einfrieren und im privaten Speicher ablegen | `rechnung-erstellen.ts` (0062) | genau das, was der Versand braucht |
 | Mailversand mit Textteil, eigenem Absender, Anhang | `src/lib/email.ts` | Angebot versenden |
-| Dokumentenablage, polymorph je Bereich | `dokumente` (0015, 0034) | Pläne und Fotos am Angebot |
-| Änderungsprotokoll je Tabelle | 0053 | Nachvollziehbarkeit |
-| Vollexport und Löschung **aus dem Katalog** | 0063, 0064, 0067 | neue Tabellen sind automatisch dabei |
-| Zwei kostenpflichtige Module, Freischaltung je Organisation | `modul_disposition`, `modul_zeitkonto` | Muster fürs dritte Modul |
+| Dokumentenablage, polymorph je Bereich | `dokumente` (0015, 0034) | Pläne, Fotos — **und die eingefrorenen PDF**, siehe 4.6 |
+| Änderungsprotokoll je Tabelle | 0053 | Nachvollziehbarkeit der Änderungen |
+| Vollexport, Umfangszählung, Löschung **aus dem Katalog** | 0063, 0064, 0067 | neue Tabellen sind automatisch dabei |
+| Dokumentarchiv als ZIP | 18.08.2026 | die eingefrorenen PDF kommen mit |
+| Zwei kostenpflichtige Module, Freischaltung je Organisation | `modul_disposition`, `modul_zeitkonto` | Muster fürs dritte |
 
-**Was fehlt und wirklich neu ist:** das Angebot selbst mit eigenen
-Positionen, die Ansprechpersonen, die Produktfelder — und, falls es dazu
-kommt, das Lager.
+**Wirklich neu:** das Angebot mit eigenen Positionen und eigener Preisrechnung,
+die Konditionen, die Auftragsbestätigung, die Ansprechpersonen, die
+Produktfelder — und später das Lager.
 
 ---
 
-## 3. Das Angebot als Dokument
+## 3. Lebenszyklus, Nummer und Fassungen
 
-### 3.1 Lebenszyklus
-
-Vorschlag, gebaut nach dem Muster des Rapports (`offen → signiert |
-abgeschlossen → storniert`), aber mit dem Unterschied, dass ein Angebot
-**abgelehnt** werden kann und von selbst **verfällt**:
+### 3.1 Status
 
 ```
-Entwurf ──► versendet ──┬─► angenommen ──► (Rapport/Auftrag)
-                        ├─► teilweise angenommen
+Entwurf ──► versendet ──┬─► angenommen ──► Auftragsbestätigung ──► Rapport(e)
+                        ├─► teilweise angenommen ──► …
                         ├─► abgelehnt
                         ├─► verfallen  (Gültigkeit abgelaufen)
                         └─► zurückgezogen
 ```
 
-- **Entwurf**: frei änderbar, keine Nummer (wie beim Rapport, damit ein
-  verworfener Entwurf keine Lücke in den Nummernkreis reisst).
-- **Versendet**: bekommt Nummer und Datum, ist ab hier **unveränderlich**.
-  Ein Angebot, das man nach dem Versand still ändern kann, ist als Grundlage
-  für einen Auftrag wertlos.
-- Änderung nach dem Versand nur als **neue Fassung** (siehe 3.3).
-- **Verfallen** setzt der tägliche Auftrag, nicht ein Mensch — hier ist die
-  Automatik ungefährlich, weil sie nichts löscht.
+**Verfallen** setzt der tägliche Auftrag, nicht ein Mensch — hier ist die
+Automatik ungefährlich, weil sie nichts löscht und nichts verrechnet.
 
-### 3.2 Nummernkreis
+### 3.2 Nummernkreis — **entschieden**
 
-Wie beim Rapport: `unique (organisation_id, jahr, nummer)`, Anzeigeform
-`2026-0001`. Erst beim Versenden vergeben.
+Eigener Kreis, getrennt vom Rapport, fünfstellig:
 
-*Frage: eigener Kreis für Angebote oder derselbe wie beim Rapport? Getrennt
-ist üblich — bitte bestätigen.*
+```
+2026-00001          erste Fassung
+2026-00001-01       erste Änderung nach dem Versand
+2026-00001-02       zweite Änderung
+```
 
-### 3.3 Fassungen statt Änderungen
+Datenmodell: `jahr int`, `nummer int`, `fassung int not null default 0`,
+`unique (organisation_id, jahr, nummer)`. Die Anzeigeform entsteht aus den
+drei Feldern (wie `rapportNummer()` in `types.ts`), Fassung 0 ohne Suffix.
 
-Der Kunde ruft an und will „dasselbe, aber ohne die Position C und mit 5 %
-Nachlass". Zwei Wege:
+Die Nummer wird **erst beim ersten Versand** vergeben — ein verworfener
+Entwurf reisst dann keine Lücke, genau wie beim Rapport.
 
-- **Revision am selben Angebot**: `2026-0042 V2`, die Vorfassung bleibt
-  lesbar erhalten.
-- **Neues Angebot mit Verweis** auf das ersetzte.
+### 3.3 Ändern statt versionieren — **entschieden**
 
-Vorschlag: Revision am selben Angebot (`fassung int`, `ersetzt_angebot_id`),
-weil der Kunde von *einem* Angebot spricht und die Trefferquote-Statistik
-sonst jedes Nachfassen als verlorenes Angebot zählt.
+Das Angebot bleibt **eine Zeile** und ist änderbar; die Geschichte steckt in
+den eingefrorenen PDF. Beim nächsten Versand zählt die Fassung hoch und es
+entsteht ein zweites PDF.
+
+Das ist die einfachste Lösung, und sie funktioniert — aber sie verlagert die
+Beweislast. Deshalb zwei Dinge, die dann zwingend dazugehören:
+
+1. **Das PDF-Archiv ist der Nachweis.** Es muss vollständig sein und darf
+   nicht einzeln löschbar sein. Als `dokumente`-Zeile am Angebot abgelegt
+   (siehe 4.6), erbt es Zugriffsschutz, Export und Löschung.
+2. **Das Änderungsprotokoll (0053) muss `angebote` und `angebot_positionen`
+   erfassen**, sonst lässt sich nicht mehr sagen, wer nach dem Versand was
+   geändert hat. Eintragen in die Tabellenliste der Migration.
+
+Zwei Zähler, damit die Oberfläche die Wahrheit sagen kann: `fassung` (was
+gerade bearbeitet wird) und `versendete_fassung` (was beim Kunden liegt). Sind
+sie verschieden, steht in der Liste „geändert, noch nicht versendet" — sonst
+glaubt jemand, der Kunde habe den neuen Preis schon.
 
 ### 3.4 Inhalt neben den Positionen
 
-- Anschrift (Kunde + **Ansprechperson**, siehe 8), Referenz/Betreff
-- Angebotsdatum, **gültig bis** (Vorschlag: Vorgabe in Tagen je Organisation)
-- **Einleitungs- und Schlusstext**, frei überschreibbar, mit Vorgabetext je
-  Organisation (Textbausteine)
-- Voraussichtliche **Ausführungsfrist / Lieferfrist**
-- Zahlungskondition (aus dem Kunden, überschreibbar)
-- Hinweis auf AGB / Vorbehalte
-- Sachbearbeiter (wer das Angebot verantwortet)
-- interne **Notiz**, die nie auf dem PDF erscheint
-
-### 3.5 Versand
-
-Bestehende Infrastruktur: PDF erzeugen, per Mail mit Textteil und eigenem
-Absender an die Ansprechperson, Blindkopie an den Sachbearbeiter, Ablage der
-PDF im privaten Speicher (wie die Rechnungen in 0062). Versanddatum und
-Empfänger werden am Angebot vermerkt — sonst weiss später niemand, welche
-Fassung beim Kunden liegt.
-
-*Idee für später, nicht für Etappe A:* Annahme durch den Kunden über einen
-signierten Link, mit Unterschrift auf dem Bildschirm — die Mechanik dafür
-gibt es schon beim Rapport. Das wäre der erste Baustein eines Kundenportals
-und sollte bewusst als eigenes Vorhaben behandelt werden.
+Anschrift (Kunde + Ansprechperson) · Betreff/Objekt · Angebotsdatum ·
+**gültig bis** (Vorgabe in Tagen je Organisation) · Einleitungs- und
+Schlusstext aus Textbausteinen, frei überschreibbar · voraussichtliche
+Ausführungsfrist · Zahlungskondition (aus dem Kunden, überschreibbar) ·
+Sachbearbeiter · **interne Notiz, die nie auf dem PDF erscheint**.
 
 ---
 
-## 4. Positionen im Angebot
+## 4. Positionen
 
 ### 4.1 Eigene Tabelle, nicht Zeiteinträge
 
-Rapportpositionen sind Zeiteinträge (0026). Für das Angebot geht das nicht:
-Es ist noch **nichts geleistet**, und ein Zeiteintrag behauptet immer, dass
-jemand gearbeitet hat. Also `angebot_positionen` als eigene Tabelle.
+Rapportpositionen sind Zeiteinträge (0026). Fürs Angebot geht das nicht: Es ist
+noch **nichts geleistet**, und ein Zeiteintrag behauptet immer, dass jemand
+gearbeitet hat. Also `angebot_positionen` als eigene Tabelle.
 
-Damit fällt eine Entscheidung, die 0036 bewusst anders getroffen hat (keine
-Zwischentabelle mit Kopierschritt). Der Unterschied: Dort ging es um
-dieselbe Sache in zwei Zuständen, hier um zwei verschiedene Sachen — Absicht
-gegen Nachweis.
+Damit fällt eine Entscheidung anders aus als in 0036 (dort bewusst *keine*
+Zwischentabelle). Der Unterschied: Dort ging es um dieselbe Sache in zwei
+Zuständen, hier um zwei verschiedene Sachen — **Absicht gegen Nachweis**.
 
-### 4.2 Was eine Position braucht
+### 4.2 Positionsarten — **entschieden, erweitert**
 
-- Verweis auf Leistung/Produkt **plus Schnappschuss** von Bezeichnung,
-  Einheit, Preis, MWST-Satz und Rabatt. Ein Angebot muss in drei Monaten
-  noch zeigen, was zugesagt war — auch wenn die Preisliste sich geändert hat.
-- Menge, Einheit, Einzelpreis, Rabatt, Zeilensumme
-- **Freitextposition** ohne Leistungsbezug (es gibt immer etwas, das in
-  keiner Liste steht)
-- Reihenfolge (Sortierung, verschiebbar)
+| Art | Auf dem PDF | Im Total |
+|---|---|---|
+| `normal` | Menge × Preis, Zeilensumme | **ja** |
+| `optional` | **kursiv**, mit Preis | nein |
+| `per` | „pro m² CHF 28.50", ohne Menge und ohne Zeilensumme | nein |
+| `titel` | Überschrift, fett, mit Zwischensumme | Zwischensumme |
+| `text` | reiner Text ohne Preis | nein |
 
-### 4.3 Titel, Gruppen, Zwischensummen
+`text` ist mein Zusatz: Es gibt in jedem Angebot einen Satz, der zwischen zwei
+Positionen gehört („Untergrund wird vorausgesetzt trocken und tragfähig") und
+der keine Zeile mit Preis sein darf.
 
-Angebote über mehr als eine Seite brauchen Struktur: Titel („1 Elektro", „2
-Sanitär") mit Zwischensumme. Vorschlag: eine Positionsart `titel` in
-derselben Tabelle, statt einer zweiten Tabelle für Gruppen.
+**Fusstexte werden automatisch gesetzt**, wenn eine solche Position vorkommt —
+nicht als Vorgabetext, den jemand vergisst:
 
-### 4.4 Optionale und Eventualpositionen
+- bei optionalen Positionen: „Kursiv gesetzte Positionen sind Optionen und im
+  Total nicht enthalten."
+- bei „per"-Positionen: „Positionen mit Einheitspreis werden nach
+  tatsächlichem Aufwand verrechnet und sind im Total nicht enthalten."
 
-Der wichtigste Baustein für die **Teilübernahme**:
+Der Wortlaut gehört in die Textbausteine, damit ihn der Betrieb anpassen kann.
+**Offene Frage 1.**
 
-- **Normalposition** — Teil des Angebotspreises
-- **Optionale Position** — wird ausgewiesen, aber nicht mitgerechnet
-  („Wartungsvertrag, auf Wunsch")
-- **Alternativposition** — ersetzt eine andere („statt Variante A")
+### 4.3 Was eine Position trägt
 
-Ohne diese Unterscheidung landet später jede Option im Auftrag oder in
-keinem.
+Verweis auf Leistung/Produkt **plus Schnappschuss** von Bezeichnung, Einheit,
+Einzelpreis, MWST-Satz und Rabatt — ein Angebot muss in drei Monaten noch
+zeigen, was zugesagt war, auch wenn die Preisliste sich geändert hat. Dazu
+Menge, Zeilenrabatt, Zeilensumme, Sortierung, Freitext ohne Leistungsbezug.
 
-### 4.5 Pauschale gegen Aufwand
+### 4.4 „per"-Positionen in der Übernahme
 
-Entscheidend und heute nicht abgebildet: Ist das Angebot ein **Pauschalpreis**
-oder eine **Kostenschätzung nach Aufwand**?
-
-- Pauschale: Was der Monteur an Stunden erfasst, ist **intern** — verrechnet
-  wird die Pauschale. Der Rapport darf die Stunden dann nicht in den
-  Comatic-Export schieben.
-- Nach Aufwand: Die erfassten Stunden werden verrechnet, das Angebot war eine
-  Schätzung.
-
-Das ist eine Verrechnungsart am Angebot (und damit am Auftrag), und sie
-verändert das Verhalten des Rapports. **Offene Frage 3.**
-
-### 4.6 Kalkulation und Marge
-
-Wenn Produkte einen Einkaufspreis tragen (siehe 9), lässt sich je Position
-und je Angebot der **Deckungsbeitrag** zeigen — nur intern, nie auf dem PDF.
-Das ist der Punkt, an dem ein Angebotsmodul aufhört, ein Formulargenerator zu
-sein. Kostet wenig, wenn der Einkaufspreis sowieso im Produkt steht.
-
-### 4.7 Rundung, Nachlass, Skonto
-
-Gesamtrabatt in Prozent oder Betrag, Rundung auf 5 Rappen, Skontosatz.
-**Offene Frage 4** — insbesondere, ob der Gesamtrabatt auf die Positionen
-verteilt werden muss (für die Buchhaltung meist ja, als eigene Zeile).
+Der Grund, warum die Art fachlich mehr ist als eine Darstellungsfrage: Bei der
+Übernahme in den Rapport wird aus der „per"-Position eine Position **mit
+offener Menge** — der Maler trägt vor Ort die tatsächlichen Quadratmeter ein,
+der Preis steht aus dem Angebot fest. Das ist die Regie-Arbeit, wie sie im
+Handwerk wirklich abläuft.
 
 ---
 
-## 5. Vom Angebot in den Rapport
+## 5. Die Preisrechnung — **entschieden**
 
-Der Kern der Anfrage des Interessenten — und die Stelle mit den meisten
-offenen Fragen.
+Die Reihenfolge ist der Kern. Beispiel mit den Zahlen aus dem Auftrag:
 
-### 5.1 Ein Angebot, mehrere Rapporte
+```
+Positionen (nur "normal", inkl. Zeilenrabatte)      24'345.60
+Pauschalrabatt (Differenz zum Pauschalpreis)          -345.60
+                                                   ──────────
+Zwischentotal                                       24'000.00
+Kondition Stufe 1  5 %                              -1'200.00
+                                                   ──────────
+                                                    22'800.00
+Kondition Stufe 2  2 % (vom Rest)                     -456.00
+                                                   ──────────
+Nettototal                                          22'344.00
+MWST 8.1 %                                           1'809.86
+                                                   ══════════
+Endtotal                                            24'153.86
+```
 
-Ein angenommenes Angebot ist ein **Auftrag**, und ein Auftrag kann mehrere
-Einsätze bedeuten (drei Tage Montage = drei Rapporte). Die Beziehung ist
-also `1 Angebot : n Rapporte`, nicht 1:1.
+**Der Pauschalpreis ist die Eingabe, der Rabatt das Ergebnis.** Der Anwender
+tippt 24'000.–, das System rechnet die Differenz und stellt sie als Zeile
+nach dem Total dar.
 
-Vorschlag in der bewährten Richtung von 0034: Der Verweis steht beim
-Rapport (`rapporte.angebot_id`), nicht beim Angebot. Eine Quelle der
-Wahrheit, Rückrichtung per Abfrage.
+### 5.1 Konditionen als eigene Tabelle
 
-### 5.2 Was die Übernahme tut
+```
+konditionen (organisation_id, bezeichnung "5 + 2", aktiv)
+  └─ konditionen_stufen (stufe, prozent, bezeichnung, sortierung)
+```
 
-Ausgewählte Positionen werden zu **vorläufigen Positionen** eines neuen oder
-bestehenden Rapports — das ist genau der Zustand, den 0036 geschaffen hat:
-sichtbar, planbar, aber noch nicht verrechenbar. Der Monteur korrigiert vor
-Ort, schliesst ab, und erst dann zählen sie.
+Kaskadierend: Stufe 2 rechnet vom Rest nach Stufe 1, nicht vom Zwischentotal.
+Beliebig viele Stufen, weil „3 + 2 + 2" genauso vorkommt.
 
-Zwei Feinheiten:
+Am Angebot steht der Verweis auf die Kondition **und ein Schnappschuss der
+Stufen mit ihren Beträgen** — aus demselben Grund wie beim Preis: Ändert der
+Betrieb später „5 + 2" auf „4 + 2", darf ein versendetes Angebot nicht
+rückwirkend andere Zahlen zeigen.
 
-- **Produktpositionen** sind keine Arbeitszeit
-  (`zaehlt_als_arbeitszeit = false`) und dürfen die Tagesarbeitszeit-Prüfung
-  nicht auslösen. Das funktioniert heute schon so.
-- Eine Position, die im Angebot **optional** war und nicht bestellt wurde,
-  darf nicht mitkommen.
+### 5.2 Ein MWST-Satz je Angebot — geprüft, nicht angenommen
 
-### 5.3 Teilübernahme und was mit dem Rest passiert
+Die Kaskade funktioniert nur mit **einem** Satz für das ganze Angebot; sonst
+müssten Pauschalrabatt und Konditionen anteilig auf mehrere Steuerbemessungs-
+grundlagen verteilt werden.
 
-Wenn nur ein Teil bestellt wird:
+Vorschlag: **beim Versand prüfen und mit Nennung der abweichenden Positionen
+abbrechen** — nicht stillschweigend den Satz der ersten Position nehmen. Für
+ein Malergeschäft ist ein Satz der Normalfall (8.1 % auf praktisch alles), und
+die Prüfung kostet nichts.
 
-- Status **teilweise angenommen**
-- die nicht bestellten Positionen bleiben am Angebot als *nicht bestellt*
-  vermerkt (nicht gelöscht — sonst ist die Nachverfolgung weg)
-- was übernommen wurde, muss am Angebot **sichtbar** sein, damit dieselbe
-  Position nicht zweimal in zwei Rapporte wandert
+Damit die Tür für später offen bleibt: Die Beträge der Rabattstufen werden am
+Angebot **als Betrag** gespeichert, nicht nur als Prozentsatz. Eine anteilige
+Verteilung auf zwei Sätze liesse sich dann ergänzen, ohne die
+Dokumentbedeutung zu ändern.
 
-Vorschlag: `angebot_positionen.bestellt boolean` plus eine Spur, in welchen
-Rapport eine Position gewandert ist.
+### 5.3 Rundung
 
-### 5.4 Soll gegen Ist — der eigentliche Mehrwert
+Vorschlag: intern auf Rappen genau rechnen, **nur den MWST-Betrag und das
+Endtotal auf 5 Rappen runden**. Zwischenrundungen erzeugen sonst Differenzen,
+die niemand nachrechnen kann. Wie Comatic das macht, sehen wir in der Demo-DB
+(siehe 12) — dort sollte es sich anlehnen, weil die Rechnung später dort
+entsteht. **Offene Frage 2.**
 
-Sobald Angebot und Rapporte verknüpft sind, lässt sich zeigen: **kalkuliert
-gegen geleistet**, je Auftrag, in Stunden und in Franken. Das ist die Zahl,
-für die ein Handwerksbetrieb ein Modul kauft — sie sagt ihm, ob er richtig
-kalkuliert. Sie kostet fast nichts, weil beide Seiten schon in der Datenbank
-stehen.
+### 5.4 Skonto oder Rabatt? — eine fachliche Rückfrage
 
-Damit verbunden: eine Warnung, wenn die geleisteten Stunden die kalkulierten
-überschreiten (bei Pauschalaufträgen der Punkt, an dem Geld verloren geht).
+„5 + 2" heisst im Handwerk manchmal *5 % Rabatt und 2 % Skonto bei Zahlung
+innert 10 Tagen*. Das ist etwas anderes als ein zweistufiger Rabatt:
+
+- Ein **Rabatt** mindert den Preis sofort und damit die MWST-Bemessung.
+- Ein **Skonto** ist an die Zahlung gebunden. Er wird auf dem Beleg
+  ausgewiesen, aber nicht abgezogen; erst bei Inanspruchnahme mindert er
+  Entgelt und MWST.
+
+Umgesetzt wird, was oben steht (beide Stufen als Rabatt, vor der MWST) — so
+war die Vorgabe. Aber wenn der Maler mit „2" den Skonto meint, wäre der
+Angebotsbetrag zu tief und die MWST falsch ausgewiesen. **Offene Frage 3** —
+eine Frage an ihn, nicht an uns.
+
+Beides zugleich ist möglich: Stufen mit `art` (`rabatt` | `skonto`), wobei
+Skonto-Stufen nur im Text erscheinen. Das kostet in der Tabelle eine Spalte.
 
 ---
 
-## 6. Der Weg von der Anfrage
+## 6. Vom Angebot in den Rapport
 
-Heute bietet die Anfrage drei Wege an: *Erledigen mit Zeiteintrag*,
-*Erledigen mit Rapport*, *Nur als erledigt markieren*. Neu dazu:
-**Angebot erstellen**.
+### 6.1 Jeder Rapport nennt sein Angebot — **entschieden**
 
-Wichtig — und ein Unterschied zu den bestehenden Wegen: Eine Anfrage, aus
-der ein Angebot wird, ist **nicht erledigt**. Sie wartet. Vorschlag:
+`rapporte.angebot_id`, und auf dem Rapport steht „Bezug: Angebot
+2026-00001-01".
 
-- `anfragen.angebot_id` (wie `rapport_id` in 0034, `on delete set null`)
-- Status bleibt `in_bearbeitung` oder wird `wiedervorlage` mit dem Datum der
-  Angebots-Wiedervorlage
-- erledigt wird die Anfrage, wenn das Angebot abgelehnt/verfallen ist oder
-  der daraus entstandene Rapport abgeschlossen ist
+Dazu ein Vorschlag aus der Erfahrung dieses Projekts: Die Nummer wird beim
+Anlegen **als Text am Rapport mitgespeichert**. Ein signierter Rapport ist
+unveränderlich — würde das Angebot später gelöscht, verschwände sonst die
+Bezugsnummer aus einem unterschriebenen Dokument. Dieselbe Überlegung wie beim
+Preis-Schnappschuss (0003) und beim MWST-Schnappschuss (0021).
 
-Die Dokumentübernahme (Pläne, Fotos aus der Anfrage) funktioniert wie bei
-0034 — das Angebot braucht dafür nur den neuen Dokumentbereich `angebot`.
+Ein Angebot kann **mehrere Rapporte** nach sich ziehen (drei Tage Malerarbeit
+= drei Einsätze). Der Verweis steht deshalb beim Rapport, nicht am Angebot —
+eine Quelle der Wahrheit, Rückrichtung per Abfrage, wie in 0034 entschieden.
 
-*Wenn kein Angebotsmodul gebucht ist, erscheint der vierte Knopf nicht* —
-wie die Disposition heute in `rapporte/neu`.
+### 6.2 Was die Übernahme tut
+
+Ausgewählte Positionen werden **vorläufige Positionen** eines Rapports (0036):
+sichtbar und planbar, aber noch nicht verrechenbar. Der Maler korrigiert vor
+Ort, schliesst ab, erst dann zählen sie.
+
+- **Optionale Positionen** kommen nur mit, wenn sie bestellt wurden.
+- **„per"-Positionen** kommen mit offener Menge mit (siehe 4.4).
+- **Produktpositionen** sind keine Arbeitszeit und lösen die
+  Tagesarbeitszeit-Prüfung nicht aus — funktioniert heute schon so.
+- **Der Pauschalrabatt und die Konditionen wandern nicht mit.** Sie gehören
+  zum Angebot als Ganzem, nicht zu einer Position. Was das für den
+  Comatic-Export bedeutet, ist **offene Frage 4** — bei einem Pauschalauftrag
+  darf die Summe der Rapportpositionen nicht ungekürzt in die Rechnung.
+
+### 6.3 Teilübernahme
+
+`angebot_positionen.bestellt boolean` plus eine Spur, in welchen Rapport eine
+Position gewandert ist — damit dieselbe Position nicht zweimal übernommen
+wird. Nicht bestellte Positionen bleiben am Angebot als *nicht bestellt*
+vermerkt; gelöscht wird nichts, sonst ist die Nachverfolgung weg.
+
+### 6.4 Soll gegen Ist
+
+Sobald Angebot und Rapporte verknüpft sind: **kalkuliert gegen geleistet**, je
+Auftrag, in Stunden und in Franken, mit Warnung bei Überschreitung. Bei einem
+Pauschalauftrag ist das die Zahl, an der man sieht, ob Geld verloren geht —
+und der Grund, warum ein Handwerksbetrieb ein solches Modul kauft. Sie kostet
+fast nichts, weil beide Seiten schon in der Datenbank stehen.
 
 ---
 
-## 7. Wiedervorlagen und Nachverfolgung
+## 7. Die Belegkette — **entschieden**
 
-- `wiedervorlage_am` am Angebot, genau wie bei der Anfrage
-- der bestehende tägliche Auftrag `/api/cron/wiedervorlagen` bekommt die
-  Angebote dazu: „Angebot 2026-0042 an Muster AG, versendet vor 10 Tagen,
+```
+Anfrage ──► Angebot ──► Auftragsbestätigung ──► Rapport(e) ──► Comatic
+```
+
+### 7.1 Anfrage wird mit dem Angebot erledigt
+
+`anfragen.angebot_id` (wie `rapport_id` in 0034, `on delete set null`), Status
+`erledigt`, Nachweis ist das Angebot — die dritte Art neben Zeiteintrag und
+Rapport.
+
+Eine Folge, die dazugehört: Wird das Angebot **abgelehnt oder verfällt es**,
+bleibt die Anfrage erledigt. Die Nachverfolgung passiert dann in der
+Angebotsliste, nicht in der Anfragenliste. Das ist bewusst so entschieden;
+wer den Weg zurück braucht, hat „Anfrage wieder öffnen" (0035).
+
+Die Dokumentübernahme aus der Anfrage (Fotos vom Objekt, Pläne) funktioniert
+wie bei 0034 — das Angebot braucht dafür nur den neuen Dokumentbereich
+`angebot`.
+
+### 7.2 Auftragsbestätigung — **entschieden: eigenes Dokument**
+
+Sie enthält, was bestellt wurde: die bestellten Positionen mitsamt der
+gewählten Optionen, Ausführungstermin, Ansprechperson, dieselbe Preisrechnung.
+Auch sie wird beim Versand als PDF eingefroren.
+
+**Vorschlag: kein eigener Nummernkreis.** „Auftragsbestätigung zu Angebot
+2026-00001-01" — weil die Rapporte ohnehin die Angebotsnummer nennen und eine
+zweite Nummer damit konkurrieren würde. Ob der Maler eine eigene
+Auftragsnummer erwartet, ist **offene Frage 5**.
+
+---
+
+## 8. Wiedervorlagen und Nachverfolgung
+
+- `wiedervorlage_am` am Angebot, wie bei der Anfrage
+- der bestehende tägliche Auftrag `/api/cron/wiedervorlagen` nimmt die
+  Angebote dazu: „Angebot 2026-00001 an Muster AG, versendet vor 10 Tagen,
   gültig bis 15.09."
-- eine **Erinnerung an den Kunden** wäre der nächste Schritt (Textbaustein
-  „dürfen wir nachfragen") — bewusst nur auf Knopfdruck, nie automatisch
-- Übersichtsliste mit Filter nach Status, Fälligkeit, Sachbearbeiter
-- **Trefferquote**: angebotenes Volumen, angenommenes Volumen, Quote je
-  Monat und je Sachbearbeiter. Fällt fast von selbst an, sobald die Status
-  gepflegt sind.
+- Nachfrage an den Kunden per Textbaustein — **nur auf Knopfdruck**, nie
+  automatisch
+- Liste mit Filter nach Status, Fälligkeit, Sachbearbeiter
+- **Trefferquote**: angebotenes und angenommenes Volumen je Monat und
+  Sachbearbeiter. Fällt an, sobald die Status gepflegt sind.
 
 ---
 
-## 8. Ansprechpersonen beim Kunden
-
-Klein, unabhängig nützlich und Voraussetzung für ein sauberes Angebot.
+## 9. Ansprechpersonen beim Kunden
 
 ```
 kunden 1 ─── n kunden_ansprechpersonen
@@ -316,267 +393,271 @@ kunden 1 ─── n kunden_ansprechpersonen
     notiz, ist_standard, aktiv)
 ```
 
-Wirkt an mehr Stellen als es zunächst scheint:
+Wirkt an mehr Stellen als es scheint: Anschrift und Mailempfänger des
+Angebots · „von wem kam die Anfrage" · wer den Rapport unterschreibt
+(`rapporte.unterzeichner_name` ist heute Freitext — künftig wählbar, weiterhin
+überschreibbar, weil vor Ort auch jemand anderes unterschreibt).
 
-- **Angebot**: Anschrift und Mailempfänger
-- **Anfrage**: „von wem kam die Anfrage" — heute steht das im Text
-- **Rapport**: wer unterschreibt (`rapporte.unterzeichner_name` ist heute
-  ein Freitext — künftig wählbar, weiterhin frei überschreibbar, weil vor
-  Ort auch jemand anderes unterschreibt)
-- **Kontaktdaten** in Listen und auf PDF
+**Vorschlag: ins Basispaket, nicht ins Modul.** Ansprechpersonen sind nützlich,
+auch wenn nie ein Angebot geschrieben wird, und ein Kundenstamm, der je nach
+Lizenz anders aussieht, ist schwer zu erklären.
 
-Vorschlag zur Abgrenzung: **ins Basispaket**, nicht ins Modul. Ansprech-
-personen sind nützlich, auch wenn nie ein Angebot geschrieben wird, und ein
-Kundenstamm, der je nach Lizenz anders aussieht, ist schwer zu erklären.
-
-Migration bestehender Daten: `kunden.email`/`telefon` bleiben als Firmen-
-adresse bestehen; keine automatische Umwandlung in eine Ansprechperson —
-raten wäre hier falsch (**offene Frage 8**).
+Migration: `kunden.email`/`telefon` bleiben die Firmenadresse; keine
+automatische Umwandlung in eine Ansprechperson — **offene Frage 6**.
 
 ---
 
-## 9. Dienstleistungen und Produkte
+## 10. Dienstleistungen und Produkte
 
-### 9.1 Der Ausgangspunkt ist besser als gedacht
+### 10.1 Der Ausgangspunkt ist besser als gedacht
 
 Ein „Produkt" gibt es faktisch schon: eine Leistung mit
-`zaehlt_als_arbeitszeit = false` und freier Einheit (Stück, kg, km). Sie
-wird verrechnet, zählt nicht als Arbeitszeit, kennt MWST-Code, Konto,
-Kundenpreise und Rabattsperre.
-
-Was fehlt, sind **Felder** und eine **getrennte Maske** — nicht ein zweites
+`zaehlt_als_arbeitszeit = false` und freier Einheit. Sie wird verrechnet,
+zählt nicht als Arbeitszeit, kennt MWST-Code, Konto, Kundenpreise und
+Rabattsperre. Es fehlen **Felder** und eine **getrennte Maske** — kein zweites
 Datenmodell.
 
-### 9.2 Was ein Produkt zusätzlich braucht
+### 10.2 Eine Tabelle, zwei Masken
 
-- Artikelnummer (intern), Lieferanten-Artikelnummer, EAN
-- Lieferant, Einkaufspreis, Beschaffungszeit in Tagen
-- Beschreibung für das Angebot (länger als eine Bezeichnung), Bild
-- Verpackungseinheit / Mindestbestellmenge
-- Gewicht, Abmessungen (für Versand — nur wenn es Lieferscheine gibt)
-- Nachfolgeartikel / Ersatzartikel
-- Lagerort, Mindestbestand *(nur mit Lager, siehe 10)*
-
-### 9.3 Eine Tabelle oder zwei?
-
-**Vorschlag: eine Tabelle, zwei Masken.** `dienstleistungen` bekommt eine
-`art` (`leistung` | `produkt`) und die Produktfelder; die Oberfläche zeigt
-je Art nur, was passt.
+`dienstleistungen` bekommt `art` (`leistung` | `produkt`) und die
+Produktfelder; die Oberfläche zeigt je Art nur, was passt.
 
 Begründung: Zeiteinträge, Rapportpositionen, Kundenpreise, Kundenrabatte,
-Standardpositionen, der Comatic-Export und die Auswertungen verweisen alle
-auf `dienstleistungen`. Eine zweite Tabelle bedeutet, dass **jede** dieser
-Stellen künftig zwei Fremdschlüssel führen muss („entweder Leistung oder
-Produkt") — das ist die Sorte Änderung, die man an einer Stelle vergisst.
+Standardpositionen, der Comatic-Export und alle Auswertungen verweisen auf
+`dienstleistungen`. Eine zweite Tabelle heisst, dass **jede** dieser Stellen
+künftig zwei Fremdschlüssel führt („entweder Leistung oder Produkt") — das ist
+die Sorte Änderung, die man an einer Stelle vergisst. Der Preis dafür sind
+Spalten, die bei Leistungen leer bleiben; das ist die billigere Unschönheit.
 
-Der Preis dafür sind Spalten, die bei Leistungen leer bleiben. Das ist die
-billigere Unschönheit.
+Der Tabellenname bleibt; in der Oberfläche heisst der Bereich künftig
+**„Leistungen und Produkte"**.
 
-*Der Name der Tabelle bleibt `dienstleistungen`; ein Umbenennen wäre eine
-Migration quer durch die Anwendung ohne fachlichen Gewinn. In der Oberfläche
-heisst der Bereich künftig „Leistungen und Produkte".*
+### 10.3 Produktfelder
 
----
+Fürs Angebot nötig: Artikelnummer, Beschreibung (länger als die Bezeichnung),
+Einkaufspreis, Lieferant, **Beschaffungszeit in Tagen**, Vermerk „ab Lager /
+auf Bestellung", Verpackungseinheit, EAN, Bild.
 
-## 10. Lagerführung — bewusst ein eigenes Vorhaben
-
-Der Interessent hat es selbst als „eventuell" formuliert, und dabei sollte
-es für Phase 13 bleiben. Was er aufgezählt hat, ist der Umfang eines
-eigenen Produkts:
-
-| Baustein | Was daran hängt |
-|---|---|
-| Bestand je Artikel | Lagerorte, Zu- und Abgänge, Buchungsjournal |
-| Verfügbarkeit im Angebot | reservierte Menge, freie Menge, Zulauf |
-| Rückstandsmanagement | offene Bestellungen beim Lieferanten, Termine |
-| Lieferscheine, Teillieferungen | eigenes Dokument mit Nummernkreis |
-| Inventur | Zähllisten, Differenzen, **Bewertung** (Art. 960 OR) |
-| Bewertung | Durchschnitts- oder FIFO-Methode, Abschluss, Treuhänder |
-
-Die letzten beiden Zeilen sind der Grund für die Abgrenzung: Sobald ein
-Lagerwert in eine Bilanz einfliesst, sind es Buchhaltungsregeln, und die
-werden hier nicht geraten (**offene Fragen 10–12**).
-
-### Der pragmatische Zwischenschritt
-
-Für das Angebot braucht es meist keinen Bestand, sondern eine **Aussage zur
-Lieferbarkeit**. Mit zwei Feldern am Produkt — `beschaffungszeit_tage` und
-einem Vermerk „ab Lager / auf Bestellung" — steht auf dem Angebot „Lieferzeit
-ca. 5 Arbeitstage", und das deckt einen grossen Teil des Bedarfs, ohne eine
-Lagerbuchhaltung zu eröffnen.
-
-**Empfehlung: Angebote ohne Lager ausliefern.** Erst wenn zahlende Kunden
-das Modul nutzen, entscheidet sich, ob das Lager Phase 14 wird — und dann
-mit einem eigenen Plan und einer Frage an den Treuhänder.
+Mit Einkaufspreis lässt sich je Position und je Angebot der
+**Deckungsbeitrag** zeigen — nur intern, nie auf dem PDF. Das ist der Punkt,
+an dem ein Angebotsmodul aufhört, ein Formulargenerator zu sein.
 
 ---
 
-## 11. Lizenzierung und Abrechnung
+## 11. Lager — Datenmodell jetzt, Umsetzung später — **entschieden**
 
-### 11.1 Bezugsgrösse
+Umgesetzt wird es als eigenes kostenpflichtiges Modul (Phase 14). Mitgedacht
+wird es jetzt, damit die Produktfelder und die Belegkette dann passen. Vier
+Festlegungen, die den späteren Umbau ersparen:
 
-Die beiden bestehenden Module folgen einer Logik (`src/lib/lizenzpreise.ts`):
-Nutzen fürs Büro → **Pauschale** (Disposition, CHF 49/490); Nutzen je Person
-→ **je Lizenz** (Zeitkonto, CHF 4/40).
+1. **Kein `bestand`-Feld am Produkt.** Der Bestand ist die Summe eines
+   **Bewegungsjournals** (`lager_bewegungen`), der aktuelle Stand eine
+   Ansicht darüber. Ein Zählerfeld läuft auseinander, sobald zwei Vorgänge
+   gleichzeitig buchen, und lässt sich nicht nachrechnen — ein Journal kann
+   man rekonstruieren, und Inventur und Bewertung brauchen es ohnehin.
+2. **Bewegungen zeigen polymorph auf ihren Beleg** (`beleg_art`, `beleg_id`),
+   wie die Dokumentenablage. Dann tragen Lieferschein, Rapport, Inventur und
+   Korrektur dieselbe Struktur.
+3. **Ein Angebot reserviert nichts.** Reserviert wird erst mit der
+   Auftragsbestätigung — sonst blockiert ein Angebot, das nie angenommen
+   wird, das Lager.
+4. **Verfügbarkeit im Angebot ist vorerst eine Aussage, keine Zahl:**
+   „Lieferzeit ca. 5 Arbeitstage" aus Beschaffungszeit und Lagervermerk. Das
+   deckt den grössten Teil des Bedarfs, ohne eine Lagerbuchhaltung zu
+   eröffnen.
 
-Angebote schreibt das Büro, nicht der Monteur. Nach dieser Logik also eine
-**Pauschale**. Vorschlag zur Diskussion: **CHF 39/390 pro Monat/Jahr**, etwas
-unter der Disposition, weil das Angebotsmodul in Etappe A weniger bewegliche
-Teile hat.
+Was zu Phase 14 gehört und **fachliche Fragen** aufwirft, die nicht geraten
+werden: Inventur mit Zähllisten und Differenzen, **Bewertung** (Durchschnitt
+oder FIFO, Art. 960 OR), Rückstandsmanagement mit Lieferantenbestellungen,
+Lieferscheine mit Teillieferungen und eigenem Nummernkreis. **Offene Fragen
+9–11.**
 
-Gegenargument, das zu prüfen ist: In einem 20-Mann-Betrieb schreiben
-mehrere Personen Angebote, und der Nutzen wächst mit dem Volumen, nicht mit
-der Kopfzahl — was wieder für die Pauschale spricht. **Offene Frage 13** ist
-also nur die Höhe, nicht die Art.
+---
 
-### 11.2 Was am Lizenzweg nachzuziehen ist
+## 12. Comatic als Vorbild — was ich mit der Demo-DB tun kann
 
-Zwei Dinge, die heute schon Baustellen sind und mit dem dritten Modul
-drängender werden:
+Das Angebot ist angenommen: Eine **Access-Demo-DB von Comatic** ist die
+sinnvollste Grundlage, die wir haben können — der Nutzer kennt dort praktisch
+jede Tabelle, und ArcoTime exportiert ohnehin nach Comatic.
+
+**Technisch geprüft, nicht angenommen:** `access-parser` (Python, nur lesend)
+ist installiert und lädt. Damit lassen sich Tabellen, Spalten und Inhalte
+lesen — ohne Access, ohne Treiber, ohne Schreibzugriff.
+
+Wo die Datei liegen soll: OneDrive unter `ArcoSoftware/` (`.mdb` oder
+`.accdb`). Bitte eine **Demo-DB ohne echte Personendaten**.
+
+Was ich daraus beantworten will:
+
+1. Wie modelliert Comatic **Positionsarten** — Titel, Optionen,
+   Einheitspreis-Positionen, Textzeilen?
+2. Wie **Rabattstufen und Konditionen**, und in welcher Reihenfolge gegen die
+   MWST?
+3. Wie die **Rundung** (das entscheidet 5.3, weil die Rechnung später dort
+   entsteht)?
+4. Wie die **Belegkette** Angebot → Auftrag → Lieferschein → Rechnung, und
+   welche Felder die Belege verbinden?
+5. Wie **Artikel und Lager** (Bewegungen, Bewertung, Reservierung)?
+6. Welche Felder am **Artikel** wirklich gepflegt werden — im Zweifel ist die
+   gelebte Praxis besser als jede Feldliste.
+
+Die Grundregel dabei: Wir übernehmen **Begriffe und Abläufe, nicht
+Tabellenlayouts**. ArcoTime ist mandantenfähig mit RLS, deutsch benannt, mit
+Schnappschüssen statt Verweisen auf veränderliche Stammdaten — und das bleibt
+so. Wo Comatic es einfacher löst, übernehmen wir die Idee; wo es aus einer
+Access-Vergangenheit stammt, lassen wir sie dort.
+
+Grenzen, die ich vorher nenne: `access-parser` liest Daten und Spalten
+zuverlässig, aber Beziehungen und Indizes gibt Access nur teilweise her, und
+verschlüsselte `.accdb` kann es nicht öffnen. Falls es klemmt, ist der
+Ausweg ein Schema- oder CSV-Export aus dem SQL Server.
+
+---
+
+## 13. Lizenzierung und Abrechnung
+
+### 13.1 Bezugsgrösse
+
+Die bestehenden Module folgen einer Logik (`src/lib/lizenzpreise.ts`): Nutzen
+fürs Büro → **Pauschale** (Disposition, CHF 49/490); Nutzen je Person → **je
+Lizenz** (Zeitkonto, CHF 4/40). Angebote schreibt das Büro. Also eine
+Pauschale; Vorschlag **CHF 39/390**. **Offene Frage 12** ist die Höhe, nicht
+die Art.
+
+### 13.2 Zwei Baustellen, die vor dem dritten Modul drängen
 
 1. **Module werden nicht über Stripe abgerechnet.** `MODULPREISE` dient der
    Anzeige, die Freischaltung macht Arcos von Hand unter `/plattform`
-   (`plattform.ts`: „die Selbstbuchung über Stripe folgt als eigenes
-   Paket"). Bei drei Modulen ist das kein Provisorium mehr, sondern eine
-   Rechnung, die jemand von Hand stellt. Das gehört gelöst, bevor das dritte
-   Modul dazukommt — einmal für alle.
+   („die Selbstbuchung über Stripe folgt als eigenes Paket"). Bei drei Modulen
+   ist das kein Provisorium mehr, sondern eine Rechnung, die jemand von Hand
+   stellt.
 2. **`gesamtpreisMitModulen()` zählt die Module namentlich auf**
-   (`{ disposition?, zeitkonto? }`). Ein drittes Modul bedeutet, diese
-   Signatur an jeder Aufrufstelle nachzuziehen — dieselbe Handliste, die
-   0063/0064 aus guten Gründen abgeschafft haben. Vorschlag: über die
-   Schlüssel von `MODULPREISE` iterieren, dann trägt sich ein neues Modul
-   selbst ein.
+   (`{ disposition?, zeitkonto? }`). Ein drittes bedeutet, diese Signatur an
+   jeder Aufrufstelle nachzuziehen — dieselbe Handliste, die 0063/0064 aus
+   guten Gründen abgeschafft haben. Vorschlag: über die Schlüssel von
+   `MODULPREISE` iterieren.
 
-### 11.3 Testphase fürs Modul
+### 13.3 Testphase fürs Modul
 
 Ein Modul, das man 30 Tage ausprobieren kann, verkauft sich anders als eines,
 das man buchen muss. Heute gibt es nur die Testphase der ganzen Anwendung.
-**Offene Frage 14.**
+**Offene Frage 13.**
 
 ---
 
-## 12. Was gratis mitkommt — und was nachzuziehen ist
+## 14. Was gratis mitkommt — und was nachzuziehen ist
 
 **Kommt von selbst**, weil aus dem Postgres-Katalog gelesen wird: Vollexport
 (0067), Umfangszählung (0064) und Löschung (0063) erfassen jede neue Tabelle,
-sobald sie einen Fremdschlüssel auf `organisationen` trägt. Die Arbeit vom
-18.08. macht sich hier bezahlt.
+sobald sie einen Fremdschlüssel auf `organisationen` trägt.
 
-**Muss von Hand nachgezogen werden** — das sind die Handlisten im Code:
+**Muss von Hand nachgezogen werden** — die Handlisten im Code:
 
-- `0053`: die Tabellenliste für das Änderungsprotokoll
-  (`angebote`, `angebot_positionen`, `kunden_ansprechpersonen`)
+- `0053`: Tabellenliste des Änderungsprotokolls (`angebote`,
+  `angebot_positionen`, `konditionen`, `konditionen_stufen`,
+  `kunden_ansprechpersonen`) — bei änderbaren versendeten Angeboten
+  **zwingend**, siehe 3.3
 - `dokumente_bereich_check`: neuer Bereich `angebot`
-- `BEREICH_ORDNER` in `src/lib/dokumente-archiv.ts` (Ordner „Angebote" im
-  Export-ZIP)
+- `BEREICH_ORDNER` in `src/lib/dokumente-archiv.ts` (Ordner „Angebote" im ZIP)
 - `TABELLE_ZU_BEREICH` in `scripts/dokumente-pruefen.mjs` (bricht sonst
-  bewusst ab — genau wie vorgesehen)
-- `gesamtpreisMitModulen()` und die Modul-Schalter unter `/plattform`
-- Berechtigungen in `src/lib/berechtigungen.ts` und `docs/berechtigungen.md`
-- Navigation und Startseite (`layout.tsx`, `page.tsx`) hinter dem Modulschalter
+  bewusst ab)
+- `gesamtpreisMitModulen()` und die Modulschalter unter `/plattform`
+- `src/lib/berechtigungen.ts` und `docs/berechtigungen.md`
+- Navigation und Startseite hinter dem Modulschalter
 - Hilfeartikel, Release-Einträge, Word-Dokumentation
 
 ---
 
-## 13. Vorschlag für die Etappen (Grundlage für Phase 2)
+## 15. Vorschlag für die Etappen (Grundlage für Phase 2)
 
-Die Reihenfolge folgt einer Regel: Jede Etappe muss für sich einen Nutzen
-haben, den man einem Kunden zeigen kann.
+Jede Etappe muss für sich einen Nutzen haben, den man einem Kunden zeigen kann.
 
-**Etappe 0 — Ansprechpersonen** *(Basispaket, kein Modul)*
-Tabelle, Maske am Kunden, Auswahl in Anfrage und Rapport. Unabhängig
-nützlich, kleines Risiko, ebnet den Weg.
+**Etappe 0 — Ansprechpersonen** *(Basispaket)*
+Tabelle, Maske am Kunden, Auswahl in Anfrage und Rapport.
 
 **Etappe A — Angebot schreiben und versenden**
-Angebot mit Positionen, Titeln, optionalen Positionen, Preis-Schnappschuss,
-Lebenszyklus, Nummernkreis, PDF, Mailversand, Dokumente, Wiedervorlage,
-Modulschalter. Hier ist das Modul verkaufbar.
+Angebot mit Positionen aller fünf Arten, Preisrechnung mit Pauschalrabatt und
+Konditionen, ein MWST-Satz mit Prüfung, Nummernkreis mit Fassungen, PDF
+einfrieren, Mailversand, Dokumente, Wiedervorlage, Modulschalter. **Hier ist
+das Modul verkaufbar.**
 
 **Etappe B — Vom Angebot zum Auftrag**
-Teilübernahme in einen oder mehrere Rapporte, dritte Option an der Anfrage,
-Nachverfolgung, Trefferquote, Soll-gegen-Ist.
+Auftragsbestätigung, dritte Option an der Anfrage, Teilübernahme in einen oder
+mehrere Rapporte, Bezugsnummer am Rapport, Nachverfolgung, Trefferquote,
+Soll gegen Ist.
 
 **Etappe C — Produkte**
-`art` an den Leistungen, getrennte Maske, Produktfelder, Beschaffungszeit
-und Lieferbarkeitsvermerk, Einkaufspreis und Marge im Angebot.
+`art` an den Leistungen, getrennte Maske, Produktfelder, Beschaffungszeit und
+Lieferbarkeitsvermerk, Einkaufspreis und Marge im Angebot.
 
 **Etappe D — Feinschliff**
-Textbausteine, Angebotsvorlagen, Gesamtrabatt und Rundung, Erinnerung an
-den Kunden, Auswertungen.
+Textbausteine und Angebotsvorlagen, Erinnerung an den Kunden, Auswertungen.
 
-**Später, eigener Plan:** Lager (Phase 14), Auftragsbestätigung und
-Lieferscheine, Annahme durch den Kunden über einen Link.
+**Phase 14, eigener Plan:** Lager. **Später:** Annahme durch den Kunden über
+einen signierten Link (erster Baustein eines Kundenportals, eigene
+Sicherheitsbetrachtung).
 
 ---
 
-## 14. Offene Fragen
+## 16. Offene Fragen
 
-Fachliche Fragen, die nicht geraten werden. Nummeriert, damit wir sie in
-Phase 2 abhaken können.
+Neu nummeriert; die beantworteten sind eingearbeitet.
 
-**Angebot**
+**Angebot und Preisrechnung**
 
-1. Eigener Nummernkreis für Angebote, getrennt vom Rapport?
-2. Standard-Gültigkeitsdauer (30 Tage?), und soll ein abgelaufenes Angebot
-   automatisch auf „verfallen" gehen oder nur gemeldet werden?
-3. **Pauschale gegen Aufwand:** Braucht der Interessent Pauschalangebote? Und
-   wenn ja — was passiert mit den erfassten Stunden im Comatic-Export, wenn
-   pauschal verrechnet wird?
-4. Gesamtrabatt: als eigene Position auf dem Angebot ausweisen oder auf die
-   Positionen verteilen? Rundung auf 5 Rappen? Skonto?
-5. MWST im Angebot: Preise exklusive mit Ausweis der MWST, oder wahlweise
-   inklusive (B2C)? Was gilt bei Kunden im Ausland (Reverse Charge, wie in
-   der Arcos-Rechnung)?
-6. Muss ein Angebot **Vorauszahlung oder Teilzahlungen** vorsehen
-   (Anzahlung bei Auftragserteilung)?
-7. Braucht es zwischen Angebot und Rapport eine **Auftragsbestätigung** als
-   eigenes Dokument, oder genügt der Status „angenommen"?
+1. Wortlaut der automatischen Fusstexte für optionale und „per"-Positionen —
+   und dürfen sie überschrieben werden?
+2. Rundung: nur MWST-Betrag und Endtotal auf 5 Rappen, oder jede Stufe? (Ein
+   Blick in Comatic sollte das entscheiden.)
+3. **Ist die zweite Stufe von „5 + 2" ein Rabatt oder ein Skonto?** Siehe 5.4
+   — bei Skonto wäre die ausgewiesene MWST sonst falsch.
+4. Pauschalauftrag und Comatic-Export: Was passiert mit der Summe der
+   Rapportpositionen, wenn pauschal verrechnet wird?
+5. Erwartet der Maler eine eigene **Auftragsnummer**, oder genügt
+   „Auftragsbestätigung zu Angebot 2026-00001-01"?
+6. Darf ein Pauschalpreis **über** dem Positionstotal liegen (Zuschlag statt
+   Rabatt)?
+7. Gültigkeitsdauer als Vorgabe — 30 Tage?
+8. Soll der Kunde im Angebot Optionen **auswählen** können (Rückmeldung per
+   Mail genügt), oder reicht der interne Vermerk „bestellt"?
 
 **Ansprechpersonen**
 
-8. Sollen bestehende `kunden.email`/`telefon` bei der Einführung zu einer
-   ersten Ansprechperson werden, oder bleiben sie strikt die Firmenadresse?
-9. Darf eine Ansprechperson Pflicht sein, wenn ein Angebot versendet wird?
+9. Sollen bestehende `kunden.email`/`telefon` zu einer ersten Ansprechperson
+   werden, oder bleiben sie strikt Firmenadresse?
 
-**Produkte und Lager**
+**Lager (Phase 14)**
 
-10. Braucht der Interessent das Lager **jetzt** oder ist die Aussage zur
-    Lieferzeit vorerst genug? (Antwort entscheidet über Phase 14.)
-11. Falls Lager: Bewertungsmethode (Durchschnitt, FIFO) — und wer sagt uns,
-    was der Treuhänder erwartet?
-12. Falls Lieferscheine: eigener Nummernkreis, und wie verhält sich ein
+10. Bewertungsmethode (Durchschnitt, FIFO) — und was erwartet der Treuhänder?
+11. Lieferscheine: eigener Nummernkreis, und wie verhält sich ein
     Lieferschein zum Rapport (beides Nachweise über dieselbe Lieferung)?
 
 **Lizenz**
 
-13. Höhe der Modulpauschale (Vorschlag CHF 39/390)?
-14. Eigene Testphase je Modul — und wenn ja, wie lange?
-15. Soll das Modul in der Preistabelle auf arcocloud.ch erscheinen, bevor es
-    fertig ist („in Vorbereitung")? Das entscheidet, ob der Interessent
-    darauf warten kann.
+12. Höhe der Modulpauschale (Vorschlag CHF 39/390)?
+13. Eigene Testphase je Modul — wenn ja, wie lange?
+14. Soll das Modul auf arcocloud.ch als „in Vorbereitung" erscheinen, damit
+    der Interessent darauf warten kann?
 
-**Zum Interessenten selbst**
+**Zum Interessenten**
 
-16. Welche Branche, wie viele Personen, wie viele Angebote im Monat? Das
-    ändert die Gewichtung — ein Elektriker mit fünf Angeboten im Monat
-    braucht etwas anderes als ein Handel mit fünfzig.
-17. Was schreibt er heute? (Word, Bexio, Excel) Wenn ein Vorgängersystem
-    existiert, gehört ein Blick auf ein echtes Angebot dazu, bevor wir das
-    Datenmodell festlegen — ein reales Muster ist mehr wert als jede
-    Aufzählung hier.
+15. Wie viele Personen, wie viele Angebote im Monat? Ein Maler mit fünf
+    Angeboten braucht anderes als einer mit fünfzig.
+16. **Ein echtes Angebot aus SelectLine als PDF** — ein reales Muster ist für
+    das Datenmodell mehr wert als jede Aufzählung hier. Dazu, wenn möglich,
+    eine Auftragsbestätigung und eine Rechnung derselben Sache.
+17. Arbeitet er mit **Leistungsverzeichnissen oder Aufmass** (Malerarbeiten
+    werden oft nach m² mit Zuschlägen gerechnet)? Das entscheidet, ob „per"
+    genügt oder ob es eine Mengenermittlung braucht.
 
 ---
 
-## 15. Was nicht dazugehört
-
-Zur Abgrenzung, damit das Modul nicht zum zweiten Produkt wird:
+## 17. Was nicht dazugehört
 
 - **Rechnungsstellung an Endkunden.** ArcoTime exportiert nach Comatic; die
-  Rechnung schreibt die Buchhaltung. Das Angebot ändert daran nichts.
+  Rechnung schreibt die Buchhaltung.
 - **Mahnwesen, Debitoren, Zahlungseingänge.**
-- **Einkauf und Bestellwesen** beim Lieferanten (gehört zum Lager, nicht
-  zum Angebot).
-- **Kalkulationswerkzeuge** (Aufmass, Leistungsverzeichnisse, GAEB) —
-  eigene Welt.
-- **Kundenportal.** Reizvoll, aber ein eigenes Vorhaben mit eigener
-  Sicherheitsbetrachtung.
+- **Einkauf und Bestellwesen** beim Lieferanten (gehört zu Phase 14).
+- **Kalkulationswerkzeuge** (Aufmass, GAEB, Leistungsverzeichnisse) — eigene
+  Welt, siehe offene Frage 17.
+- **Kundenportal.** Reizvoll, aber eigenes Vorhaben.
