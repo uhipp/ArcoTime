@@ -10,6 +10,7 @@ import { DatumFeld } from "@/components/datum-feld";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import { STAND_FELD } from "@/lib/konflikt";
 import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
+import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 
 type KundeOption = { id: string; name: string; vorname: string | null };
 type ProjektOption = {
@@ -75,12 +76,32 @@ export function RapportKopfForm({
       aktuellerUserId
   );
 
-  // Die Projektliste liegt im Zustand, damit ein im Fenster neu angelegtes
-  // Projekt sofort in der Auswahl steht, ohne die Seite neu zu laden.
+  // Kunden- und Projektliste liegen im Zustand, damit ein im Fenster neu
+  // angelegter Eintrag sofort in der Auswahl steht, ohne die Seite neu zu
+  // laden.
+  const [kundenListe, setKundenListe] = useState(kunden);
   const [projekteListe, setProjekteListe] = useState(projekte);
 
+  function merkeKunde(kunde: { id: string; name: string; vorname: string | null }) {
+    setKundenListe((liste) =>
+      liste.some((k) => k.id === kunde.id)
+        ? liste
+        : [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH"))
+    );
+  }
+
+  const kundeHook = useKundeSchnellErstellen((kunde) => {
+    merkeKunde(kunde);
+    // Wie bei der Auswahl von Hand: Ein Projektwechsel gehört dazu, das
+    // bisherige Projekt gehört einem anderen Kunden.
+    waehleKunde(kunde.id);
+  });
+
   const projektHook = useProjektSchnellErstellen({
-    kunden,
+    kunden: kundenListe,
+    // Ein im Projektfenster angelegter Kunde muss auch oben zur Auswahl
+    // stehen – sonst zeigt das Kundenfeld einen Wert ohne Eintrag.
+    onKundeErstellt: merkeKunde,
     // Beim Öffnen liest der Hook diesen Wert neu (siehe oeffnen() dort), der
     // im Rapport gewählte Kunde ist also vorbelegt.
     vorausgewaehlterKunde: kundeId,
@@ -194,9 +215,12 @@ export function RapportKopfForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="kunde_filter">
-              Kunde
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium" htmlFor="kunde_filter">
+                Kunde
+              </label>
+              {!gesperrt && kundeHook.trigger}
+            </div>
             <select
               id="kunde_filter"
               // Kein Feld des Rapports: Der Kunde kommt über das Projekt (0071).
@@ -211,7 +235,7 @@ export function RapportKopfForm({
               <option value="" disabled>
                 Bitte wählen…
               </option>
-              {kunden.map((k) => (
+              {kundenListe.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.vorname ? `${k.vorname} ` : ""}
                   {k.name}
@@ -447,6 +471,7 @@ export function RapportKopfForm({
       </form>
       {/* Ausserhalb des Formulars: Ein Formular im Formular ist in HTML nicht
           erlaubt, und das Fenster trägt selbst eines. */}
+      {kundeHook.modal}
       {projektHook.modal}
     </>
   );

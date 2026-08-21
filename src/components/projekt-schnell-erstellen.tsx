@@ -21,10 +21,16 @@ export function useProjektSchnellErstellen({
   kunden,
   vorausgewaehlterKunde,
   onErstellt,
+  onKundeErstellt,
 }: {
   kunden: KundeOption[];
   vorausgewaehlterKunde?: string;
   onErstellt: (projekt: NeuesProjekt) => void;
+  // Wird ein Kunde IM Projektfenster angelegt, erfährt das aufrufende
+  // Formular sonst nichts davon – seine eigene Kundenliste kennt ihn dann
+  // nicht, und ein Kundenfeld dort stünde auf einem Wert ohne Eintrag.
+  // Optional, damit die bestehenden Aufrufer unverändert bleiben.
+  onKundeErstellt?: (kunde: NeuerKunde) => void;
 }) {
   const [modalOffen, setModalOffen] = useState(false);
   const [speichert, setSpeichert] = useState(false);
@@ -53,6 +59,7 @@ export function useProjektSchnellErstellen({
   function handleNeuerKunde(kunde: NeuerKunde) {
     setNestedNeueKunden((liste) => [...liste, kunde]);
     setKundeId(kunde.id);
+    onKundeErstellt?.(kunde);
   }
 
   const kundeHook = useKundeSchnellErstellen(handleNeuerKunde);

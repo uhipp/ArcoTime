@@ -6,7 +6,7 @@
     "eintraege": [
       {
         "typ": "behoben",
-        "text": "Im Rapportformular lässt sich neben „Projekt“ jetzt direkt ein neues Projekt anlegen – wie im Anfrage- und im Zeiterfassungsformular. Bisher war der Weg dort verschlossen: Wer einen Rapport für einen Kunden ohne Projekt anlegen wollte, musste die Maske verlassen, das Projekt unter „Projekte“ erfassen und von vorn beginnen. Die Hilfeseite beschrieb den Knopf schon, es gab ihn nur nicht."
+        "text": "Im Rapportformular lassen sich neben „Kunde“ und „Projekt“ jetzt beide direkt anlegen – wie im Anfrage- und im Zeiterfassungsformular. Bisher war der Weg dort verschlossen: Wer einen Rapport für einen neuen Kunden oder für einen Kunden ohne Projekt anlegen wollte, musste die Maske verlassen, den Eintrag unter „Kunden“ oder „Projekte“ erfassen und von vorn beginnen. Die Hilfeseite beschrieb den Weg schon, es gab ihn nur nicht."
       },
       {
         "typ": "verbessert",
