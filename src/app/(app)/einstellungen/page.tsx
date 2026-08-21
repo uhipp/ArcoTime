@@ -214,12 +214,13 @@ export default async function EinstellungenPage({
           Anfrage ein Ticket, aus dem Standort eine Liegenschaft.
         </p>
         <p className="text-xs text-gray-500 mb-4">
-          Die Bezeichnung wirkt in der <strong>Navigation</strong>, in den{" "}
-          <strong>Seitentiteln</strong> und auf den <strong>Knöpfen</strong> der
-          betroffenen Bereiche. Unverändert bleiben die Adressen im Browser, die
-          Hilfeseiten und die Spaltennamen im Comatic-Export – sie sind
-          Schnittstellen und keine Beschriftung. Weitere Stellen kommen nach und
-          nach dazu.
+          Die Bezeichnung wirkt in der <strong>Navigation</strong>, auf der
+          Startseite, in <strong>Seitentiteln</strong>, auf den{" "}
+          <strong>Knöpfen</strong>, in <strong>Spaltentiteln</strong> und in den
+          Hinweisen leerer Listen. Unverändert bleiben die Adressen im Browser,
+          die Hilfeseiten, die Spaltennamen im Comatic-Export und
+          zusammengesetzte Wörter wie „Projektleitung" – ein Artikel lässt sich
+          ableiten, ein Fugen-s nicht.
         </p>
 
         {branchen.length > 0 && (

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AnfrageForm } from "@/components/anfrage-form";
 import { createAnfrage } from "@/app/actions/anfragen";
+import { getBegriffe, neuLabel } from "@/lib/begriffe";
 
 export default async function NeueAnfragePage({
   searchParams,
@@ -8,6 +9,7 @@ export default async function NeueAnfragePage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
+  const begriffe = await getBegriffe();
   const supabase = await createClient();
 
   const [
@@ -26,7 +28,7 @@ export default async function NeueAnfragePage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Neue Anfrage</h1>
+      <h1 className="text-2xl font-semibold mb-6">{neuLabel(begriffe, "anfrage")}</h1>
       <AnfrageForm
         kunden={kunden ?? []}
         projekte={projekte ?? []}

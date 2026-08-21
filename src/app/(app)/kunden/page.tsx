@@ -167,7 +167,7 @@ export default async function KundenPage({
         zeilen={kunden}
         basis="/kunden"
         params={params}
-        leerText="Keine Kunden gefunden."
+        leerText={`Keine ${begriff(begriffe, "kunde", "mehrzahl")} gefunden.`}
       />
     </div>
   );

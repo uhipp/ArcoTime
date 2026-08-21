@@ -17,6 +17,7 @@ import {
 import type { Anfrage } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
 import { darf } from "@/lib/berechtigungen";
+import { begriff, getBegriffe } from "@/lib/begriffe";
 
 export default async function AnfrageDetailPage({
   params,
@@ -27,6 +28,7 @@ export default async function AnfrageDetailPage({
 }) {
   const { id } = await params;
   const { error } = await searchParams;
+  const begriffe = await getBegriffe();
   const supabase = await createClient();
 
   const [
@@ -81,7 +83,7 @@ export default async function AnfrageDetailPage({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Anfrage bearbeiten</h1>
+          <h1 className="text-2xl font-semibold">{begriff(begriffe, "anfrage")} bearbeiten</h1>
           <ZurueckLinks links={[{ href: "/anfragen", text: "Zur Übersicht" }]} />
         </div>
         {darf(profile, "anfragen.loeschen") && (

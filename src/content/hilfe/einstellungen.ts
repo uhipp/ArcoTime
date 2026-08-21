@@ -38,7 +38,7 @@ Je Bezeichnung hinterlegst du **Einzahl**, **Mehrzahl** und den **Artikel**. All
 
 Über **Vorlage übernehmen** setzt du alle Bezeichnungen auf einmal – etwa auf „Handwerk" oder „IT-Dienstleistung" – und passt danach einzelne an.
 
-**Wo die Bezeichnung wirkt:** in der Navigation, in den Seitentiteln und auf den Knöpfen der betroffenen Bereiche. **Unverändert** bleiben die Adressen im Browser (die Seite heisst weiter /projekte), die Hilfeseiten und die Spaltennamen im Comatic-Export – das sind Schnittstellen, keine Beschriftung. Weitere Stellen in der Anwendung kommen nach und nach dazu.
+**Wo die Bezeichnung wirkt:** in der Navigation, auf der Startseite, in Seitentiteln, auf den Knöpfen, in Spaltentiteln der Listen und in den Hinweisen leerer Listen. **Unverändert** bleiben die Adressen im Browser (die Seite heisst weiter /projekte), die Hilfeseiten, die Spaltennamen im Comatic-Export – und zusammengesetzte Wörter wie „Projektleitung“ oder „Rapportnummer“. Ein Artikel lässt sich aus dem Geschlecht ableiten, ein Fugen-s nicht: Aus „Auftrag“ würde sonst „Auftragleitung“.
 
 ## Einheiten
 

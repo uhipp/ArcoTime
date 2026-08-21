@@ -103,12 +103,14 @@ function Spalte({
   anfragen,
   kanaele,
   prioritaeten,
+  leerText,
 }: {
   status: AnfrageStatus;
   titel: string;
   anfragen: Anfrage[];
   kanaele: AnfrageKanal[];
   prioritaeten: AnfragePrioritaet[];
+  leerText: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -132,7 +134,7 @@ function Spalte({
         />
       ))}
       {anfragen.length === 0 && (
-        <p className="text-xs text-gray-400 text-center mt-6">Keine Anfragen</p>
+        <p className="text-xs text-gray-400 text-center mt-6">{leerText}</p>
       )}
     </div>
   );
@@ -142,10 +144,14 @@ export function AnfragenBoard({
   initialAnfragen,
   kanaele,
   prioritaeten,
+  // Die Bezeichnung des Betriebs (0073). Als Eigenschaft und nicht selbst
+  // geladen: getBegriffe() läuft auf dem Server, das Board im Browser.
+  bezeichnungMehrzahl,
 }: {
   initialAnfragen: Anfrage[];
   kanaele: AnfrageKanal[];
   prioritaeten: AnfragePrioritaet[];
+  bezeichnungMehrzahl: string;
 }) {
   const [anfragen, setAnfragen] = useState(initialAnfragen);
 
@@ -183,6 +189,7 @@ export function AnfragenBoard({
             anfragen={anfragen.filter((a) => a.status === spalte.key)}
             kanaele={kanaele}
             prioritaeten={prioritaeten}
+            leerText={`Keine ${bezeichnungMehrzahl}`}
           />
         ))}
       </div>

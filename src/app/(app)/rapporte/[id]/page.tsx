@@ -34,6 +34,7 @@ import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/t
 import { PraesenzSperre } from "@/components/praesenz-sperre";
 import { darf } from "@/lib/berechtigungen";
 import { mitKunde } from "@/lib/rapport-kunde";
+import { begriff, getBegriffe } from "@/lib/begriffe";
 
 export default async function RapportDetailPage({
   params,
@@ -51,6 +52,7 @@ export default async function RapportDetailPage({
 }) {
   const { id } = await params;
   const { error, bearbeiten, tag, von, ansicht, datum } = await searchParams;
+  const begriffe = await getBegriffe();
   const supabase = await createClient();
 
   const [
@@ -130,7 +132,9 @@ export default async function RapportDetailPage({
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Rapport {rapportNummer(rapport)}</h1>
+          <h1 className="text-2xl font-semibold">
+            {begriff(begriffe, "rapport")} {rapportNummer(rapport)}
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
             {formatDatumCH(rapport.datum)} · {rapport.kunde?.vorname ? `${rapport.kunde.vorname} ` : ""}
             {rapport.kunde?.name}

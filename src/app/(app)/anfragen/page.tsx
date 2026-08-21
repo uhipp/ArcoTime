@@ -42,6 +42,7 @@ export default async function AnfragenPage() {
         initialAnfragen={(anfragen as Anfrage[] | null) ?? []}
         kanaele={kanaele ?? []}
         prioritaeten={prioritaeten ?? []}
+        bezeichnungMehrzahl={begriff(begriffe, "anfrage", "mehrzahl")}
       />
     </div>
   );

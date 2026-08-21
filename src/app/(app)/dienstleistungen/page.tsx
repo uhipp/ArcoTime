@@ -75,7 +75,7 @@ export default async function DienstleistungenPage() {
             {dienstleistungen?.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
-                  Keine Dienstleistungen gefunden.
+                  Keine {begriff(begriffe, "dienstleistung", "mehrzahl")} gefunden.
                 </td>
               </tr>
             )}

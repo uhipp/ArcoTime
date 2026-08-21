@@ -5,7 +5,7 @@ import { ListenTabelle } from "@/components/listen-tabelle";
 import { SpaltenWahl } from "@/components/spalten-wahl";
 import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
-import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
+import { begriff, getBegriffe, neuLabel, type Begriffe } from "@/lib/begriffe";
 
 type ProjektZeile = {
   id: string;
@@ -19,10 +19,13 @@ type ProjektZeile = {
   projektleiter?: { name: string } | null;
 };
 
-const SPALTEN: Spalte<ProjektZeile>[] = [
+// Als Funktion statt Konstante, weil die Spaltentitel von den Bezeichnungen
+// des Betriebs abhängen (0073) – dasselbe Muster wie in der Rapportliste.
+function spalten(begriffe: Begriffe): Spalte<ProjektZeile>[] {
+  return [
   {
     key: "projekt",
-    titel: "Projekt",
+    titel: begriff(begriffe, "projekt"),
     fest: true,
     wert: (p) => p.bezeichnung,
     zelle: (p) => (
@@ -33,7 +36,7 @@ const SPALTEN: Spalte<ProjektZeile>[] = [
   },
   {
     key: "kunde",
-    titel: "Kunde",
+    titel: begriff(begriffe, "kunde"),
     wert: (p) => [p.kunden?.vorname, p.kunden?.name].filter(Boolean).join(" ") || null,
     zelle: (p) => `${p.kunden?.vorname ? `${p.kunden.vorname} ` : ""}${p.kunden?.name ?? "–"}`,
   },
@@ -86,7 +89,8 @@ const SPALTEN: Spalte<ProjektZeile>[] = [
       </span>
     ),
   },
-];
+  ];
+}
 
 export default async function ProjektePage({
   searchParams,
@@ -113,6 +117,7 @@ export default async function ProjektePage({
   if (kunde_id) query = query.eq("kunde_id", kunde_id);
 
   const { data, error } = await query;
+  const SPALTEN = spalten(begriffe);
   const projekte = sortiere((data as ProjektZeile[] | null) ?? [], SPALTEN, sort, richtung);
 
   const { sichtbar, gewaehlt } = await sichtbareSpalten("projekte", SPALTEN);
@@ -141,7 +146,7 @@ export default async function ProjektePage({
           defaultValue={kunde_id ?? ""}
           className="rounded border border-gray-300 px-3 py-2 text-sm"
         >
-          <option value="">Alle Kunden</option>
+          <option value="">Alle {begriff(begriffe, "kunde", "mehrzahl")}</option>
           {kunden?.map((k) => (
             <option key={k.id} value={k.id}>
               {k.vorname ? `${k.vorname} ` : ""}
@@ -187,7 +192,7 @@ export default async function ProjektePage({
         zeilen={projekte}
         basis="/projekte"
         params={params}
-        leerText="Keine Projekte gefunden."
+        leerText={`Keine ${begriff(begriffe, "projekt", "mehrzahl")} gefunden.`}
       />
 
     </div>

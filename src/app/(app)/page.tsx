@@ -4,11 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { heuteIso } from "@/lib/date-utils";
 import type { Anfrage } from "@/lib/types";
 import { darf } from "@/lib/berechtigungen";
+import { begriff, getBegriffe } from "@/lib/begriffe";
 
 export default async function DashboardPage() {
-  const [profile, organisation] = await Promise.all([
+  const [profile, organisation, begriffe] = await Promise.all([
     getCurrentProfile(),
     getCurrentOrganisation(),
+    getBegriffe(),
   ]);
   const isAdmin = darf(profile, "einstellungen.verwalten");
   const supabase = await createClient();
@@ -85,15 +87,19 @@ export default async function DashboardPage() {
           href="/anfragen"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
-          <div className="font-medium">Anfragen</div>
-          <div className="text-sm text-gray-500">Kundenanfragen & Wiedervorlagen</div>
+          <div className="font-medium">{begriff(begriffe, "anfrage", "mehrzahl")}</div>
+          <div className="text-sm text-gray-500">
+            {begriff(begriffe, "anfrage", "mehrzahl")} und Wiedervorlagen
+          </div>
         </Link>
         <Link
           href="/rapporte"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
-          <div className="font-medium">Rapporte</div>
-          <div className="text-sm text-gray-500">Arbeitsrapporte & Nachweise</div>
+          <div className="font-medium">{begriff(begriffe, "rapport", "mehrzahl")}</div>
+          <div className="text-sm text-gray-500">
+            {begriff(begriffe, "rapport", "mehrzahl")} und Nachweise
+          </div>
         </Link>
         {organisation?.modul_disposition && (
           <Link

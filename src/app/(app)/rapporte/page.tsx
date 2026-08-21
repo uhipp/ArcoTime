@@ -8,7 +8,7 @@ import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { mitKunde } from "@/lib/rapport-kunde";
-import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
+import { begriff, getBegriffe, neuLabel, type Begriffe } from "@/lib/begriffe";
 
 const STATUS_STIL: Record<RapportStatus, string> = {
   offen: "bg-amber-100 text-amber-800",
@@ -32,7 +32,7 @@ function uhrzeit(zeitstempel: string | null): string | null {
 
 // Der Katalog braucht den laufenden Timer, deshalb eine Funktion –
 // dasselbe Muster wie in der Mitarbeitendenliste.
-function spalten(timerSeit: Map<string, string>): Spalte<Rapport>[] {
+function spalten(timerSeit: Map<string, string>, begriffe: Begriffe): Spalte<Rapport>[] {
   return [
   {
     key: "nummer",
@@ -79,14 +79,14 @@ function spalten(timerSeit: Map<string, string>): Spalte<Rapport>[] {
   },
   {
     key: "kunde",
-    titel: "Kunde",
+    titel: begriff(begriffe, "kunde"),
     wert: (r) => [r.kunde?.vorname, r.kunde?.name].filter(Boolean).join(" ") || null,
     zelle: (r) =>
       `${r.kunde?.vorname ? `${r.kunde.vorname} ` : ""}${r.kunde?.name ?? "–"}`,
   },
   {
     key: "projekt",
-    titel: "Projekt",
+    titel: begriff(begriffe, "projekt"),
     wert: (r) => r.projekte?.bezeichnung ?? null,
     zelle: (r) => r.projekte?.bezeichnung ?? "–",
   },
@@ -178,7 +178,7 @@ export default async function RapportePage({
     if (z.rapport_id) timerJeRapport.set(z.rapport_id, z.timer_gestartet_um);
   }
 
-  const SPALTEN = spalten(timerJeRapport);
+  const SPALTEN = spalten(timerJeRapport, begriffe);
 
   const { data } = await query;
   // Ohne Sortierwunsch bleibt die Reihenfolge der Abfrage: neueste zuerst.
@@ -257,7 +257,7 @@ export default async function RapportePage({
               hour: "2-digit",
               minute: "2-digit",
             })}{" "}
-            Uhr – {eigenerRapport.kunde?.name ?? "Rapport"}
+            Uhr – {eigenerRapport.kunde?.name ?? begriff(begriffe, "rapport")}
             {eigenerRapport.projekte?.bezeichnung
               ? ` · ${eigenerRapport.projekte.bezeichnung}`
               : ""}
@@ -266,15 +266,16 @@ export default async function RapportePage({
             href={`/rapporte/${eigenerRapport.id}`}
             className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
           >
-            Rapport öffnen und stoppen
+            {begriff(begriffe, "rapport")} öffnen und stoppen
           </Link>
         </div>
       )}
 
       {rapporte.length === 0 ? (
         <p className="text-sm text-gray-500 bg-white rounded-lg border p-6">
-          Noch keine Rapporte erfasst. Ein Rapport fasst die Positionen eines
-          Kundeneinsatzes zusammen – Anfahrt, Arbeitszeit und Material.
+          Noch keine {begriff(begriffe, "rapport", "mehrzahl")} erfasst. Ein{" "}
+          {begriff(begriffe, "rapport")} fasst die Positionen eines Einsatzes beim{" "}
+          {begriff(begriffe, "kunde")} zusammen – Anfahrt, Arbeitszeit und Material.
         </p>
       ) : (
         <ListenTabelle
@@ -282,7 +283,7 @@ export default async function RapportePage({
           zeilen={rapporte}
           basis="/rapporte"
           params={params}
-          leerText="Keine Rapporte gefunden."
+          leerText={`Keine ${begriff(begriffe, "rapport", "mehrzahl")} gefunden.`}
           zeilenKlasse={(r) =>
             timerJeRapport.has(r.id) ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"
           }
