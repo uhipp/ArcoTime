@@ -1,11 +1,14 @@
 # Datenmodell: Standorte und Beteiligte
 
-Arbeitsstand vom 21.08.2026 · **Entwurf, nichts entschieden, nichts gebaut**
+Arbeitsstand vom 21.08.2026 · **Gabelung entschieden, nichts gebaut**
 
 Entstanden aus Gesprächen mit Interessenten (IT-Dienstleistung und Handwerk)
 und aus der Frage, ob ArcoTime zwischen Kunde und Projekt eine Ebene fehlt.
-Der Nutzer bespricht die Fragen aus Abschnitt 6 am 21.08. mit zwei
-Handwerkern; danach wird entschieden.
+Die Fragen aus Abschnitt 6 sind am 21.08.2026 mit einem Handwerksbetrieb
+besprochen (Würth und Partner AG, Markus Hermann) — die Antworten und der
+daraus folgende Entscheid stehen in **Abschnitt 7**. Abschnitte 3 und 5 sind
+damit teilweise überholt; sie bleiben stehen, weil die Begründung des Irrwegs
+zum Verständnis gehört.
 
 ---
 
@@ -61,7 +64,11 @@ Das ist eine **zweite Achse**, nicht eine weitere Stufe: Die Kette
 Kunde → Standort → Projekt beschreibt *wo* gearbeitet wird; die Beteiligten
 beschreiben *wer mitredet* und *wer welchen Beleg bekommt*.
 
-## 3. Entwurf
+## 3. Entwurf (erster Anlauf — in zwei Punkten überholt, siehe Abschnitt 7)
+
+> **Überholt:** `projekte.kunde_id` entfällt **nicht** (Antwort 2), und der
+> Standort gehört **nicht** dem Kunden (Antwort 5). Der gültige Entwurf steht
+> in Abschnitt 7.4.
 
 ```
 kunden ─────────────────── 1:n ── standorte ── 1:n ── ansprechpersonen
@@ -128,7 +135,7 @@ versehentlich auf eine Person zeigen, und **kein Check kann ausdrücken
 „dieser Fremdschlüssel muss auf eine Zeile mit Rolle X zeigen"**. Zwei
 Tabellen können das, weil der Fremdschlüssel selbst die Aussage trifft.
 
-## 5. Die Gabelung, die alles entscheidet
+## 5. Die Gabelung, die alles entscheidet — **entschieden: B**
 
 **Gehört ein Standort einem Kunden — oder ist er eine eigene Sache, an der
 Parteien mit Rollen hängen?**
@@ -145,6 +152,9 @@ Parteien mit Rollen hängen?**
 Beides ist verteidigbar. Die Antwort hängt daran, wie oft ein
 Verwaltungswechsel real vorkommt und ob die Historie ihn überleben muss —
 deshalb Frage 5 unten.
+
+**Entschieden am 21.08.2026: B.** Zwei Antworten führen dorthin, nicht eine —
+siehe Abschnitt 7.
 
 ## 6. Fragen für die Gespräche mit den Handwerkern
 
@@ -184,7 +194,146 @@ deshalb Frage 5 unten.
 10. Gibt es beim Mieter noch eine Ebene (Wohnung, Stockwerk), oder genügt die
     Liegenschaft mit einer Notiz auf dem Rapport?
 
-## 7. Fremde Adressen, die überall vorkommen
+## 7. Die Antworten vom 21.08.2026 — und was daraus folgt
+
+Gespräch mit **Würth und Partner AG**, Markus Hermann. Die Antworten wörtlich,
+darunter jeweils die Folge fürs Datenmodell.
+
+### 7.1 Was er gesagt hat
+
+**1. Aufträge je Liegenschaft** — „mehrere Aufträge pro Liegenschaft"
+→ Die Auftragsebene bleibt sichtbar. Drei Ebenen: Kunde · Liegenschaft ·
+Auftrag. Der Standort ersetzt das Projekt nicht, er steht darüber.
+
+**2. Vertragspartner und Rechnung** — „Das ist unterschiedlich und beides ist
+möglich. Die Rechnungsadresse ist ebenso unterschiedlich."
+→ **Der wichtigste Satz des Gesprächs.** Der Vertragspartner wird *je Auftrag*
+bestimmt, nicht von der Liegenschaft. Dieselbe Liegenschaft kann einen Auftrag
+mit der Verwaltung und einen mit dem Eigentümer haben.
+
+**3. Beleg an den Eigentümer** — „Ja, oft ist es so, dass die Rechnung von der
+Verwaltung bezahlt wird, aber der Eigentümer für die Steuererklärung eine
+Rechnung an ihn wünscht."
+→ Beteiligte müssen **belegfähig** sein: volle Adresse, Anrede, alles. Und:
+**Rechnungsempfänger und Zahler sind zwei verschiedene Rollen** (der
+Eigentümer schuldet und zieht ab, die Verwaltung bezahlt). Genau die
+Trennung, die Comatic als `Rechnungsadresse` / `Zustelladresse` am Beleg führt.
+
+**4. Beteiligte pflegen** — „Das wäre wünschenswert, weil je nach Baustelle
+viele unterschiedliche Kontaktpersonen im Spiel sind und die gleichen wiederum
+in anderen Projekten auch."
+→ Bestätigt Abschnitt 8 wörtlich: ein Adressbuch je Mandant, Verknüpfung statt
+Kopie. Der Satz „die gleichen wiederum in anderen Projekten" ist genau das
+Problem, das die zehn Kopien erzeugt.
+
+**5. Wechsel von Verwaltung/Eigentümer** — „Das wäre eine super Option"
+→ Die Historie soll den Wechsel überleben. **Option B.**
+
+**6. Anfahrtskilometer** — „Wir verrechnen immer die km zur Liegenschaft, wo
+gearbeitet wird."
+→ `anreise_km` wandert vom Kunden an den Standort. Die Begründung in 0050
+(„die Distanz zu einem Kunden … ändert sich nie") ist für diesen Fall
+widerlegt und gehört im Kommentar korrigiert.
+
+**7. Unterschrift** — „In der Regel gibt es pro Auftrag eine verantwortliche
+Person; wenn die im Auftrag steht und vorgeschlagen wird, wäre das gut, muss
+aber geändert werden können."
+→ Eine verantwortliche Person **je Auftrag** als Vorschlag für die
+Unterschrift, überschreibbar. Der Freitext am Rapport bleibt.
+
+**8. Historie** — „Je mehr Infos abgelegt werden können, je besser"
+→ Keine Einschränkung. Die Standortseite wird eine Sammelansicht über
+Aufträge, Rapporte, Dokumente und später Material. Braucht den
+Dokumentbereich `standort`.
+
+**9. Adressat je Dokument** — „Genau, ein wichtiger Punkt: ich muss pro
+Dokument sagen können, an welche Adresse es geht."
+→ Jedes Dokument bekommt einen **Adressaten** (Partner + optional
+Ansprechperson), beim Versand eingefroren.
+
+**10. Ebene unter der Liegenschaft** — „Notiz auf dem Rapport genügt."
+→ Kein Wohnung/Stockwerk. **Eine Abgrenzung gewonnen.**
+
+### 7.2 Zwei Korrekturen an meinem Entwurf
+
+**`projekte.kunde_id` bleibt.** Ich wollte die Spalte streichen und den Kunden
+über den Standort ableiten. Antwort 2 widerlegt das: Der Vertragspartner
+gehört zum *Auftrag*, nicht zur Liegenschaft. Kunde und Standort am Projekt
+sind **keine** zwei Wege zur selben Aussage — sie sagen Verschiedenes: *wer
+bestellt und schuldet* und *wo gearbeitet wird*. Beide bleiben Pflicht.
+
+**Der Standort gehört dem Mandanten, nicht dem Kunden.** Aus Antwort 5 folgt
+`standorte.organisation_id NOT NULL` **ohne** `kunde_id`. Die Liegenschaft ist
+ein Eintrag im Bestand des Malers; Verwaltung und Eigentümer hängen als
+**Beteiligte mit Gültigkeitszeitraum** daran. Nur so überlebt die Historie den
+Wechsel — und nur so passt Antwort 2, wo dieselbe Liegenschaft Aufträge
+verschiedener Vertragspartner trägt.
+
+Was von der Redundanzkritik bleibt: **`rapporte.kunde_id` verschwindet**. Die
+ist eine echte zweite Wahrheit (der Rapport hängt am Auftrag, der Auftrag kennt
+den Kunden).
+
+### 7.3 Der Standardstandort trägt weiterhin
+
+Für den Dienstleister ohne Standortdenken bleibt es beim automatischen
+Standardstandort: Beim Anlegen eines Kunden entsteht ein Standort mit dessen
+Name und Adresse, verknüpft über die Beteiligtenrolle „Kunde". Das
+Auftragsformular zeigt das Feld nicht und füllt es still. Er sieht
+`Kunde → Auftrag` wie heute.
+
+### 7.4 Der gültige Entwurf
+
+```mermaid
+erDiagram
+    ORGANISATIONEN ||--o{ GESCHAEFTSPARTNER : "Adressbuch"
+    ORGANISATIONEN ||--o{ STANDORTE : "Bestand"
+    GESCHAEFTSPARTNER ||--o{ ANSPRECHPERSONEN : "hat"
+    STANDORTE ||--o{ BETEILIGTE : "Verwaltung, Eigentuemer, Hauswart"
+    GESCHAEFTSPARTNER ||--o{ BETEILIGTE : "ist beteiligt als"
+    PROJEKTE ||--o{ BETEILIGTE : "Architekt, Bauleitung, Subunternehmer"
+    GESCHAEFTSPARTNER ||--o{ PROJEKTE : "Vertragspartner (kunde_id)"
+    STANDORTE ||--o{ PROJEKTE : "Einsatzort (standort_id)"
+    PROJEKTE ||--o{ RAPPORTE : "Nachweise"
+    PROJEKTE ||--o{ ZEITEINTRAEGE : "Positionen"
+    RAPPORTE ||--o{ ZEITEINTRAEGE : "klammert"
+    ANSPRECHPERSONEN ||--o{ PROJEKTE : "verantwortlich (Vorschlag)"
+```
+
+Die tragenden Regeln:
+
+| Regel | Warum |
+|---|---|
+| `standorte.organisation_id` **NOT NULL**, kein `kunde_id` | Historie überlebt den Verwaltungswechsel (Antwort 5) |
+| `projekte.kunde_id` **NOT NULL** | Vertragspartner je Auftrag (Antwort 2) |
+| `projekte.standort_id` **NOT NULL** | Einsatzort, Anreise, Historie (Antworten 1, 6) |
+| `rapporte.kunde_id` **entfällt** | echte Redundanz — der Auftrag kennt den Kunden |
+| `beteiligte` mit `gueltig_von`/`gueltig_bis` | Wechsel von Verwaltung und Eigentümer |
+| `beteiligte` mit echten Fremdschlüsseln je Bezugsart + `num_nonnulls`-Check | nicht polymorph wie `dokumente` — siehe Abschnitt 8 |
+| `anreise_km` am **Standort** | Antwort 6 |
+| Dokumente/Belege mit **Adressat**, beim Versand eingefroren | Antwort 9 |
+| Kein Wohnung/Stockwerk | Antwort 10 |
+
+### 7.5 Neue offene Fragen aus den Antworten
+
+1. **Zu Antwort 3:** Ist die Rechnung an den Eigentümer ein **zweites
+   Dokument** oder dieselbe Rechnung mit anderem Adressaten? Zweimal die
+   gleiche Leistung fakturieren wäre MWST-seitig heikel; eine Zweitausfertigung
+   an einen anderen Adressaten ist unproblematisch. **Fachliche Frage.**
+2. **Zu Antwort 2:** Darf ein Auftrag den Vertragspartner nachträglich
+   wechseln? Preise und Rabatte sind je Position eingefroren — ein Wechsel
+   danach wäre erklärungsbedürftig.
+3. **Zu Antwort 5:** Braucht der Wechsel ein **Datum** (von/bis) oder genügt
+   „aktuell" plus eine Liste der früheren? Ein Datum ist billig jetzt und
+   teuer später.
+4. **Zu Antwort 7:** Ist die verantwortliche Person eine des Kunden oder eine
+   des Standorts (Hauswart)? Vermutlich beides — dann muss das Feld jede
+   Ansprechperson eines Beteiligten dieses Auftrags oder Standorts zulassen.
+5. **Das zweite Gespräch** stand noch aus. Ein zweiter Betrieb, der Antwort 5
+   anders beantwortet, wäre wichtig zu wissen, **bevor** wir bauen.
+
+---
+
+## 8. Fremde Adressen, die überall vorkommen
 
 Aus der Praxis des Nutzers, und in den meisten Lösungen ungelöst: In den
 Projekten tauchen ständig **fremde Adressen** auf — Architekt, Bauleitung, der
@@ -293,7 +442,7 @@ nahe null, weil die Daten schon da sind.
 
 ---
 
-## 8. Eine Datenbank oder eine je Mandant?
+## 9. Eine Datenbank oder eine je Mandant?
 
 Frage eines Interessenten am 21.08.2026, der mit sensiblen Personendaten
 arbeitet: Wäre es für den Anbieter nicht besser, wenn jede Organisation eine
@@ -430,7 +579,7 @@ Anforderungen, die technisch gar nicht begründet sein müssen.
 
 ---
 
-## 9. Mobile App: was sie mit dem Datenmodell macht
+## 10. Mobile App: was sie mit dem Datenmodell macht
 
 Ein Interessent hält die Handy-App des Mitbewerbers **Clockin** für besser als
 das, was ArcoTime auf dem Handy zeigt. Der Nutzer hat eine 14-Tage-Demo
@@ -514,7 +663,7 @@ sie hingehören.
 
 ---
 
-## 10. Was davon unabhängig ist
+## 11. Was davon unabhängig ist
 
 Das Arbeitspaket **Datenmodell-Leitplanken** hängt an keiner dieser
 Entscheidungen und kann vorher laufen:
