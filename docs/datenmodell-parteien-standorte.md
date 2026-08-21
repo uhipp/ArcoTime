@@ -184,7 +184,116 @@ deshalb Frage 5 unten.
 10. Gibt es beim Mieter noch eine Ebene (Wohnung, Stockwerk), oder genügt die
     Liegenschaft mit einer Notiz auf dem Rapport?
 
-## 7. Was davon unabhängig ist
+## 7. Fremde Adressen, die überall vorkommen
+
+Aus der Praxis des Nutzers, und in den meisten Lösungen ungelöst: In den
+Projekten tauchen ständig **fremde Adressen** auf — Architekt, Bauleitung, der
+Elektriker, mit dem sich der IT-Dienstleister wegen der Netzwerkverkabelung
+koordinieren muss, Behörden, Ämter. Dieselben Adressen kommen bei vielen
+Kunden und Projekten wieder vor: Ein Architekt arbeitet für viele Verwaltungen
+und Eigentümer.
+
+Üblicherweise wird er dann zehnmal vollständig erfasst. Bei einem Umzug oder
+einer neuen Mailadresse ist das nicht mehr zu pflegen — und niemand weiss,
+welche der zehn Kopien die richtige ist.
+
+### Die Ursache: er ist im falschen Ordner abgelegt
+
+Der Architekt ist **keine Adresse eines Kunden**. Er ist ein Geschäftspartner
+**des Anwenders** (des Mandanten), der in vielen Projekten in der Rolle
+„Architekt" auftritt. Wer ihn unter dem Kunden ablegt, muss ihn zwangsläufig
+kopieren, sobald derselbe Architekt beim nächsten Kunden auftaucht.
+
+### Der Ansatz: ein Adressbuch je Mandant, Rollen als Verknüpfung
+
+- **Der Partner existiert genau einmal** je Organisation. `kunden` ist dafür
+  schon heute die richtige Tabelle — sie ist eine Geschäftspartner-Tabelle mit
+  `organisation_id`, Rollenkennzeichen entscheiden, wo er in Listen erscheint.
+- **`beteiligte` verknüpft, kopiert nicht:** Rolle plus Verweis auf den
+  Partner (und optional auf eine Ansprechperson dieses Partners). Eine
+  Adressänderung ist ein Feld an einer Stelle, und alle zehn Projekte sind
+  aktuell.
+- **Die Rolle steht an der Verknüpfung, nicht am Partner.** Derselbe Architekt
+  kann im Projekt A Architekt sein und gleichzeitig Kunde, wenn er sein
+  eigenes Büro renovieren lässt.
+- **Rollen sind eine konfigurierbare Auswahlliste** (Muster 0014, wie
+  `anfrage_kanaele`): Architekt, Bauleitung, Eigentümer, Verwaltung, Hauswart,
+  Subunternehmer, Fremdunternehmer, Behörde, Systemlieferant. Jedes Gewerbe
+  hat eigene, und keines davon gehört in den Code.
+
+### Kein polymorpher Verweis wie bei `dokumente`
+
+`dokumente.bezug_id` trägt keinen Fremdschlüssel — die Rechnung dafür kam am
+18.08.2026: fünf Dokumente hängen an Anfragen und Rapporten, die es nicht mehr
+gibt. `beteiligte` soll das nicht wiederholen. Vorschlag: **echte, nullable
+Fremdschlüssel je Bezugsart** (`standort_id`, `projekt_id`, `rapport_id`, …)
+mit `on delete cascade` und einem Check, dass genau einer gesetzt ist:
+
+```sql
+check (num_nonnulls(standort_id, projekt_id, rapport_id) = 1)
+```
+
+Damit räumt die Datenbank auf, wenn ein Projekt verschwindet, und es entstehen
+keine verwaisten Verknüpfungen.
+
+### Der Widerspruch, der dabei zu lösen ist
+
+Eine zentral gepflegte Adresse heisst: Sie **ändert sich rückwirkend**. Ein
+Angebot, das der Architekt vor zwei Jahren erhalten hat, darf aber nicht
+plötzlich seine neue Adresse zeigen.
+
+Auflösung wie bei Preis und MWST (0003/0021): **Die Verknüpfung ist lebendig,
+das Dokument ist eingefroren.** Wer im Projekt nachschaut, sieht die aktuelle
+Adresse; jeder versendete Beleg trägt die Adresse, die beim Versand galt — bei
+eingefrorenen PDF ergibt sich das von selbst, bei einem Adressat am Beleg
+braucht es einen Schnappschuss.
+
+### Wo diese Lösungen in der Praxis scheitern
+
+Nicht am Datenmodell, sondern an der Erfassung. Ein Adressbuch nützt nichts,
+wenn der Anwender den Architekten trotzdem neu anlegt, weil Suchen mühsamer
+ist als Tippen. Drei Dinge gehören deshalb dazu:
+
+1. **Suchen statt anlegen:** Das Beteiligten-Feld sucht im ganzen Adressbuch
+   der Organisation, nicht nur bei diesem Kunden — mit Treffern nach Name,
+   Ort, Mail und Telefon.
+2. **Duplikat erkennen, bevor es entsteht:** Beim Anlegen prüfen (Name
+   normalisiert + PLZ, oder Mail/Telefon gleich) und fragen „Meinst du
+   diesen?". Das ist die Stelle, die entscheidet, ob es zehn Kopien gibt.
+3. **Zusammenführen, was schon doppelt ist:** Zwei Partner verschmelzen — die
+   überlebende Zeile wählen, alle Verknüpfungen umhängen, den Rest
+   protokollieren. Das gehört in die **Datenpflege (0052)**, die genau dafür
+   gebaut ist: Sie hält die alten Werte, jeder Lauf ist rückholbar. Ein Merge
+   ohne „rückgängig" wäre bei 800 Adressen unverantwortlich.
+
+### Kontaktkanäle: Mail, Telefon, WhatsApp, und was als nächstes kommt
+
+Heute hat `kunden` genau `email` und `telefon`. Der Bedarf ist grösser
+(Direktwahl, Mobil, WhatsApp, beim Dienstleister Teams). Vorschlag: eine
+Kindtabelle `kontakte` (Art, Wert, Bemerkung, `ist_standard`) mit
+konfigurierbarer Art-Liste, für **alle Parteien von Anfang an** — Partner,
+Standorte, Ansprechpersonen. Die beiden bestehenden Spalten werden in
+derselben Migration mitgenommen; bei 13 Kunden ist das eine Handvoll Zeilen,
+bei zahlenden Kunden wäre es ein Eingriff im Betrieb.
+
+### Was bewusst nicht kommt: ein Adressbuch über alle Mandanten
+
+Verlockend („den Architekten pflegt einer, alle haben ihn richtig"), aber
+falsch: RLS ist die Sicherheitsgrenze zwischen Mandanten, und ein gemeinsamer
+Adressbestand würde Kundendaten des einen Betriebs im anderen sichtbar machen.
+Die AVV sagt das Gegenteil zu. Dass derselbe Architekt in zehn Mandanten
+zehnmal steht, ist deshalb **kein Fehler, sondern die Grenze** — jeder Betrieb
+pflegt sein Adressbuch.
+
+### Was der Ansatz nebenbei mitbringt
+
+Steht die Beteiligtenliste am Projekt und am Rapport, hat der Monteur vor Ort
+die Nummer des Elektrikers auf dem Gerät, ohne im Büro anzurufen. Kosten:
+nahe null, weil die Daten schon da sind.
+
+---
+
+## 8. Was davon unabhängig ist
 
 Das Arbeitspaket **Datenmodell-Leitplanken** hängt an keiner dieser
 Entscheidungen und kann vorher laufen:
