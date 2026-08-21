@@ -33,6 +33,7 @@ import {
 import { rapportNummer, type Rapport, type ZeiteintragMitDetails } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
 import { darf } from "@/lib/berechtigungen";
+import { mitKunde } from "@/lib/rapport-kunde";
 
 export default async function RapportDetailPage({
   params,
@@ -71,7 +72,9 @@ export default async function RapportDetailPage({
     getCurrentOrganisation(),
     supabase
       .from("rapporte")
-      .select("*, kunden(id, name, vorname, email, anreise_km, strasse, hausnummer, plz, ort, land, telefon), projekte(id, bezeichnung), profiles!rapporte_mitarbeiter_id_fkey(id, name)")
+      .select(
+        "*, projekte(id, bezeichnung, kunden(id, name, vorname, email, anreise_km, strasse, hausnummer, plz, ort, land, telefon)), profiles!rapporte_mitarbeiter_id_fkey(id, name)"
+      )
       .eq("id", id)
       .single(),
     supabase
@@ -101,7 +104,7 @@ export default async function RapportDetailPage({
 
   if (!rapportRoh) notFound();
 
-  const rapport = rapportRoh as Rapport;
+  const rapport = mitKunde(rapportRoh as Rapport);
   const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
   const offen = rapport.status === "offen";
   const laufendePosition = positionen.find((z) => z.timer_gestartet_um) ?? null;
@@ -129,8 +132,8 @@ export default async function RapportDetailPage({
         <div>
           <h1 className="text-2xl font-semibold">Rapport {rapportNummer(rapport)}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {formatDatumCH(rapport.datum)} · {rapport.kunden?.vorname ? `${rapport.kunden.vorname} ` : ""}
-            {rapport.kunden?.name}
+            {formatDatumCH(rapport.datum)} · {rapport.kunde?.vorname ? `${rapport.kunde.vorname} ` : ""}
+            {rapport.kunde?.name}
           </p>
           {herkunft && (
             <p className="text-sm text-gray-500 mt-1">
@@ -207,7 +210,7 @@ export default async function RapportDetailPage({
       {/* Navigation und Anruf zuoberst: Das ist der Moment vor der
           Abfahrt, und der Monteur soll dafür nicht durch den Rapport
           scrollen müssen. */}
-      {offen && <KundenKontakt kunde={rapport.kunden} />}
+      {offen && <KundenKontakt kunde={rapport.kunde} />}
 
       {/* Bei gebuchter Disposition liegt der Tagesplan neben dem Formular –
           der Platz rechts war ohnehin ungenutzt, und beim Planen wechselt
@@ -377,7 +380,7 @@ export default async function RapportDetailPage({
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
             beteiligte={beteiligte}
-            anreiseKm={rapport.kunden?.anreise_km ?? null}
+            anreiseKm={rapport.kunde?.anreise_km ?? null}
             abbrechenHref={`/rapporte/${id}`}
           />
         )}
@@ -389,7 +392,7 @@ export default async function RapportDetailPage({
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
             beteiligte={beteiligte}
-            anreiseKm={rapport.kunden?.anreise_km ?? null}
+            anreiseKm={rapport.kunde?.anreise_km ?? null}
           />
         )}
       </div>
@@ -467,7 +470,7 @@ export default async function RapportDetailPage({
       {!offen && rapport.status !== "storniert" && (
         <RapportVersand
           action={versendeRapport.bind(null, id)}
-          vorgabeEmpfaenger={rapport.kunden?.email ?? null}
+          vorgabeEmpfaenger={rapport.kunde?.email ?? null}
           versendetAn={rapport.versendet_an ?? null}
           versendetAm={rapport.versendet_am ?? null}
         />

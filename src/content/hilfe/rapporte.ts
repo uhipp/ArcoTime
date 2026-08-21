@@ -27,7 +27,7 @@ Ein Rapport ist **optional**. Fernwartung, Büroarbeit, interne Zeit oder eine t
 
 Zwei Wege führen zu einem Rapport. Der direkte: **"+ Neuer Rapport"** auf der Übersicht. Im Kopf legst du fest:
 
-- **Kunde** und **Projekt** – zur Auswahl stehen nur Projekte dieses Kunden. Beides ist **zwingend**: Ohne Projekt lässt sich keine Leistung verrechnen, der Rapport könnte also nichts. Fehlt das passende Projekt, legst du es direkt im Auswahlfeld an.
+- **Kunde** und **Projekt** – zur Auswahl stehen nur Projekte dieses Kunden. Das **Projekt ist zwingend**: Ohne Projekt lässt sich keine Leistung verrechnen, der Rapport könnte also nichts. Fehlt das passende Projekt, legst du es direkt im Auswahlfeld an. Der Kunde darüber ist nur ein Filter für diese Auswahl – gespeichert wird er am Projekt, damit Rapport und Projekt nie verschiedene Kunden behaupten können.
 - **Einsatzdatum** und **ausgeführt von** – beides gilt für alle Positionen, du musst es nicht je Zeile wiederholen
 - **Bemerkung** – erscheint später auf dem Rapport
 

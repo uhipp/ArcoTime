@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatDatumCH } from "@/lib/date-utils";
 import { rapportNummer, type Rapport } from "@/lib/types";
+import { mitKunde } from "@/lib/rapport-kunde";
 
 function nachbartag(iso: string, richtung: 1 | -1): string {
   const d = new Date(`${iso}T12:00:00`);
@@ -32,14 +33,14 @@ export async function DispoTagesspalte({
   const [{ data: rapporteRoh }, { data: mitarbeitende }] = await Promise.all([
     supabase
       .from("rapporte")
-      .select("*, kunden(id, name, vorname)")
+      .select("*, projekte(id, bezeichnung, kunden(id, name, vorname))")
       .eq("datum", tag)
       .neq("status", "storniert")
       .order("geplant_von", { ascending: true, nullsFirst: false }),
     supabase.from("profiles").select("id, name"),
   ]);
 
-  const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
+  const rapporte = ((rapporteRoh as Rapport[] | null) ?? []).map(mitKunde);
   const namen = new Map((mitarbeitende ?? []).map((m) => [m.id, m.name]));
 
   // Wer eingeplant ist, steht seit 0045 in rapport_beteiligte. Die Spalte
@@ -126,8 +127,8 @@ export async function DispoTagesspalte({
                     )}
                   </div>
                   <div className="text-gray-600">
-                    {r.kunden?.vorname ? `${r.kunden.vorname} ` : ""}
-                    {r.kunden?.name}
+                    {r.kunde?.vorname ? `${r.kunde.vorname} ` : ""}
+                    {r.kunde?.name}
                   </div>
                   <div className={eingeplant.length > 0 ? "text-gray-500" : "text-amber-700"}>
                     {eingeplant.length > 0

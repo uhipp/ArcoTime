@@ -48,7 +48,9 @@ export async function ladeRapportDokument(id: string): Promise<RapportDokument |
     supabase
       .from("rapporte")
       .select(
-        "*, kunden(name, vorname, adresse_zusatz, strasse, hausnummer, postfach, plz, ort), projekte(bezeichnung, kostenstelle), profiles!rapporte_mitarbeiter_id_fkey(name)"
+        // Der Kunde hängt seit 0071 am Projekt, nicht am Rapport – die
+        // Anschrift des Rapport-PDF kommt deshalb verschachtelt.
+        "*, projekte(bezeichnung, kostenstelle, kunden(name, vorname, adresse_zusatz, strasse, hausnummer, postfach, plz, ort)), profiles!rapporte_mitarbeiter_id_fkey(name)"
       )
       .eq("id", id)
       .single(),
@@ -61,7 +63,9 @@ export async function ladeRapportDokument(id: string): Promise<RapportDokument |
 
   if (!rapportRoh) return null;
 
-  const kunde = (rapportRoh as { kunden?: DokumentAdresse | null }).kunden ?? null;
+  const kunde =
+    (rapportRoh as { projekte?: { kunden?: DokumentAdresse | null } | null })
+      .projekte?.kunden ?? null;
   const absenderStrasse =
     [organisation?.strasse, organisation?.hausnummer].filter(Boolean).join(" ") || null;
 

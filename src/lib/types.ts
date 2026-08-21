@@ -190,12 +190,32 @@ export type RapportStatus = "offen" | "signiert" | "abgeschlossen" | "storniert"
 // Klammer um die Positionen eines Kundeneinsatzes. Positionen sind
 // gewöhnliche Zeiteinträge mit gesetzter rapport_id – siehe
 // docs/phase8-arbeitsrapport-plan.md.
+// Der Kunde, wie ihn ein Rapport zum Anzeigen braucht. Er steht am Projekt,
+// nicht am Rapport – siehe Migration 0071.
+export type KundeAmRapport = Pick<
+  Kunde,
+  | "id"
+  | "name"
+  | "vorname"
+  | "email"
+  | "anreise_km"
+  // Für Navigation und Anruf vom Rapport aus (Phase 11, Etappe D).
+  | "strasse"
+  | "hausnummer"
+  | "plz"
+  | "ort"
+  | "land"
+  | "telefon"
+>;
+
 export type Rapport = {
   id: string;
   jahr: number | null;
   nummer: number | null;
-  kunde_id: string;
-  projekt_id: string | null;
+  // Pflicht seit 0071: Der Rapport hängt am Auftrag, und der Auftrag kennt
+  // den Kunden. Ein kunde_id am Rapport gab es bis dahin zusätzlich – zwei
+  // Wege zum selben Kunden.
+  projekt_id: string;
   datum: string;
   mitarbeiter_id: string;
   status: RapportStatus;
@@ -212,22 +232,14 @@ export type Rapport = {
   geplant_fuer: string | null;
   storniert_am: string | null;
   storno_grund: string | null;
-  kunden?: Pick<
-    Kunde,
-    | "id"
-    | "name"
-    | "vorname"
-    | "email"
-    | "anreise_km"
-    // Für Navigation und Anruf vom Rapport aus (Phase 11, Etappe D).
-    | "strasse"
-    | "hausnummer"
-    | "plz"
-    | "ort"
-    | "land"
-    | "telefon"
-  > | null;
-  projekte?: Pick<Projekt, "id" | "bezeichnung"> | null;
+  projekte?:
+    | (Pick<Projekt, "id" | "bezeichnung"> & { kunden?: KundeAmRapport | null })
+    | null;
+  // Abgeleitet, NICHT gespeichert: gesetzt von mitKunde() (lib/rapport-kunde).
+  // Bewusst Einzahl und anders benannt als die frühere Einbettung "kunden" –
+  // so meldet der Compiler jede Stelle, die noch den alten Weg nimmt, statt
+  // dass dort still "undefined" steht und ein Kundenname fehlt.
+  kunde?: KundeAmRapport | null;
   profiles?: { id: string; name: string } | null;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;

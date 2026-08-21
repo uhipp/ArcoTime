@@ -58,16 +58,30 @@ export async function legeStandardpositionenAn(
   supabase: Client,
   rapport: {
     id: string;
-    projekt_id: string | null;
-    kunde_id: string;
+    // Pflicht seit 0071. Der Kunde wird daraus gelesen und nicht mehr
+    // mitgegeben – er stand vorher zusätzlich am Rapport.
+    projekt_id: string;
     datum: string;
     mitarbeiter_id: string;
   },
   userId: string | undefined
 ): Promise<{ anzahl: number; fehler?: string }> {
   // Ohne Projekt lässt sich nichts verrechnen – dieselbe Bedingung wie
-  // beim Erfassen einer Position von Hand.
+  // beim Erfassen einer Position von Hand. Seit 0071 ist projekt_id Pflicht;
+  // die Prüfung bleibt, weil der Aufrufer den Wert weiterhin aus einem
+  // Formular bezieht.
   if (!rapport.projekt_id) return { anzahl: 0 };
+
+  // Der Kunde des Auftrags – Grundlage für Anreise und Rabatt. Vor 0071 stand
+  // er am Rapport; jetzt führt der Weg über das Projekt, und zwar nur hier
+  // statt an zwei Stellen.
+  const { data: projekt } = await supabase
+    .from("projekte")
+    .select("kunde_id")
+    .eq("id", rapport.projekt_id)
+    .maybeSingle();
+
+  const kundeId = (projekt as { kunde_id: string } | null)?.kunde_id ?? null;
 
   const { data: vorlagen, error: ladeFehler } = await supabase
     .from("rapport_standardpositionen")
@@ -82,11 +96,9 @@ export async function legeStandardpositionenAn(
   const zeilen = (vorlagen ?? []) as unknown as Standardposition[];
   if (zeilen.length === 0) return { anzahl: 0 };
 
-  const { data: kunde } = await supabase
-    .from("kunden")
-    .select("anreise_km")
-    .eq("id", rapport.kunde_id)
-    .maybeSingle();
+  const { data: kunde } = kundeId
+    ? await supabase.from("kunden").select("anreise_km").eq("id", kundeId).maybeSingle()
+    : { data: null };
 
   const positionen = [];
   for (const zeile of zeilen) {
@@ -110,7 +122,7 @@ export async function legeStandardpositionenAn(
       datum: rapport.datum,
       mitarbeiter_id: rapport.mitarbeiter_id,
       user_id: userId,
-      rabatt_prozent: await rabattFuer(supabase, rapport.kunde_id, dl),
+      rabatt_prozent: kundeId ? await rabattFuer(supabase, kundeId, dl) : 0,
       ...(dl.zaehlt_als_arbeitszeit
         ? { dauer_minuten: Math.round(menge), menge: null }
         : { menge, dauer_minuten: null }),

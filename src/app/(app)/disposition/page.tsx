@@ -12,6 +12,7 @@ import {
 } from "@/lib/date-utils";
 import { rapportNummer, type Rapport } from "@/lib/types";
 import { DispoRaster, type RasterEintrag, type RasterSpalte } from "@/components/dispo-raster";
+import { mitKunde } from "@/lib/rapport-kunde";
 
 type SearchParams = {
   ansicht?: string;
@@ -117,7 +118,7 @@ export default async function DispositionPage({
 
   let query = supabase
     .from("rapporte")
-    .select(`*, kunden(id, name, vorname), projekte(id, bezeichnung), ${einbettung}`)
+    .select(`*, projekte(id, bezeichnung, kunden(id, name, vorname)), ${einbettung}`)
     .gte("datum", von)
     .lte("datum", bis)
     .neq("status", "storniert")
@@ -152,7 +153,7 @@ export default async function DispositionPage({
       )
     : null;
 
-  const rapporte = (rapporteRoh as Rapport[] | null) ?? [];
+  const rapporte = ((rapporteRoh as Rapport[] | null) ?? []).map(mitKunde);
 
   // Beteiligte je Rapport. Beim Filtern auf eine Person liefert der
   // !inner-Verbund nur diese eine Zeile zurück – die vollständige Liste
@@ -312,7 +313,7 @@ export default async function DispositionPage({
   const rasterEintraege: RasterEintrag[] = sichtbar.flatMap((r) => {
     const beteiligte = beteiligteVon(r.id);
     const namen = beteiligte.map(nameVon).filter(Boolean);
-    const kunde = [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || "Ohne Kunde";
+    const kunde = [r.kunde?.vorname, r.kunde?.name].filter(Boolean).join(" ") || "Ohne Kunde";
 
     const gemeinsam = {
       vonMinuten: minuten(r.geplant_von),
@@ -539,8 +540,8 @@ export default async function DispositionPage({
                           {rapportNummer(r)}
                         </Link>
                         <span className="flex-1 min-w-[10rem]">
-                          {r.kunden?.vorname ? `${r.kunden.vorname} ` : ""}
-                          {r.kunden?.name}
+                          {r.kunde?.vorname ? `${r.kunde.vorname} ` : ""}
+                          {r.kunde?.name}
                           {r.projekte?.bezeichnung ? ` · ${r.projekte.bezeichnung}` : ""}
                         </span>
                         <span

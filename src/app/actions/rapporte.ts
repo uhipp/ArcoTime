@@ -51,7 +51,9 @@ function rapportFromForm(formData: FormData) {
     v && String(v).trim() !== "" ? String(v).trim() : null;
 
   return {
-    kunde_id: String(formData.get("kunde_id") ?? "").trim(),
+    // kunde_id steht bewusst NICHT hier: Das Formular führt ein
+    // Kundenfeld, aber nur als Filter für die Projektauswahl. Der Kunde
+    // gehört seit 0071 zum Projekt (docs/plan-parteien-standorte.md).
     projekt_id: str(formData.get("projekt_id")),
     datum: str(formData.get("datum")) ?? heuteIso(),
     mitarbeiter_id: str(formData.get("mitarbeiter_id")),
@@ -91,11 +93,9 @@ export async function erstelleRapport(
   const { data: userData } = await supabase.auth.getUser();
   const werte = rapportFromForm(formData);
 
-  if (!werte.kunde_id) {
-    return { fehler: "Bitte einen Kunden wählen." };
-  }
   // Auch serverseitig: Ohne Projekt lässt sich keine Position erfassen –
-  // der Rapport wäre eine Hülle, die aussieht, als könnte sie etwas.
+  // der Rapport wäre eine Hülle, die aussieht, als könnte sie etwas. Die
+  // frühere Prüfung auf einen Kunden entfällt: Er kommt mit dem Projekt.
   if (!werte.projekt_id) {
     return {
       fehler:
@@ -130,8 +130,7 @@ export async function erstelleRapport(
     supabase,
     {
       id: neuer.id,
-      projekt_id: werte.projekt_id ?? null,
-      kunde_id: werte.kunde_id,
+      projekt_id: werte.projekt_id,
       datum: werte.datum,
       mitarbeiter_id: werte.mitarbeiter_id ?? userData.user?.id ?? "",
     },
@@ -669,7 +668,9 @@ export async function freieZeitenAm(argumente: {
   // sie an einem Einsatz teilnimmt – nicht nur, wenn sie ihn verantwortet.
   const { data } = await supabase
     .from("rapporte")
-    .select("id, geplant_von, geplant_bis, kunden(name, vorname), rapport_beteiligte!inner(mitarbeiter_id)")
+    .select(
+      "id, geplant_von, geplant_bis, projekte(kunden(name, vorname)), rapport_beteiligte!inner(mitarbeiter_id)"
+    )
     .eq("rapport_beteiligte.mitarbeiter_id", mitarbeiterId)
     .eq("datum", datum)
     .neq("status", "storniert")
@@ -687,7 +688,8 @@ export async function freieZeitenAm(argumente: {
     })),
     ...zeilen
     .map((r) => {
-      const kunde = r.kunden as { name?: string; vorname?: string | null } | null;
+      const kunde = (r.projekte as { kunden?: { name?: string; vorname?: string | null } | null } | null)
+        ?.kunden ?? null;
       return {
         vonMin: alsMinuten(r.geplant_von) ?? 0,
         bisMin: alsMinuten(r.geplant_bis) ?? 0,

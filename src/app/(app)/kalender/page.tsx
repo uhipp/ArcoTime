@@ -143,7 +143,7 @@ export default async function KalenderPage({
     : supabase
         .from("rapporte")
         .select(
-          `id, datum, kunde_id, projekt_id, mitarbeiter_id, geplant_von, geplant_bis, kunden(name, vorname, ort), projekte(bezeichnung), ${
+          `id, datum, projekt_id, mitarbeiter_id, geplant_von, geplant_bis, projekte(bezeichnung, kunden(name, vorname, ort)), ${
             params.mitarbeiter_id
               ? "rapport_beteiligte!inner(mitarbeiter_id)"
               : "rapport_beteiligte(mitarbeiter_id)"
@@ -199,8 +199,11 @@ export default async function KalenderPage({
         rapport_beteiligte?: { mitarbeiter_id: string }[];
         geplant_von: string | null;
         geplant_bis: string | null;
-        kunden?: { name: string; vorname: string | null; ort: string | null } | null;
-        projekte?: { bezeichnung: string } | null;
+        // Der Kunde hängt seit 0071 am Projekt, nicht am Rapport.
+        projekte?: {
+          bezeichnung: string;
+          kunden?: { name: string; vorname: string | null; ort: string | null } | null;
+        } | null;
       }[]
     | null) ?? [];
 
@@ -251,8 +254,10 @@ export default async function KalenderPage({
       von: uhrzeit(r.geplant_von),
       bis: uhrzeit(r.geplant_bis),
       kunde:
-        [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || "Ohne Kunde",
-      ort: r.kunden?.ort ?? null,
+        [r.projekte?.kunden?.vorname, r.projekte?.kunden?.name]
+          .filter(Boolean)
+          .join(" ") || "Ohne Kunde",
+      ort: r.projekte?.kunden?.ort ?? null,
       projekt: r.projekte?.bezeichnung ?? null,
     });
   }

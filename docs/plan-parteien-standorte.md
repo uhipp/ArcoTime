@@ -1,7 +1,7 @@
 # Plan: Parteien, Standorte und Beschriftungen
 
-Stand: 21.08.2026 · **abgenommen** · Etappe 1 geschrieben, Migrationen warten
-auf die Ausführung
+Stand: 21.08.2026 · **abgenommen** · **Etappe 1 erledigt** (0071 und 0072
+ausgeführt, Code umgebaut) · Etappe 2 als Nächstes
 
 Grundlage: [datenmodell-parteien-standorte.md](datenmodell-parteien-standorte.md)
 (Herleitung, Gespräche, verworfene Varianten) und zwei Gespräche mit
@@ -306,8 +306,13 @@ Die eigentliche Leitplanke. Wer eine Tabelle anlegt, beantwortet zehn Fragen:
 
 ## 6. Etappen
 
-**Etappe 1 — Leitplanken** (0071, 0072 und die Codepunkte) — *geschrieben am
-21.08.2026, Migrationen warten auf die Ausführung.* Kein sichtbares
+**Etappe 1 — Leitplanken** (0071, 0072 und die Codepunkte) — **erledigt am
+21.08.2026.** Migrationen ausgeführt und nachgeprüft: 11 Rapporte (zwei leere
+gelöscht), keiner ohne Projekt, `quelle` steht auf `web`, und eine absichtlich
+überlappende Testeinfügung wurde von der Datenbank abgelehnt. Der Kunde am
+Rapport ist aus dem Code verschwunden; alle sieben umgeschriebenen Abfragen
+sind gegen die echte Datenbank geprüft. `rapporte.kunde_id` steht noch in der
+Tabelle und fällt in 0078. Kein sichtbares
 Feature, aber Voraussetzung für alles Weitere. Danach ist der Rapport am
 Auftrag, die Timer sind eindeutig, und die Prüfliste steht.
 

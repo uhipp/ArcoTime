@@ -55,7 +55,13 @@ export function RapportKopfForm({
   // die Eingabe stehen (siehe lib/formular-ergebnis).
   const [ergebnis, formAction] = useActionState(action, null);
   const meldung = ergebnis?.fehler ?? error;
-  const [kundeId, setKundeId] = useState(rapport?.kunde_id ?? "");
+  // Der Kunde ist hier nur ein FILTER für die Projektauswahl, kein Feld des
+  // Rapports: Seit 0071 steht er am Projekt (Migration und
+  // docs/plan-parteien-standorte.md). Beim Bearbeiten wird er deshalb aus
+  // dem gewählten Projekt abgeleitet und nicht gespeichert.
+  const [kundeId, setKundeId] = useState(
+    projekte.find((p) => p.id === (rapport?.projekt_id ?? ""))?.kunde_id ?? ""
+  );
   const [projektId, setProjektId] = useState(rapport?.projekt_id ?? "");
 
   // Verantwortliche Person: gespeicherter Wert, sonst die Projektleitung
@@ -146,12 +152,14 @@ export function RapportKopfForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="kunde_id">
+          <label className="block text-sm font-medium mb-1" htmlFor="kunde_filter">
             Kunde
           </label>
           <select
-            id="kunde_id"
-            name="kunde_id"
+            id="kunde_filter"
+            // Kein Feld des Rapports: Der Kunde kommt über das Projekt (0071).
+            // Der Name sagt das, damit niemand ihn in der Aktion sucht.
+            name="kunde_filter"
             required
             disabled={gesperrt}
             value={kundeId}

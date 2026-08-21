@@ -7,6 +7,7 @@ import { SpaltenWahl } from "@/components/spalten-wahl";
 import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
 import { getCurrentProfile } from "@/lib/get-profile";
+import { mitKunde } from "@/lib/rapport-kunde";
 
 const STATUS_STIL: Record<RapportStatus, string> = {
   offen: "bg-amber-100 text-amber-800",
@@ -78,9 +79,9 @@ function spalten(timerSeit: Map<string, string>): Spalte<Rapport>[] {
   {
     key: "kunde",
     titel: "Kunde",
-    wert: (r) => [r.kunden?.vorname, r.kunden?.name].filter(Boolean).join(" ") || null,
+    wert: (r) => [r.kunde?.vorname, r.kunde?.name].filter(Boolean).join(" ") || null,
     zelle: (r) =>
-      `${r.kunden?.vorname ? `${r.kunden.vorname} ` : ""}${r.kunden?.name ?? "–"}`,
+      `${r.kunde?.vorname ? `${r.kunde.vorname} ` : ""}${r.kunde?.name ?? "–"}`,
   },
   {
     key: "projekt",
@@ -151,7 +152,9 @@ export default async function RapportePage({
 
   let query = supabase
     .from("rapporte")
-    .select("*, kunden(id, name, vorname, email), projekte(id, bezeichnung), profiles!rapporte_mitarbeiter_id_fkey(id, name)")
+    .select(
+      "*, projekte(id, bezeichnung, kunden(id, name, vorname, email)), profiles!rapporte_mitarbeiter_id_fkey(id, name)"
+    )
     .order("datum", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -176,7 +179,14 @@ export default async function RapportePage({
 
   const { data } = await query;
   // Ohne Sortierwunsch bleibt die Reihenfolge der Abfrage: neueste zuerst.
-  const rapporte = sortiere((data as Rapport[] | null) ?? [], SPALTEN, sort, richtung);
+  // Der Kunde kommt seit 0071 über das Projekt – mitKunde() legt ihn für
+  // die Anzeige eine Ebene höher.
+  const rapporte = sortiere(
+    ((data as Rapport[] | null) ?? []).map(mitKunde),
+    SPALTEN,
+    sort,
+    richtung
+  );
 
   const { sichtbar, gewaehlt } = await sichtbareSpalten("rapporte", SPALTEN);
 
@@ -244,7 +254,7 @@ export default async function RapportePage({
               hour: "2-digit",
               minute: "2-digit",
             })}{" "}
-            Uhr – {eigenerRapport.kunden?.name ?? "Rapport"}
+            Uhr – {eigenerRapport.kunde?.name ?? "Rapport"}
             {eigenerRapport.projekte?.bezeichnung
               ? ` · ${eigenerRapport.projekte.bezeichnung}`
               : ""}
