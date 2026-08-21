@@ -5,6 +5,10 @@
     "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
     "eintraege": [
       {
+        "typ": "neu",
+        "text": "Neu unter Einstellungen: **Bezeichnungen**. Jeder Betrieb nennt die Dinge, wie er sie nennt – aus dem Projekt wird ein Auftrag, aus der Anfrage ein Ticket, aus dem Standort eine Liegenschaft. Einzahl, Mehrzahl und Artikel werden hinterlegt (die Mehrzahl lässt sich im Deutschen nicht ableiten, und ohne Artikel stünde auf dem Knopf „Neues Auftrag“). Vorlagen für Handwerk und IT-Dienstleistung setzen alles auf einmal. Wirkt in Navigation, Seitentiteln und auf den Knöpfen; die Struktur bleibt für alle dieselbe."
+      },
+      {
         "typ": "behoben",
         "text": "Im Rapportformular lassen sich neben „Kunde“ und „Projekt“ jetzt beide direkt anlegen – wie im Anfrage- und im Zeiterfassungsformular. Bisher war der Weg dort verschlossen: Wer einen Rapport für einen neuen Kunden oder für einen Kunden ohne Projekt anlegen wollte, musste die Maske verlassen, den Eintrag unter „Kunden“ oder „Projekte“ erfassen und von vorn beginnen. Die Hilfeseite beschrieb den Weg schon, es gab ihn nur nicht."
       },

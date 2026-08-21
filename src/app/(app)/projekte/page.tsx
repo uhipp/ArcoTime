@@ -5,6 +5,7 @@ import { ListenTabelle } from "@/components/listen-tabelle";
 import { SpaltenWahl } from "@/components/spalten-wahl";
 import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
+import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
 
 type ProjektZeile = {
   id: string;
@@ -100,6 +101,8 @@ export default async function ProjektePage({
   const params = await searchParams;
   const { status, kunde_id, sort, richtung } = params;
   const supabase = await createClient();
+  // Wie dieser Betrieb den Bereich nennt (0073).
+  const begriffe = await getBegriffe();
 
   let query = supabase
     .from("projekte")
@@ -122,12 +125,12 @@ export default async function ProjektePage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Projekte</h1>
+        <h1 className="text-2xl font-semibold">{begriff(begriffe, "projekt", "mehrzahl")}</h1>
         <Link
           href="/projekte/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + Neues Projekt
+          + {neuLabel(begriffe, "projekt")}
         </Link>
       </div>
 

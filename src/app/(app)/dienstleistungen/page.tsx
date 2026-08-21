@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
 
 export default async function DienstleistungenPage() {
   const supabase = await createClient();
+  // Wie dieser Betrieb den Bereich nennt (0073).
+  const begriffe = await getBegriffe();
 
   const { data: dienstleistungen, error } = await supabase
     .from("dienstleistungen")
@@ -12,12 +15,12 @@ export default async function DienstleistungenPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Dienstleistungen</h1>
+        <h1 className="text-2xl font-semibold">{begriff(begriffe, "dienstleistung", "mehrzahl")}</h1>
         <Link
           href="/dienstleistungen/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + Neue Dienstleistung
+          + {neuLabel(begriffe, "dienstleistung")}
         </Link>
       </div>
 

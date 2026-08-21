@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
+import { begriff, getBegriffe } from "@/lib/begriffe";
 import { createClient } from "@/lib/supabase/server";
 import { formatDatumCH, heuteIso } from "@/lib/date-utils";
 import { logout } from "@/app/actions/auth";
@@ -28,9 +29,12 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [profile, organisation] = await Promise.all([
+  const [profile, organisation, begriffe] = await Promise.all([
     getCurrentProfile(),
     getCurrentOrganisation(),
+    // Wie der Betrieb die Dinge nennt (0073). In der Navigation sieht man es
+    // zuerst – dort steht das Wort auf jeder Seite.
+    getBegriffe(),
   ]);
   const isAdmin = darf(profile, "einstellungen.verwalten");
 
@@ -164,7 +168,7 @@ export default async function AppLayout({
               )}
             </span>
             <Link href="/anfragen" className="hover:text-arcos-navy flex items-center gap-1.5">
-              Anfragen
+              {begriff(begriffe, "anfrage", "mehrzahl")}
               {Boolean(faelligeWiedervorlagen) && (
                 <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium">
                   {faelligeWiedervorlagen}
@@ -176,7 +180,7 @@ export default async function AppLayout({
                 Klick nützt. Den Filter setzt der Zähler daneben. */}
             <span className="flex items-center gap-1.5">
               <Link href="/rapporte" className="hover:text-arcos-navy">
-                Rapporte
+                {begriff(begriffe, "rapport", "mehrzahl")}
               </Link>
               {timerAmRapport && laufenderTimer?.rapport_id && (
                 <Link
@@ -189,7 +193,7 @@ export default async function AppLayout({
               )}
               {Boolean(offeneRapporte) && (
                 <span
-                  title="Offene Rapporte aus vergangenen Tagen"
+                  title={`Offene ${begriff(begriffe, "rapport", "mehrzahl")} aus vergangenen Tagen`}
                   className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium"
                 >
                   {offeneRapporte}
@@ -208,13 +212,13 @@ export default async function AppLayout({
               Kalender
             </Link>
             <Link href="/kunden" className="hover:text-arcos-navy">
-              Kunden
+              {begriff(begriffe, "kunde", "mehrzahl")}
             </Link>
             <Link href="/projekte" className="hover:text-arcos-navy">
-              Projekte
+              {begriff(begriffe, "projekt", "mehrzahl")}
             </Link>
             <Link href="/dienstleistungen" className="hover:text-arcos-navy">
-              Dienstleistungen
+              {begriff(begriffe, "dienstleistung", "mehrzahl")}
             </Link>
             {isAdmin && (
               <Link href="/mitarbeiter" className="hover:text-arcos-navy">

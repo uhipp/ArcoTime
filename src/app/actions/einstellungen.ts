@@ -845,3 +845,98 @@ export async function toggleSchliesstagFerien(id: string, belastetFerien: boolea
     )
   );
 }
+
+// ---------------------------------------------------------
+// Begriffe: wie der Betrieb die Dinge nennt (0073)
+// ---------------------------------------------------------
+//
+// Eine Struktur, viele Sprachen. Der Maler sagt Auftrag und Liegenschaft, der
+// IT-Dienstleister Projekt und Standort, und aus der Anfrage wird bei ihm ein
+// Ticket. Zwei Datenmodelle wären der falsche Weg – jede neue Funktion müsste
+// zweimal gedacht werden.
+export async function speichereBegriff(schluessel: string, formData: FormData) {
+  const supabase = await createClient();
+
+  const einzahl = String(formData.get("einzahl") ?? "").trim();
+  const mehrzahl = String(formData.get("mehrzahl") ?? "").trim();
+  const genus = String(formData.get("genus") ?? "").trim();
+
+  if (!einzahl || !mehrzahl) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent(
+        "Einzahl und Mehrzahl sind beide nötig – die Mehrzahl lässt sich im Deutschen nicht ableiten."
+      )}`
+    );
+  }
+  if (!["m", "f", "n"].includes(genus)) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Bitte das Geschlecht wählen.")}`);
+  }
+
+  const organisation = await getCurrentOrganisation();
+  if (!organisation) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Organisation nicht gefunden.")}`);
+  }
+
+  // upsert statt update: Fehlt die Zeile (neuer Schlüssel, den eine spätere
+  // Fassung eingeführt hat), soll sie entstehen und nicht stillschweigend
+  // nichts passieren.
+  const { error } = await supabase.from("begriffe").upsert(
+    {
+      organisation_id: organisation.id,
+      schluessel,
+      einzahl,
+      mehrzahl,
+      genus,
+    },
+    { onConflict: "organisation_id,schluessel" }
+  );
+
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Die Beschriftungen stehen in der Navigation jeder Seite – deshalb nicht
+  // nur diese Seite neu aufbauen, sondern das ganze Layout.
+  revalidatePath("/", "layout");
+  redirect(mitErfolg("/einstellungen", "Bezeichnung gespeichert."));
+}
+
+// Alle Bezeichnungen auf eine Branchenvorlage setzen. Bei der Einrichtung
+// sind das sechs Felder weniger von Hand.
+export async function uebernehmeBegriffVorlage(formData: FormData) {
+  const supabase = await createClient();
+  const branche = String(formData.get("branche") ?? "").trim();
+  if (!branche) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Bitte eine Vorlage wählen.")}`);
+  }
+
+  const organisation = await getCurrentOrganisation();
+  if (!organisation) {
+    redirect(`/einstellungen?error=${encodeURIComponent("Organisation nicht gefunden.")}`);
+  }
+
+  const { data: vorlage, error: ladeFehler } = await supabase
+    .from("begriff_vorlagen")
+    .select("schluessel, einzahl, mehrzahl, genus")
+    .eq("branche", branche);
+
+  if (ladeFehler || !vorlage?.length) {
+    redirect(
+      `/einstellungen?error=${encodeURIComponent(
+        ladeFehler?.message ?? `Zur Vorlage "${branche}" sind keine Bezeichnungen hinterlegt.`
+      )}`
+    );
+  }
+
+  const { error } = await supabase.from("begriffe").upsert(
+    vorlage.map((v) => ({ ...v, organisation_id: organisation.id })),
+    { onConflict: "organisation_id,schluessel" }
+  );
+
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/", "layout");
+  redirect(mitErfolg("/einstellungen", `Bezeichnungen der Vorlage „${branche}" übernommen.`));
+}

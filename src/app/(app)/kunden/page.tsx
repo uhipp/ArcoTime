@@ -5,6 +5,7 @@ import { ListenTabelle } from "@/components/listen-tabelle";
 import { SpaltenWahl } from "@/components/spalten-wahl";
 import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
+import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
 
 // Spaltenkatalog der Kundenliste.
 //
@@ -102,6 +103,8 @@ export default async function KundenPage({
   const params = await searchParams;
   const { q, sort, richtung } = params;
   const supabase = await createClient();
+  // Wie dieser Betrieb den Bereich nennt (0073).
+  const begriffe = await getBegriffe();
 
   let query = supabase
     .from("kunden")
@@ -122,12 +125,12 @@ export default async function KundenPage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Kunden</h1>
+        <h1 className="text-2xl font-semibold">{begriff(begriffe, "kunde", "mehrzahl")}</h1>
         <Link
           href="/kunden/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + Neuer Kunde
+          + {neuLabel(begriffe, "kunde")}
         </Link>
       </div>
 

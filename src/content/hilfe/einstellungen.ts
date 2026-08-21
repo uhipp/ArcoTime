@@ -30,6 +30,16 @@ Nur Admins sehen diese Seite – hier lassen sich Auswahllisten zentral konfigur
 
 Bei **allen** Listen gilt dasselbe Prinzip: Jeder Eintrag ist direkt in seiner Zeile bearbeitbar und wird mit **"speichern"** übernommen. Nicht mehr benötigte Einträge werden **deaktiviert** statt gelöscht – sie bleiben dadurch in bestehenden Datensätzen lesbar, verschwinden aber aus neuen Auswahllisten. Das Zahlenfeld ganz rechts ist die **Sortierung**: Sie bestimmt, in welcher Reihenfolge die Optionen in den Auswahlfeldern der App erscheinen (kleinere Zahl zuerst).
 
+## Bezeichnungen
+
+Wie euer Betrieb die Dinge nennt. Die Struktur von ArcoTime ist für alle dieselbe – nur die Wörter sind verschieden: Ein Malergeschäft arbeitet an einer **Liegenschaft** und hat **Aufträge**, ein IT-Dienstleister betreut **Standorte** mit **Projekten** und nennt die Anfrage ein **Ticket**.
+
+Je Bezeichnung hinterlegst du **Einzahl**, **Mehrzahl** und den **Artikel**. Alle drei sind nötig: Die Mehrzahl lässt sich im Deutschen nicht ableiten (Objekt/Objekte, aber Auftrag/Aufträge), und ohne Artikel stünde auf dem Knopf „Neues Auftrag" statt „Neuer Auftrag".
+
+Über **Vorlage übernehmen** setzt du alle Bezeichnungen auf einmal – etwa auf „Handwerk" oder „IT-Dienstleistung" – und passt danach einzelne an.
+
+**Wo die Bezeichnung wirkt:** in der Navigation, in den Seitentiteln und auf den Knöpfen der betroffenen Bereiche. **Unverändert** bleiben die Adressen im Browser (die Seite heisst weiter /projekte), die Hilfeseiten und die Spaltennamen im Comatic-Export – das sind Schnittstellen, keine Beschriftung. Weitere Stellen in der Anwendung kommen nach und nach dazu.
+
 ## Einheiten
 
 Die Auswahl für das Feld „Einheit" im [Dienstleistungskatalog](/hilfe/dienstleistungen) – Stunde, Pauschale, Stück, km, und was ihr sonst braucht. Neue Einheiten legst du hier an, danach stehen sie beim Anlegen einer Dienstleistung zur Verfügung.

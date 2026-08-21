@@ -8,6 +8,7 @@ import { speichereSpaltenwahl } from "@/app/actions/spaltenwahl";
 import { sichtbareSpalten, sortiere, type Spalte } from "@/lib/listen-spalten";
 import { getCurrentProfile } from "@/lib/get-profile";
 import { mitKunde } from "@/lib/rapport-kunde";
+import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
 
 const STATUS_STIL: Record<RapportStatus, string> = {
   offen: "bg-amber-100 text-amber-800",
@@ -148,6 +149,8 @@ export default async function RapportePage({
   const params = await searchParams;
   const { error, status, sort, richtung } = params;
   const supabase = await createClient();
+  // Wie dieser Betrieb den Bereich nennt (0073).
+  const begriffe = await getBegriffe();
   const profile = await getCurrentProfile();
 
   let query = supabase
@@ -200,12 +203,12 @@ export default async function RapportePage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-semibold">Arbeitsrapporte</h1>
+        <h1 className="text-2xl font-semibold">{begriff(begriffe, "rapport", "mehrzahl")}</h1>
         <Link
           href="/rapporte/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + Neuer Rapport
+          + {neuLabel(begriffe, "rapport")}
         </Link>
       </div>
 

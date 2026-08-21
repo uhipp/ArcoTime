@@ -46,8 +46,11 @@ import {
   createStandardposition,
   updateStandardposition,
   toggleStandardposition,
+  speichereBegriff,
+  uebernehmeBegriffVorlage,
 } from "@/app/actions/einstellungen";
 import { darf } from "@/lib/berechtigungen";
+import { getBegriffe, type BegriffSchluessel } from "@/lib/begriffe";
 
 // Minuten seit Mitternacht als HH:MM, für die Anzeige der gespeicherten
 // Arbeitszeit. Gespeichert wird in Minuten, damit sich damit rechnen lässt.
@@ -119,6 +122,23 @@ export default async function EinstellungenPage({
     mitgliederVon.set(z.gruppe_id, menge);
   }
 
+  // Bezeichnungen (0073) und die Branchenvorlagen dazu.
+  const begriffe = await getBegriffe();
+  const { data: vorlagen } = await supabase
+    .from("begriff_vorlagen")
+    .select("branche")
+    .order("branche");
+  const branchen = [...new Set((vorlagen ?? []).map((v) => v.branche as string))];
+
+  const BEGRIFF_FELDER: { schluessel: BegriffSchluessel; hinweis: string }[] = [
+    { schluessel: "kunde", hinweis: "Auftraggeber, Mandant" },
+    { schluessel: "standort", hinweis: "Liegenschaft, Filiale, Objekt, Anlage" },
+    { schluessel: "projekt", hinweis: "Auftrag, Mandat" },
+    { schluessel: "anfrage", hinweis: "Ticket, Pendenz" },
+    { schluessel: "rapport", hinweis: "Serviceschein, Montagebericht" },
+    { schluessel: "dienstleistung", hinweis: "Leistung, Artikel" },
+  ];
+
   return (
     <div className="space-y-10 max-w-2xl">
       <h1 className="text-2xl font-semibold">Einstellungen</h1>
@@ -185,6 +205,109 @@ export default async function EinstellungenPage({
       {error && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
       )}
+
+      <section>
+        <h2 className="text-lg font-medium mb-1">Bezeichnungen</h2>
+        <p className="text-sm text-gray-500 mb-3">
+          Wie euer Betrieb die Dinge nennt. Die Struktur bleibt dieselbe – nur
+          die Wörter ändern sich: Aus dem Projekt wird ein Auftrag, aus der
+          Anfrage ein Ticket, aus dem Standort eine Liegenschaft.
+        </p>
+        <p className="text-xs text-gray-500 mb-4">
+          Die Bezeichnung wirkt in der <strong>Navigation</strong>, in den{" "}
+          <strong>Seitentiteln</strong> und auf den <strong>Knöpfen</strong> der
+          betroffenen Bereiche. Unverändert bleiben die Adressen im Browser, die
+          Hilfeseiten und die Spaltennamen im Comatic-Export – sie sind
+          Schnittstellen und keine Beschriftung. Weitere Stellen kommen nach und
+          nach dazu.
+        </p>
+
+        {branchen.length > 0 && (
+          <form
+            action={uebernehmeBegriffVorlage}
+            className="flex flex-wrap items-end gap-2 mb-5 rounded border bg-gray-50 p-3"
+          >
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="branche">
+                Vorlage übernehmen
+              </label>
+              <select
+                id="branche"
+                name="branche"
+                className="rounded border border-gray-300 px-3 py-2 text-sm"
+              >
+                {branchen.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="rounded border px-4 py-2 text-sm hover:bg-white"
+            >
+              Übernehmen
+            </button>
+            <p className="text-xs text-gray-500 basis-full">
+              Setzt alle Bezeichnungen unten auf einmal. Danach lässt sich jede
+              einzeln anpassen.
+            </p>
+          </form>
+        )}
+
+        <div className="space-y-2">
+          {BEGRIFF_FELDER.map(({ schluessel, hinweis }) => (
+            <form
+              key={schluessel}
+              action={speichereBegriff.bind(null, schluessel)}
+              className="flex flex-wrap items-end gap-2 border-b pb-2 last:border-0"
+            >
+              <div className="w-28 shrink-0">
+                <span className="block text-xs text-gray-400">{schluessel}</span>
+                <span className="text-xs text-gray-500">{hinweis}</span>
+              </div>
+              <div className="flex-1 min-w-[8rem]">
+                <label className="block text-xs text-gray-500 mb-1">Einzahl</label>
+                <input
+                  name="einzahl"
+                  required
+                  defaultValue={begriffe[schluessel].einzahl}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div className="flex-1 min-w-[8rem]">
+                <label className="block text-xs text-gray-500 mb-1">Mehrzahl</label>
+                <input
+                  name="mehrzahl"
+                  required
+                  defaultValue={begriffe[schluessel].mehrzahl}
+                  className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div>
+                {/* Ohne das Geschlecht stünde auf dem Knopf „Neues Auftrag". */}
+                <label className="block text-xs text-gray-500 mb-1">Artikel</label>
+                <select
+                  name="genus"
+                  defaultValue={begriffe[schluessel].genus}
+                  className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+                >
+                  <option value="m">der</option>
+                  <option value="f">die</option>
+                  <option value="n">das</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
+              >
+                speichern
+              </button>
+            </form>
+          ))}
+        </div>
+      </section>
 
       <section>
         <h2 className="text-lg font-medium mb-3">Organisation</h2>

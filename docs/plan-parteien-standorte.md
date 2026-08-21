@@ -1,7 +1,7 @@
 # Plan: Parteien, Standorte und Beschriftungen
 
-Stand: 21.08.2026 · **abgenommen** · **Etappe 1 erledigt** (0071 und 0072
-ausgeführt, Code umgebaut) · Etappe 2 als Nächstes
+Stand: 21.08.2026 · **abgenommen** · **Etappe 1 erledigt**, **Etappe 2
+geschrieben** (0073 wartet auf die Ausführung) · Etappe 3 als Nächstes
 
 Grundlage: [datenmodell-parteien-standorte.md](datenmodell-parteien-standorte.md)
 (Herleitung, Gespräche, verworfene Varianten) und zwei Gespräche mit
@@ -316,8 +316,14 @@ Tabelle und fällt in 0078. Kein sichtbares
 Feature, aber Voraussetzung für alles Weitere. Danach ist der Rapport am
 Auftrag, die Timer sind eindeutig, und die Prüfliste steht.
 
-**Etappe 2 — Beschriftungen** (0073). Klein und sofort spürbar: Der Betrieb
-nennt die Dinge, wie er sie nennt.
+**Etappe 2 — Beschriftungen** (0073) — *geschrieben am 21.08.2026, Migration
+wartet auf die Ausführung.* Klein und sofort spürbar: Der Betrieb nennt die
+Dinge, wie er sie nennt. Zwei Dinge kamen beim Bauen dazu: ein **Genus** je
+Bezeichnung (ohne ihn stünde auf dem Knopf „Neues Auftrag") und eine Tabelle
+`begriff_vorlagen` mit Branchenvorlagen, die **Arcos gehört** – ohne
+`organisation_id` und damit bewusst nicht im Vollexport. Die Reichweite ist
+in der Oberfläche benannt: Navigation, Seitentitel, Knöpfe. Adressen im
+Browser, Hilfeseiten und Comatic-Spalten bleiben, sie sind Schnittstellen.
 
 **Etappe 3 — Parteien** (0074). Ansprechpersonen und Kontaktkanäle, sichtbar
 am Kunden. Unabhängig nützlich, auch ohne Standorte.
