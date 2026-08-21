@@ -382,7 +382,14 @@ technischen Begründung.
    CHF 75. Das sind 15–20 % des Umsatzes für die Datenbank allein, gegen
    Rappen heute.
 
-### Empfehlung
+### Entschieden am 21.08.2026
+
+**Gemeinsame Datenbank bleibt der Regelfall; die dedizierte Datenbank wird von
+Anfang an als bezahlte Option mitgedacht** (nicht gebaut, aber nie verbaut).
+Dazu gehört das **Sicherheitsdatenblatt**, das wie Hilfe und Word-Dokumentation
+laufend nachgeführt wird.
+
+### Empfehlung (Grundlage der Entscheidung)
 
 **Beim gemeinsamen Modell bleiben, es härten, und eine eigene Instanz als
 bezahlte Option offenhalten** (Dedicated-Stufe mit Aufpreis und
@@ -423,7 +430,91 @@ Anforderungen, die technisch gar nicht begründet sein müssen.
 
 ---
 
-## 9. Was davon unabhängig ist
+## 9. Mobile App: was sie mit dem Datenmodell macht
+
+Ein Interessent hält die Handy-App des Mitbewerbers **Clockin** für besser als
+das, was ArcoTime auf dem Handy zeigt. Der Nutzer hat eine 14-Tage-Demo
+angeschaut. Deren Modell: Am Morgen einstempeln, der Arbeitszeit-Timer läuft
+den ganzen Tag, dazwischen umschalten (Fahren = Reisespesen, Pause, anderes
+Projekt), am Abend ausstempeln — dann werden alle Zeiten dort eingetragen, wo
+sie hingehören.
+
+### Wie weit ArcoTime davon entfernt ist (21.08.2026 nachgemessen)
+
+- **Kein Anwesenheitsbegriff.** ArcoTime erfasst *verrechenbare Leistung* gegen
+  ein Projekt, nicht *Anwesenheit*. `0040_praesenz` ist die Präsenz beim
+  gleichzeitigen Bearbeiten, nicht Kommen/Gehen.
+- **Keine Pause** im Schema.
+- **Uhrzeiten sind die Ausnahme:** von 39 Zeiteinträgen haben **7** Start und
+  Ende, **16** nur eine Dauer. Die gelebte Praxis ist Dauererfassung, nicht
+  Stempeln.
+- **Überlappungen: 0** — eine Ausschlussbedingung wäre heute also einführbar.
+- **Der Timer liegt schon serverseitig** (`timer_gestartet_um`, 0010). Ein
+  Timer, der den ganzen Tag läuft, braucht deshalb *keine*
+  Hintergrundausführung auf dem Gerät — das Handy darf schlafen.
+- **Zwei laufende Timer sind heute möglich.** Der Index
+  `idx_zeiteintraege_timer_laufend` ist **nicht** `unique`; geprüft wird im
+  Code. Bei einer App (Doppeltipp, Offline-Wiederholung, zweites Gerät)
+  passiert das.
+- **Fahrt ist schon modelliert:** `dienstleistungen.menge_aus_anreise` (0050)
+  und `zaehlt_als_arbeitszeit` (0022). Reisezeit braucht nichts Neues.
+- **Die wichtigen Regeln liegen in der Datenbank, nicht im TypeScript:**
+  Preis- und MWST-Schnappschuss setzt ein **Trigger** (0003/0021), Plausibilität
+  sind Checks, die Grenze ist RLS. Eine App könnte also direkt über Supabase
+  schreiben, ohne dass die Kernregeln umgangen werden.
+
+### Was heute schon zu beachten ist
+
+1. **Anwesenheit ableiten, nicht zweitschreiben.** Der Stempeltag sollte aus
+   den Zeiteinträgen *entstehen* (Kommen = erster Start, Gehen = letztes Ende,
+   Pause = die Lücke), nicht als zweite Wahrheit daneben. Preis: Für
+   gestempelte Einträge müssen `start_zeit`/`end_zeit` verlässlich gefüllt sein
+   und sich nicht überlappen.
+2. **Ausschlussbedingung gegen Überlappung** je Mitarbeiter und Tag — heute
+   möglich (0 Überlappungen), bei 10 Mio. Zeilen ein Grossprojekt.
+3. **Partieller Unique-Index gegen den zweiten laufenden Timer** — eine Zeile,
+   und sie gehört in die Leitplanken.
+4. **Idempotenz für Offline.** Ein Schlüssel je Aktion, vom Gerät erzeugt,
+   eindeutig je Organisation — sonst bucht eine wiederholte Übertragung im
+   Funkloch doppelt. Jetzt eine nullable Spalte mit Unique-Index, später eine
+   Aufräumaktion in Produktion.
+5. **Herkunft festhalten** (`quelle`: web · app · import). Bei Streit über
+   Arbeitszeit ist „woher kam dieser Eintrag" die erste Frage. Serverzeit ist
+   die Wahrheit, Gerätezeit höchstens Zusatzinformation.
+6. **Fachlogik in `src/lib` statt in der Server Action.** Was für Web und App
+   gelten muss, gehört in eine Funktion, die beide aufrufen — oder als
+   Invariante in die Datenbank. Server Actions sind für eine native App nicht
+   erreichbar.
+7. **Pause braucht eine fachliche Entscheidung, keine technische.** Für
+   Angestellte ist die Pausenerfassung arbeitsrechtlich relevant. **Frage an
+   Fachkundige, nicht an uns.**
+8. **Kein GPS ohne Entscheidung.** Standortverfolgung von Mitarbeitenden
+   berührt ArG/ArGV 3 und das DSG. Wenn überhaupt, dann transparent, je
+   Organisation abschaltbar und niemals fortlaufend — und vorher rechtlich
+   geklärt.
+
+### Zur Machbarkeit (Grössenordnungen, nicht Zusagen)
+
+- **Stufe 1: „Unterwegs"-Ansicht im Web** (mobil zuerst gedacht: stempeln,
+  Zustand, Projektwechsel, Pause, Tagesliste). Tage, nicht Wochen. Löst
+  vermutlich die eigentliche Klage, denn die lautet „die Bedienung am Handy ist
+  schlechter", nicht „es fehlt im App Store".
+- **Stufe 2: App im Store** mit React Native/Expo — **iOS und Android** aus
+  einer Codebasis. Android ist im Handwerk kein Nebenschauplatz. Grobe
+  Schätzung für den beschriebenen Umfang inklusive Offline: einige Wochen,
+  plus Store-Einreichung.
+- **Laufende Kosten:** Apple Developer Program ~USD 99/Jahr, Google Play ~USD
+  25 einmalig, dazu Buildinfrastruktur (freie Stufe genügt anfangs). Der
+  eigentliche Posten ist die **Pflege**: Betriebssystem- und SDK-Wechsel
+  zwingen ein bis zwei Mal im Jahr zu Arbeit, unabhängig von neuen Funktionen.
+  *Preise vor einer Zusage gegen die aktuellen Angaben prüfen.*
+- **Eine PWA** deckt den beschriebenen Umfang technisch ab (der Timer liegt
+  serverseitig). Was fehlt: Auffindbarkeit im Store, bequeme Installation und
+  Vertrauenssignal — für manche Kunden genau das Entscheidende.
+
+---
+
+## 10. Was davon unabhängig ist
 
 Das Arbeitspaket **Datenmodell-Leitplanken** hängt an keiner dieser
 Entscheidungen und kann vorher laufen:
