@@ -293,7 +293,137 @@ nahe null, weil die Daten schon da sind.
 
 ---
 
-## 8. Was davon unabhängig ist
+## 8. Eine Datenbank oder eine je Mandant?
+
+Frage eines Interessenten am 21.08.2026, der mit sensiblen Personendaten
+arbeitet: Wäre es für den Anbieter nicht besser, wenn jede Organisation eine
+eigene Datenbank hätte? Dazu die Performance-Frage bei starkem Wachstum.
+
+**Zwei Fragen, zwei Antworten — sie hängen nicht zusammen.**
+
+### Befund heute (21.08.2026 nachgemessen)
+
+- Datenmenge: 2 Organisationen, 6 Konten, 13 Kunden, 16 Projekte,
+  **39 Zeiteinträge**, 13 Rapporte, 66 Protokollzeilen. Jede Aussage zur
+  Performance ist damit Rechnung, nicht Messung.
+- `current_organisation_id()` ist `stable` (0031) — Postgres wertet sie **einmal
+  je Abfrage** aus, nicht je Zeile. Der Mandantenfilter ist damit billig.
+- Indizes: jede Mandantentabelle hat einen Index auf `organisation_id`, aber
+  **fast keine zusammengesetzten**. Ausnahmen: `schliesstage
+  (organisation_id, von, bis)` und `aenderungsprotokoll (organisation_id,
+  geaendert_am desc)`. `zeiteintraege` hat `datum` und `organisation_id`
+  getrennt.
+- Zugriff läuft über **PostgREST (HTTP)**, nicht über direkte
+  Postgres-Verbindungen. Das klassische Verbindungsproblem serverloser
+  Umgebungen entfällt.
+- **29 Verwendungen des Dienstschlüssels in 20 Dateien** (`createAdminClient`)
+  — dort gilt RLS nicht. Das ist die eigentliche Angriffsfläche, nicht die
+  gemeinsame Tabelle.
+
+### Performance
+
+Hochrechnung: ein Handwerksbetrieb mit 10 Mitarbeitenden erzeugt grob
+11'000 Zeiteinträge und 3'000 Rapporte im Jahr. 200 solche Mandanten sind
+2,2 Mio. Zeiteinträge im Jahr, nach fünf Jahren gut 10 Mio. Für Postgres ist
+das unauffällig — **wenn die Indizes stimmen**.
+
+Was tatsächlich Aufmerksamkeit braucht, ist nicht die Menge, sondern:
+
+1. **Zusammengesetzte Indizes** mit `organisation_id` an erster Stelle auf den
+   heissen Tabellen (`zeiteintraege (organisation_id, datum)`,
+   `rapporte (organisation_id, datum desc)`). Bei 10 Mio. Zeilen entscheidet
+   das über Millisekunden gegen Sekunden.
+2. **Das Änderungsprotokoll wächst am schnellsten** — 26 Tabellen mit Trigger
+   auf jedes Insert, Update und Delete. Es ist gut gebaut (nur geänderte
+   Felder, nur lesbar, richtig indiziert), aber es ist der erste Kandidat für
+   Partitionierung und eine Aufbewahrungsregel. **Wie lange muss das Protokoll
+   aufbewahrt werden? Frage an die Rechtstexte, nicht an uns.**
+3. **Lauter Nachbar:** Ein Mandant, der einen Riesenexport zieht, belastet die
+   anderen. Dagegen hilft ein `statement_timeout`, keine zweite Datenbank.
+
+Getrennte Datenbanken würden bei der Performance also fast nichts gewinnen —
+und bei der Verbindungseffizienz verlieren (200 Pools statt einem).
+
+### Sicherheit
+
+Die Frage des Interessenten ist berechtigt, aber der stärkste Punkt ist ein
+anderer als der genannte. RLS ist eine **Grenze in der Datenbank**, kein Filter
+in der Anwendung — das ist mehr, als viele SaaS haben. Die Lücke sind die
+**29 Stellen mit Dienstschlüssel**: Export, Plattformbereich, Cron,
+Stripe-Webhook, Einladung. Dort schützt keine Policy, nur der Code.
+
+Der reale Vorfall dazu ist 0070: Eine einzige Bedingung zu viel
+(`or is_platform_admin()` auf `profiles`) wirkte in der **ganzen Anwendung**.
+Kein Kunde sah fremde Daten, aber Arcos sah fremde Personen in jeder
+Auswahlliste. Das ist die Fehlerklasse, die eine eigene Datenbank unmöglich
+macht: falsche Verbindung heisst **keine** Daten, nicht fremde.
+
+Ehrlich auch für die Trennung: Rücksicherung eines einzelnen Mandanten wird
+trivial (heute müsste man alles zurückrollen), eigene Region pro Kunde wird
+möglich, und manche Einkaufsabteilung verlangt es unabhängig von der
+technischen Begründung.
+
+### Warum trotzdem nicht — drei Gründe
+
+1. **Migrationen.** 70 Migrationen, vom Nutzer von Hand ausgeführt. Bei 200
+   Datenbanken entsteht dauerhaft ein Versionsgefälle. 0052 hat das für
+   *Daten*migrationen schon durchdacht: „Sonst laufen mehrere Datenmodelle
+   gleichzeitig in Produktion, jeder Lesepfad braucht dauerhaft beide
+   Varianten." Für *Schema*migrationen gilt es doppelt.
+2. **Der gemeinsame Teil verschwindet nicht, er verdoppelt sich.**
+   Supabase Auth ist je Projekt; `login-mandant.ts` löst heute schon auf,
+   zu welchem Mandanten eine Adresse gehört; die **Rechnungen der Arcos Group
+   haben einen Nummernkreis je Jahr über alle Mandanten**; dazu
+   Plattformbereich, Nachtlauf und Stripe-Webhook. Das alles braucht eine
+   Steuer-Datenbank. Silo heisst also: Mandanten-DBs **plus** Steuerebene —
+   zwei Architekturen statt einer.
+3. **Marge.** Ein eigenes Projekt kostet in der Grössenordnung von CHF 10–15
+   im Monat (aktuelle Preisliste prüfen). Ein Mandant mit 5 Lizenzen zahlt
+   CHF 75. Das sind 15–20 % des Umsatzes für die Datenbank allein, gegen
+   Rappen heute.
+
+### Empfehlung
+
+**Beim gemeinsamen Modell bleiben, es härten, und eine eigene Instanz als
+bezahlte Option offenhalten** (Dedicated-Stufe mit Aufpreis und
+Einrichtungspauschale) für die wenigen, die es verlangen.
+
+Die entscheidende Entwurfsregel dazu: **Das Schema ist in beiden Modellen
+identisch.** `organisation_id` bleibt in jeder Tabelle, auch in einer
+dedizierten Datenbank. Dann gibt es eine Codebasis, einen Migrationssatz, und
+der Umzug eines Mandanten von geteilt nach dediziert ist Export plus Import.
+Damit wird der offene Punkt „Import/Wiederherstellung aus dem Vollexport" von
+einer Bequemlichkeit zu einer strategischen Fähigkeit.
+
+### Härtung, konkret
+
+- Die 29 Stellen mit Dienstschlüssel durchgehen: Wo er nötig ist, **immer
+  explizit auf `organisation_id` filtern**. Eine Prüfung, die eine neue
+  Verwendung ohne Mandantenfilter meldet, wäre die passende Leitplanke.
+- `scripts/mandanten-pruefen.mjs` regelmässig laufen lassen, nicht nur bei
+  Verdacht — das Werkzeug ist da.
+- Zusammengesetzte Indizes wie oben.
+- `statement_timeout` gegen den lauten Nachbarn.
+- Änderungsprotokoll partitionieren, Aufbewahrung festlegen.
+- Optional: `organisation_id` in das JWT, dann braucht RLS nicht einmal den
+  Blick in `profiles`.
+
+### Was der Interessent bekommen sollte
+
+Nicht „eine eigene Datenbank", sondern ein **Sicherheitsdatenblatt (TOM)**:
+Region Zürich, RLS als Grenze in der Datenbank, Verschlüsselung im Ruhezustand,
+Sicherungen, das Prüfwerkzeug für die Mandantentrennung, AVV, Nachfrist,
+Export und Löschung. Und für die, die trotzdem darauf bestehen: die
+Dedicated-Stufe zum Preis.
+
+**Nicht von uns zu entscheiden:** ob seine Datenkategorie eine physische
+Trennung *verlangt*. Das ist eine Frage an einen Anwalt oder Datenschutz-
+berater — und möglicherweise stellen seine eigenen Kunden vertragliche
+Anforderungen, die technisch gar nicht begründet sein müssen.
+
+---
+
+## 9. Was davon unabhängig ist
 
 Das Arbeitspaket **Datenmodell-Leitplanken** hängt an keiner dieser
 Entscheidungen und kann vorher laufen:
