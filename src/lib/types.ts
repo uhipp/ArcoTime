@@ -28,6 +28,10 @@ export type Kunde = {
   telefon: string | null;
   waehrung: string;
   zahlungskondition_tage: number;
+  // false = Geschäftspartner ohne Kundenrolle (0074): steht im
+  // Adressbuch, aber nicht in der Kundenliste und nicht in der
+  // Auswahl eines Auftrags.
+  ist_kunde: boolean;
   notizen: string | null;
   // Vorbelegung des Rabatts bei neuen Zeiteinträgen dieses Kunden. Wirkt
   // nicht rückwirkend – der Rabatt wird pro Eintrag gespeichert.

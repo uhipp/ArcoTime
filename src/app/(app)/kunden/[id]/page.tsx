@@ -5,6 +5,12 @@ import { getCurrentProfile } from "@/lib/get-profile";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { KundeForm } from "@/components/kunde-form";
 import { KundenPreiseRabatte } from "@/components/kunden-preise-rabatte";
+import {
+  KundenAnsprechpersonen,
+  type AnsprechpersonZeile,
+  type KontaktZeile,
+  type KontaktArt,
+} from "@/components/kunden-ansprechpersonen";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateKunde, deleteKunde } from "@/app/actions/kunden";
 import { DeleteButton } from "@/components/delete-button";
@@ -62,6 +68,9 @@ export default async function KundeDetailPage({
     { data: alleKlassen },
     { data: kundenpreise },
     { data: kundenrabatte },
+    { data: ansprechpersonen },
+    { data: kontakte },
+    { data: kontaktArten },
   ] = await Promise.all([
     getCurrentProfile(),
     supabase.from("kunden").select("*").eq("id", id).single(),
@@ -83,11 +92,56 @@ export default async function KundeDetailPage({
       .from("kundenrabatte")
       .select("id, rabatt_prozent, klasse_id, dienstleistungsklassen(id, bezeichnung)")
       .eq("kunde_id", id),
+    // Ansprechpersonen und Kontaktkanäle (0074). Die Kontakte kommen in
+    // einem Zug: Sie hängen entweder am Kunden oder an einer seiner
+    // Personen, und zwei Abfragen für dieselbe Liste wären Verschwendung.
+    supabase
+      .from("ansprechpersonen")
+      .select(
+        // Die Kontakte der Person kommen als Einbettung mit: PostgREST löst
+        // sie über den einzigen Fremdschlüssel zwischen den beiden Tabellen
+        // auf, und eine zweite Abfrage je Person wäre N+1.
+        "id, anrede, vorname, name, funktion, notiz, ist_standard, aktiv, kontakte(id, wert, bemerkung, art_id, kunde_id, ansprechperson_id)"
+      )
+      .eq("kunde_id", id)
+      .order("ist_standard", { ascending: false })
+      .order("name"),
+    // Die Angaben des Betriebs selbst – ohne Person.
+    supabase
+      .from("kontakte")
+      .select("id, wert, bemerkung, art_id, kunde_id, ansprechperson_id")
+      .eq("kunde_id", id),
+    supabase
+      .from("kontakt_arten")
+      .select("id, bezeichnung, art")
+      .eq("aktiv", true)
+      .order("sortierung"),
   ]);
 
   if (!kunde) notFound();
 
   const istAdmin = darf(profile, "kunden.loeschen");
+
+  // Die Einbettung liefert die Kontakte je Person; die Komponente arbeitet mit
+  // einer flachen Liste und trennt sie selbst nach Bezug.
+  type PersonMitKontakten = AnsprechpersonZeile & { kontakte?: KontaktZeile[] };
+  const personenRoh = (ansprechpersonen as PersonMitKontakten[] | null) ?? [];
+  // Die eingebetteten Kontakte hier abstreifen: Sie wandern in die flache
+  // Liste darunter, und die Komponente soll sie nicht zweimal bekommen.
+  const personen: AnsprechpersonZeile[] = personenRoh.map((p) => ({
+    id: p.id,
+    anrede: p.anrede,
+    vorname: p.vorname,
+    name: p.name,
+    funktion: p.funktion,
+    notiz: p.notiz,
+    ist_standard: p.ist_standard,
+    aktiv: p.aktiv,
+  }));
+  const alleKontakte: KontaktZeile[] = [
+    ...((kontakte as KontaktZeile[] | null) ?? []),
+    ...personenRoh.flatMap((p) => p.kontakte ?? []),
+  ];
 
   const updateAction = updateKunde.bind(null, id);
   const deleteAction = deleteKunde.bind(null, id);
@@ -272,6 +326,14 @@ export default async function KundeDetailPage({
           </div>
         </div>
       </div>
+
+      <KundenAnsprechpersonen
+        kundeId={id}
+        personen={personen}
+        kontakte={alleKontakte}
+        arten={(kontaktArten ?? []) as KontaktArt[]}
+        istAdmin={istAdmin}
+      />
 
       <div>
         <h2 className="text-lg font-medium mb-4">Dokumente</h2>

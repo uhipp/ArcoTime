@@ -20,10 +20,23 @@ const SPALTEN: Spalte<Kunde>[] = [
     fest: true,
     wert: (k) => [k.vorname, k.name].filter(Boolean).join(" ") || null,
     zelle: (k) => (
-      <Link href={`/kunden/${k.id}`} className="text-arcos-steel hover:underline">
-        {k.vorname ? `${k.vorname} ` : ""}
-        {k.name}
-      </Link>
+      <span className="flex items-center gap-2">
+        <Link href={`/kunden/${k.id}`} className="text-arcos-steel hover:underline">
+          {k.vorname ? `${k.vorname} ` : ""}
+          {k.name}
+        </Link>
+        {/* Die Liste IST das Adressbuch und zeigt deshalb auch Partner ohne
+            Kundenrolle – ein Eigentümer wäre sonst nicht erreichbar. Dann
+            muss sie es aber sagen (0074). */}
+        {!k.ist_kunde && (
+          <span
+            title="Geschäftspartner ohne Kundenrolle – erscheint nicht in der Auswahl eines Auftrags"
+            className="rounded bg-gray-100 text-gray-500 text-xs px-1.5 py-0.5"
+          >
+            nur Adresse
+          </span>
+        )}
+      </span>
     ),
   },
   {

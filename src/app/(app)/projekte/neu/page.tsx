@@ -12,7 +12,13 @@ export default async function NeuesProjektPage({
   const begriffe = await getBegriffe();
   const supabase = await createClient();
   const [{ data: kunden }, { data: mitarbeitende }] = await Promise.all([
-    supabase.from("kunden").select("id, name, vorname").order("name"),
+    supabase
+      .from("kunden")
+      .select("id, name, vorname")
+      // Nur echte Kunden: Vertragspartner eines Auftrags. Ein Eigentümer oder Architekt
+      // steht im Adressbuch, gehört aber nicht hierher (0074).
+      .eq("ist_kunde", true)
+      .order("name"),
     supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
   ]);
 

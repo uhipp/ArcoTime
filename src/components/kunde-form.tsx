@@ -132,6 +132,29 @@ export function KundeForm({
       </section>
 
       <section>
+        {/* Ein Geschäftspartner muss kein Kunde sein: Eigentümer, Architekten
+            und Behörden gehören ins Adressbuch, aber nicht in die Auswahl
+            eines Auftrags (0074). Vorbelegt mit ja – der Normalfall bleibt
+            der Kunde. */}
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="ist_kunde"
+            defaultChecked={kunde?.ist_kunde ?? true}
+            className="mt-0.5"
+          />
+          <span>
+            <span className="font-medium">Ist Kunde</span>
+            <span className="block text-xs text-gray-500">
+              Ohne Häkchen bleibt der Eintrag im Adressbuch, erscheint aber
+              nicht in der Kundenliste und nicht in der Auswahl eines
+              Auftrags – für Eigentümer, Architekten, Behörden.
+            </span>
+          </span>
+        </label>
+      </section>
+
+      <section>
         <label className="block text-sm font-medium mb-1">Notizen</label>
         <textarea
           name="notizen"

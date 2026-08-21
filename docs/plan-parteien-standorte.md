@@ -1,7 +1,7 @@
 # Plan: Parteien, Standorte und Beschriftungen
 
-Stand: 21.08.2026 · **abgenommen** · **Etappen 1 und 2 erledigt** ·
-**Etappe 3 geschrieben** (0074 und 0075 warten auf die Ausführung)
+Stand: 21.08.2026 · **abgenommen** · **Etappen 1 bis 3 erledigt** ·
+Etappe 4 (Standorte, 0076) als Nächstes
 
 > **Nummern verschoben:** 0075 ist neu die Freigabe der Branchenvorlagen für
 > Arcos (Wunsch vom 21.08.: neue Vorlagen sollen ohne Deployment entstehen und
@@ -330,8 +330,9 @@ Bezeichnung (ohne ihn stünde auf dem Knopf „Neues Auftrag") und eine Tabelle
 in der Oberfläche benannt: Navigation, Seitentitel, Knöpfe. Adressen im
 Browser, Hilfeseiten und Comatic-Spalten bleiben, sie sind Schnittstellen.
 
-**Etappe 3 — Parteien** (0074, 0075) — *geschrieben am 21.08.2026,
-Migrationen warten auf die Ausführung.* Ansprechpersonen und Kontaktkanäle,
+**Etappe 3 — Parteien** (0074, 0075) — **erledigt am 21.08.2026.**
+Migrationen ausgeführt und nachgeprüft: 14 Kontakte aus den Kundenadressen
+übernommen, 5 Kontaktarten je Mandant, `ist_kunde` überall gesetzt. Ansprechpersonen und Kontaktkanäle,
 sichtbar am Kunden. Unabhängig nützlich, auch ohne Standorte. Dazu die
 Freigabe der Branchenvorlagen für Arcos.
 

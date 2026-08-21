@@ -6,6 +6,10 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "Arcos kann neue **Branchenvorlagen** für die Bezeichnungen anlegen – sie sind sofort in allen Betrieben verfügbar. Eine Änderung an einer Vorlage verändert nichts, was ein Betrieb schon übernommen hat."
+      },
+      {
+        "typ": "neu",
         "text": "Neu bei den Kunden: **Ansprechpersonen** mit eigenen Kontaktkanälen. Sobald ein Kunde grösser ist, gibt es dort mehrere Personen mit eigener Nummer und eigener Mailadresse – die stehen jetzt beim Kunden statt in einer Notiz. Die Kanäle sind frei verwaltbar (E-Mail, Telefon, Mobil, Direktwahl, WhatsApp, und was ihr ergänzt)."
       },
       {

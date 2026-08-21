@@ -19,7 +19,13 @@ export default async function NeueAnfragePage({
     { data: kanaele },
     { data: prioritaeten },
   ] = await Promise.all([
-    supabase.from("kunden").select("id, name, vorname").order("name"),
+    supabase
+      .from("kunden")
+      .select("id, name, vorname")
+      // Nur echte Kunden: Auftraggeber einer Anfrage. Ein Eigentümer oder Architekt
+      // steht im Adressbuch, gehört aber nicht hierher (0074).
+      .eq("ist_kunde", true)
+      .order("name"),
     supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),

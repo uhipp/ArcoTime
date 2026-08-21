@@ -38,6 +38,27 @@ Legt jemand versehentlich zweimal denselben Kunden an (z.B. weil zwei Mitarbeite
 
 Auf der Detailseite eines Kunden siehst du dessen komplette Historie: alle Anfragen und alle Zeiterfassungen, filterbar nach Zeitraum und Status.
 
+## Ansprechpersonen und Kontakt
+
+Auf der Detailseite steht unter **Ansprechpersonen und Kontakt**, wer beim Kunden zuständig ist. Sobald ein Betrieb grösser ist, gibt es dort mehrere Personen mit eigener Nummer und eigener Mailadresse – die Sachbearbeiterin der Verwaltung, der Hauswart, die Filialleitung.
+
+Der Block ist zweigeteilt:
+
+- **Betrieb** – die Angaben, die dem Kunden als Ganzem gehören (die Zentrale).
+- **Je Person** – eigene Kontaktangaben, dazu Funktion und Notiz.
+
+Die **Kontaktarten** (E-Mail, Telefon, Mobil, Direktwahl, WhatsApp) verwaltet ein Admin unter [Einstellungen](/hilfe/einstellungen); eigene lassen sich ergänzen. Mailadressen und Nummern sind anklickbar – auf dem Telefon führt der Tipp direkt in den Anruf.
+
+Eine Person kann als **Standard** markiert werden. Es gibt höchstens eine je Kunde: Zwei Standardpersonen wären keine Vorgabe, sondern eine Frage. Wer eine zweite markiert, löst die erste ab.
+
+Statt eine Person zu löschen, lässt sich das Häkchen **aktiv** entfernen – sie bleibt dann lesbar, verschwindet aber aus den Vorschlägen. Löschen dürfen nur Admins; die Kontaktangaben der Person gehen dabei mit.
+
+## Geschäftspartner, die keine Kunden sind
+
+Nicht jede Adresse ist ein Kunde. Bei einer Liegenschaftsverwaltung gehört der **Eigentümer** dazu, bei einem grösseren Vorhaben der **Architekt** oder eine **Behörde** – Adressen, die man braucht, an die aber kein Auftrag geht.
+
+Dafür gibt es im Kundenformular das Häkchen **„Ist Kunde"**. Ohne dieses Häkchen bleibt der Eintrag im Adressbuch und in dieser Liste (dort mit dem Vermerk „nur Adresse"), erscheint aber **nicht** in der Auswahl eines Auftrags, einer Anfrage oder eines Rapports.
+
 ## Preise & Rabatte
 
 Unter den Stammdaten liegt der Block **"Preise & Rabatte"** mit zwei Listen. Beide wirken ausschliesslich auf **neu erfasste** Zeiteinträge – bestehende behalten Preis und Rabatt, die beim Erfassen galten. Eine Änderung rechnet also nie rückwirkend um.

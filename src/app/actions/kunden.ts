@@ -30,6 +30,9 @@ function kundeFromForm(formData: FormData) {
     telefon: str(formData.get("telefon")),
     waehrung: str(formData.get("waehrung")) ?? "CHF",
     zahlungskondition_tage: num(formData.get("zahlungskondition_tage")) ?? 30,
+    // Ohne Häkchen bleibt der Eintrag ein Geschäftspartner ohne Kundenrolle
+    // (0074) – Eigentümer, Architekt, Behörde.
+    ist_kunde: formData.get("ist_kunde") === "on",
     // Nur Vorbelegung für neue Zeiteinträge – siehe kunden.standard_rabatt_prozent.
     standard_rabatt_prozent: Math.min(
       100,
@@ -227,4 +230,124 @@ export async function loescheKundenrabatt(kundeId: string, id: string) {
   await supabase.from("kundenrabatte").delete().eq("id", id);
   revalidatePath(`/kunden/${kundeId}`);
   redirect(mitErfolg(`/kunden/${kundeId}`, "Klassenrabatt entfernt."));
+}
+
+// ---------------------------------------------------------------------
+// Ansprechpersonen und Kontaktkanäle (0074)
+// ---------------------------------------------------------------------
+//
+// Sobald ein Kunde grösser ist, gibt es dort mehrere Personen, die für den
+// Betrieb wichtig sind – die Sachbearbeiterin der Verwaltung, der Hauswart,
+// die Filialleitung. Bis 0074 standen sie in einer Notiz.
+//
+// Nach dem Speichern zurück ins leere Formular (fokus=…), wie überall in
+// ArcoTime: Wer eine Person erfasst, erfasst meistens gleich die nächste.
+
+export async function speichereAnsprechperson(kundeId: string, formData: FormData) {
+  const supabase = await createClient();
+  const str = (v: FormDataEntryValue | null) =>
+    v && String(v).trim() !== "" ? String(v).trim() : null;
+
+  const id = str(formData.get("id"));
+  const name = str(formData.get("name"));
+  if (!name) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Der Name ist ein Pflichtfeld.")}`);
+  }
+
+  const werte = {
+    kunde_id: kundeId,
+    anrede: str(formData.get("anrede")),
+    vorname: str(formData.get("vorname")),
+    name,
+    funktion: str(formData.get("funktion")),
+    notiz: str(formData.get("notiz")),
+    ist_standard: formData.get("ist_standard") === "on",
+    aktiv: formData.get("aktiv") !== "off",
+  };
+
+  // Nur eine Standardperson je Kunde: Zwei "Standard" sind keine Vorgabe,
+  // sondern eine Frage. Das Zurücksetzen läuft vor dem Speichern, damit die
+  // neue Wahl nicht gleich wieder mitzurückgesetzt wird.
+  if (werte.ist_standard) {
+    let abfrage = supabase
+      .from("ansprechpersonen")
+      .update({ ist_standard: false })
+      .eq("kunde_id", kundeId);
+    if (id) abfrage = abfrage.neq("id", id);
+    await abfrage;
+  }
+
+  const { error } = id
+    ? await supabase.from("ansprechpersonen").update(werte).eq("id", id)
+    : await supabase.from("ansprechpersonen").insert(werte);
+
+  if (error) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(
+    mitErfolg(
+      `/kunden/${kundeId}?fokus=neue_ansprechperson`,
+      id ? "Ansprechperson gespeichert." : "Ansprechperson erfasst."
+    )
+  );
+}
+
+export async function loescheAnsprechperson(kundeId: string, id: string) {
+  const supabase = await createClient();
+  // Die Kontakte der Person gehen mit (on delete cascade in 0074) – sie
+  // gehören ihr und niemandem sonst.
+  const { error } = await supabase.from("ansprechpersonen").delete().eq("id", id);
+  if (error) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}`, "Ansprechperson entfernt."));
+}
+
+// Ein Kontakt hängt entweder am Kunden oder an einer Person – genau an einem
+// von beiden, das erzwingt die Bedingung in 0074. Welches von beiden, sagt
+// das Formular.
+export async function speichereKontakt(kundeId: string, formData: FormData) {
+  const supabase = await createClient();
+  const str = (v: FormDataEntryValue | null) =>
+    v && String(v).trim() !== "" ? String(v).trim() : null;
+
+  const artId = str(formData.get("art_id"));
+  const wert = str(formData.get("wert"));
+  const ansprechpersonId = str(formData.get("ansprechperson_id"));
+
+  if (!artId) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte eine Kontaktart wählen.")}`);
+  }
+  if (!wert) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte einen Wert angeben.")}`);
+  }
+
+  const { error } = await supabase.from("kontakte").insert({
+    // Genau ein Bezug: Person, wenn eine gewählt ist, sonst der Kunde.
+    kunde_id: ansprechpersonId ? null : kundeId,
+    ansprechperson_id: ansprechpersonId,
+    art_id: artId,
+    wert,
+    bemerkung: str(formData.get("bemerkung")),
+  });
+
+  if (error) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}?fokus=neuer_kontakt`, "Kontakt erfasst."));
+}
+
+export async function loescheKontakt(kundeId: string, id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("kontakte").delete().eq("id", id);
+  if (error) {
+    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath(`/kunden/${kundeId}`);
+  redirect(mitErfolg(`/kunden/${kundeId}`, "Kontakt entfernt."));
 }

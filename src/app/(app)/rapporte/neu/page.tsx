@@ -18,7 +18,13 @@ export default async function NeuerRapportPage({
   const organisation = await getCurrentOrganisation();
 
   const [{ data: kunden }, { data: projekte }, { data: mitarbeitende }] = await Promise.all([
-    supabase.from("kunden").select("id, name, vorname").order("name"),
+    supabase
+      .from("kunden")
+      .select("id, name, vorname")
+      // Nur echte Kunden: Filter für die Auftragsauswahl. Ein Eigentümer oder Architekt
+      // steht im Adressbuch, gehört aber nicht hierher (0074).
+      .eq("ist_kunde", true)
+      .order("name"),
     supabase.from("projekte").select("id, bezeichnung, kunde_id, projektleiter_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
   ]);

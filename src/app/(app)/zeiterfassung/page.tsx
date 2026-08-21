@@ -155,7 +155,13 @@ export default async function ZeiterfassungPage({
       .select("id, bezeichnung, beschreibung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id, menge_aus_anreise")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
-    supabase.from("kunden").select("id, name, vorname").order("name"),
+    supabase
+      .from("kunden")
+      .select("id, name, vorname")
+      // Nur echte Kunden: Filter für die Auftragsauswahl. Ein Eigentümer oder Architekt
+      // steht im Adressbuch, gehört aber nicht hierher (0074).
+      .eq("ist_kunde", true)
+      .order("name"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
     supabase.from("kundenrabatte").select("kunde_id, klasse_id, rabatt_prozent"),
     supabase
