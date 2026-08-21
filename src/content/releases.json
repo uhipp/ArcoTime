@@ -5,6 +5,10 @@
     "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
     "eintraege": [
       {
+        "typ": "behoben",
+        "text": "Im Rapportformular lässt sich neben „Projekt“ jetzt direkt ein neues Projekt anlegen – wie im Anfrage- und im Zeiterfassungsformular. Bisher war der Weg dort verschlossen: Wer einen Rapport für einen Kunden ohne Projekt anlegen wollte, musste die Maske verlassen, das Projekt unter „Projekte“ erfassen und von vorn beginnen. Die Hilfeseite beschrieb den Knopf schon, es gab ihn nur nicht."
+      },
+      {
         "typ": "verbessert",
         "text": "Zeiten derselben Person können sich nicht mehr überlappen, und je Person läuft nur ein Timer. Beides prüft neu die Datenbank statt nur das Formular – die Regel gilt damit auch für Erfassungswege, die später dazukommen."
       },

@@ -9,6 +9,7 @@ import type { Rapport } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import { STAND_FELD } from "@/lib/konflikt";
+import { useProjektSchnellErstellen } from "@/components/projekt-schnell-erstellen";
 
 type KundeOption = { id: string; name: string; vorname: string | null };
 type ProjektOption = {
@@ -74,9 +75,49 @@ export function RapportKopfForm({
       aktuellerUserId
   );
 
+  // Die Projektliste liegt im Zustand, damit ein im Fenster neu angelegtes
+  // Projekt sofort in der Auswahl steht, ohne die Seite neu zu laden.
+  const [projekteListe, setProjekteListe] = useState(projekte);
+
+  const projektHook = useProjektSchnellErstellen({
+    kunden,
+    // Beim Öffnen liest der Hook diesen Wert neu (siehe oeffnen() dort), der
+    // im Rapport gewählte Kunde ist also vorbelegt.
+    vorausgewaehlterKunde: kundeId,
+    onErstellt: (projekt) => {
+      setProjekteListe((liste) =>
+        // Der Hook liefert auch ein BESTEHENDES Projekt zurück, wenn man im
+        // Fenster "bestehendes verwenden" wählt – dann nicht doppelt eintragen.
+        liste.some((p) => p.id === projekt.id)
+          ? liste
+          : [
+              ...liste,
+              {
+                id: projekt.id,
+                bezeichnung: projekt.bezeichnung,
+                kunde_id: projekt.kunde_id,
+              },
+            ].sort((a, b) => a.bezeichnung.localeCompare(b.bezeichnung, "de-CH"))
+      );
+      // Das Projekt bringt seinen Kunden mit: Wurde er im Fenster gleich mit
+      // angelegt, springt der Filter oben mit.
+      setKundeId(projekt.kunde_id);
+      setProjektId(projekt.id);
+    },
+  });
+
   // Nur Projekte des gewählten Kunden – dieselbe Regel wie im
   // Anfrage-Formular (Bug0005).
-  const projekteDesKunden = kundeId ? projekte.filter((p) => p.kunde_id === kundeId) : [];
+  const projekteDesKunden = kundeId ? projekteListe.filter((p) => p.kunde_id === kundeId) : [];
+
+  // Ein gewähltes Projekt, das der Filter nicht enthält, muss trotzdem als
+  // Option da sein – sonst steht im Auswahlfeld ein Wert, den es nicht gibt,
+  // und die Auswahl sieht leer aus. Fall: Der Kunde wurde im Projektfenster
+  // gleich mit angelegt und steht in der Kundenliste dieser Seite noch nicht.
+  const projektOptionen =
+    projektId && !projekteDesKunden.some((x) => x.id === projektId)
+      ? [...projekteDesKunden, ...projekteListe.filter((x) => x.id === projektId)]
+      : projekteDesKunden;
 
   // Planung: Zustand im Formular halten, damit ein Klick auf eine freie
   // Zeit die Felder füllen kann.
@@ -134,270 +175,279 @@ export function RapportKopfForm({
   function waehleKunde(neu: string) {
     setKundeId(neu);
     setProjektId((aktuell) => {
-      const p = projekte.find((x) => x.id === aktuell);
+      const p = projekteListe.find((x) => x.id === aktuell);
       return p?.kunde_id === neu ? aktuell : "";
     });
   }
 
   return (
-    <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
-      {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
-          Datensatz seither unverändert ist – siehe lib/konflikt. */}
-      {rapport?.updated_at && (
-        <input type="hidden" name={STAND_FELD} value={String(rapport.updated_at)} />
-      )}
-      {meldung && (
-        <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{meldung}</div>
-      )}
+    <>
+      <form action={formAction} className="space-y-5 bg-white rounded-lg border p-5 max-w-2xl">
+        {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
+            Datensatz seither unverändert ist – siehe lib/konflikt. */}
+        {rapport?.updated_at && (
+          <input type="hidden" name={STAND_FELD} value={String(rapport.updated_at)} />
+        )}
+        {meldung && (
+          <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">{meldung}</div>
+        )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="kunde_filter">
-            Kunde
-          </label>
-          <select
-            id="kunde_filter"
-            // Kein Feld des Rapports: Der Kunde kommt über das Projekt (0071).
-            // Der Name sagt das, damit niemand ihn in der Aktion sucht.
-            name="kunde_filter"
-            required
-            disabled={gesperrt}
-            value={kundeId}
-            onChange={(e) => waehleKunde(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
-          >
-            <option value="" disabled>
-              Bitte wählen…
-            </option>
-            {kunden.map((k) => (
-              <option key={k.id} value={k.id}>
-                {k.vorname ? `${k.vorname} ` : ""}
-                {k.name}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="kunde_filter">
+              Kunde
+            </label>
+            <select
+              id="kunde_filter"
+              // Kein Feld des Rapports: Der Kunde kommt über das Projekt (0071).
+              // Der Name sagt das, damit niemand ihn in der Aktion sucht.
+              name="kunde_filter"
+              required
+              disabled={gesperrt}
+              value={kundeId}
+              onChange={(e) => waehleKunde(e.target.value)}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              <option value="" disabled>
+                Bitte wählen…
               </option>
-            ))}
-          </select>
+              {kunden.map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.vorname ? `${k.vorname} ` : ""}
+                  {k.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium" htmlFor="projekt_id">
+                Projekt
+              </label>
+              {!gesperrt && projektHook.trigger}
+            </div>
+            <select
+              id="projekt_id"
+              name="projekt_id"
+              required
+              disabled={gesperrt}
+              value={projektId}
+              onChange={(e) => {
+                setProjektId(e.target.value);
+                // Projektleitung übernehmen, solange der Rapport neu ist.
+                const leitung = projekteListe.find((p) => p.id === e.target.value)?.projektleiter_id;
+                if (!rapport && leitung) setMitarbeiterId(leitung);
+              }}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              {/* Kein "Kein Projekt" mehr: Ohne Projekt lässt sich keine
+                  Position erfassen und keine Standardposition anlegen – ein
+                  solcher Rapport kann nichts und sieht doch aus wie einer.
+                  Genau das ist im Test passiert. */}
+              <option value="" disabled>
+                Bitte wählen…
+              </option>
+              {projektOptionen.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.bezeichnung}
+                </option>
+              ))}
+            </select>
+            {!kundeId && (
+              <p className="text-xs text-gray-400 mt-1">Bitte zuerst den Kunden wählen.</p>
+            )}
+            {kundeId && projekteDesKunden.length === 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Für diesen Kunden ist noch kein Projekt erfasst – „+ Neues Projekt“
+                oben legt eines an.
+              </p>
+            )}
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="projekt_id">
-            Projekt
-          </label>
-          <select
-            id="projekt_id"
-            name="projekt_id"
-            required
-            disabled={gesperrt}
-            value={projektId}
-            onChange={(e) => {
-              setProjektId(e.target.value);
-              // Projektleitung übernehmen, solange der Rapport neu ist.
-              const leitung = projekte.find((p) => p.id === e.target.value)?.projektleiter_id;
-              if (!rapport && leitung) setMitarbeiterId(leitung);
-            }}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
-          >
-            {/* Kein "Kein Projekt" mehr: Ohne Projekt lässt sich keine
-                Position erfassen und keine Standardposition anlegen – ein
-                solcher Rapport kann nichts und sieht doch aus wie einer.
-                Genau das ist im Test passiert. */}
-            <option value="" disabled>
-              Bitte wählen…
-            </option>
-            {projekteDesKunden.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.bezeichnung}
-              </option>
-            ))}
-          </select>
-          {!kundeId && (
-            <p className="text-xs text-gray-400 mt-1">Bitte zuerst den Kunden wählen.</p>
-          )}
-          {kundeId && projekteDesKunden.length === 0 && (
-            <p className="text-xs text-gray-400 mt-1">
-              Für diesen Kunden ist noch kein Projekt erfasst.
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="datum">
+              Einsatzdatum
+            </label>
+            <DatumFeld
+              id="datum"
+              name="datum"
+              required
+              disabled={gesperrt}
+              value={datum}
+              onChange={(e) => setDatum(e.target.value)}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="mitarbeiter_id">
+              Ausgeführt von
+            </label>
+            <select
+              id="mitarbeiter_id"
+              name="mitarbeiter_id"
+              disabled={gesperrt}
+              value={mitarbeiterId}
+              onChange={(e) => setMitarbeiterId(e.target.value)}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              {mitarbeitende.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+
+        {mitDisposition && (
+          <div className="rounded border border-gray-200 bg-gray-50 p-4 space-y-4">
+            <div>
+              <span className="block text-sm font-medium">Planung</span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Vom Büro eingeplanter Termin. Erscheint in der Disposition und
+                lässt sich später mit der tatsächlich erfassten Zeit vergleichen.
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="plan_person">
+                  Tagesplan von
+                </label>
+                {/* Bewusst ohne name: Wer dabei ist, steht unter
+                    "Beteiligte" – dieses Feld wählt nur, wessen Tag unten
+                    gezeigt wird, und wird nicht gespeichert. */}
+                <select
+                  id="plan_person"
+                  value={planPerson}
+                  onChange={(e) => setPlanPerson(e.target.value)}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                >
+                  <option value="">{verantwortlichName} (verantwortlich)</option>
+                  {weitereBeteiligte.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="geplant_von_zeit">
+                  Von
+                </label>
+                {/* Dieselbe Eingabe wie im Rapport: "1030", "10.30" oder
+                    "10:30" werden beim Verlassen des Felds vereinheitlicht. */}
+                <ZeitFeld
+                  key={`von-${planVon}`}
+                  id="geplant_von_zeit"
+                  name="geplant_von_zeit"
+                  startwert={planVon}
+                  onZeit={(z) => setPlanVon(z ?? "")}
+                  disabled={gesperrt}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1" htmlFor="geplant_bis_zeit">
+                  Bis
+                </label>
+                <ZeitFeld
+                  key={`bis-${planBis}`}
+                  id="geplant_bis_zeit"
+                  name="geplant_bis_zeit"
+                  startwert={planBis}
+                  onZeit={(z) => setPlanBis(z ?? "")}
+                  disabled={gesperrt}
+                />
+              </div>
+            </div>
+            {belegung && !gesperrt && (
+              <div className="rounded border border-gray-200 bg-white p-3 text-xs space-y-2">
+                {belegung.gesperrt ? (
+                  <div className="text-amber-800">
+                    <strong>{belegung.gesperrt}</strong> – an diesem Tag ist keine
+                    Planung vorgesehen. Von Hand eintragen bleibt möglich.
+                  </div>
+                ) : belegung.belegt.length > 0 ? (
+                  <div>
+                    <span className="text-gray-500">An diesem Tag bereits verplant: </span>
+                    {belegung.belegt.map((b, i) => (
+                      <span key={i} className="text-gray-700">
+                        {i > 0 ? ", " : ""}
+                        {b.von}–{b.bis} ({b.titel})
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-500">
+                    An diesem Tag ist noch nichts eingeplant.
+                  </div>
+                )}
+
+                {belegung.gesperrt ? null : belegung.frei.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-gray-500">Frei:</span>
+                    {belegung.frei.map((f) => (
+                      <button
+                        key={`${f.von}-${f.bis}`}
+                        type="button"
+                        onClick={() => {
+                          setPlanVon(f.von);
+                          setPlanBis(f.bis);
+                        }}
+                        className="rounded border border-arcos-steel text-arcos-steel px-2 py-1 hover:bg-arcos-steel hover:text-white"
+                      >
+                        {f.von}–{f.bis}
+                      </button>
+                    ))}
+                    <span className="text-gray-400">
+                      (Klick übernimmt die Zeit, Arbeitstag 07:00–18:00)
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-amber-700">
+                    Kein freies Fenster mehr an diesem Tag.
+                  </div>
+                )}
+              </div>
+            )}
+
+            <p className="text-xs text-gray-400">
+              Die Planzeiten gelten am Einsatzdatum oben. Leer lassen, wenn der
+              Termin noch nicht feststeht.
             </p>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="datum">
-            Einsatzdatum
+          <label className="block text-sm font-medium mb-1" htmlFor="bemerkung">
+            Bemerkung (erscheint auf dem Rapport)
           </label>
-          <DatumFeld
-            id="datum"
-            name="datum"
-            required
+          <textarea
+            id="bemerkung"
+            name="bemerkung"
+            rows={2}
             disabled={gesperrt}
-            value={datum}
-            onChange={(e) => setDatum(e.target.value)}
+            defaultValue={rapport?.bemerkung ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="mitarbeiter_id">
-            Ausgeführt von
-          </label>
-          <select
-            id="mitarbeiter_id"
-            name="mitarbeiter_id"
-            disabled={gesperrt}
-            value={mitarbeiterId}
-            onChange={(e) => setMitarbeiterId(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+
+        {!gesperrt && (
+          <AbsendeKnopf
+            laufttext="Wird gespeichert…"
+            className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {mitarbeitende.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-
-      {mitDisposition && (
-        <div className="rounded border border-gray-200 bg-gray-50 p-4 space-y-4">
-          <div>
-            <span className="block text-sm font-medium">Planung</span>
-            <span className="block text-xs text-gray-500 mt-0.5">
-              Vom Büro eingeplanter Termin. Erscheint in der Disposition und
-              lässt sich später mit der tatsächlich erfassten Zeit vergleichen.
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1" htmlFor="plan_person">
-                Tagesplan von
-              </label>
-              {/* Bewusst ohne name: Wer dabei ist, steht unter
-                  "Beteiligte" – dieses Feld wählt nur, wessen Tag unten
-                  gezeigt wird, und wird nicht gespeichert. */}
-              <select
-                id="plan_person"
-                value={planPerson}
-                onChange={(e) => setPlanPerson(e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">{verantwortlichName} (verantwortlich)</option>
-                {weitereBeteiligte.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1" htmlFor="geplant_von_zeit">
-                Von
-              </label>
-              {/* Dieselbe Eingabe wie im Rapport: "1030", "10.30" oder
-                  "10:30" werden beim Verlassen des Felds vereinheitlicht. */}
-              <ZeitFeld
-                key={`von-${planVon}`}
-                id="geplant_von_zeit"
-                name="geplant_von_zeit"
-                startwert={planVon}
-                onZeit={(z) => setPlanVon(z ?? "")}
-                disabled={gesperrt}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1" htmlFor="geplant_bis_zeit">
-                Bis
-              </label>
-              <ZeitFeld
-                key={`bis-${planBis}`}
-                id="geplant_bis_zeit"
-                name="geplant_bis_zeit"
-                startwert={planBis}
-                onZeit={(z) => setPlanBis(z ?? "")}
-                disabled={gesperrt}
-              />
-            </div>
-          </div>
-          {belegung && !gesperrt && (
-            <div className="rounded border border-gray-200 bg-white p-3 text-xs space-y-2">
-              {belegung.gesperrt ? (
-                <div className="text-amber-800">
-                  <strong>{belegung.gesperrt}</strong> – an diesem Tag ist keine
-                  Planung vorgesehen. Von Hand eintragen bleibt möglich.
-                </div>
-              ) : belegung.belegt.length > 0 ? (
-                <div>
-                  <span className="text-gray-500">An diesem Tag bereits verplant: </span>
-                  {belegung.belegt.map((b, i) => (
-                    <span key={i} className="text-gray-700">
-                      {i > 0 ? ", " : ""}
-                      {b.von}–{b.bis} ({b.titel})
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-gray-500">
-                  An diesem Tag ist noch nichts eingeplant.
-                </div>
-              )}
-
-              {belegung.gesperrt ? null : belegung.frei.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-gray-500">Frei:</span>
-                  {belegung.frei.map((f) => (
-                    <button
-                      key={`${f.von}-${f.bis}`}
-                      type="button"
-                      onClick={() => {
-                        setPlanVon(f.von);
-                        setPlanBis(f.bis);
-                      }}
-                      className="rounded border border-arcos-steel text-arcos-steel px-2 py-1 hover:bg-arcos-steel hover:text-white"
-                    >
-                      {f.von}–{f.bis}
-                    </button>
-                  ))}
-                  <span className="text-gray-400">
-                    (Klick übernimmt die Zeit, Arbeitstag 07:00–18:00)
-                  </span>
-                </div>
-              ) : (
-                <div className="text-amber-700">
-                  Kein freies Fenster mehr an diesem Tag.
-                </div>
-              )}
-            </div>
-          )}
-
-          <p className="text-xs text-gray-400">
-            Die Planzeiten gelten am Einsatzdatum oben. Leer lassen, wenn der
-            Termin noch nicht feststeht.
-          </p>
-        </div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium mb-1" htmlFor="bemerkung">
-          Bemerkung (erscheint auf dem Rapport)
-        </label>
-        <textarea
-          id="bemerkung"
-          name="bemerkung"
-          rows={2}
-          disabled={gesperrt}
-          defaultValue={rapport?.bemerkung ?? ""}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
-        />
-      </div>
-
-      {!gesperrt && (
-        <AbsendeKnopf
-          laufttext="Wird gespeichert…"
-          className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {absendeText}
-        </AbsendeKnopf>
-      )}
-    </form>
+            {absendeText}
+          </AbsendeKnopf>
+        )}
+      </form>
+      {/* Ausserhalb des Formulars: Ein Formular im Formular ist in HTML nicht
+          erlaubt, und das Fenster trägt selbst eines. */}
+      {projektHook.modal}
+    </>
   );
 }
