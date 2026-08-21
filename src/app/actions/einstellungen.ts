@@ -923,7 +923,7 @@ export async function uebernehmeBegriffVorlage(formData: FormData) {
   if (ladeFehler || !vorlage?.length) {
     redirect(
       `/einstellungen?error=${encodeURIComponent(
-        ladeFehler?.message ?? `Zur Vorlage "${branche}" sind keine Bezeichnungen hinterlegt.`
+        ladeFehler?.message ?? `Zur Vorlage „${branche}“ sind keine Bezeichnungen hinterlegt.`
       )}`
     );
   }
@@ -938,5 +938,5 @@ export async function uebernehmeBegriffVorlage(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect(mitErfolg("/einstellungen", `Bezeichnungen der Vorlage „${branche}" übernommen.`));
+  redirect(mitErfolg("/einstellungen", `Bezeichnungen der Vorlage „${branche}“ übernommen.`));
 }

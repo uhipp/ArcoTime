@@ -9,7 +9,10 @@ import {
   aktualisiereOrganisation,
   alsBezahltMarkieren,
   reaktiviereMitarbeiter,
+  speichereBegriffVorlagePlattform,
+  loescheBegriffVorlagePlattform,
 } from "@/app/actions/plattform";
+import { DeleteButton } from "@/components/delete-button";
 
 type Organisation = {
   id: string;
@@ -45,7 +48,7 @@ export default async function PlattformPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: organisationen }, { data: profile }] = await Promise.all([
+  const [{ data: organisationen }, { data: profile }, { data: vorlagenZeilen }] = await Promise.all([
     supabase.from("organisationen").select("*").order("erstellt_am"),
     // Profile ALLER Mandanten – seit 0070 nur noch über den Dienstschlüssel
     // erreichbar, siehe die Begründung dort. Die Berechtigung ist oben
@@ -54,9 +57,42 @@ export default async function PlattformPage({
       .from("profiles")
       .select("id, name, organisation_id, deaktiviert_am, role")
       .order("name"),
+    // Branchenvorlagen für die Bezeichnungen (0073/0075). Sie gehören
+    // Arcos und sind in allen Organisationen sichtbar.
+    createAdminClient()
+      .from("begriff_vorlagen")
+      .select("branche, schluessel, einzahl, mehrzahl, genus, sortierung")
+      .order("branche")
+      .order("sortierung"),
   ]);
 
   const orgs = (organisationen as Organisation[] | null) ?? [];
+
+  // Vorlagen nach Branche bündeln – die Tabelle hält je Bezeichnung eine
+  // Zeile, die Oberfläche pflegt sie als Ganzes.
+  type VorlageZeile = {
+    branche: string;
+    schluessel: string;
+    einzahl: string;
+    mehrzahl: string;
+    genus: string;
+  };
+  const vorlagen = new Map<string, VorlageZeile[]>();
+  for (const z of (vorlagenZeilen as VorlageZeile[] | null) ?? []) {
+    const liste = vorlagen.get(z.branche) ?? [];
+    liste.push(z);
+    vorlagen.set(z.branche, liste);
+  }
+  const BEGRIFF_FELDER: { schluessel: string; hinweis: string }[] = [
+    { schluessel: "kunde", hinweis: "Auftraggeber, Mandant" },
+    { schluessel: "standort", hinweis: "Liegenschaft, Filiale, Fahrzeug" },
+    { schluessel: "projekt", hinweis: "Auftrag, Mandat" },
+    { schluessel: "anfrage", hinweis: "Ticket, Pendenz" },
+    { schluessel: "rapport", hinweis: "Serviceschein, Montagebericht" },
+    { schluessel: "dienstleistung", hinweis: "Leistung, Artikel" },
+  ];
+  const feldWert = (branche: string, schluessel: string, feld: keyof VorlageZeile) =>
+    vorlagen.get(branche)?.find((z) => z.schluessel === schluessel)?.[feld] ?? "";
   const alleProfile = (profile as ProfilKurz[] | null) ?? [];
   const orgName = new Map(orgs.map((o) => [o.id, o.name]));
 
@@ -315,6 +351,140 @@ export default async function PlattformPage({
         Lizenzenfeld = unbegrenzt (für die eigene Organisation gedacht). Status
         „Aktiv“ setzt den Sperrgrund automatisch zurück.
       </p>
+
+      {/* --------------------------------------------------------------- */}
+      {/* Branchenvorlagen für die Bezeichnungen                          */}
+      {/* --------------------------------------------------------------- */}
+      <div className="bg-white rounded-lg border p-5 mb-8">
+        <h2 className="text-lg font-medium mb-1">Bezeichnungen: Branchenvorlagen</h2>
+        <p className="text-sm text-gray-500 mb-1">
+          Wie eine Branche die Dinge nennt. Jeder Betrieb kann eine Vorlage
+          unter Einstellungen → Bezeichnungen mit einem Klick übernehmen und
+          danach einzelne Wörter anpassen.
+        </p>
+        <p className="text-xs text-gray-500 mb-5">
+          Diese Vorlagen gehören Arcos und sind in{" "}
+          <strong>allen Organisationen sichtbar</strong>. Sie enthalten keine
+          Kundendaten und liegen deshalb bewusst ausserhalb von Vollexport und
+          Mandantenlöschung. Eine Änderung hier verändert{" "}
+          <strong>keine</strong> Bezeichnung, die ein Betrieb schon übernommen
+          hat – die steht bei ihm und gehört ihm.
+        </p>
+
+        {[...vorlagen.keys()].map((branche) => (
+          <div key={branche} className="border-t pt-4 mt-4 first:border-0 first:pt-0 first:mt-0">
+            <form action={speichereBegriffVorlagePlattform} className="space-y-2">
+              <input type="hidden" name="branche" value={branche} />
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-sm">{branche}</h3>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="submit"
+                    className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
+                  >
+                    speichern
+                  </button>
+                  {branche !== "Neutral" && (
+                    <DeleteButton
+                      action={loescheBegriffVorlagePlattform.bind(null, branche)}
+                      label="entfernen"
+                      confirmText={`Vorlage „${branche}“ entfernen? Bereits übernommene Bezeichnungen bleiben bei den Betrieben bestehen.`}
+                    />
+                  )}
+                </div>
+              </div>
+              {BEGRIFF_FELDER.map(({ schluessel, hinweis }) => (
+                <div key={schluessel} className="flex flex-wrap items-end gap-2">
+                  <div className="w-28 shrink-0">
+                    <span className="block text-xs text-gray-400">{schluessel}</span>
+                    <span className="text-xs text-gray-500">{hinweis}</span>
+                  </div>
+                  <input
+                    name={`${schluessel}_einzahl`}
+                    required
+                    defaultValue={feldWert(branche, schluessel, "einzahl")}
+                    placeholder="Einzahl"
+                    className="flex-1 min-w-[7rem] rounded border border-gray-300 px-2 py-1.5 text-sm"
+                  />
+                  <input
+                    name={`${schluessel}_mehrzahl`}
+                    required
+                    defaultValue={feldWert(branche, schluessel, "mehrzahl")}
+                    placeholder="Mehrzahl"
+                    className="flex-1 min-w-[7rem] rounded border border-gray-300 px-2 py-1.5 text-sm"
+                  />
+                  <select
+                    name={`${schluessel}_genus`}
+                    defaultValue={feldWert(branche, schluessel, "genus") || "n"}
+                    className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+                  >
+                    <option value="m">der</option>
+                    <option value="f">die</option>
+                    <option value="n">das</option>
+                  </select>
+                </div>
+              ))}
+            </form>
+          </div>
+        ))}
+
+        {/* Neue Vorlage: mit den neutralen Wörtern vorbelegt, damit nicht
+            sechs leere Felder dastehen. */}
+        <details className="border-t pt-4 mt-6">
+          <summary className="text-sm text-arcos-steel cursor-pointer">
+            + Neue Branchenvorlage
+          </summary>
+          <form action={speichereBegriffVorlagePlattform} className="space-y-2 mt-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1" htmlFor="neue_branche">
+                Name der Branche
+              </label>
+              <input
+                id="neue_branche"
+                name="branche"
+                required
+                placeholder="z.B. Garage, Gartenbau, Treuhand"
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+            {BEGRIFF_FELDER.map(({ schluessel, hinweis }) => (
+              <div key={schluessel} className="flex flex-wrap items-end gap-2">
+                <div className="w-28 shrink-0">
+                  <span className="block text-xs text-gray-400">{schluessel}</span>
+                  <span className="text-xs text-gray-500">{hinweis}</span>
+                </div>
+                <input
+                  name={`${schluessel}_einzahl`}
+                  required
+                  defaultValue={feldWert("Neutral", schluessel, "einzahl")}
+                  className="flex-1 min-w-[7rem] rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  name={`${schluessel}_mehrzahl`}
+                  required
+                  defaultValue={feldWert("Neutral", schluessel, "mehrzahl")}
+                  className="flex-1 min-w-[7rem] rounded border border-gray-300 px-2 py-1.5 text-sm"
+                />
+                <select
+                  name={`${schluessel}_genus`}
+                  defaultValue={feldWert("Neutral", schluessel, "genus") || "n"}
+                  className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+                >
+                  <option value="m">der</option>
+                  <option value="f">die</option>
+                  <option value="n">das</option>
+                </select>
+              </div>
+            ))}
+            <button
+              type="submit"
+              className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
+            >
+              Vorlage anlegen
+            </button>
+          </form>
+        </details>
+      </div>
 
       {/* --------------------------------------------------------------- */}
       {/* Deaktivierte Mitarbeitenden-Konten                              */}

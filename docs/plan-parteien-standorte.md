@@ -1,7 +1,12 @@
 # Plan: Parteien, Standorte und Beschriftungen
 
-Stand: 21.08.2026 · **abgenommen** · **Etappe 1 erledigt**, **Etappe 2
-geschrieben** (0073 wartet auf die Ausführung) · Etappe 3 als Nächstes
+Stand: 21.08.2026 · **abgenommen** · **Etappen 1 und 2 erledigt** ·
+**Etappe 3 geschrieben** (0074 und 0075 warten auf die Ausführung)
+
+> **Nummern verschoben:** 0075 ist neu die Freigabe der Branchenvorlagen für
+> Arcos (Wunsch vom 21.08.: neue Vorlagen sollen ohne Deployment entstehen und
+> in allen Organisationen sichtbar sein). Die Standorte werden damit 0076, die
+> Beteiligten 0077, und so weiter.
 
 Grundlage: [datenmodell-parteien-standorte.md](datenmodell-parteien-standorte.md)
 (Herleitung, Gespräche, verworfene Varianten) und zwei Gespräche mit
@@ -325,8 +330,19 @@ Bezeichnung (ohne ihn stünde auf dem Knopf „Neues Auftrag") und eine Tabelle
 in der Oberfläche benannt: Navigation, Seitentitel, Knöpfe. Adressen im
 Browser, Hilfeseiten und Comatic-Spalten bleiben, sie sind Schnittstellen.
 
-**Etappe 3 — Parteien** (0074). Ansprechpersonen und Kontaktkanäle, sichtbar
-am Kunden. Unabhängig nützlich, auch ohne Standorte.
+**Etappe 3 — Parteien** (0074, 0075) — *geschrieben am 21.08.2026,
+Migrationen warten auf die Ausführung.* Ansprechpersonen und Kontaktkanäle,
+sichtbar am Kunden. Unabhängig nützlich, auch ohne Standorte. Dazu die
+Freigabe der Branchenvorlagen für Arcos.
+
+Drei Entscheidungen beim Bauen: Die Ansprechperson hängt vorerst nur am Kunden
+(`check kunde_id is not null`), weil es die Standorte noch nicht gibt — 0076
+ersetzt die Bedingung durch `num_nonnulls(kunde_id, standort_id) = 1`.
+`kunden.email` und `kunden.telefon` bleiben stehen und werden **kopiert**, nicht
+verschoben: Der halbe Code liest sie (Rapportversand, Kundenkontakt,
+Comatic-Export), und zwei Wahrheiten gleichzeitig anzufassen wäre der Fehler,
+den wir gerade abbauen. Und die Tabellenliste des Änderungsprotokolls ist
+mitgezogen — Punkt 4 der Prüfliste, die Stelle, die man still verliert.
 
 **Etappe 4 — Standorte** (0075, 0076). Die Ebene, der Standardstandort, die
 Beteiligten mit Rollen. Ab hier ist die Struktur da, die die Handwerker

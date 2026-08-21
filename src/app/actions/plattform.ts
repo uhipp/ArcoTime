@@ -526,3 +526,90 @@ export async function loescheOrganisationPlattform(
     )
   );
 }
+
+// ---------------------------------------------------------------------
+// Branchenvorlagen für die Bezeichnungen (0073, 0075)
+// ---------------------------------------------------------------------
+//
+// Die Vorlagen gehören Arcos und sind in allen Organisationen sichtbar. Eine
+// Vorlage ist Text und kein Code – sie soll entstehen können, während das
+// Gespräch mit dem Betrieb noch frisch ist, und nicht erst beim nächsten
+// Deployment.
+const BEGRIFF_SCHLUESSEL = [
+  "kunde",
+  "standort",
+  "projekt",
+  "anfrage",
+  "rapport",
+  "dienstleistung",
+] as const;
+
+export async function speichereBegriffVorlagePlattform(formData: FormData) {
+  await pruefePlatformAdmin();
+  const admin = createAdminClient();
+
+  const branche = String(formData.get("branche") ?? "").trim();
+  if (!branche) {
+    redirect(`/plattform?error=${encodeURIComponent("Bitte einen Namen für die Vorlage angeben.")}`);
+  }
+
+  const zeilen = BEGRIFF_SCHLUESSEL.map((schluessel, i) => ({
+    branche,
+    schluessel,
+    einzahl: String(formData.get(`${schluessel}_einzahl`) ?? "").trim(),
+    mehrzahl: String(formData.get(`${schluessel}_mehrzahl`) ?? "").trim(),
+    genus: String(formData.get(`${schluessel}_genus`) ?? "n").trim(),
+    sortierung: i,
+  }));
+
+  // Alles oder nichts: Eine Vorlage mit drei von sechs Bezeichnungen wäre
+  // beim Übernehmen eine halbe Umbenennung, und niemand sieht, welche Hälfte
+  // fehlt.
+  const unvollstaendig = zeilen.find((z) => !z.einzahl || !z.mehrzahl);
+  if (unvollstaendig) {
+    redirect(
+      `/plattform?error=${encodeURIComponent(
+        `Bei "${unvollstaendig.schluessel}" fehlt Einzahl oder Mehrzahl. Eine Vorlage muss alle sechs Bezeichnungen tragen.`
+      )}`
+    );
+  }
+  if (zeilen.some((z) => !["m", "f", "n"].includes(z.genus))) {
+    redirect(`/plattform?error=${encodeURIComponent("Ungültiger Artikel.")}`);
+  }
+
+  const { error } = await admin
+    .from("begriff_vorlagen")
+    .upsert(zeilen, { onConflict: "branche,schluessel" });
+
+  if (error) {
+    redirect(`/plattform?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/plattform");
+  redirect(mitErfolg("/plattform", `Vorlage „${branche}“ gespeichert.`));
+}
+
+export async function loescheBegriffVorlagePlattform(branche: string) {
+  await pruefePlatformAdmin();
+  const admin = createAdminClient();
+
+  // "Neutral" ist der Rückweg: Wer eine Branchenvorlage übernommen hat und
+  // zurück zu den Vorgaben will, braucht sie. Sie zu löschen wäre eine Falle.
+  if (branche === "Neutral") {
+    redirect(
+      `/plattform?error=${encodeURIComponent(
+        "Die Vorlage „Neutral“ ist der Rückweg zu den Vorgaben und bleibt bestehen."
+      )}`
+    );
+  }
+
+  const { error } = await admin.from("begriff_vorlagen").delete().eq("branche", branche);
+  if (error) {
+    redirect(`/plattform?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Schon übernommene Bezeichnungen bleiben, wo sie sind: Sie stehen in
+  // begriffe der Organisation und haben mit der Vorlage nichts mehr zu tun.
+  revalidatePath("/plattform");
+  redirect(mitErfolg("/plattform", `Vorlage „${branche}“ entfernt.`));
+}

@@ -6,6 +6,14 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "Neu bei den Kunden: **Ansprechpersonen** mit eigenen Kontaktkanälen. Sobald ein Kunde grösser ist, gibt es dort mehrere Personen mit eigener Nummer und eigener Mailadresse – die stehen jetzt beim Kunden statt in einer Notiz. Die Kanäle sind frei verwaltbar (E-Mail, Telefon, Mobil, Direktwahl, WhatsApp, und was ihr ergänzt)."
+      },
+      {
+        "typ": "neu",
+        "text": "Ein Geschäftspartner muss nicht Kunde sein: Über das Häkchen „ist Kunde“ lassen sich Eigentümer, Architekten oder Behörden erfassen, ohne dass sie in der Kundenliste oder in der Auftragsauswahl auftauchen."
+      },
+      {
+        "typ": "neu",
         "text": "Neu unter Einstellungen: **Bezeichnungen**. Jeder Betrieb nennt die Dinge, wie er sie nennt – aus dem Projekt wird ein Auftrag, aus der Anfrage ein Ticket, aus dem Standort eine Liegenschaft. Einzahl, Mehrzahl und Artikel werden hinterlegt (die Mehrzahl lässt sich im Deutschen nicht ableiten, und ohne Artikel stünde auf dem Knopf „Neues Auftrag“). Vorlagen für Handwerk und IT-Dienstleistung setzen alles auf einmal. Wirkt in Navigation, Seitentiteln und auf den Knöpfen; die Struktur bleibt für alle dieselbe."
       },
       {

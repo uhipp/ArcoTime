@@ -219,7 +219,7 @@ export default async function EinstellungenPage({
           <strong>Knöpfen</strong>, in <strong>Spaltentiteln</strong> und in den
           Hinweisen leerer Listen. Unverändert bleiben die Adressen im Browser,
           die Hilfeseiten, die Spaltennamen im Comatic-Export und
-          zusammengesetzte Wörter wie „Projektleitung" – ein Artikel lässt sich
+          zusammengesetzte Wörter wie „Projektleitung“ – ein Artikel lässt sich
           ableiten, ein Fugen-s nicht.
         </p>
 
