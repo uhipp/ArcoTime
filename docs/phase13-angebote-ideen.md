@@ -1,5 +1,12 @@
 # Phase 13: Angebote — Ideensammlung (Phase 1 von 3)
 
+> **ZURÜCKGESTELLT am 21.08.2026.** Phase 1 (diese Sammlung samt
+> [Comatic-Analyse](phase13-comatic-analyse.md)) ist abgeschlossen; Phase 2
+> (Plandokument) beginnt erst, wenn das Vorhaben wieder aufgenommen wird.
+> Die Erkenntnis, die schon heute gilt: Das **Datenmodell von ArcoTime** muss
+> so gepflegt werden, dass es für neue Module (Angebote, Lager) und für
+> Erweiterungen im Basispaket offen bleibt — siehe Projektstand.
+
 Stand: 18.08.2026, abends · **noch nichts umgesetzt**
 
 Grundlage: ein Telefonat mit einem Interessenten — **Malergeschäft**, arbeitet

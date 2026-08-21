@@ -1,6 +1,6 @@
 # ArcoTime – Projektstand
 
-Lebendes Dokument. Letzte Nachführung: **18.08.2026.**
+Lebendes Dokument. Letzte Nachführung: **21.08.2026.**
 Es beantwortet drei Fragen: Wo stehen wir, wie arbeiten wir, was ist offen.
 
 ---
@@ -134,6 +134,16 @@ find .next -name "* [0-9].*" -delete                              # OneDrive-Kop
 ---
 
 ## 5. Was offen ist
+
+**Zurückgestellt am 21.08.2026: Phase 13 (Angebote, Lieferscheine, Lager).**
+Die Ideensammlung (`phase13-angebote-ideen.md`) und die Comatic-Analyse
+(`phase13-comatic-analyse.md`) bleiben als Grundlage für die Wiederaufnahme
+liegen. Die Erkenntnis daraus, die schon heute gilt: **Das Datenmodell muss
+offen bleiben** – für neue Module wie für Erweiterungen im Basispaket. Konkret
+heisst das: Handlisten abbauen (Modulpreise, Protokoll-Tabellenliste,
+Dokumentbereiche), Module generisch abrechnen statt namentlich, und bei jeder
+neuen Tabelle die Fragen stellen, die 0063/0064 beantwortet haben (Kommt sie
+in Export und Löschung von selbst mit? Was passiert beim Löschen des Bezugs?).
 
 **Als Nächstes**
 1. **Bestehenden Mandanten auf ein bezahltes Abo umstellen.** Der Checkout legt heute

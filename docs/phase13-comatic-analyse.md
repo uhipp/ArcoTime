@@ -1,5 +1,8 @@
 # Phase 13: Comatic-Analyse (Demo-DB vom 18.08.2026)
 
+> **Phase 13 ist am 21.08.2026 zurückgestellt** — diese Analyse bleibt als
+> Grundlage für die Wiederaufnahme bestehen.
+
 Quelle: `DEMOAG_202608181745.cmt` (Jet-4-Datenbank, 2.4 MB, 92 Tabellen),
 gelesen mit `access-parser` (nur lesend). Analysiert am 18.08.2026 abends.
 
