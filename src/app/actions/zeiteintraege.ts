@@ -12,6 +12,7 @@ import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
 import { monatGesperrt } from "@/lib/zeitkonto";
+import { datenbankFehlerText } from "@/lib/db-fehler";
 
 function zeiteintragFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
@@ -111,7 +112,7 @@ export async function createZeiteintrag(
   });
 
   if (error) {
-    return { fehler: error.message };
+    return { fehler: datenbankFehlerText(error) };
   }
 
   revalidatePath("/zeiterfassung");
@@ -157,7 +158,7 @@ export async function updateZeiteintrag(
 
   const { data: geaendert, error } = await abfrage.select("id");
   if (error) {
-    return { fehler: error.message };
+    return { fehler: datenbankFehlerText(error) };
   }
   if (!geaendert || geaendert.length === 0) {
     return { fehler: await konfliktMeldung(supabase, "zeiteintraege", id, stand) };
@@ -259,7 +260,7 @@ async function starteTimer(formData: FormData): Promise<FormularErgebnis> {
     .single();
 
   if (error || !neu) {
-    return { fehler: error?.message ?? "Unbekannter Fehler" };
+    return { fehler: datenbankFehlerText(error) };
   }
 
   redirect(mitErfolg(`/zeiterfassung/${neu.id}`, "Timer gestartet."));
@@ -301,7 +302,7 @@ async function stoppeTimer(id: string, formData: FormData): Promise<FormularErge
     .eq("id", id);
 
   if (error) {
-    return { fehler: error.message };
+    return { fehler: datenbankFehlerText(error) };
   }
 
   revalidatePath("/zeiterfassung");

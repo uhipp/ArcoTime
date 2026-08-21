@@ -5,6 +5,18 @@
     "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
     "eintraege": [
       {
+        "typ": "verbessert",
+        "text": "Zeiten derselben Person können sich nicht mehr überlappen, und je Person läuft nur ein Timer. Beides prüft neu die Datenbank statt nur das Formular – die Regel gilt damit auch für Erfassungswege, die später dazukommen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Ein Arbeitsrapport gehört jetzt zwingend zu einem Auftrag. Vorher war das Projekt am Rapport technisch freiwillig und wurde nur von einer Prüfung im Formular verlangt; der Kunde stand zusätzlich am Rapport selbst. Zwei Angaben über denselben Kunden können auseinanderlaufen – jetzt gibt es nur noch eine."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Meldungen aus der Datenbank erscheinen in verständlichem Deutsch statt im technischen Originalton."
+      },
+      {
         "typ": "neu",
         "text": "Neu unter Export: „Dokumente als ZIP“ – alle hochgeladenen Dateien des Betriebs in einem Archiv, in Ordnern nach Kunde, Projekt, Person, Anfrage, Rapport und Zeiteintrag, mit einer Liste dazu. Damit umfasst der Datenexport neu auch die Dateien und nicht nur ihre Namen."
       },

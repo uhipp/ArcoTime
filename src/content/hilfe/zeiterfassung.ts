@@ -49,6 +49,15 @@ Statt die Dauer im Nachhinein einzutragen, kannst du einen Timer starten:
 
 Ein laufender Timer ist in der Liste rot markiert und zeigt "⏱ Timer aktiv" statt einer Stundenzahl.
 
+## Zwei Regeln, die ArcoTime durchsetzt
+
+Seit dem 21.08.2026 prüft nicht mehr nur die Eingabemaske, sondern die Datenbank selbst:
+
+- **Nur ein laufender Timer je Person.** Läuft schon einer, muss er zuerst gestoppt werden – auch dann, wenn er auf einem anderen Gerät gestartet wurde.
+- **Keine überlappenden Zeiten derselben Person.** Wer von 08:00 bis 12:00 auf einem Projekt gebucht ist, kann nicht gleichzeitig von 10:00 bis 11:00 auf einem anderen stehen. Einträge mit reiner **Dauer** (ohne Von/Bis) sind davon nicht betroffen – sie sagen nichts über die Lage im Tag.
+
+Beides gilt bewusst in der Datenbank und nicht nur im Formular: So greift die Regel auch für Wege, die später dazukommen, etwa eine Erfassung über das Handy.
+
 ## Spesen, Kilometer und Material erfassen
 
 Wählst du eine Dienstleistung, die nicht als Arbeitszeit zählt (Kilometergeld, Spesen, Kleinmaterial), verschwinden Von/Bis und Dauer – stattdessen erscheint ein **Mengenfeld** mit der passenden Einheit, z.B. "Menge in km". Der Timer entfällt dort ebenfalls, ein Kilometer hat keine Laufzeit.

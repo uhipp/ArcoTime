@@ -21,6 +21,7 @@ import { RapportPdf } from "@/lib/rapport-pdf";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { legeStandardpositionenAn } from "@/lib/standardpositionen";
 import { monatGesperrt } from "@/lib/zeitkonto";
+import { datenbankFehlerText } from "@/lib/db-fehler";
 
 // Ein Rapport klammert die Positionen eines Kundeneinsatzes zusammen.
 // Positionen sind gewöhnliche Zeiteinträge mit gesetzter rapport_id –
@@ -370,7 +371,9 @@ export async function fuegePositionHinzu(
   });
 
   if (error) {
-    return { fehler: error.message };
+    // Seit 0072 kann hier eine Bedingung der Datenbank greifen (überlappende
+    // Zeiten derselben Person). Ihre Meldung im Originalton hilft niemandem.
+    return { fehler: datenbankFehlerText(error) };
   }
 
   revalidatePath(`/rapporte/${rapportId}`);
@@ -487,7 +490,7 @@ export async function aktualisierePosition(
     .select("id");
 
   if (error) {
-    return { fehler: error.message };
+    return { fehler: datenbankFehlerText(error) };
   }
   // Null betroffene Zeilen kommen ohne Fehler zurück, wenn RLS ablehnt.
   // Ohne diese Prüfung meldete die Seite "gespeichert", und die Korrektur

@@ -119,15 +119,22 @@ export function gesamtpreis(anzahlBenutzer: number, zyklus: "monatlich" | "jaehr
 // Die Bestpreis-Menge gilt nur für die Basislizenzen; das Zeitkonto
 // rechnet mit derselben abgerechneten Menge, damit auf der Rechnung
 // nicht zwei verschiedene Lizenzzahlen stehen.
+//
+// Die Module werden NICHT namentlich aufgezählt, sondern aus MODULPREISE
+// gelesen. Vorher stand hier `{ disposition?, zeitkonto? }` und zwei
+// if-Zeilen: Ein drittes Modul hätte diese Signatur und jede Aufrufstelle
+// nachgezogen – dieselbe Handliste, die 0063/0064 aus guten Gründen
+// abgeschafft haben. Ein neues Modul trägt sich jetzt selbst ein.
 export function gesamtpreisMitModulen(
   anzahlBenutzer: number,
   zyklus: "monatlich" | "jaehrlich",
-  module: { disposition?: boolean; zeitkonto?: boolean } = {}
+  module: Partial<Record<Modul, boolean>> = {}
 ): number {
   const menge = abgerechneteMenge(anzahlBenutzer, zyklus);
   let total = gesamtpreis(anzahlBenutzer, zyklus);
-  if (module.disposition) total += modulpreis("disposition", menge, zyklus);
-  if (module.zeitkonto) total += modulpreis("zeitkonto", menge, zyklus);
+  for (const modul of Object.keys(MODULPREISE) as Modul[]) {
+    if (module[modul]) total += modulpreis(modul, menge, zyklus);
+  }
   return total;
 }
 

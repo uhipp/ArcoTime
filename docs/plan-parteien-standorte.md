@@ -1,6 +1,7 @@
 # Plan: Parteien, Standorte und Beschriftungen
 
-Stand: 21.08.2026 · **zur Abnahme** · noch nichts umgesetzt
+Stand: 21.08.2026 · **abgenommen** · Etappe 1 geschrieben, Migrationen warten
+auf die Ausführung
 
 Grundlage: [datenmodell-parteien-standorte.md](datenmodell-parteien-standorte.md)
 (Herleitung, Gespräche, verworfene Varianten) und zwei Gespräche mit
@@ -251,7 +252,7 @@ vererbt sich die Redundanz des Rapports auf die neue Ebene: `standort` +
 
 | Nr. | Inhalt | Danach zu prüfen |
 |---|---|---|
-| **0071** | Rapport an den Auftrag binden: `projekt_id` befüllen und auf `not null`; `kunde_id` noch **stehen lassen** | 13 Rapporte, davon 2 ohne Projekt (leer, vom 15.08.) — **Entscheid nötig: löschen oder zuordnen** |
+| **0071** | Rapport an den Auftrag binden: `projekt_id` auf `not null`, `kunde_id` wird NULL-fähig und bleibt bis 0078 stehen; die zwei leeren Rapporte werden gelöscht (freigegeben am 21.08.) | Löschbedingung ist eng gefasst: nur ohne Projekt, ohne Positionen, Status offen. Ein Rapport mit Inhalt lässt 0071 laut scheitern |
 | **0072** | Leitplanken: partieller Unique-Index auf laufende Timer, Ausschlussbedingung gegen überlappende Zeiteinträge je Person und Tag, `quelle`, `idempotenz_schluessel`, zusammengesetzte Indizes `(organisation_id, datum)` | heute 0 Überlappungen und 0 laufende Timer — später ist beides eine Datenbereinigung |
 | **0073** | `begriffe` + Vorgaben + Vorlagen | Helfer greift, Vorgaben stehen für beide Bestandsmandanten |
 | **0074** | `ansprechpersonen`, `kontakt_arten`, `kontakte`, `kunden.ist_kunde` | `email`/`telefon` der 13 Kunden als Kontakte übernehmen, Altspalten **noch** stehen lassen |
@@ -305,7 +306,8 @@ Die eigentliche Leitplanke. Wer eine Tabelle anlegt, beantwortet zehn Fragen:
 
 ## 6. Etappen
 
-**Etappe 1 — Leitplanken** (0071, 0072 und die Codepunkte). Kein sichtbares
+**Etappe 1 — Leitplanken** (0071, 0072 und die Codepunkte) — *geschrieben am
+21.08.2026, Migrationen warten auf die Ausführung.* Kein sichtbares
 Feature, aber Voraussetzung für alles Weitere. Danach ist der Rapport am
 Auftrag, die Timer sind eindeutig, und die Prüfliste steht.
 
@@ -330,18 +332,23 @@ Release-Eintrag, Hilfeartikel — und bei 0075 zusätzlich mit einem Lauf von
 
 ## 7. Offene Punkte
 
-1. **Die zwei leeren Rapporte vom 15.08.** ohne Projekt: löschen oder einem
-   Projekt zuordnen? (Beide ohne Positionen, im Arcos-Mandanten.)
-2. **Braucht der Wechsel ein Datum?** `gueltig_von`/`gueltig_bis` sind
-   vorgesehen. Wenn „aktuell plus Liste der früheren" genügt, wäre es
-   einfacher — aber später nachzurüsten ist teuer.
-3. **`projekte.kunde_id` heute `on delete cascade`:** Das Löschen eines Kunden
+**Entschieden am 21.08.2026:**
+
+- Die zwei leeren Rapporte vom 15.08. (Mandant Demo AG, ohne Positionen)
+  **werden gelöscht** — erledigt in 0071.
+- Der Rollenwechsel **braucht ein Datum** — `gueltig_von`/`gueltig_bis`
+  bleiben im Entwurf.
+- Die Rechnung an den Eigentümer ist **dieselbe Rechnung an eine andere
+  Adresse** (Zweitausfertigung), keine zweite Fakturierung.
+
+**Weiter offen:**
+1. **`projekte.kunde_id` heute `on delete cascade`:** Das Löschen eines Kunden
    löscht seine Aufträge. Mit Zeiteinträgen scheitert es (die stehen auf
    `restrict`), aber die Absicht ist unklar. Auf `restrict` umstellen?
-4. **Darf ein Auftrag den Vertragspartner nachträglich wechseln?** Preise und
+2. **Darf ein Auftrag den Vertragspartner nachträglich wechseln?** Preise und
    Rabatte sind je Position eingefroren.
-5. **Ist die verantwortliche Person am Auftrag** eine des Kunden oder eine des
+3. **Ist die verantwortliche Person am Auftrag** eine des Kunden oder eine des
    Standorts (Hauswart)? Vermutlich beides — dann muss das Feld jede
    Ansprechperson eines Beteiligten dieses Auftrags oder Standorts zulassen.
-6. **Aufbewahrung des Änderungsprotokolls** — mit den neuen Tabellen wächst es
+4. **Aufbewahrung des Änderungsprotokolls** — mit den neuen Tabellen wächst es
    schneller. Wie lange? Frage an die Rechtstexte.
