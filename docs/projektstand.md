@@ -1,6 +1,6 @@
 # ArcoTime – Projektstand
 
-Lebendes Dokument. Letzte Nachführung: **21.08.2026.**
+Lebendes Dokument. Letzte Nachführung: **22.08.2026.**
 Es beantwortet drei Fragen: Wo stehen wir, wie arbeiten wir, was ist offen.
 
 ---
@@ -121,6 +121,10 @@ seither deckungsgleich mit der Datenbank (verwaiste Dateien 0, Zeilen ohne Datei
 - **Eine Prüfung, die still nichts findet, ist schlimmer als keine.** Werkzeuge
   brechen ab, statt eine unvollständige Vorschau zu zeigen.
 - **Bei fachlichen Regeln (Recht, Buchhaltung, HR) nicht raten, sondern fragen.**
+- **Jede Arbeitsmaske wird beim Anfassen gegen `docs/masken-leitlinie.md`
+  geprüft.** Kein Scrollen auf der Seite, Liste links und Detail rechts,
+  Nebensächliches in Reitern, und jeder Knopf sagt, was er speichert. Für
+  Einstellungsmasken gilt das bewusst nicht – dort ist Länge in Ordnung.
 
 ### Nützliche Befehle
 
