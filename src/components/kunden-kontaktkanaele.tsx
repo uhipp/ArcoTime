@@ -90,6 +90,7 @@ export function KontaktListe({
                   k.ansprechperson_id ? "personen" : "adresse"
                 )}
                 label="entfernen"
+                leise
                 confirmText={`Kontakt „${k.wert}“ entfernen?`}
               />
             </span>

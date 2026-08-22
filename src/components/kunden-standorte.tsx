@@ -277,6 +277,7 @@ function Beteiligte({
                   <DeleteButton
                     action={loescheBeteiligten.bind(null, kundeId, b.id, standortId)}
                     label="entfernen"
+                    leise
                     confirmText="Beteiligung entfernen? Die Adresse selbst bleibt bestehen."
                   />
                 </span>
