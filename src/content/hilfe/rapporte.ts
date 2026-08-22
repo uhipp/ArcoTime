@@ -19,6 +19,18 @@ export const rapporte: HilfeArtikel[] = [
     inhalt: `
 Ein Arbeitsrapport fasst alles zusammen, was bei einem Kundeneinsatz angefallen ist: Anfahrt, Arbeitszeit und verbrauchtes Material. Er ist die Klammer um mehrere Positionen, die sonst als einzelne Zeiteinträge nebeneinanderstünden.
 
+## Was auf dem Rapport steht – und warum
+
+Der Rapport ist das Blatt, mit dem jemand losfährt. Er trägt deshalb alles, was für den Einsatz nötig ist, und zwar auf dem Bildschirm **und** auf dem Ausdruck:
+
+- **Einsatzort** mit Adresse und Bezeichnung, dazu die **Navigation** (Google Maps oder Apple Karten). Die Navigation zielt auf den Einsatzort und nicht auf die Anschrift des Kunden – bei einer Verwaltung mit mehreren Liegenschaften war das bisher der Weg zum falschen Haus.
+- **Zugang**: „Schlüssel Nr. 4 im Kasten links, Code 4711, sonst beim Hauswart klingeln." Steht direkt neben der Navigation, weil er in der Minute gebraucht wird, in der man ankommt. Erfasst wird er am [Auftrag](/hilfe/projekte).
+- **Erreichbar vor Ort**: die Ansprechperson beim Kunden und die zusätzlichen Adressen des Auftrags – Eigentümer, Verwaltung, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde. Mit Rolle, Name und Nummer; Nummer und Mailadresse sind anklickbar.
+
+Die zusätzlichen Adressen erscheinen nur, wenn sie **am Tag des Einsatzes gültig** sind. Genau dafür tragen sie „ab" und „bis": Wer bis gestern Eigentümer war, war es für den Rapport von damals trotzdem – und steht dort weiterhin, aber nicht auf dem Rapport von heute.
+
+Der **Einsatzort** wird nur ausgewiesen, wenn er etwas Neues sagt: Trägt er dieselbe Adresse wie der Kunde, bleibt die Zeile weg.
+
 ## Wann brauchst du einen Rapport – und wann nicht?
 
 Ein Rapport ist **optional**. Fernwartung, Büroarbeit, interne Zeit oder eine telefonisch erledigte Anfrage erfasst du weiterhin direkt in der [Zeiterfassung](/hilfe/zeiterfassung). Der Rapport lohnt sich dort, wo ein Einsatz aus mehreren Positionen besteht und der Kunde einen Nachweis erhalten soll.

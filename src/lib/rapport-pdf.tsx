@@ -96,7 +96,7 @@ const stil = StyleSheet.create({
 });
 
 export function RapportPdf({ daten }: { daten: RapportDokument }) {
-  const { rapport, positionen, kunde, einsatzort, absender, summeStunden } = daten;
+  const { rapport, positionen, kunde, einsatzort, kontakte, absender, summeStunden } = daten;
   const einsatzortZeile = einsatzort
     ? [
         einsatzort.bezeichnung,
@@ -175,6 +175,24 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
           <View style={stil.abschnitt}>
             <Text style={stil.beschriftung}>Bemerkung</Text>
             <Text>{rapport.bemerkung}</Text>
+          </View>
+        )}
+
+        {/* Wer vor Ort erreichbar ist. Das ist der Grund, warum es diese
+            ganze Ebene gibt: Der Ausführende steht vor der Tür, niemand
+            macht auf, und dann nützt eine Nummer auf dem Blatt mehr als
+            eine Datenbank. */}
+        {kontakte.length > 0 && (
+          <View style={stil.abschnitt}>
+            <Text style={stil.beschriftung}>Erreichbar vor Ort</Text>
+            {kontakte.map((k, i) => (
+              <Text key={i}>
+                {k.rolle}: {k.name}
+                {k.zusatz ? ` (${k.zusatz})` : ""}
+                {k.telefon ? ` · ${k.telefon}` : ""}
+                {k.email ? ` · ${k.email}` : ""}
+              </Text>
+            ))}
           </View>
         )}
 

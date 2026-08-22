@@ -9,6 +9,8 @@ import { RapportKopfForm } from "@/components/rapport-kopf-form";
 import { DispoTagesspalte } from "@/components/dispo-tagesspalte";
 import { PositionsTimer } from "@/components/positions-timer";
 import { KundenKontakt } from "@/components/kunden-kontakt";
+import { RapportKontakte } from "@/components/rapport-kontakte";
+import { ladeRapportKontakte } from "@/lib/rapport-dokument-daten";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { RapportPositionForm } from "@/components/rapport-position-form";
@@ -75,7 +77,7 @@ export default async function RapportDetailPage({
     supabase
       .from("rapporte")
       .select(
-        "*, projekte(id, bezeichnung, anreise_km, zugang, kunden(id, name, vorname, email, strasse, hausnummer, plz, ort, land, telefon)), profiles!rapporte_mitarbeiter_id_fkey(id, name)"
+        "*, projekte(id, bezeichnung, anreise_km, zugang, standorte(bezeichnung, strasse, hausnummer, plz, ort, land), kunden(id, name, vorname, email, strasse, hausnummer, plz, ort, land, telefon)), profiles!rapporte_mitarbeiter_id_fkey(id, name)"
       )
       .eq("id", id)
       .single(),
@@ -114,9 +116,36 @@ export default async function RapportDetailPage({
   // Verwaltung mit vierzig Liegenschaften hat vierzig Distanzen. Die
   // Einbettung liefert je nach Beziehung ein Objekt oder eine Liste.
   const auftrag = (Array.isArray(rapport.projekte) ? rapport.projekte[0] : rapport.projekte) as
-    | { anreise_km?: number | null; zugang?: string | null }
+    | { anreise_km?: number | null; zugang?: string | null; standorte?: unknown }
     | undefined;
   const anreiseKm = auftrag?.anreise_km != null ? Number(auftrag.anreise_km) : null;
+
+  // Die Navigation zeigt auf den EINSATZORT und nicht auf die Anschrift des
+  // Kunden. Für einen Betrieb mit Standorten war das bisher der Weg zum
+  // falschen Haus – genau der Fehler, den die Ortsebene beheben soll. Die
+  // Nummer bleibt die des Kunden; wer unterwegs anruft, will die Zentrale.
+  const einsatzort = (
+    Array.isArray(auftrag?.standorte) ? auftrag?.standorte[0] : auftrag?.standorte
+  ) as
+    | {
+        bezeichnung: string;
+        strasse: string | null;
+        hausnummer: string | null;
+        plz: string | null;
+        ort: string | null;
+        land: string | null;
+      }
+    | undefined;
+  const navigationsziel = einsatzort
+    ? { ...einsatzort, name: einsatzort.bezeichnung, telefon: rapport.kunde?.telefon ?? null }
+    : rapport.kunde;
+
+  const kontakte = await ladeRapportKontakte(
+    supabase,
+    rapport.projekt_id,
+    rapport.kunde?.id ?? null,
+    rapport.datum
+  );
   const laufendePosition = positionen.find((z) => z.timer_gestartet_um) ?? null;
 
   // PostgREST liefert die eingebettete Zeile je nach Beziehung als Objekt
@@ -222,7 +251,29 @@ export default async function RapportDetailPage({
       {/* Navigation und Anruf zuoberst: Das ist der Moment vor der
           Abfahrt, und der Monteur soll dafür nicht durch den Rapport
           scrollen müssen. */}
-      {offen && <KundenKontakt kunde={rapport.kunde} />}
+      {offen && <KundenKontakt kunde={navigationsziel} />}
+
+      {/* Der Zugang gehört neben die Navigation und nicht in eine Notiz
+          weiter unten: Er wird in der Minute gebraucht, in der man ankommt.
+          whitespace-pre-line, weil das Feld mehrzeilig ist – „Schlüssel
+          Nr. 4 im Kasten links" und der Code stehen selten auf einer Zeile. */}
+      {offen && (einsatzort?.bezeichnung || auftrag?.zugang) && (
+        <div className="rounded-lg border bg-white p-4 text-sm">
+          {einsatzort?.bezeichnung && (
+            <p className="font-medium">{einsatzort.bezeichnung}</p>
+          )}
+          {auftrag?.zugang && (
+            <p className="text-gray-600 whitespace-pre-line mt-1">
+              <span className="text-xs text-gray-500">Zugang: </span>
+              {auftrag.zugang}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Die Menschen zuoberst, wie die Navigation: Wer vor der Tür steht,
+          braucht sie zuerst – und dieselbe Liste steht auf dem Ausdruck. */}
+      {offen && <RapportKontakte kontakte={kontakte} />}
 
       {/* Bei gebuchter Disposition liegt der Tagesplan neben dem Formular –
           der Platz rechts war ohnehin ungenutzt, und beim Planen wechselt

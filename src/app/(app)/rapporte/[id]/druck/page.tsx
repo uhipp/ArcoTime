@@ -26,7 +26,7 @@ export default async function RapportDruckPage({
   const daten = await ladeRapportDokument(id);
   if (!daten) notFound();
 
-  const { rapport, positionen, kunde, einsatzort, absender, summeStunden } = daten;
+  const { rapport, positionen, kunde, einsatzort, kontakte, absender, summeStunden } = daten;
   const strasse = [kunde?.strasse, kunde?.hausnummer].filter(Boolean).join(" ");
 
   return (
@@ -147,6 +147,34 @@ export default async function RapportDruckPage({
         <div className="mb-8 text-sm">
           <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Bemerkung</p>
           <p className="whitespace-pre-line">{rapport.bemerkung}</p>
+        </div>
+      )}
+
+      {/* Wer vor Ort erreichbar ist – der eigentliche Zweck dieser Ebene. */}
+      {kontakte.length > 0 && (
+        <div className="mb-8 text-sm">
+          <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
+            Erreichbar vor Ort
+          </p>
+          <ul className="space-y-0.5">
+            {kontakte.map((k, i) => (
+              <li key={i} className="flex flex-wrap items-baseline gap-2">
+                <span className="text-gray-500 w-32 shrink-0">{k.rolle}</span>
+                <span>{k.name}</span>
+                {k.zusatz && <span className="text-gray-400">({k.zusatz})</span>}
+                {k.telefon && (
+                  <a href={`tel:${k.telefon.replace(/[^\d+]/g, "")}`} className="text-arcos-steel">
+                    {k.telefon}
+                  </a>
+                )}
+                {k.email && (
+                  <a href={`mailto:${k.email}`} className="text-arcos-steel">
+                    {k.email}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

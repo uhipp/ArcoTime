@@ -207,6 +207,23 @@ mit. Nur Anfahrt und Zugang sind Kopien.
 laden sie nur, was der offene Reiter zeigt — die Kundenmaske hatte vorher alle
 dreizehn Abfragen in einem `Promise.all`.
 
+**Etappe 3 am selben Tag**: Auf dem Rapport stehen jetzt die Menschen —
+„Erreichbar vor Ort" mit Ansprechperson und den zusätzlichen Adressen, Rolle,
+Name und Nummer, auf dem Bildschirm und auf dem Ausdruck. Der Zugang steht
+neben der Navigation, und die Navigation zielt auf den Einsatzort statt auf die
+Anschrift des Kunden — für einen Betrieb mit mehreren Adressen je Kunde war das
+bisher der Weg zum falschen Haus. Die zusätzlichen Adressen werden auf den Tag
+des Einsatzes gefiltert; ein Eigentümerwechsel verändert alte Rapporte nicht.
+Dokument und Bildschirmmaske lesen dieselbe Funktion — zwei Umsetzungen
+derselben Regel wären über kurz oder lang zwei Wahrheiten.
+
+**Ein Rückzieher**: Der Dokumentbereich „standort" aus 0076 ist mit 0081
+gefallen. Ich hatte ihn stehen gelassen mit dem Argument, der Grundriss
+überlebe das Vorhaben — ein praktisches Argument gegen eine bereits getroffene
+Regel. Der Nutzer hat es zurückgewiesen, und er hatte recht: Ein Betrieb ohne
+Ortsebene hätte keinen Weg zu dieser Ablage, also könnte Variante A etwas, das
+Variante B nicht kann.
+
 **Eine neue Arbeitsregel** ist dabei entstanden und steht unten: Ein erkannter
 Fehler wird ganz behoben, nicht dokumentiert.
 

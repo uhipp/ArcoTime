@@ -6,6 +6,22 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "**Auf dem Rapport stehen jetzt die Menschen.** „Erreichbar vor Ort“ nennt die Ansprechperson beim Kunden und die zusätzlichen Adressen des Auftrags – mit Rolle, Name und Nummer, auf dem Bildschirm und auf dem Ausdruck. Nummer und Mailadresse sind anklickbar. Wer vor verschlossener Tür steht, ruft an; bisher standen diese Angaben in der Datenbank und nicht auf dem Blatt."
+      },
+      {
+        "typ": "neu",
+        "text": "**Der Zugang steht neben der Navigation** – „Schlüssel Nr. 4 im Kasten links, Code 4711, sonst beim Hauswart klingeln“. Dort, wo er gebraucht wird: in der Minute, in der man ankommt."
+      },
+      {
+        "typ": "behoben",
+        "text": "**Die Navigation zielte auf die Anschrift des Kunden statt auf den Einsatzort.** Für einen Betrieb mit mehreren Adressen je Kunde war das der Weg zum falschen Haus – genau der Fehler, den die Standorte beheben sollen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Die zusätzlichen Adressen erscheinen auf einem Rapport nur, wenn sie **am Tag des Einsatzes** gültig waren. Ein Eigentümerwechsel verändert damit alte Rapporte nicht."
+      },
+      {
+        "typ": "neu",
         "text": "**Zusätzliche Adressen am Auftrag**: Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde – mit Rolle und, wenn nötig, mit „ab“ und „bis“. Jede Adresse steht einmal im Adressbuch: Zieht das Architekturbüro um, wird eine Adresse geändert und es stimmt in allen Aufträgen. Nummer und Mailadresse sind anklickbar – wer vor verschlossener Tür steht, ruft an."
       },
       {
