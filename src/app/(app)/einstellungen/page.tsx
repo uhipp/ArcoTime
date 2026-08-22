@@ -57,6 +57,7 @@ import { getBegriffe, type BegriffSchluessel } from "@/lib/begriffe";
 function minutenAlsUhrzeit(minuten: number): string {
   return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(minuten % 60).padStart(2, "0")}`;
 }
+import { standorteAktiv } from "@/lib/standorte";
 
 export default async function EinstellungenPage({
   searchParams,
@@ -68,6 +69,7 @@ export default async function EinstellungenPage({
 
   const { error } = await searchParams;
   const organisation = await getCurrentOrganisation();
+  const standorteEingeschaltet = await standorteAktiv();
   const logoAdresse = logoAdresseVon(organisation?.logo_pfad);
   const supabase = await createClient();
   const [
@@ -588,6 +590,29 @@ export default async function EinstellungenPage({
               Organisation gleichzeitig sein.
             </span>
           </label>
+
+          {/* Die Ortsebene (0076). Ausgeschaltet bleibt sie unsichtbar, die
+              Daten stimmen trotzdem: Jeder Kunde hat einen Standardstandort,
+              und die Datenbank setzt ihn am Auftrag selbst. Einschalten ist
+              deshalb gefahrlos und jederzeit umkehrbar. */}
+          <label className="flex items-start gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              name="standorte_aktiv"
+              defaultChecked={standorteEingeschaltet}
+              className="mt-0.5"
+            />
+            <span>
+              <strong className="font-medium text-gray-700">Standorte führen.</strong>{" "}
+              Zwischen Kunde und Auftrag eine Ebene für den Einsatzort: Liegenschaft,
+              Filiale, Baustelle – mit eigener Adresse, eigener Anfahrt, eigenen
+              Ansprechpersonen und den Beteiligten (Eigentümer, Verwaltung, Architekt).
+              Wer je Kunde nur eine Adresse hat, lässt das Häkchen weg; jeder Kunde hat
+              dann still einen Standardstandort, und auf dem Rapport steht wie bisher
+              seine Adresse.
+            </span>
+          </label>
+          <input type="hidden" name="standorte_feld_vorhanden" value="1" />
         </form>
 
         {/* Eigenes Formular: Ein Datei-Upload gehört nicht in dasselbe

@@ -5,7 +5,26 @@ export const kunden: HilfeArtikel[] = [
     slug: "kunden",
     titel: "Kunden",
     kategorie: "Stammdaten",
-    stichworte: ["kunde anlegen", "adresse", "strasse", "hausnummer", "plz", "firma", "kontakt"],
+    stichworte: [
+      "kunde anlegen",
+      "adresse",
+      "strasse",
+      "hausnummer",
+      "plz",
+      "firma",
+      "kontakt",
+      "standort",
+      "liegenschaft",
+      "baustelle",
+      "filiale",
+      "einsatzort",
+      "beteiligte",
+      "eigentümer",
+      "verwaltung",
+      "architekt",
+      "zugang",
+      "reiter",
+    ],
     routen: ["/kunden"],
     inhalt: `
 Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfassung und Anfragen.
@@ -18,7 +37,7 @@ Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfas
 
 Auf **"+ Neuer Kunde"** klicken und die Felder ausfüllen. Pflichtfeld ist nur der **Name** (Nach- oder Firmenname); alles andere kann später ergänzt werden.
 
-**Anfahrt km (verrechnet je Einsatz)**: Die Kilometer, die bei einem Einsatz bei diesem Kunden verrechnet werden – in der Regel Hin- und Rückfahrt. Der Wert wird beim Erfassen als **Menge vorgeschlagen**, sobald eine Leistung gewählt wird, die unter [Dienstleistungen](/hilfe/dienstleistungen) als Anreise gekennzeichnet ist. Wie beim Standardrabatt gilt: Es ist ein Vorschlag, überschreibbar, und eine spätere Änderung wirkt nicht auf bereits erfasste Einträge.
+**Anfahrt km (verrechnet je Einsatz)**: Die Kilometer, die bei einem Einsatz verrechnet werden. Führt der Betrieb **Standorte**, steht dieser Wert am Standort und nicht mehr hier – bei vierzig Liegenschaften sind es vierzig Distanzen. Sonst gilt: die Kilometer, die bei einem Einsatz bei diesem Kunden verrechnet werden – in der Regel Hin- und Rückfahrt. Der Wert wird beim Erfassen als **Menge vorgeschlagen**, sobald eine Leistung gewählt wird, die unter [Dienstleistungen](/hilfe/dienstleistungen) als Anreise gekennzeichnet ist. Wie beim Standardrabatt gilt: Es ist ein Vorschlag, überschreibbar, und eine spätere Änderung wirkt nicht auf bereits erfasste Einträge.
 
 Das Feld heisst bewusst „verrechnet je Einsatz" und nicht „Distanz" – sonst trägt die eine Person die einfache Strecke ein und die andere Hin und Zurück, und niemand merkt es, weil beides plausibel aussieht.
 
@@ -34,9 +53,57 @@ In den Formularen für **Anfragen**, **Projekte** und **Zeiterfassung** gibt es 
 
 Legt jemand versehentlich zweimal denselben Kunden an (z.B. weil zwei Mitarbeitende gleichzeitig arbeiten), erscheint eine **Dubletten-Warnung** mit der Möglichkeit, stattdessen den bereits bestehenden Kunden zu verwenden.
 
-## Kunden-Detailseite
+## Die Kundenmaske
 
-Auf der Detailseite eines Kunden siehst du dessen komplette Historie: alle Anfragen und alle Zeiterfassungen, filterbar nach Zeitraum und Status.
+Die Maske ist in zwei Hälften geteilt: **links die Liste**, rechts der gewählte Kunde. Die gewählte Zeile ist hinterlegt und mit einem Balken markiert – nach einer Unterbrechung ist das der Anker, an dem man wieder anknüpft.
+
+**Die Seite selbst scrollt nicht.** Gescrollt wird nur innerhalb der Liste und der Detailfläche. Hauptmenü, Bereich und der Name des gewählten Kunden bleiben immer sichtbar.
+
+Alles, was früher untereinander stand, steht jetzt in **Reitern**:
+
+| Reiter | Inhalt |
+|---|---|
+| Adresse | Anschrift, Adress-Schlüssel, Zahlungskonditionen, Notizen |
+| Ansprechpersonen | wer beim Kunden zuständig ist, mit eigenen Kontaktangaben |
+| Standorte | die Einsatzorte, ihre Anfahrt, ihr Zugang und die Beteiligten |
+| Aufträge | alle Aufträge dieses Kunden, mit ihrem Einsatzort |
+| Preise und Rabatte | die Konditionen dieses Kunden |
+| Dokumente | Dateien zum Kunden |
+| Historie | alle Anfragen und Zeiterfassungen, filterbar nach Zeitraum und Auftrag |
+
+Der gewählte Reiter steht in der Adresse – „…?reiter=standorte“. Der Zurück-Knopf funktioniert damit, und ein Link auf einen bestimmten Reiter ist teilbar.
+
+**Das Suchfeld über der Liste sucht von vorn**: „Bür" findet Bürgi. Wer quer durch alle Angaben suchen will, nimmt „Ganze Liste" oben rechts – dort gibt es Spaltenwahl, Filter und Sortierung über alle Spalten.
+
+**Jeder Knopf nennt sein Objekt**: „Adresse speichern", „Person speichern", „Standort speichern", „Preis speichern". Ein nacktes „Speichern" gibt es nicht mehr, „Übernehmen" auch nicht – es hat gespeichert, ohne es zu sagen. Gespeichert wird nur auf Knopfdruck; nichts wird still im Hintergrund übernommen.
+
+## Standorte – wo gearbeitet wird
+
+Zwischen Kunde und Auftrag liegt der **Einsatzort**: die Liegenschaft, die Filiale, die Baustelle, das Serverzimmer. Er hat seine eigene Adresse, seine eigene Anfahrt, seinen eigenen Zugang und seine eigenen Ansprechpersonen.
+
+Warum das eine eigene Ebene ist und nicht einfach eine zweite Adresse am Kunden: Eine Liegenschaftsverwaltung mit vierzig Häusern ist **ein** Kunde mit **einer** Rechnungsadresse – und vierzig Orten mit vierzig verschiedenen Anfahrten. Bis dahin stand auf dem Rapport die Adresse der Verwaltung, und der Monteur fuhr an den falschen Ort.
+
+**Ein- und ausschalten**: Wer je Kunde nur eine Adresse hat, braucht die Ebene nicht. Ein Admin schaltet sie unter [Einstellungen](/hilfe/einstellungen) mit **„Standorte führen"** ein oder aus. Ist sie aus, ist sie unsichtbar – die Daten stimmen trotzdem: Jeder Kunde hat still einen **Standardstandort** mit seiner Adresse, und auf dem Rapport steht wie bisher die Kundenadresse.
+
+**Der Standardstandort** entsteht beim Anlegen eines Kunden von selbst, mit dessen Name, Adresse und Anfahrt. Er ist der Ort, der beim Anlegen eines Auftrags vorgeschlagen wird. Es gibt genau einen je Kunde; wer einen anderen als Standard markiert, löst den ersten ab.
+
+**Anfahrt**: Die Kilometer stehen am Standort, nicht mehr am Kunden – bei vierzig Liegenschaften sind es vierzig Distanzen. Der Wert des Kunden ist beim Umstellen in seinen Standardstandort gewandert.
+
+**Zugang**: Wo der Schlüsselkasten hängt, welcher Code gilt, wer aufschliesst. Das steht auf dem Arbeitsrapport – es nützt dort mehr als in einer Notiz, die niemand liest.
+
+**Löschen** geht nur, solange kein Auftrag am Standort hängt. Wer einen Ort nicht mehr braucht, nimmt ihm das Häkchen **aktiv**: Er bleibt lesbar und verschwindet aus den Vorschlägen.
+
+## Beteiligte an einem Standort
+
+An einem Ort hängen mehr Adressen als der Auftraggeber. Der Maler muss auseinanderhalten können, welche Liegenschaft der Verwaltung X dem Eigentümer Y gehört; bei einem grösseren Vorhaben kommen Architekt, Bauleitung, Subunternehmer und Behörden dazu.
+
+Deshalb steht unter jedem Standort eine Liste **Beteiligte**: eine Adresse aus dem Adressbuch plus eine **Rolle** (Kunde, Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde – die Liste lässt sich ergänzen).
+
+Der Gewinn ist die **einmalige Erfassung**: Der Architekt steht genau einmal im Adressbuch und ist an zehn Standorten beteiligt. Zieht sein Büro um, wird eine Adresse geändert und es stimmt überall. Vorher hätte dieselbe Adresse zehnmal dagestanden – und beim Umzug wäre sie neunmal falsch geblieben.
+
+Eine Beteiligung kann **ab** und **bis** tragen. Ein Rollenwechsel braucht ein Datum: Wer bis gestern Eigentümer war, war es für die Rapporte von damals trotzdem.
+
+Fehlt eine Adresse in der Auswahl, wird sie einmal als Kunde erfasst – **ohne** das Häkchen „ist Kunde", wenn kein Auftrag an sie geht (siehe unten).
 
 ## Ansprechpersonen und Kontakt
 

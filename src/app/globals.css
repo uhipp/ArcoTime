@@ -25,3 +25,23 @@ body {
   color: var(--foreground);
   font-family: var(--font-plex-sans), Helvetica, Arial, sans-serif;
 }
+
+/*
+ * Masken, die ohne Scrollen auskommen (docs/masken-leitlinie.md, Abschnitt 1).
+ *
+ * Alle übrigen Seiten stehen in einer zentrierten Spalte von 64rem – das ist
+ * für einen Fliesstext richtig und für eine Maske mit Liste links und Detail
+ * rechts zu schmal. Eine Seite bekommt die ganze Fläche, indem ihr oberstes
+ * Element data-vollbild trägt; die Hülle im Layout richtet sich danach.
+ *
+ * Warum :has() und nicht eine Klasse am <main>: Das Layout ist eine
+ * Serverkomponente über allen Seiten und weiss nicht, welche Seite in ihm
+ * steckt. Ein Umbau, der jede der dreissig Seiten anfassen müsste, um eine
+ * Maske breit zu machen, wäre der falsche Preis. Wo :has() fehlt, sieht die
+ * Seite aus wie bisher – schmaler, aber vollständig.
+ */
+.seite:has(> [data-vollbild]) {
+  max-width: none;
+  padding: 0;
+  height: 100%;
+}

@@ -108,6 +108,13 @@ export async function updateOrganisation(formData: FormData) {
               formData.get("feiertage_im_sollstunden_enthalten") === "on",
           }
         : {}),
+      // Die Ortsebene (0076). Dasselbe Muster wie bei den Planzeiten: Ist
+      // das Feld nicht im Formular, bleibt der Wert unangetastet – so
+      // schaltet ein Formular ohne dieses Häkchen die Ebene nicht
+      // versehentlich aus.
+      ...(formData.has("standorte_feld_vorhanden")
+        ? { standorte_aktiv: formData.get("standorte_aktiv") === "on" }
+        : {}),
       warnung_ab_minuten_pro_tag: alsMinuten("warnung_ab_stunden"),
       // Arbeitszeitfenster: Rahmen für die Vorschläge freier Zeiten in der
       // Disposition. Als Uhrzeit erfasst, in Minuten gespeichert – so lässt

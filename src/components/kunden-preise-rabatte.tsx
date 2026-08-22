@@ -138,7 +138,7 @@ export function KundenPreiseRabatte({
               type="submit"
               className="rounded bg-arcos-steel text-white text-sm font-medium px-3 py-1.5 hover:bg-arcos-navy"
             >
-              Übernehmen
+              Preis speichern
             </button>
           </form>
         </section>
@@ -218,7 +218,7 @@ export function KundenPreiseRabatte({
               type="submit"
               className="rounded bg-arcos-steel text-white text-sm font-medium px-3 py-1.5 hover:bg-arcos-navy"
             >
-              Übernehmen
+              Rabatt speichern
             </button>
           </form>
 

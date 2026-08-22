@@ -11,6 +11,7 @@ import { ProjektTeam } from "@/components/projekt-team";
 import type { Projekt } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
 import { darf } from "@/lib/berechtigungen";
+import { standorteAktiv } from "@/lib/standorte";
 
 export default async function ProjektDetailPage({
   params,
@@ -25,6 +26,7 @@ export default async function ProjektDetailPage({
 
   const [
     profile,
+    ortsebene,
     { data: projekt },
     { data: kunden },
     { data: mitarbeitende },
@@ -32,6 +34,7 @@ export default async function ProjektDetailPage({
     { dokumente, kategorien },
   ] = await Promise.all([
     getCurrentProfile(),
+    standorteAktiv(),
     supabase.from("projekte").select("*").eq("id", id).single(),
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("profiles").select("id, name").order("name"),
@@ -80,6 +83,7 @@ export default async function ProjektDetailPage({
             mitarbeitende={mitarbeitende ?? []}
             action={updateAction}
             error={error}
+            standorteAktiv={ortsebene}
           />
         </PraesenzSperre>
       </div>

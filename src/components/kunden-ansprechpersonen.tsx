@@ -251,7 +251,7 @@ export function KundenAnsprechpersonen({
                 type="submit"
                 className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
               >
-                speichern
+                Person speichern
               </button>
               {istAdmin && (
                 <DeleteButton

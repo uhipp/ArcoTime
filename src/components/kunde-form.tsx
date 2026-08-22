@@ -169,13 +169,16 @@ export function KundeForm({
           laufttext="Wird gespeichert…"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Speichern
+          Adresse speichern
         </AbsendeKnopf>
+        {/* Verwerfen lädt die Maske neu und wirft damit die Eingaben weg –
+            es führt nicht aus der Maske heraus. Nur beim Erfassen gibt es
+            noch keinen Datensatz, dorthin zurück ist die Liste. */}
         <Link
-          href="/kunden"
+          href={kunde ? `/kunden/${kunde.id}` : "/kunden"}
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
         >
-          Abbrechen
+          Verwerfen
         </Link>
       </div>
     </form>

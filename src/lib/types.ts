@@ -42,11 +42,70 @@ export type Kunde = {
   updated_at?: string;
 };
 
+/**
+ * Der Einsatzort (0076). Bewusst OHNE kunde_id: Wer zu einem Standort
+ * gehört, sagen die Beteiligten – die Liegenschaft der Verwaltung x kann
+ * dem Eigentümer y gehören, und beide sind Partner desselben Orts.
+ */
+export type Standort = {
+  id: string;
+  bezeichnung: string;
+  adresse_zusatz: string | null;
+  strasse: string | null;
+  hausnummer: string | null;
+  plz: string | null;
+  ort: string | null;
+  land: string;
+  // Der Standort, der beim Anlegen eines Auftrags vorgeschlagen wird. Je
+  // Kunde entsteht genau einer automatisch (Trigger in 0076).
+  ist_standard: boolean;
+  // Die Anfahrt gehört zum Ort, nicht zum Kunden: Eine Verwaltung mit
+  // vierzig Liegenschaften hat vierzig Distanzen (0077).
+  anreise_km: number | null;
+  // Wie man hineinkommt – Schlüsselkasten, Code, Ansprechperson vor Ort.
+  zugang: string | null;
+  notizen: string | null;
+  aktiv: boolean;
+  updated_at?: string;
+};
+
+export type BeteiligtenRolle = {
+  id: string;
+  bezeichnung: string;
+  sortierung: number;
+  aktiv: boolean;
+};
+
+/**
+ * Wer in welcher Rolle an einem Standort, Auftrag oder Rapport beteiligt
+ * ist (0076). Genau ein Bezug je Zeile, erzwungen durch num_nonnulls.
+ */
+export type Beteiligter = {
+  id: string;
+  standort_id: string | null;
+  projekt_id: string | null;
+  rapport_id: string | null;
+  partner_id: string;
+  rolle_id: string;
+  gueltig_von: string | null;
+  gueltig_bis: string | null;
+  notiz: string | null;
+  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "ort">;
+  beteiligten_rollen?: Pick<BeteiligtenRolle, "id" | "bezeichnung">;
+};
+
 export type ProjektStatus = "aktiv" | "inaktiv";
 
 export type Projekt = {
   id: string;
+  // WER bestellt und schuldet.
   kunde_id: string;
+  // WO gearbeitet wird (0077). Pflicht in der Datenbank; wird beim
+  // Anlegen aus dem Standardstandort des Kunden gefüllt, wenn nichts
+  // gewählt ist. Keine Redundanz zu kunde_id, sondern die zweite Achse:
+  // dieselbe Liegenschaft kann einen Auftrag mit der Verwaltung und einen
+  // mit dem Eigentümer tragen.
+  standort_id: string;
   bezeichnung: string;
   status: ProjektStatus;
   kostenstelle: string | null;
@@ -55,6 +114,7 @@ export type Projekt = {
   sichtbar_fuer_alle: boolean;
   naechste_belegnummer: number;
   kunden?: Pick<Kunde, "id" | "name" | "vorname">;
+  standorte?: Pick<Standort, "id" | "bezeichnung" | "strasse" | "hausnummer" | "plz" | "ort" | "anreise_km" | "zugang">;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;
   // Verantwortliche Person des Projekts (0044).

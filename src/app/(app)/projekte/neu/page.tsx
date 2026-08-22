@@ -2,16 +2,18 @@ import { createClient } from "@/lib/supabase/server";
 import { ProjektForm } from "@/components/projekt-form";
 import { createProjekt } from "@/app/actions/projekte";
 import { getBegriffe, neuLabel } from "@/lib/begriffe";
+import { standorteAktiv } from "@/lib/standorte";
 
 export default async function NeuesProjektPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; kunde_id?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, kunde_id } = await searchParams;
   const begriffe = await getBegriffe();
   const supabase = await createClient();
-  const [{ data: kunden }, { data: mitarbeitende }] = await Promise.all([
+  const [ortsebene, { data: kunden }, { data: mitarbeitende }] = await Promise.all([
+    standorteAktiv(),
     supabase
       .from("kunden")
       .select("id, name, vorname")
@@ -30,6 +32,8 @@ export default async function NeuesProjektPage({
         mitarbeitende={mitarbeitende ?? []}
         action={createProjekt}
         error={error}
+        standorteAktiv={ortsebene}
+        kundeVorgabe={kunde_id}
       />
     </div>
   );

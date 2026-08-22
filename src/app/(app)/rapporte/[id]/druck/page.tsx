@@ -26,7 +26,7 @@ export default async function RapportDruckPage({
   const daten = await ladeRapportDokument(id);
   if (!daten) notFound();
 
-  const { rapport, positionen, kunde, absender, summeStunden } = daten;
+  const { rapport, positionen, kunde, einsatzort, absender, summeStunden } = daten;
   const strasse = [kunde?.strasse, kunde?.hausnummer].filter(Boolean).join(" ");
 
   return (
@@ -125,6 +125,23 @@ export default async function RapportDruckPage({
         {rapport.projekte?.bezeichnung && <p>{rapport.projekte.bezeichnung}</p>}
         {rapport.profiles?.name && <p>Ausgeführt von {rapport.profiles.name}</p>}
       </div>
+
+      {/* Wo gearbeitet wurde – nur, wenn es etwas Neues sagt (0077). */}
+      {einsatzort && (
+        <div className="mb-8 text-sm">
+          <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Einsatzort</p>
+          <p>
+            {[
+              einsatzort.bezeichnung,
+              [einsatzort.strasse, einsatzort.hausnummer].filter(Boolean).join(" ") || null,
+              [einsatzort.plz, einsatzort.ort].filter(Boolean).join(" ") || null,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          </p>
+          {einsatzort.zugang && <p className="text-gray-500">Zugang: {einsatzort.zugang}</p>}
+        </div>
+      )}
 
       {rapport.bemerkung && (
         <div className="mb-8 text-sm">

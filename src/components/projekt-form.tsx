@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useKundeSchnellErstellen } from "@/components/kunde-schnell-erstellen";
 import type { Kunde, Projekt } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
@@ -8,6 +8,10 @@ import Link from "next/link";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import { STAND_FELD } from "@/lib/konflikt";
+import {
+  ladeStandorteDesKunden,
+  type StandortOption,
+} from "@/app/actions/standorte";
 
 export function ProjektForm({
   projekt,
@@ -15,12 +19,19 @@ export function ProjektForm({
   mitarbeitende,
   action,
   error,
+  standorteAktiv = false,
+  kundeVorgabe,
 }: {
   projekt?: Projekt;
   kunden: Pick<Kunde, "id" | "name" | "vorname">[];
   mitarbeitende: { id: string; name: string }[];
   action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   error?: string;
+  // Ortsebene eingeschaltet? (0076). Aus heisst: kein Feld, und die
+  // Datenbank setzt den Standardstandort des Kunden selbst.
+  standorteAktiv?: boolean;
+  // Kommt der Weg aus der Kundenmaske, ist der Kunde schon bekannt.
+  kundeVorgabe?: string;
 }) {
 
   // Fehler kommt aus der Aktion zurueck statt per Weiterleitung –
@@ -28,7 +39,37 @@ export function ProjektForm({
   const [ergebnis, formAction] = useActionState(action, null);
   const meldung = ergebnis?.fehler ?? error;
   const [kundenListe, setKundenListe] = useState(kunden);
-  const [kundeId, setKundeId] = useState(projekt?.kunde_id ?? "");
+  const [kundeId, setKundeId] = useState(projekt?.kunde_id ?? kundeVorgabe ?? "");
+
+  // WO gearbeitet wird – die zweite Achse des Auftrags neben WER bestellt
+  // (0077). Die Orte hängen am gewählten Kunden und werden deshalb beim
+  // Wechsel nachgeladen statt alle mitgeliefert.
+  const [standorte, setStandorte] = useState<StandortOption[]>([]);
+  const [standortId, setStandortId] = useState(projekt?.standort_id ?? "");
+
+  useEffect(() => {
+    // Kein Zurücksetzen im Effektkörper: Das Kundenfeld hat keinen wählbaren
+    // Leerwert, es geht also nie von einem Kunden zurück auf keinen. Die Liste
+    // wird nur in der Antwort gesetzt – ein synchrones setState hier wäre eine
+    // Kaskade von Renderdurchläufen.
+    if (!standorteAktiv || !kundeId) return;
+    let abgebrochen = false;
+    void ladeStandorteDesKunden(kundeId).then((liste) => {
+      if (abgebrochen) return;
+      setStandorte(liste);
+      // Die bisherige Wahl behalten, wenn sie zum Kunden passt – sonst der
+      // Standardstandort. Nach einem Kundenwechsel wäre der alte Ort die
+      // Adresse eines fremden Kunden.
+      setStandortId((bisher) =>
+        liste.some((s) => s.id === bisher)
+          ? bisher
+          : (liste.find((s) => s.ist_standard)?.id ?? liste[0]?.id ?? "")
+      );
+    });
+    return () => {
+      abgebrochen = true;
+    };
+  }, [kundeId, standorteAktiv]);
 
   const kundeHook = useKundeSchnellErstellen((kunde) => {
     setKundenListe((liste) => [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH")));
@@ -75,6 +116,42 @@ export function ProjektForm({
           ))}
         </select>
       </div>
+
+      {standorteAktiv && (
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="standort_id">
+            Einsatzort
+          </label>
+          <select
+            id="standort_id"
+            name="standort_id"
+            required
+            value={standortId}
+            onChange={(e) => setStandortId(e.target.value)}
+            disabled={standorte.length === 0}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-50"
+          >
+            <option value="" disabled>
+              {kundeId
+                ? standorte.length === 0
+                  ? "Für diesen Kunden ist kein Standort erfasst"
+                  : "Bitte wählen…"
+                : "Zuerst den Kunden wählen"}
+            </option>
+            {standorte.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.bezeichnung}
+                {s.ort ? `, ${s.ort}` : ""}
+                {s.ist_standard ? " (Standard)" : ""}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-400 mt-1">
+            Wo gearbeitet wird. Bestimmt die Adresse auf dem Rapport und die
+            Anfahrt – neue Orte kommen beim Kunden unter „Standorte“ dazu.
+          </p>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="bezeichnung">

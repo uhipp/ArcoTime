@@ -40,6 +40,20 @@ Je Bezeichnung hinterlegst du **Einzahl**, **Mehrzahl** und den **Artikel**. All
 
 **Wo die Bezeichnung wirkt:** in der Navigation, auf der Startseite, in Seitentiteln, auf den Knöpfen, in Spaltentiteln der Listen und in den Hinweisen leerer Listen. **Unverändert** bleiben die Adressen im Browser (die Seite heisst weiter /projekte), die Hilfeseiten, die Spaltennamen im Comatic-Export – und zusammengesetzte Wörter wie „Projektleitung“ oder „Rapportnummer“. Ein Artikel lässt sich aus dem Geschlecht ableiten, ein Fugen-s nicht: Aus „Auftrag“ würde sonst „Auftragleitung“.
 
+## Standorte führen
+
+Der Schalter für die Ortsebene: Zwischen Kunde und Auftrag eine Stufe für den **Einsatzort** – Liegenschaft, Filiale, Baustelle, Serverzimmer – mit eigener Adresse, eigener Anfahrt, eigenem Zugang, eigenen Ansprechpersonen und den **Beteiligten** (Eigentümer, Verwaltung, Architekt, Behörde).
+
+**Wer sie braucht:** Betriebe, bei denen ein Kunde an mehreren Orten bedient wird. Eine Liegenschaftsverwaltung mit vierzig Häusern ist ein Kunde mit einer Rechnungsadresse – und vierzig Orten mit vierzig Anfahrten. Ein IT-Dienstleister hat die Migros Region Basel als Kunden und arbeitet in ihren Filialen.
+
+**Wer sie nicht braucht**, lässt das Häkchen weg. Dann bleibt alles wie bisher: keine zusätzliche Auswahl im Auftrag, kein Reiter beim Kunden, auf dem Rapport die Adresse des Kunden.
+
+**Ein- und Ausschalten ist gefahrlos und umkehrbar.** Jeder Kunde hat auch ohne Häkchen still einen Standardstandort mit seiner Adresse, und jeder Auftrag hängt daran – die Ebene wird also nur sichtbar oder unsichtbar, nicht angelegt oder gelöscht. Was an zusätzlichen Standorten erfasst wurde, bleibt beim Ausschalten erhalten.
+
+Die **Rollen** der Beteiligten (Kunde, Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde) sind vorgegeben und lassen sich ergänzen. Die Rolle „Kunde" wird gebraucht, um einen Standort seinem Kunden zuzuordnen – sie sollte stehen bleiben.
+
+Mehr dazu unter [Kunden](/hilfe/kunden).
+
 ## Einheiten
 
 Die Auswahl für das Feld „Einheit" im [Dienstleistungskatalog](/hilfe/dienstleistungen) – Stunde, Pauschale, Stück, km, und was ihr sonst braucht. Neue Einheiten legst du hier an, danach stehen sie beim Anlegen einer Dienstleistung zur Verfügung.

@@ -105,7 +105,52 @@ seither deckungsgleich mit der Datenbank (verwaiste Dateien 0, Zeilen ohne Datei
 
 ---
 
-## 4. Wie wir arbeiten
+## 4. Was am 21. und 22.08.2026 entstanden ist: die Datenmodell-Leitplanken
+
+Anlass war ein zurückgestelltes Modul. Aus dem Gespräch über Angebote blieb die
+Erkenntnis, dass zuerst das Datenmodell offen werden muss – für neue Module wie
+für Erweiterungen im Basispaket. Zwei Tage Gespräch, ein Plandokument
+(`docs/plan-parteien-standorte.md`) mit A3-Diagramm zum Aufhängen
+(`node scripts/datenmodell-diagramm.mjs`), dann fünf Etappen. Die Begründungen
+und die verworfenen Wege stehen in `docs/datenmodell-parteien-standorte.md`.
+
+**Etappe 1 – der Rapport hängt am Auftrag** (0071, 0072). `rapporte.projekt_id`
+ist Pflicht, `rapporte.kunde_id` fällt weg: Der Kunde ergibt sich aus dem
+Auftrag, und zwei Wege zur selben Aussage sind einer zu viel. Dazu die
+Leitplanken der Zeiterfassung in der Datenbank statt nur im Formular – keine
+Überlappungen je Person (Ausschlussbedingung mit `btree_gist`), nur ein
+laufender Timer, eine Herkunftsspalte (web/app/import/system) und ein
+Idempotenzschlüssel für die künftige Handy-App.
+
+**Etappe 2 – Bezeichnungen** (0073). Jeder Betrieb nennt die Dinge, wie er sie
+nennt: Einzahl, Mehrzahl und Genus je Begriff, dazu Branchenvorlagen, die Arcos
+zentral pflegt. Die Mehrzahl lässt sich im Deutschen nicht ableiten, das Genus
+auch nicht – ohne beides stünde auf dem Knopf „Neues Auftrag".
+
+**Etappe 3 – Ansprechpersonen und Kontaktkanäle** (0074, 0075). 1 Firma – n
+Personen – n Kanäle, und das Häkchen „ist Kunde": Ein Eigentümer, Architekt oder
+eine Behörde steht im Adressbuch, ohne in der Auftragsauswahl aufzutauchen.
+
+**Etappe 4 – Standorte, Beteiligte und die neue Kundenmaske** (0076, 0077).
+Zwischen Kunde und Auftrag liegt jetzt der Einsatzort. Die Zugehörigkeit eines
+Orts zu seinem Kunden ist selbst eine Beteiligtenzeile mit der Rolle „Kunde" –
+deshalb kann dieselbe Liegenschaft der Verwaltung X und dem Eigentümer Y
+gehören, ohne zweimal erfasst zu werden. Zwei Trigger tragen den laufenden
+Betrieb: Der Standardstandort entsteht beim Anlegen eines Kunden von selbst, und
+`projekte.standort_id` füllt sich aus ihm – nur deshalb war „not null" in
+derselben Migration gefahrlos, obwohl der laufende Code die Spalte noch nicht
+kannte.
+
+Am selben Tag ist die **Kundenmaske** nach `docs/masken-leitlinie.md` neu
+gebaut: Liste links, Detail rechts, sieben Reiter, keine scrollende Seite mehr –
+Anlass war die Beobachtung des Nutzers, dass man „nicht mehr klar kommt" und
+„laufend am Scrollen" ist. Dazu die schmalere Kopfleiste mit dem waagrechten
+Logo und die Umbenennung aller Speicherknöpfe („Adresse speichern" statt
+„Speichern", kein „Übernehmen" mehr).
+
+---
+
+## 5. Wie wir arbeiten
 
 - **Deutsch überall** – Variablen, Funktionen, Routen, Spalten, Commit-Texte.
 - **Kommentare erklären das Warum**, gern mit dem Vorfall, der zur Entscheidung
@@ -137,7 +182,7 @@ find .next -name "* [0-9].*" -delete                              # OneDrive-Kop
 
 ---
 
-## 5. Was offen ist
+## 6. Was offen ist
 
 **Zurückgestellt am 21.08.2026: Phase 13 (Angebote, Lieferscheine, Lager).**
 Die Ideensammlung (`phase13-angebote-ideen.md`) und die Comatic-Analyse
@@ -171,7 +216,16 @@ in Export und Löschung von selbst mit? Was passiert beim Löschen des Bezugs?).
    Comatic-Export, und der ganze Lebenszyklus eines Mandanten (Nachfrist,
    Vollexport, Dokumentenarchiv, Löschung) fehlt. Es gibt kein Erzeugerskript
    im Repo – das Kapitel ist von Hand nachzuziehen.
-5. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
+5. **Sicherheitsdatenblatt (TOM)** – vom Nutzer gewünscht, nachdem ein Kunde
+   mit sensiblen Personendaten nach einer eigenen Datenbank je Mandant gefragt
+   hat. Entschieden ist: gemeinsame Datenbank als Regel, dedizierte Datenbank
+   gegen Aufpreis auf Wunsch. Das Blatt hält die Massnahmen fest und läuft
+   künftig wie die übrigen Dokus mit.
+6. **Die Ortsebene auf dem Handy.** Die neue Kundenmaske bricht das
+   Nebeneinander noch nicht in ein Nacheinander um – auf dem Tablet im
+   Querformat geht sie, auf dem Telefon nicht. Steht in
+   `docs/masken-leitlinie.md` als nächster Schritt an dieser Maske.
+7. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
    löschen · Preview-Deployments auf die Stripe-Sandbox umstellen.
 6. Optional: Video fürs Schaufenster (Bildschirmaufnahmen macht der Nutzer, Drehbuch
    und Einbau kommen von hier).

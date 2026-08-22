@@ -2,8 +2,36 @@
   {
     "version": "1.1.0",
     "datum": "2026-08-14",
-    "titel": "Arbeitsrapporte, Disposition und Mengenartikel",
+    "titel": "Arbeitsrapporte, Disposition, Mengenartikel und Standorte",
     "eintraege": [
+      {
+        "typ": "neu",
+        "text": "**Standorte**: Zwischen Kunde und Auftrag gibt es jetzt den **Einsatzort** – Liegenschaft, Filiale, Baustelle, Serverzimmer – mit eigener Adresse, eigener Anfahrt, eigenem Zugang und eigenen Ansprechpersonen. Eine Verwaltung mit vierzig Häusern ist ein Kunde mit einer Rechnungsadresse und vierzig Orten; bisher stand auf dem Rapport die Adresse der Verwaltung. Ein Admin schaltet die Ebene unter Einstellungen mit „Standorte führen“ ein – wer je Kunde nur eine Adresse hat, lässt sie aus, und dann ändert sich nichts."
+      },
+      {
+        "typ": "neu",
+        "text": "**Beteiligte an einem Standort**: eine Adresse aus dem Adressbuch plus eine Rolle (Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde). Der Architekt steht damit genau einmal im Adressbuch und ist an zehn Standorten beteiligt – zieht sein Büro um, wird eine Adresse geändert und es stimmt überall. Eine Beteiligung kann „ab“ und „bis“ tragen: Wer bis gestern Eigentümer war, war es für die Rapporte von damals trotzdem."
+      },
+      {
+        "typ": "neu",
+        "text": "Auf dem **Arbeitsrapport** steht neu der Einsatzort mit dem Zugangshinweis – aber nur, wenn er etwas Neues sagt: Trägt der Ort dieselbe Adresse wie der Kunde, bleibt die Zeile weg."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Die Kundenmaske ist neu gebaut.** Links die Liste, rechts der gewählte Kunde, und alles, was vorher untereinander stand, in Reitern: Adresse, Ansprechpersonen, Standorte, Aufträge, Preise und Rabatte, Dokumente, Historie. Die Seite selbst scrollt nicht mehr – gescrollt wird nur in der Liste und in der Detailfläche, und Menü, Bereich und der Name des gewählten Kunden bleiben immer sichtbar. Wer zwischendurch ans Telefon muss, findet danach zurück."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Knöpfe sagen, was sie tun**: „Adresse speichern“, „Person speichern“, „Standort speichern“, „Preis speichern“. Das nackte „Speichern“ und das „Übernehmen“ sind weg – „Übernehmen“ hat sofort in die Datenbank geschrieben, ohne es zu sagen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Die **Kopfleiste** ist schmaler: das waagrechte Logo statt des senkrechten mit Slogan, dazu Organisation, Person und Abmelden in einer Zeile. Das ganze Logo bleibt auf der Anmeldeseite, der Startseite und auf allem, was das Haus verlässt – Rapport-PDF und Systemmails. Der gewonnene Platz ist auf jeder Maske eine Datenzeile mehr."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Die **Anfahrt** gehört jetzt zum Einsatzort statt zum Kunden – bei vierzig Liegenschaften sind es vierzig Distanzen. Der bisherige Wert des Kunden ist beim Umstellen in seinen Standardstandort gewandert; es geht nichts verloren."
+      },
       {
         "typ": "neu",
         "text": "Arcos kann neue **Branchenvorlagen** für die Bezeichnungen anlegen – sie sind sofort in allen Betrieben verfügbar. Eine Änderung an einer Vorlage verändert nichts, was ein Betrieb schon übernommen hat."

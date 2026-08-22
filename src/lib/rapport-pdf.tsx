@@ -96,7 +96,16 @@ const stil = StyleSheet.create({
 });
 
 export function RapportPdf({ daten }: { daten: RapportDokument }) {
-  const { rapport, positionen, kunde, absender, summeStunden } = daten;
+  const { rapport, positionen, kunde, einsatzort, absender, summeStunden } = daten;
+  const einsatzortZeile = einsatzort
+    ? [
+        einsatzort.bezeichnung,
+        [einsatzort.strasse, einsatzort.hausnummer].filter(Boolean).join(" ") || null,
+        [einsatzort.plz, einsatzort.ort].filter(Boolean).join(" ") || null,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : null;
   const kundenStrasse = [kunde?.strasse, kunde?.hausnummer].filter(Boolean).join(" ");
 
   return (
@@ -150,6 +159,17 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
           {rapport.projekte?.bezeichnung && <Text>{rapport.projekte.bezeichnung}</Text>}
           {rapport.profiles?.name && <Text>Ausgeführt von {rapport.profiles.name}</Text>}
         </View>
+
+        {/* Wo gearbeitet wurde – steht nur da, wenn es etwas Neues sagt:
+            nicht dieselbe Adresse wie die Anschrift oder mit einem
+            Zugangshinweis (0077). */}
+        {einsatzort && (
+          <View style={stil.abschnitt}>
+            <Text style={stil.beschriftung}>Einsatzort</Text>
+            {einsatzortZeile && <Text>{einsatzortZeile}</Text>}
+            {einsatzort.zugang && <Text>Zugang: {einsatzort.zugang}</Text>}
+          </View>
+        )}
 
         {rapport.bemerkung && (
           <View style={stil.abschnitt}>

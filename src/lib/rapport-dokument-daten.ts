@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 import { logoAdresseVon } from "@/lib/logo-adresse";
+import { standorteAktiv } from "@/lib/standorte";
 import type { Rapport, ZeiteintragMitDetails } from "@/lib/types";
 
 export type DokumentAdresse = {
@@ -14,10 +15,27 @@ export type DokumentAdresse = {
   ort: string | null;
 };
 
+/**
+ * Wo gearbeitet wurde (0077). Getrennt von der Anschrift: Die Rechnung geht
+ * an die Verwaltung, gearbeitet wurde in der Liegenschaft. Bis 0076 stand auf
+ * dem Rapport nur die Adresse des Kunden – der Monteur fuhr zur Verwaltung.
+ */
+export type DokumentEinsatzort = {
+  bezeichnung: string;
+  strasse: string | null;
+  hausnummer: string | null;
+  plz: string | null;
+  ort: string | null;
+  zugang: string | null;
+};
+
 export type RapportDokument = {
   rapport: Rapport;
   positionen: ZeiteintragMitDetails[];
   kunde: DokumentAdresse | null;
+  // null, solange die Ortsebene aus ist oder der Ort dieselbe Adresse
+  // trägt wie der Kunde – dann wäre die Zeile eine Wiederholung.
+  einsatzort: DokumentEinsatzort | null;
   absender: {
     name: string | null;
     strasse: string | null;
@@ -80,10 +98,38 @@ export async function ladeRapportDokument(id: string): Promise<RapportDokument |
 
   const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
 
+  // Der Einsatzort in einer eigenen Abfrage und nur, wenn die Ortsebene
+  // eingeschaltet ist. Beides mit Absicht: Die Einbettung im Rapport oben
+  // würde vor der Migration die ganze Abfrage leer zurückgeben, und ein
+  // Rapport ohne Positionen ist ein schlimmerer Fehler als ein Rapport ohne
+  // Ortszeile.
+  const projektId = (rapportRoh as { projekt_id?: string | null }).projekt_id ?? null;
+  let einsatzort: DokumentEinsatzort | null = null;
+  if (projektId && (await standorteAktiv())) {
+    const { data } = await supabase
+      .from("projekte")
+      .select("standorte(bezeichnung, strasse, hausnummer, plz, ort, zugang)")
+      .eq("id", projektId)
+      .maybeSingle();
+    const roh = (data as { standorte?: unknown } | null)?.standorte;
+    const ort = (Array.isArray(roh) ? roh[0] : roh) as DokumentEinsatzort | null | undefined;
+    // Trägt der Ort dieselbe Adresse wie der Kunde – der Normalfall beim
+    // Standardstandort –, bleibt die Zeile weg. Sie soll auffallen, wenn sie
+    // etwas Neues sagt.
+    const gleich =
+      ort &&
+      (ort.strasse ?? "") === (kunde?.strasse ?? "") &&
+      (ort.hausnummer ?? "") === (kunde?.hausnummer ?? "") &&
+      (ort.plz ?? "") === (kunde?.plz ?? "") &&
+      (ort.ort ?? "") === (kunde?.ort ?? "");
+    if (ort && (!gleich || ort.zugang)) einsatzort = ort;
+  }
+
   return {
     rapport: rapportRoh as Rapport,
     positionen,
     kunde,
+    einsatzort,
     absender: {
       name: organisation?.name ?? null,
       strasse: absenderStrasse,

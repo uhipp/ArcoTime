@@ -18,6 +18,10 @@ Jedes Projekt gehört zu genau einem Kunden und ist die Grundlage für die Zeite
 
 **"+ Neues Projekt"** klicken, **Kunde** wählen (oder über **"+ Neuer Kunde"** direkt einen neuen anlegen, siehe [Kunden](/hilfe/kunden)) und eine **Bezeichnung** vergeben.
 
+**Einsatzort**: Führt der Betrieb [Standorte](/hilfe/kunden), steht direkt unter dem Kunden das Feld **Einsatzort** – wo gearbeitet wird. Vorgeschlagen ist der Standardstandort des Kunden; die Auswahl zeigt nur Orte dieses Kunden und wechselt mit ihm. Der Einsatzort bestimmt die Adresse auf dem Arbeitsrapport und die Anfahrt.
+
+Kunde und Einsatzort sind zwei verschiedene Aussagen, keine Doppelung: **wer bestellt** und **wo gearbeitet wird**. Dieselbe Liegenschaft kann einen Auftrag mit der Verwaltung und einen mit dem Eigentümer tragen – zwei Aufträge, ein Ort. Ist die Ortsebene ausgeschaltet, gibt es das Feld nicht und der Standardstandort des Kunden wird still gesetzt.
+
 Weitere Felder mit sinnvollen Standardwerten:
 
 - **Status**: Aktiv/Inaktiv – nur aktive Projekte erscheinen standardmässig in Auswahllisten.

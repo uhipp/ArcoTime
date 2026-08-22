@@ -87,10 +87,13 @@ export default async function AppLayout({
   const timerAmRapport = Boolean(laufenderTimer?.rapport_id);
   const timerInZeiterfassung = Boolean(laufenderTimer && !laufenderTimer.rapport_id);
 
+  // Die Navigation ist auf jeder Seite dieselbe Liste – zwei Zeilen im Kopf
+  // statt drei: Produkt und Organisation oben, Bereiche darunter. 88 px
+  // statt der bisherigen ~140 px, siehe docs/masken-leitlinie.md Abschnitt 5.
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50 print:h-auto print:overflow-visible print:bg-white">
       {nachfristBis && (
-        <div className="bg-amber-100 text-amber-900 text-sm px-4 py-3 print:hidden">
+        <div className="shrink-0 bg-amber-100 text-amber-900 text-sm px-4 py-3 print:hidden">
           <div className="max-w-5xl mx-auto">
             <strong>Nur-Lese-Modus.</strong> Das Abonnement ist beendet. Ihr könnt eure
             Daten noch bis zum {formatDatumCH(nachfristBis)} ansehen und herunterladen –
@@ -101,155 +104,162 @@ export default async function AppLayout({
           </div>
         </div>
       )}
-      <header className="bg-white border-b-2 border-arcos-steel print:hidden">
-        <div className="max-w-5xl mx-auto px-4 pt-3">
-          {/* Erste Zeile: Mandant + Benutzer/Abmelden links, Logo rechts.
-              Bewusst nur 2 Elemente in dieser Zeile (statt 3 mit der
-              Navigation) – bei einem grossen Logo würde eine 3-Element-Zeile
-              sonst umbrechen und das Logo unter die Navigation rutschen
-              lassen statt daneben zu bleiben. */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1 shrink-0">
-              {organisation && (
-                <span className="font-heading font-semibold text-sm text-arcos-navy tracking-tight">
-                  {organisation.name}
-                </span>
-              )}
-              <div className="flex items-center gap-3 text-sm text-gray-500">
-                {profile && (
-                  <Link href={`/mitarbeiter/${profile.id}`} className="hover:text-arcos-navy">
-                    {profile.name} {isAdmin && "(Admin)"}
-                  </Link>
-                )}
-                <form action={logout}>
-                  <button type="submit" className="text-gray-500 hover:text-gray-800">
-                    Abmelden
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            {/* Fixes Applikations-Logo (nicht mandantenspezifisch). Slogan
-                bewusst als Text statt im Bild – im Bild eingebetteter Text
-                wird beim Herunterskalieren auf Header-Grösse unleserlich. */}
-            <Link href="/" className="shrink-0 flex flex-col items-center">
+      <header className="shrink-0 bg-white border-b border-gray-200 print:hidden">
+        {/* Zone 1 – Produkt und Organisation, 48 px. Das waagrechte Lockup
+            statt des senkrechten mit Slogan: Auf einer Maske, die ohne
+            Scrollen auskommen soll, ist jede eingesparte Zeile Höhe eine
+            Datenzeile mehr. Das ganze Logo mit Slogan bleibt auf der
+            Anmeldeseite, der Startseite und auf allem, was das Haus
+            verlässt – PDF und Systemmails. */}
+        <div className="h-12 px-4 flex items-center justify-between gap-4 border-b border-gray-100">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <Link href="/" className="shrink-0">
               <Image
-                src="/arcotime-logo.png"
+                src="/arcotime-logo-quer.png"
                 alt="ArcoTime"
-                width={286}
-                height={197}
-                className="h-14 w-auto"
+                width={599}
+                height={128}
+                className="h-[26px] w-auto"
                 priority
               />
-              <span className="text-xs text-gray-500 mt-0.5 whitespace-nowrap">
-                Smart planen. Besser arbeiten.
-              </span>
             </Link>
+            {organisation && (
+              <>
+                <span className="w-px h-[22px] bg-gray-200 shrink-0" aria-hidden />
+                <span className="font-heading font-semibold text-sm text-arcos-navy tracking-tight truncate">
+                  {organisation.name}
+                </span>
+              </>
+            )}
           </div>
-
-          <nav className="flex flex-wrap gap-4 text-sm py-3">
-            {/* Das Zeichen ist ein eigener Link auf den laufenden Eintrag,
-                nicht bloss ein Hinweis: Zu wissen, DASS ein Timer läuft,
-                nützt wenig, wenn man ihn dann suchen muss. Zwei
-                verschachtelte Links gehen nicht, also stehen sie
-                nebeneinander. */}
-            <span className="flex items-center gap-1.5">
-              <Link href="/zeiterfassung" className="hover:text-arcos-navy">
-                Zeiterfassung
-              </Link>
-              {timerInZeiterfassung && laufenderTimer && (
-                <Link
-                  href={`/zeiterfassung/${laufenderTimer.id}`}
-                  title="Es läuft ein Timer – hier stoppen"
-                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium hover:bg-red-700"
-                >
-                  ⏱
-                </Link>
-              )}
-            </span>
-            <Link href="/anfragen" className="hover:text-arcos-navy flex items-center gap-1.5">
-              {begriff(begriffe, "anfrage", "mehrzahl")}
-              {Boolean(faelligeWiedervorlagen) && (
-                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium">
-                  {faelligeWiedervorlagen}
-                </span>
-              )}
+          <div className="flex items-center gap-4 text-sm text-gray-500 shrink-0">
+            <Link href="/aenderungen" className="hover:text-arcos-navy whitespace-nowrap">
+              🆕 Neuigkeiten
             </Link>
-            {/* Ziel bleibt die ganze Liste: Ein Link, der je nach Zustand
-                woanders hinführt, verwirrt mehr, als der eine gesparte
-                Klick nützt. Den Filter setzt der Zähler daneben. */}
-            <span className="flex items-center gap-1.5">
-              <Link href="/rapporte" className="hover:text-arcos-navy">
-                {begriff(begriffe, "rapport", "mehrzahl")}
-              </Link>
-              {timerAmRapport && laufenderTimer?.rapport_id && (
-                <Link
-                  href={`/rapporte/${laufenderTimer.rapport_id}`}
-                  title="An diesem Rapport läuft ein Timer – hier stoppen"
-                  className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium hover:bg-red-700"
-                >
-                  ⏱
-                </Link>
-              )}
-              {Boolean(offeneRapporte) && (
-                <span
-                  title={`Offene ${begriff(begriffe, "rapport", "mehrzahl")} aus vergangenen Tagen`}
-                  className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium"
-                >
-                  {offeneRapporte}
-                </span>
-              )}
-            </span>
-            {organisation?.modul_disposition && (
-              <Link href="/disposition" className="hover:text-arcos-navy">
-                Disposition
+            <KontextHilfeLink />
+            {profile && (
+              <Link
+                href={`/mitarbeiter/${profile.id}`}
+                className="hover:text-arcos-navy whitespace-nowrap"
+              >
+                {profile.name} {isAdmin && "(Admin)"}
               </Link>
             )}
-            <Link href="/auswertungen" className="hover:text-arcos-navy">
-              Auswertungen
-            </Link>
-            <Link href="/kalender" className="hover:text-arcos-navy">
-              Kalender
-            </Link>
-            <Link href="/kunden" className="hover:text-arcos-navy">
-              {begriff(begriffe, "kunde", "mehrzahl")}
-            </Link>
-            <Link href="/projekte" className="hover:text-arcos-navy">
-              {begriff(begriffe, "projekt", "mehrzahl")}
-            </Link>
-            <Link href="/dienstleistungen" className="hover:text-arcos-navy">
-              {begriff(begriffe, "dienstleistung", "mehrzahl")}
-            </Link>
-            {isAdmin && (
-              <Link href="/mitarbeiter" className="hover:text-arcos-navy">
-                Mitarbeitende
-              </Link>
-            )}
-            {isAdmin && (
-              <Link href="/export" className="hover:text-arcos-navy">
-                Export
-              </Link>
-            )}
-            {isAdmin && (
-              <Link href="/einstellungen" className="hover:text-arcos-navy">
-                Einstellungen
-              </Link>
-            )}
-            {profile?.ist_platform_admin && (
-              <Link href="/plattform" className="hover:text-arcos-navy text-red-600 font-medium">
-                Plattform
-              </Link>
-            )}
-            <span className="ml-auto flex items-center gap-4">
-              <Link href="/aenderungen" className="hover:text-arcos-navy">
-                🆕 Neuigkeiten
-              </Link>
-              <KontextHilfeLink />
-            </span>
-          </nav>
+            <form action={logout}>
+              <button type="submit" className="text-gray-500 hover:text-gray-800">
+                Abmelden
+              </button>
+            </form>
+          </div>
         </div>
+
+        {/* Zone 2 – die Bereiche, 40 px. Bei vielen Modulen und einem
+            schmalen Fenster wird daraus eine waagrecht scrollbare Leiste
+            statt eines Umbruchs: Die Höhe des Kopfs muss verlässlich sein,
+            sonst rutscht jede Maske darunter. */}
+        <nav className="h-10 px-4 flex items-center gap-4 text-sm overflow-x-auto whitespace-nowrap">
+          {/* Das Zeichen ist ein eigener Link auf den laufenden Eintrag,
+              nicht bloss ein Hinweis: Zu wissen, DASS ein Timer läuft,
+              nützt wenig, wenn man ihn dann suchen muss. Zwei
+              verschachtelte Links gehen nicht, also stehen sie
+              nebeneinander. */}
+          <span className="flex items-center gap-1.5">
+            <Link href="/zeiterfassung" className="hover:text-arcos-navy">
+              Zeiterfassung
+            </Link>
+            {timerInZeiterfassung && laufenderTimer && (
+              <Link
+                href={`/zeiterfassung/${laufenderTimer.id}`}
+                title="Es läuft ein Timer – hier stoppen"
+                className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium hover:bg-red-700"
+              >
+                ⏱
+              </Link>
+            )}
+          </span>
+          <Link href="/anfragen" className="hover:text-arcos-navy flex items-center gap-1.5">
+            {begriff(begriffe, "anfrage", "mehrzahl")}
+            {Boolean(faelligeWiedervorlagen) && (
+              <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium">
+                {faelligeWiedervorlagen}
+              </span>
+            )}
+          </Link>
+          {/* Ziel bleibt die ganze Liste: Ein Link, der je nach Zustand
+              woanders hinführt, verwirrt mehr, als der eine gesparte
+              Klick nützt. Den Filter setzt der Zähler daneben. */}
+          <span className="flex items-center gap-1.5">
+            <Link href="/rapporte" className="hover:text-arcos-navy">
+              {begriff(begriffe, "rapport", "mehrzahl")}
+            </Link>
+            {timerAmRapport && laufenderTimer?.rapport_id && (
+              <Link
+                href={`/rapporte/${laufenderTimer.rapport_id}`}
+                title="An diesem Rapport läuft ein Timer – hier stoppen"
+                className="inline-flex items-center justify-center h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-medium hover:bg-red-700"
+              >
+                ⏱
+              </Link>
+            )}
+            {Boolean(offeneRapporte) && (
+              <span
+                title={`Offene ${begriff(begriffe, "rapport", "mehrzahl")} aus vergangenen Tagen`}
+                className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs font-medium"
+              >
+                {offeneRapporte}
+              </span>
+            )}
+          </span>
+          {organisation?.modul_disposition && (
+            <Link href="/disposition" className="hover:text-arcos-navy">
+              Disposition
+            </Link>
+          )}
+          <Link href="/auswertungen" className="hover:text-arcos-navy">
+            Auswertungen
+          </Link>
+          <Link href="/kalender" className="hover:text-arcos-navy">
+            Kalender
+          </Link>
+          <Link href="/kunden" className="hover:text-arcos-navy">
+            {begriff(begriffe, "kunde", "mehrzahl")}
+          </Link>
+          <Link href="/projekte" className="hover:text-arcos-navy">
+            {begriff(begriffe, "projekt", "mehrzahl")}
+          </Link>
+          <Link href="/dienstleistungen" className="hover:text-arcos-navy">
+            {begriff(begriffe, "dienstleistung", "mehrzahl")}
+          </Link>
+          {isAdmin && (
+            <Link href="/mitarbeiter" className="hover:text-arcos-navy">
+              Mitarbeitende
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/export" className="hover:text-arcos-navy">
+              Export
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/einstellungen" className="hover:text-arcos-navy">
+              Einstellungen
+            </Link>
+          )}
+          {profile?.ist_platform_admin && (
+            <Link href="/plattform" className="hover:text-arcos-navy text-red-600 font-medium">
+              Plattform
+            </Link>
+          )}
+        </nav>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8 print:p-0 print:max-w-none">{children}</main>
+      {/* Gescrollt wird hier, nicht am Fenster – so bleibt der Kopf stehen.
+          Eine Maske mit data-vollbild bekommt über .seite die ganze Fläche
+          und scrollt dann nur in ihren inneren Listen (globals.css). */}
+      <main className="flex-1 min-h-0 overflow-y-auto print:overflow-visible">
+        <div className="seite max-w-5xl mx-auto px-4 py-8 print:p-0 print:max-w-none">
+          {children}
+        </div>
+      </main>
       <Suspense fallback={null}>
         <div className="print:hidden">
           <Toast />

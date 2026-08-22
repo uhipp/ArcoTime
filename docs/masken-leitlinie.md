@@ -1,6 +1,7 @@
 # Masken-Leitlinie
 
-Stand: 22.08.2026 · **verbindlich für jede Maske, die angefasst wird**
+Stand: 22.08.2026 · **verbindlich für jede Maske, die angefasst wird** ·
+erste umgebaute Maske: Kunden
 
 Entstanden aus einer Beobachtung des Nutzers an der Kundenmaske: Sie ist durch
 laufende Erweiterungen so lang geworden, dass man beim Arbeiten dauernd
@@ -222,13 +223,38 @@ Rundumschlag.
 
 | Maske | Zustand |
 |---|---|
-| Kunden | Entwurf steht (Design-Canvas). Umbau mit Etappe 4, weil dort die Standorte als Reiter dazukommen |
+| Kunden | **umgebaut** (Etappe 4, 22.08.2026) – Punkte 1 bis 6, 8 und 9 erfüllt; siehe die Einschränkungen darunter |
 | Aufträge (Projekte) | lange Seite, kein Detail neben der Liste |
 | Anfragen | Board statt Liste + Detail — hier ist das Board wahrscheinlich das bessere Muster, zu prüfen |
 | Rapporte | Detailseite eigenständig; Positionen sind der Kern, Reiter denkbar |
 | Zeiterfassung | Formular über Liste, funktioniert; Feldaktionen fehlen |
 | Einstellungen, Plattform | Einstellungsmasken — Länge ist dort in Ordnung |
 
-**Nächster Schritt:** Etappe 4 (Standorte, 0076) baut die Kundenmaske nach
-diesem Muster um — dort entstehen ohnehin neue Reiter, und ein zweites Mal
-anfassen wäre verschwendete Arbeit.
+### Was an der Kundenmaske noch offen ist
+
+Ehrlich statt gerundet — die Maske erfüllt die Prüfliste nicht vollständig:
+
+- **Punkt 7 nur halb.** Die Liste links hat Suche (von vorn) und die markierte
+  Auswahl, aber keine Filterzeile je Spalte, keine Sortierung nach Spalten und
+  keine Spaltenwahl — in einer Spalte von 288 px hat eine Tabelle mit neun
+  Spalten keinen Platz. Beides gibt es weiterhin unter „Ganze Liste"
+  (`/kunden`), und der Knopf dorthin steht in der Bereichsleiste. Ob das
+  reicht oder die Liste breiter und aufklappbar werden muss, entscheidet die
+  erste Woche Arbeit damit.
+- **Punkt 10 ungeprüft.** Das Nebeneinander bricht auf dem Telefon nicht in
+  ein Nacheinander um; die Liste bleibt 288 px breit. Auf dem Tablet im
+  Querformat geht es, auf dem Handy nicht. Das ist der nächste Schritt an
+  dieser Maske und gehört zum Thema Handy-App.
+- **Die Feldaktionen (Punkt 6)** stehen bei den Ansprechpersonen und am
+  Standort (`mailto:`, `tel:`, Navigation), aber noch nicht am Adressblock des
+  Kunden selbst und nicht überall gleich aussehend. Die Einstellung „Mail
+  öffnen mit → Programm des Anwenders / aus ArcoTime senden" fehlt ganz.
+- **`:has()` trägt die Breite.** Eine Maske bekommt die ganze Fläche, indem
+  ihr oberstes Element `data-vollbild` trägt; die Regel dazu steht in
+  `globals.css`. Wo der Browser `:has()` nicht kennt, sieht die Maske aus wie
+  eine normale Seite — schmaler, aber vollständig. Der Preis dafür war eine
+  Zeile CSS statt eines Umbaus aller dreissig Seiten.
+
+**Nächster Schritt:** Die Auftragsmaske (`/projekte`) — dort kommt mit dem
+Einsatzort ohnehin ein Feld dazu, und sie ist die zweite Maske, die täglich
+benutzt wird.

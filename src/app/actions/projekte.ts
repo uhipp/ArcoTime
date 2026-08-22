@@ -25,6 +25,15 @@ function projektFromForm(formData: FormData) {
     sichtbar_fuer_alle: formData.get("sichtbar_fuer_alle") === "on",
   };
 
+  // Der Einsatzort (0077). Nur setzen, wenn das Formular einen mitschickt:
+  // Wo die Ortsebene ausgeschaltet ist, gibt es das Feld nicht, und dann
+  // füllt der Trigger in der Datenbank den Standardstandort des Kunden. Ein
+  // null hier würde stattdessen die Pflichtangabe verletzen.
+  const standort = str(formData.get("standort_id"));
+  if (standort !== null) {
+    werte.standort_id = standort;
+  }
+
   // Nur setzen, wenn ausgefüllt – sonst bleibt der bestehende Zähler des
   // Projekts unangetastet (nicht mit null überschreiben).
   const belegnummer = str(formData.get("naechste_belegnummer"));
