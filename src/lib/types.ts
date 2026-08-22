@@ -370,12 +370,12 @@ export type BelegExport = {
   projekte?: { bezeichnung: string; kunden?: { name: string; vorname: string | null } | null } | null;
 };
 
+// Bewusst OHNE "standort": Der Standort ist eine Postadresse und trägt
+// nichts weiter (0081). Eine Ablage dort könnte Variante A und Variante B
+// nicht gleich – ein Betrieb ohne Ortsebene hätte keinen Weg dorthin.
+// Dokumente hängen am Kunden oder am Auftrag.
 export type DokumentBereich =
   | "kunde"
-  // Der Einsatzort (0076): Grundrisse, Fotos, Schlüsselquittungen gehören
-  // an den Ort und nicht an den Kunden – bei vierzig Liegenschaften wäre
-  // die Kundenablage sonst eine Kiste ohne Ordnung.
-  | "standort"
   | "projekt"
   | "mitarbeitende"
   | "anfrage"

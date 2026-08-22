@@ -261,7 +261,6 @@ export default async function KundeDetailPage({
               <StandorteReiter
                 kundeId={id}
                 standortWahl={standortWahl}
-                userId={profile?.id ?? ""}
                 istAdmin={istAdmin}
               />
             )}
@@ -393,12 +392,10 @@ async function BetriebKontaktReiter({
 async function StandorteReiter({
   kundeId,
   standortWahl,
-  userId,
   istAdmin,
 }: {
   kundeId: string;
   standortWahl?: string;
-  userId: string;
   istAdmin: boolean;
 }) {
   const supabase = await createClient();
@@ -423,18 +420,11 @@ async function StandorteReiter({
       ? null
       : (liste.find((s) => s.id === standortWahl) ?? liste[0] ?? null);
 
-  const ablage = gewaehlt
-    ? await ladeDokumente(supabase, "standort", gewaehlt.id)
-    : { dokumente: [], kategorien: [] };
-
   return (
     <KundenStandorte
       kundeId={kundeId}
       standorte={liste}
       gewaehlt={gewaehlt}
-      dokumente={ablage.dokumente}
-      kategorien={ablage.kategorien}
-      userId={userId}
       istAdmin={istAdmin}
     />
   );

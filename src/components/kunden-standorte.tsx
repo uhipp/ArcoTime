@@ -2,8 +2,7 @@ import Link from "next/link";
 import { speichereStandort, loescheStandort } from "@/app/actions/standorte";
 import { DeleteButton } from "@/components/delete-button";
 import { KundenKontakt } from "@/components/kunden-kontakt";
-import { DokumenteBereich } from "@/components/dokumente-bereich";
-import type { Dokument, Standort } from "@/lib/types";
+import type { Standort } from "@/lib/types";
 
 // Die Adressen eines Kunden (0079) – Liste links, Detail rechts, wie
 // docs/masken-leitlinie.md es für Nebenobjekte vorsieht.
@@ -177,17 +176,11 @@ export function KundenStandorte({
   kundeId,
   standorte,
   gewaehlt,
-  dokumente,
-  kategorien,
-  userId,
   istAdmin,
 }: {
   kundeId: string;
   standorte: Standort[];
   gewaehlt: Standort | null;
-  dokumente: Dokument[];
-  kategorien: { id: string; bezeichnung: string; aktiv: boolean }[];
-  userId: string;
   istAdmin: boolean;
 }) {
   return (
@@ -246,24 +239,6 @@ export function KundenStandorte({
             </div>
           </div>
 
-          {/* Der Grundriss und die Fotos gehören zur Adresse, nicht zum
-              Vorhaben: Sie überleben das Projekt, in dem sie entstanden
-              sind. */}
-          {gewaehlt && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-500 mb-2">
-                Dokumente zu dieser Adresse
-              </h4>
-              <DokumenteBereich
-                bereich="standort"
-                bezugId={gewaehlt.id}
-                initialDokumente={dokumente}
-                kategorien={kategorien}
-                aktuellerUserId={userId}
-                istAdmin={istAdmin}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

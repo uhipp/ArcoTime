@@ -155,7 +155,6 @@ console.log(`\nAbgebrochene Uploads (Speicherpfad "pending"): ${offeneUploads.le
 // und beim Löschen des Mandanten gehen sie mit.
 const TABELLE_ZU_BEREICH = {
   kunde: "kunden",
-  standort: "standorte",
   projekt: "projekte",
   mitarbeitende: "profiles",
   anfrage: "anfragen",

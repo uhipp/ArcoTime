@@ -91,7 +91,7 @@ Warum so wenig: Die Ortsebene gibt einem Betrieb genau zwei Dinge – mehrere Ad
 
 **Verkauft?** Wechselt die Liegenschaft zu einem anderen Kunden **derselben Organisation**, wird beim Standort der Kunde geändert – die Historie zieht mit, weil Aufträge und Rapporte an der Adresse hängen. Die alten Rechnungen bleiben beim früheren Eigentümer; das ist Absicht, sonst wäre die Vergangenheit gefälscht. Wird die Liegenschaft **nach draussen** verkauft und nicht mehr betreut, nimmt man ihr das Häkchen **aktiv**: Sie bleibt lesbar und verschwindet aus jeder Auswahl.
 
-**Dokumente**: Grundriss, Fotos vom Zustand, die Schlüsselquittung liegen an der Adresse – sie überleben das Vorhaben, in dem sie entstanden sind.
+**Dokumente** hängen am Kunden oder am Auftrag, nicht an der Adresse: Ein Betrieb ohne Standorte hätte sonst keinen Weg zu ihnen, und die Ortsebene soll nichts können, was ohne sie fehlt.
 
 **Löschen** geht nur, solange kein Auftrag an der Adresse hängt.
 

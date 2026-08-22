@@ -22,6 +22,10 @@
       },
       {
         "typ": "verbessert",
+        "text": "**Dokumente hängen am Kunden oder am Auftrag**, nicht an einer Adresse. Eine Ablage am Standort war kurz angekündigt und ist wieder weg: Ein Betrieb ohne Standorte hätte keinen Weg dorthin, und die Ortsebene soll nichts können, was ohne sie fehlt."
+      },
+      {
+        "typ": "verbessert",
         "text": "**Der Standort ist jetzt nur noch eine Adresse** – sieben Felder, dazu „wird vorgeschlagen“ und „aktiv“. Anfahrt, Zugang und die Beteiligten sind an den Auftrag gezogen. Der Grund: So kann ein Betrieb **ohne** Standorte genau dasselbe wie einer mit. Die Ortsebene gibt einem Betrieb genau zwei Dinge – mehrere Adressen je Kunde und Auswertungen je Adresse – und nicht mehr."
       },
       {
@@ -71,10 +75,6 @@
       {
         "typ": "neu",
         "text": "Auf dem **Arbeitsrapport** steht neu der Einsatzort mit dem Zugangshinweis – aber nur, wenn er etwas Neues sagt: Trägt der Ort dieselbe Adresse wie der Kunde, bleibt die Zeile weg."
-      },
-      {
-        "typ": "neu",
-        "text": "**Dokumente am Standort**: Grundriss, Fotos vom Zustand, Schlüsselquittung – unter dem gewählten Ort liegt eine eigene Ablage. Die Dateien wandern von selbst in den Vollexport und in das Dokumentenarchiv; ein neuer Ordner „Standorte“ hält sie dort zusammen."
       },
       {
         "typ": "verbessert",

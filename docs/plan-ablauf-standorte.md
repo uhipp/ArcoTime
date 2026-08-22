@@ -424,7 +424,7 @@ welcher Farbe, unabhängig davon, wer damals zahlte. **Bitte bestätigen.**
 | `ansprechpersonen.standort_id` | ersatzlos — der Hauswart ist eine zusätzliche Adresse am Projekt |
 | `kunden.anreise_km` | wandert ans Projekt |
 | Block „Beteiligte an diesem Standort" | wandert in die Projektmaske |
-| Dokumentbereich `standort` | bleibt: der Grundriss gehört zur Adresse, nicht zum Vorhaben |
+| Dokumentbereich `standort` | **fällt** (0081): Eine Ablage am Standort könnten A und B nicht gleich — der Grundriss hängt am Kunden oder am Auftrag |
 
 Nebenbei erledigt sich damit der Fehler vom 22.08.: Die Spalte heisst `notiz`,
 der Code schreibt und liest `notizen` — daher scheiterte das Speichern und
