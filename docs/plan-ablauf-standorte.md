@@ -267,23 +267,55 @@ Zusammengesetzte Wörter bleiben fest, weil sich das Fugen-s nicht ableiten
 lässt. „Artikelklassen" ist genau so ein festes zusammengesetztes Wort — es
 bleibt stehen, auch wenn ein Betrieb den Artikel „Leistung" nennt.
 
-**Umfang, gemessen:** 87 Dateien und 505 Zeilen erwähnen „dienstleistung". Die
-sichtbaren Beschriftungen kommen aber schon aus den Bezeichnungen (0073), das
-Wort steht also meist nur im Code. Im Comatic-Export kommt es **nicht** vor —
-es gibt keine externe Zusage, die bricht.
+**Die Tabelle wird mit umbenannt.** Anweisung des Nutzers vom 22.08.2026, als
+Regel für das ganze Projekt aufgenommen (siehe `projektstand.md`, Abschnitt
+„Wie wir arbeiten"):
 
-**Empfehlung zum Umfang:** Beschriftungen und Vorgaben umstellen, **Tabellen-
-und Spaltennamen behalten**. `dienstleistungen` ist ein veralteter, aber kein
-irreführender Name — anders als `beteiligte`/`rapport_beteiligte`, wo zwei fast
-gleiche Namen Verschiedenes bedeuten. Umbenennen kostet 505 Zeilen Risiko für
-null Nutzen an der Oberfläche. Im Typ und in der Hilfe steht dafür ein Satz,
-der die Zuordnung festhält.
+> Die Tabelle Dienstleistungen ist schlicht falsch. Bitte diese Anweisung ab
+> sofort als unumstössliche Regel aufnehmen. Wenn ein Fehler festgestellt wird
+> (wie ein falscher Tabellenname), dann wird alles angepasst.
 
-Konkret in der Migration: die **Vorgabe** des Begriffs `dienstleistung` wird
-„Artikel/Artikel" (Einzahl und Mehrzahl sind gleich, Genus m), die drei
-Branchenvorlagen ziehen mit, und die bestehenden Zeilen unserer beiden
-Mandanten werden mitgeändert. Ein Kundenmandant, der bewusst ein eigenes Wort
-gesetzt hat, behält es — dafür gibt es die Bezeichnungen.
+Meine Empfehlung „Namen behalten, Beschriftungen ändern" war damit falsch: Sie
+hätte einen bekannten Fehler stehen gelassen und jedem, der später in den Code
+schaut, erzählt, `dienstleistungen` enthalte Dienstleistungen.
+
+**Gemessen:** 87 Dateien und 505 Zeilen erwähnen „dienstleistung". Im
+Comatic-Export kommt das Wort **nicht** vor — es bricht keine externe Zusage.
+
+**Und es kostet keine Daten.** Ein `alter table … rename to` in Postgres
+berührt keine einzige Zeile; Fremdschlüssel, Indizes und RLS-Regeln hängen an
+der Tabelle und ziehen mit. Das Angebot, zuerst die Bewegungsdaten zu löschen,
+ist nicht nötig — und wäre schade, weil die Demo AG zum Zeigen des Produkts
+dient.
+
+Was umzubenennen ist:
+
+| heute | neu |
+|---|---|
+| `dienstleistungen` | `artikel` |
+| `dienstleistungsklassen` | `artikelklassen` |
+| `dienstleistungen.klasse_id` | `artikel.klasse_id` (bleibt) |
+| `zeiteintraege.dienstleistung_id` | `zeiteintraege.artikel_id` |
+| `kundenpreise.dienstleistung_id` | `kundenpreise.artikel_id` |
+| `standardpositionen.dienstleistung_id` | `standardpositionen.artikel_id` |
+| `kundenrabatte.klasse_id` | bleibt |
+| `v_zeiteintraege.dienstleistung_bezeichnung` | `artikel_bezeichnung` |
+
+Drei Stellen ziehen **nicht** von selbst mit und sind einzeln nachzuführen —
+genau die Art Handliste, die dieses Projekt schon zweimal gebissen hat:
+
+1. **Die Tabellenliste im Änderungsprotokoll** (`0053`, `tabellen text[] :=
+   array[…]`) nennt die Tabellen namentlich.
+2. **Die Protokollzeilen selbst** tragen den Tabellennamen als Text in der
+   Spalte `tabelle`. Alte Zeilen sagen sonst weiter „dienstleistungen".
+3. **Die Schlüssel der Spaltenwahl** stehen je Anwender als Text in der
+   Datenbank. Ohne Nachführung verliert jeder seine Spaltenauswahl für diese
+   Liste.
+
+Der Rest folgt von selbst, und zwar dank einer früheren Entscheidung: Export,
+Mandantenlöschung und Umfangsanzeige lesen ihre Tabellenliste aus
+`pg_constraint` und nicht aus einer Aufzählung im Code (0063/0064/0067). Sie
+kennen `artikel` am Tag der Umbenennung.
 
 **Zwei Tabellen mit fast gleichem Namen für Verschiedenes** — umzubenennen,
 solange fast keine Daten darin stehen:
@@ -411,6 +443,8 @@ schlechteste aller Varianten.
 | **0078** | `standorte.kunde_id` (aus der Beteiligtenzeile befüllt, dann not null) · Rolle „Kunde" entfernen · `standorte.zugang`, `anreise_km`, `notiz` löschen · `ansprechpersonen.standort_id` löschen |
 | **0079** | `projekte.anreise_km`, `projekte.zugang` · Werte aus `kunden.anreise_km` je Projekt nachziehen · `kunden.anreise_km` löschen · `rapporte.kunde_id` löschen (steht seit 0071 aus) |
 | **0080** | Umbenennungen: `beteiligte` → `projekt_adressen` (nur noch `projekt_id`), `beteiligten_rollen` → `adress_rollen`, `rapport_beteiligte` → `rapport_mitarbeiter` · Bezug der Rollenzeilen von Standort auf Projekt umstellen |
+| **0080a** | Umbenennung `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`, die vier Fremdschlüsselspalten, die View · Tabellenliste im Änderungsprotokoll, die Protokollzeilen und die Spaltenwahl-Schlüssel nachführen |
+| **0080b** | `artikelklassen.menge_summieren` mit den zwei Prüftriggern |
 | **0081** | Begriffe: `adresse` neu, Vorgabe für `dienstleistung` auf „Artikel" · Branchenvorlagen und die Zeilen unserer Mandanten mitziehen · Einstellungsfelder für den Vortrag an `organisationen` |
 
 Für jede berührte Tabelle gilt die Zehn-Punkte-Prüfliste aus
@@ -444,7 +478,8 @@ werden: Zwischen ihnen gibt es den Zugang nirgends.
 **Entschieden am 22.08.2026**
 
 Aus Dienstleistungen werden **Artikel**, aus Dienstleistungsklassen
-**Artikelklassen** (Tabellennamen bleiben) · Standort trägt nur die Postadresse · Häkchen Standardadresse · Stilllegung über
+**Artikelklassen** — **auch die Tabellen** · die Artikelklasse trägt einen
+Schalter „Menge summieren", und ein Widerspruch dazu wird abgelehnt · Standort trägt nur die Postadresse · Häkchen Standardadresse · Stilllegung über
 `aktiv` (Verkauf innerhalb der Organisation ist ein Umzug mit Historie, Verkauf
 nach draussen eine Stilllegung) · alles Betriebswissen am Projekt · Vortrag vom
 letzten Projekt am selben Standort, **einstellbar je Betrieb** · beim ersten
@@ -457,44 +492,40 @@ Tabellennamen · Historie nach dem Verkauf bleibt am Standort, `projekte.kunde_i
 wird nicht umgeschrieben · erst Plan, dann eine Migrationsfolge ohne
 Zwischenzustand.
 
-**Offen — eine Frage, und zwar aus dem Malergewerbe selbst:**
+### Der Schalter an der Artikelklasse — entschieden
 
-**Ist eine Artikelklasse immer einheitenrein?** Die Aussage vom 22.08. lautet:
+> Eine Auswertung, die eine Zahl zeigt, die keinen Sinn macht, darf es nicht
+> geben. Also bei Klassen einen Schalter einbauen (Menge summieren ja/nein).
 
-> Innerhalb einer Klasse gibt es nicht unterschiedliche Einheiten. Klasse
-> Dienstleistungen sind immer in Std.
+Das löst die Frage besser als meine beiden Vorschläge: Die Klasse **sagt
+selbst**, ob ihre Menge eine Summe verträgt.
 
-Für Arbeit stimmt das ohne Zweifel. Bei **Material** ist der eigene Fall der
-Gegenbeweis: Farbe in Liter, Pinsel in Stück, Abdeckvlies in m² — alle drei
-sind Material. Summiert die Auswertung dann „60" über eine Klasse, ist die Zahl
-bedeutungslos, und niemand sieht es der Zeile an.
+- `artikelklassen.menge_summieren boolean not null default true`
+- **ein** — die Auswertung zeigt Menge und Einheit: „Arbeit · 128.5 h ·
+  CHF 16'062".
+- **aus** — die Auswertung zeigt nur den Betrag und in der Mengenspalte einen
+  Strich: „Material · – · CHF 1'600". Die einzelnen Mengen stehen weiterhin in
+  den Positionen, wo sie ihre Einheit bei sich haben.
 
-Die Datenbank hilft heute nicht: `einheit` steht am Artikel (seit 0022 als
-freier Wert gegen die Einheitenliste geprüft), die Klasse hat keine Einheit.
-Nichts verhindert also die gemischte Klasse.
+Damit ist die Klassenstruktur weiter nach Sachlogik gebaut (was die Rabattregel
+braucht) und die Auswertung zeigt nie eine sinnlose Zahl.
 
-Zwei Wege, beide sauber:
+**Ein Widerspruch bleibt möglich und muss abgefangen werden:** Steht der
+Schalter auf „summieren", die Klasse enthält aber Artikel in verschiedenen
+Einheiten, wäre die Summe wieder Unsinn. Das ist die Regel aus Abschnitt 8a in
+ihrer schärfsten Form, und sie greift in beide Richtungen:
 
-- **Klasse ist einheitenrein — und die Anwendung erzwingt es.** Die
-  Artikelklasse bekommt ihre Einheit, ein Artikel mit abweichender Einheit wird
-  abgelehnt („Die Klasse ‚Material' führt Stück; dieser Artikel hat Liter").
-  Dann brauchst du Material-Stück, Material-Liter, Material-m² als eigene
-  Klassen — mehr Klassen, aber jede Menge ist summierbar. Das ist die
-  Anwendung der Regel aus Abschnitt 8a auf diesen Fall.
-- **Klasse darf mischen — die Auswertung gruppiert Klasse × Einheit.** Eine
-  Zeile „Material · Liter · 18 · CHF 340", darunter „Material · Stück · 42 ·
-  CHF 1'260". Weniger Klassen, mehr Zeilen, und die Rabattregel je Klasse
-  bleibt so grob wie heute.
+- Ein Artikel mit abweichender Einheit wird in einer summierenden Klasse
+  abgelehnt: „Die Klasse ‚Arbeit' summiert Mengen und führt Stunden; dieser
+  Artikel hat Pauschale. Entweder eine andere Klasse wählen oder bei der Klasse
+  das Summieren ausschalten."
+- Das **Einschalten** des Schalters wird abgelehnt, solange die Klasse gemischte
+  Einheiten enthält — mit der Aufzählung der gefundenen Einheiten in der
+  Meldung.
 
-Ich empfehle den **zweiten** Weg: Er passt zur Praxis (Material ist
-naturgemäss gemischt), er braucht keine Umstellung des Artikelstamms, und die
-Auswertung bleibt in jedem Fall rechenbar. Der erste Weg wäre strenger, aber er
-verlangt vom Anwender eine Klassenstruktur nach Einheiten statt nach Sachlogik
-— und die Klasse trägt auch die Rabattregel, wo die Sachlogik zählt.
-
-Wenn in deinen Betrieben eine Klasse tatsächlich immer nur eine Einheit hat,
-kostet der zweite Weg nichts: Dann steht je Klasse genau eine Zeile, und die
-Spalte „Einheit" bestätigt es nur.
+Geprüft wird das in der Datenbank (Trigger auf `artikel` und
+`artikelklassen`), damit es auch für Import und künftige Erfassungswege gilt.
+Die Übersetzung in deutsche Sätze macht `src/lib/db-fehler.ts`.
 
 **Was die Auswertungen heute schon können** — damit die Etappe 6 nicht grösser
 aussieht als sie ist:

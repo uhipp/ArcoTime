@@ -177,6 +177,16 @@ Logo und die Umbenennung aller Speicherknöpfe („Adresse speichern" statt
   brechen ab, statt eine unvollständige Vorschau zu zeigen. Ein neuer Prüfer
   wird gegen den Stand geprüft, in dem der Fehler noch drinsteckt – sonst weiss
   niemand, ob „keine Beanstandungen" etwas bedeutet.
+- **Ein erkannter Fehler wird ganz behoben, nicht dokumentiert.** Anweisung des
+  Nutzers vom 22.08.2026, ausdrücklich als unumstössliche Regel: Wenn etwas
+  falsch ist — ein falscher Tabellenname, ein falsches Wort, eine falsche
+  Zuordnung —, dann wird **alles** angepasst, statt den Fehler stehen zu lassen
+  und ihn zu erklären. „Solche Dinge sind für mich ein absolutes no go und
+  höchst unprofessionell." Der Umfang der Änderung ist kein Argument dagegen;
+  es gibt zwei Datenbanken und nur Testdaten. Notfalls werden Bewegungsdaten
+  gelöscht, umgestellt und neu erfasst.
+  *Erster Anwendungsfall: `dienstleistungen` → `artikel`, weil die Tabelle
+  längst auch Material und Spesen enthält.*
 - **Bei fachlichen Regeln (Recht, Buchhaltung, HR) nicht raten, sondern fragen.**
 - **Jede Arbeitsmaske wird beim Anfassen gegen `docs/masken-leitlinie.md`
   geprüft.** Kein Scrollen auf der Seite, Liste links und Detail rechts,
