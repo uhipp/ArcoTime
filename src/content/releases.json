@@ -5,6 +5,18 @@
     "titel": "Arbeitsrapporte, Disposition, Mengenartikel und Standorte",
     "eintraege": [
       {
+        "typ": "verbessert",
+        "text": "**Die Kontaktangaben des Betriebs stehen jetzt im Reiter „Adresse“**, nicht mehr bei den Ansprechpersonen: Sie gehören der Adresse des Kunden und keiner Person. Der Reiter heisst deshalb nur noch „Ansprechpersonen“."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**„+ Kontakt“ und „+ Person“ heissen jetzt „Kontakt speichern“ und „Person speichern“.** Ein Plus verspricht einen zusätzlichen Datensatz – gemeint war immer das Speichern der Zeile, die man gerade ausgefüllt hat."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Das rote **„entfernen“ steht in den Kontaktlisten jetzt rechtsbündig** und damit auf jeder Zeile an derselben Stelle. Vorher folgte es direkt dem Wert und wanderte mit dessen Länge – auf einer Maske mit zwölf Zeilen sah das nach Alarm aus."
+      },
+      {
         "typ": "behoben",
         "text": "**„Person entfernen“ tat nichts.** Bei den Ansprechpersonen eines Kunden stand der Löschknopf innerhalb des Personenformulars – verschachtelte Formulare sind in HTML verboten, der Browser wirft das innere weg, und der Knopf hat danach die Person **gespeichert** statt sie zu löschen. Ohne Rückfrage, ohne Fehlermeldung. Derselbe Fehler steckte in der Spaltenwahl der Zeiterfassung (sie filterte statt zu speichern) und beim Entfernen einer Branchenvorlage im Plattformbereich. Alle drei sind behoben, und ein neues Werkzeug sucht diese Verschachtelung künftig im ganzen Code."
       },

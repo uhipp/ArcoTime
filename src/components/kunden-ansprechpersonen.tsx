@@ -1,12 +1,13 @@
-import {
-  speichereAnsprechperson,
-  loescheAnsprechperson,
-  speichereKontakt,
-  loescheKontakt,
-} from "@/app/actions/kunden";
+import { speichereAnsprechperson, loescheAnsprechperson } from "@/app/actions/kunden";
 import { DeleteButton } from "@/components/delete-button";
+import {
+  KontaktListe,
+  KontaktFormular,
+  type KontaktArt,
+  type KontaktZeile,
+} from "@/components/kunden-kontaktkanaele";
 
-// Ansprechpersonen und Kontaktkanäle eines Kunden (0074).
+// Die Ansprechpersonen eines Kunden (0074).
 //
 // Sobald ein Kunde grösser ist, gibt es dort mehrere Personen, die für den
 // Betrieb wichtig sind: die Sachbearbeiterin der Verwaltung, der Hauswart,
@@ -14,25 +15,14 @@ import { DeleteButton } from "@/components/delete-button";
 // standen sie in einer Notiz, und beim Rapport wurde der Name jedes Mal neu
 // getippt.
 //
+// Die Kanäle des Betriebs selbst standen bis zum 22.08.2026 auch hier. Sie
+// sind auf den Reiter „Adresse" gezogen: Sie gehören der Adresse des Kunden
+// und keiner Person (siehe kunden-kontaktkanaele.tsx).
+//
 // Bewusst eine Serverkomponente ohne eigenen Zustand: Jede Zeile ist ein
-// Formular, das seine Server Action ruft. Das ist mehr HTML, aber es
-// funktioniert ohne Javascript, hält nichts doppelt und braucht keine
-// Synchronisation zwischen Browser und Datenbank.
+// Formular, das seine Server Action ruft.
 
-export type KontaktArt = {
-  id: string;
-  bezeichnung: string;
-  art: "text" | "email" | "telefon";
-};
-
-export type KontaktZeile = {
-  id: string;
-  wert: string;
-  bemerkung: string | null;
-  art_id: string;
-  kunde_id: string | null;
-  ansprechperson_id: string | null;
-};
+export type { KontaktArt, KontaktZeile };
 
 export type AnsprechpersonZeile = {
   id: string;
@@ -44,116 +34,6 @@ export type AnsprechpersonZeile = {
   ist_standard: boolean;
   aktiv: boolean;
 };
-
-// Eine Mailadresse gehört anklickbar, eine Nummer auch – auf dem Handy ist
-// das der Unterschied zwischen "Kontakt sehen" und "Kunden anrufen".
-function KontaktWert({ art, wert }: { art: KontaktArt | undefined; wert: string }) {
-  if (art?.art === "email") {
-    return (
-      <a href={`mailto:${wert}`} className="text-arcos-steel hover:underline">
-        {wert}
-      </a>
-    );
-  }
-  if (art?.art === "telefon") {
-    return (
-      <a href={`tel:${wert.replace(/[^\d+]/g, "")}`} className="text-arcos-steel hover:underline">
-        {wert}
-      </a>
-    );
-  }
-  return <span>{wert}</span>;
-}
-
-function KontaktListe({
-  kundeId,
-  kontakte,
-  arten,
-  istAdmin,
-}: {
-  kundeId: string;
-  kontakte: KontaktZeile[];
-  arten: KontaktArt[];
-  istAdmin: boolean;
-}) {
-  if (kontakte.length === 0) {
-    return <p className="text-xs text-gray-400">Keine Kontaktangaben.</p>;
-  }
-  const artVon = new Map(arten.map((a) => [a.id, a]));
-  return (
-    <ul className="space-y-1">
-      {kontakte.map((k) => (
-        <li key={k.id} className="flex flex-wrap items-baseline gap-2 text-sm">
-          <span className="text-xs text-gray-500 w-20 shrink-0">
-            {artVon.get(k.art_id)?.bezeichnung ?? "Kontakt"}
-          </span>
-          <KontaktWert art={artVon.get(k.art_id)} wert={k.wert} />
-          {k.bemerkung && <span className="text-xs text-gray-400">({k.bemerkung})</span>}
-          {istAdmin && (
-            <DeleteButton
-              action={loescheKontakt.bind(null, kundeId, k.id)}
-              label="entfernen"
-              confirmText={`Kontakt „${k.wert}“ entfernen?`}
-            />
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function KontaktFormular({
-  kundeId,
-  arten,
-  ansprechpersonId,
-  fokusId,
-}: {
-  kundeId: string;
-  arten: KontaktArt[];
-  ansprechpersonId?: string;
-  fokusId?: string;
-}) {
-  return (
-    <form
-      action={speichereKontakt.bind(null, kundeId)}
-      className="flex flex-wrap items-end gap-2 mt-2"
-    >
-      {ansprechpersonId && (
-        <input type="hidden" name="ansprechperson_id" value={ansprechpersonId} />
-      )}
-      <select
-        name="art_id"
-        required
-        defaultValue=""
-        className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-      >
-        <option value="" disabled>
-          Art…
-        </option>
-        {arten.map((a) => (
-          <option key={a.id} value={a.id}>
-            {a.bezeichnung}
-          </option>
-        ))}
-      </select>
-      <input
-        id={fokusId}
-        name="wert"
-        required
-        placeholder="Nummer oder Adresse"
-        className="flex-1 min-w-[10rem] rounded border border-gray-300 px-2 py-1.5 text-sm"
-      />
-      <input
-        name="bemerkung"
-        placeholder="Bemerkung"
-        className="w-32 rounded border border-gray-300 px-2 py-1.5 text-sm"
-      />
-      <button type="submit" className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50">
-        + Kontakt
-      </button>
-    </form>
-  );
-}
 
 export function KundenAnsprechpersonen({
   kundeId,
@@ -168,29 +48,16 @@ export function KundenAnsprechpersonen({
   arten: KontaktArt[];
   istAdmin: boolean;
 }) {
-  const kontakteDesKunden = kontakte.filter((k) => k.kunde_id === kundeId);
   const kontakteDerPerson = (personId: string) =>
     kontakte.filter((k) => k.ansprechperson_id === personId);
 
   return (
     <div>
-      <h2 className="text-lg font-medium mb-1">Ansprechpersonen und Kontakt</h2>
+      <h2 className="text-lg font-medium mb-1">Ansprechpersonen</h2>
       <p className="text-sm text-gray-500 mb-4">
-        Wer beim Kunden zuständig ist – mit eigener Nummer und eigener Adresse.
-        Die Angaben ohne Person gehören dem Betrieb als Ganzem (die Zentrale).
+        Wer beim Kunden zuständig ist – mit eigener Nummer und eigener
+        Mailadresse. Die Angaben des Betriebs selbst stehen im Reiter „Adresse“.
       </p>
-
-      {/* Kontakt des Betriebs selbst */}
-      <div className="rounded-lg border bg-white p-4 mb-4">
-        <h3 className="text-sm font-medium mb-2">Betrieb</h3>
-        <KontaktListe
-          kundeId={kundeId}
-          kontakte={kontakteDesKunden}
-          arten={arten}
-          istAdmin={istAdmin}
-        />
-        <KontaktFormular kundeId={kundeId} arten={arten} fokusId="neuer_kontakt" />
-      </div>
 
       {/* Personen */}
       {personen.map((p) => (
@@ -317,11 +184,13 @@ export function KundenAnsprechpersonen({
           placeholder="Funktion"
           className="flex-1 min-w-[8rem] rounded border border-gray-300 px-2 py-1.5 text-sm"
         />
+        {/* Kein „+ Person": Der Anwender hat die Zeile ausgefüllt und will
+            speichern. Ein Plus verspricht einen zusätzlichen Datensatz. */}
         <button
           type="submit"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-1.5 hover:bg-arcos-navy"
         >
-          + Person
+          Person speichern
         </button>
         <p className="basis-full text-xs text-gray-500">
           Kontaktangaben lassen sich hinzufügen, sobald die Person erfasst ist.

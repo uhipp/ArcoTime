@@ -328,15 +328,16 @@ export async function speichereKontakt(kundeId: string, formData: FormData) {
   const artId = str(formData.get("art_id"));
   const wert = str(formData.get("wert"));
   const ansprechpersonId = str(formData.get("ansprechperson_id"));
+  const herkunft = ansprechpersonId ? "personen" : "adresse";
 
   if (!artId) {
     redirect(
-      `/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent("Bitte eine Kontaktart wählen.")}`
+      `/kunden/${kundeId}?reiter=${herkunft}&error=${encodeURIComponent("Bitte eine Kontaktart wählen.")}`
     );
   }
   if (!wert) {
     redirect(
-      `/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent("Bitte einen Wert angeben.")}`
+      `/kunden/${kundeId}?reiter=${herkunft}&error=${encodeURIComponent("Bitte einen Wert angeben.")}`
     );
   }
 
@@ -350,19 +351,30 @@ export async function speichereKontakt(kundeId: string, formData: FormData) {
   });
 
   if (error) {
-    redirect(`/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=${herkunft}&error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}?reiter=personen&fokus=neuer_kontakt`, "Kontakt erfasst."));
+  // Der Kontakt des Betriebs steht im Reiter „Adresse", der einer Person im
+  // Reiter „Ansprechpersonen" – zurück muss es dorthin, wo das Formular stand.
+  redirect(
+    mitErfolg(`/kunden/${kundeId}?reiter=${herkunft}&fokus=neuer_kontakt`, "Kontakt erfasst.")
+  );
 }
 
-export async function loescheKontakt(kundeId: string, id: string) {
+// Den Reiter gibt die aufrufende Liste mit: Sie weiss, ob die Zeile am
+// Betrieb oder an einer Person hängt, und eine zusätzliche Abfrage nur, um
+// das Ziel der Weiterleitung zu bestimmen, wäre Verschwendung.
+export async function loescheKontakt(
+  kundeId: string,
+  id: string,
+  reiter: "adresse" | "personen" = "personen"
+) {
   const supabase = await createClient();
   const { error } = await supabase.from("kontakte").delete().eq("id", id);
   if (error) {
-    redirect(`/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=${reiter}&error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}?reiter=personen`, "Kontakt entfernt."));
+  redirect(mitErfolg(`/kunden/${kundeId}?reiter=${reiter}`, "Kontakt entfernt."));
 }

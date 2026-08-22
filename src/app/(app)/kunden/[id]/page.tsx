@@ -7,12 +7,12 @@ import { begriff, getBegriffe, type Begriffe } from "@/lib/begriffe";
 import { ladeDokumente } from "@/lib/dokumente-laden";
 import { KundeForm } from "@/components/kunde-form";
 import { KundenPreiseRabatte } from "@/components/kunden-preise-rabatte";
+import { KundenAnsprechpersonen, type AnsprechpersonZeile } from "@/components/kunden-ansprechpersonen";
 import {
-  KundenAnsprechpersonen,
-  type AnsprechpersonZeile,
-  type KontaktZeile,
+  KundenBetriebKontakt,
   type KontaktArt,
-} from "@/components/kunden-ansprechpersonen";
+  type KontaktZeile,
+} from "@/components/kunden-kontaktkanaele";
 import { KundenStandorte, type PartnerOption } from "@/components/kunden-standorte";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateKunde, deleteKunde } from "@/app/actions/kunden";
@@ -245,7 +245,7 @@ export default async function KundeDetailPage({
           <div className="flex-1 min-h-0">
             {aktiv === "adresse" && (
               <div className="h-full overflow-y-auto p-4">
-                <div className="max-w-3xl">
+                <div className="max-w-3xl space-y-6">
                   <PraesenzSperre bereich="kunde" bezugId={id}>
                     <KundeForm
                       kunde={kunde as Kunde}
@@ -253,6 +253,10 @@ export default async function KundeDetailPage({
                       error={error}
                     />
                   </PraesenzSperre>
+                  {/* Die Kanäle des Betriebs gehören zur Adresse und zu
+                      keiner Person – bis zum 22.08.2026 standen sie im
+                      Reiter Ansprechpersonen. */}
+                  <BetriebKontaktReiter kundeId={id} istAdmin={istAdmin} />
                 </div>
               </div>
             )}
@@ -311,7 +315,7 @@ export default async function KundeDetailPage({
 
 async function PersonenReiter({ kundeId, istAdmin }: { kundeId: string; istAdmin: boolean }) {
   const supabase = await createClient();
-  const [{ data: ansprechpersonen }, { data: kontakte }, { data: arten }] = await Promise.all([
+  const [{ data: ansprechpersonen }, { data: arten }] = await Promise.all([
     supabase
       .from("ansprechpersonen")
       // Die Kontakte der Person kommen als Einbettung mit: PostgREST löst
@@ -323,11 +327,6 @@ async function PersonenReiter({ kundeId, istAdmin }: { kundeId: string; istAdmin
       .eq("kunde_id", kundeId)
       .order("ist_standard", { ascending: false })
       .order("name"),
-    // Die Angaben des Betriebs selbst – ohne Person.
-    supabase
-      .from("kontakte")
-      .select("id, wert, bemerkung, art_id, kunde_id, ansprechperson_id")
-      .eq("kunde_id", kundeId),
     supabase
       .from("kontakt_arten")
       .select("id, bezeichnung, art")
@@ -349,10 +348,9 @@ async function PersonenReiter({ kundeId, istAdmin }: { kundeId: string; istAdmin
     ist_standard: x.ist_standard,
     aktiv: x.aktiv,
   }));
-  const alleKontakte: KontaktZeile[] = [
-    ...((kontakte as KontaktZeile[] | null) ?? []),
-    ...personenRoh.flatMap((x) => x.kontakte ?? []),
-  ];
+  // Nur noch die Kanäle der Personen – die des Betriebs stehen im Reiter
+  // „Adresse".
+  const alleKontakte: KontaktZeile[] = personenRoh.flatMap((x) => x.kontakte ?? []);
 
   return (
     <div className="h-full overflow-y-auto p-4">
@@ -364,6 +362,37 @@ async function PersonenReiter({ kundeId, istAdmin }: { kundeId: string; istAdmin
         istAdmin={istAdmin}
       />
     </div>
+  );
+}
+
+async function BetriebKontaktReiter({
+  kundeId,
+  istAdmin,
+}: {
+  kundeId: string;
+  istAdmin: boolean;
+}) {
+  const supabase = await createClient();
+  const [{ data: kontakte }, { data: arten }] = await Promise.all([
+    // Ohne Person: die Angaben, die dem Kunden als Ganzem gehören.
+    supabase
+      .from("kontakte")
+      .select("id, wert, bemerkung, art_id, kunde_id, ansprechperson_id")
+      .eq("kunde_id", kundeId),
+    supabase
+      .from("kontakt_arten")
+      .select("id, bezeichnung, art")
+      .eq("aktiv", true)
+      .order("sortierung"),
+  ]);
+
+  return (
+    <KundenBetriebKontakt
+      kundeId={kundeId}
+      kontakte={(kontakte ?? []) as KontaktZeile[]}
+      arten={(arten ?? []) as KontaktArt[]}
+      istAdmin={istAdmin}
+    />
   );
 }
 

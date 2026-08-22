@@ -63,7 +63,7 @@ Alles, was früher untereinander stand, steht jetzt in **Reitern**:
 
 | Reiter | Inhalt |
 |---|---|
-| Adresse | Anschrift, Adress-Schlüssel, Zahlungskonditionen, Notizen |
+| Adresse | Anschrift, Adress-Schlüssel, Zahlungskonditionen, Notizen und die Kontaktkanäle des Betriebs |
 | Ansprechpersonen | wer beim Kunden zuständig ist, mit eigenen Kontaktangaben |
 | Standorte | die Einsatzorte, ihre Anfahrt, ihr Zugang und die Beteiligten |
 | Aufträge | alle Aufträge dieses Kunden, mit ihrem Einsatzort |
@@ -107,14 +107,17 @@ Eine Beteiligung kann **ab** und **bis** tragen. Ein Rollenwechsel braucht ein D
 
 Fehlt eine Adresse in der Auswahl, wird sie einmal als Kunde erfasst – **ohne** das Häkchen „ist Kunde", wenn kein Auftrag an sie geht (siehe unten).
 
-## Ansprechpersonen und Kontakt
+## Kontaktangaben des Betriebs
 
-Auf der Detailseite steht unter **Ansprechpersonen und Kontakt**, wer beim Kunden zuständig ist. Sobald ein Betrieb grösser ist, gibt es dort mehrere Personen mit eigener Nummer und eigener Mailadresse – die Sachbearbeiterin der Verwaltung, der Hauswart, die Filialleitung.
+Im Reiter **Adresse**, unter dem Adressblock, stehen die Kanäle, die dem Kunden als Ganzem gehören – die Zentrale: Direktwahl, Mobil, WhatsApp, eine zweite Mailadresse.
 
-Der Block ist zweigeteilt:
+Sie stehen dort und nicht bei den Ansprechpersonen, weil sie zur Adresse gehören und zu keiner Person. E-Mail und Telefon aus dem Adressblock erscheinen zusätzlich in dieser Liste: Beim Umstellen auf die Kanäle sind sie **kopiert und nicht verschoben** worden, damit nichts verloren geht. Dass dieselbe Nummer an zwei Stellen steht, ist ein Übergangszustand.
 
-- **Betrieb** – die Angaben, die dem Kunden als Ganzem gehören (die Zentrale).
-- **Je Person** – eigene Kontaktangaben, dazu Funktion und Notiz.
+## Ansprechpersonen
+
+Im Reiter **Ansprechpersonen** steht, wer beim Kunden zuständig ist. Sobald ein Betrieb grösser ist, gibt es dort mehrere Personen mit eigener Nummer und eigener Mailadresse – die Sachbearbeiterin der Verwaltung, der Hauswart, die Filialleitung. Je Person gibt es Anrede, Vor- und Nachname, Funktion, eine Notiz und beliebig viele Kontaktkanäle.
+
+Eine **postalische Adresse** hat eine Ansprechperson **nicht**. Post geht an die Adresse des Kunden oder an den Einsatzort; braucht jemand eine eigene Anschrift, ist er eine eigene Adresse im Adressbuch (ohne Häkchen „ist Kunde") und wird am Standort als **Beteiligter** geführt.
 
 Die **Kontaktarten** (E-Mail, Telefon, Mobil, Direktwahl, WhatsApp) verwaltet ein Admin unter [Einstellungen](/hilfe/einstellungen); eigene lassen sich ergänzen. Mailadressen und Nummern sind anklickbar – auf dem Telefon führt der Tipp direkt in den Anruf.
 
