@@ -228,7 +228,7 @@ Rundumschlag.
 | Anfragen | Board statt Liste + Detail — hier ist das Board wahrscheinlich das bessere Muster, zu prüfen |
 | Rapporte | Detailseite eigenständig; Positionen sind der Kern, Reiter denkbar |
 | Zeiterfassung | Formular über Liste, funktioniert; Feldaktionen fehlen |
-| Rapport | **auf dem Handy umgebaut** (23.08.2026): Aktionsleiste unten, Beschreibung unter der Leistung statt in eigener Spalte, 44-px-Flächen |
+| Rapport | **auf dem Handy umgebaut** (23.08.2026): Aktionsleiste unten, Positionen als Karten statt Tabelle, Positionen vor dem Kopf, 44-px-Flächen |
 | Startseite | **„Mein Tag“ zuoberst** (23.08.2026): laufender Timer, Einsätze von heute, offene Rapporte |
 | Einstellungen, Plattform | Einstellungsmasken — Länge ist dort in Ordnung |
 
@@ -258,6 +258,26 @@ Ehrlich statt gerundet — die Maske erfüllt die Prüfliste nicht vollständig:
   `globals.css`. Wo der Browser `:has()` nicht kennt, sieht die Maske aus wie
   eine normale Seite — schmaler, aber vollständig. Der Preis dafür war eine
   Zeile CSS statt eines Umbaus aller dreissig Seiten.
+
+### Was ein echtes Gerät gezeigt hat (23.08.2026)
+
+Drei Befunde vom iPhone, und zwei davon hätte ich am Schreibtisch nicht
+gefunden:
+
+1. **Die Kopfleiste überschrieb das Logo.** Die rechte Gruppe war `shrink-0`
+   und passte bei 375 px nicht. Umbrechen statt überlappen — eine Breite, die
+   für „Demo AG" reicht, bricht bei „Stiftung Tagesheime Allschwil".
+2. **Eine Spalte auszublenden genügte nicht.** Bei fünf Spalten musste man auf
+   dem Telefon weiterhin waagrecht wischen, und dann stand der Timer-Knopf
+   neben einer Zeile, deren Leistung nicht mehr sichtbar war. Jetzt Karten.
+   Die Lehre: Eine Tabelle wird auf einem Telefon nicht durch weniger Spalten
+   brauchbar, sondern indem sie keine Tabelle mehr ist.
+3. **Die Reihenfolge der Blöcke zählt mehr als ihre Breite.** Bis zu den
+   Positionen war weit zu scrollen, weil der Rapportkopf davor stand — dabei
+   sind Kunde, Auftrag und Datum beim Losfahren längst gesetzt.
+
+Was gut war und bleibt: Navigation und Anrufen sofort sichtbar und mit dem
+Daumen erreichbar.
 
 ### Was auf dem Telefon gilt — entschieden am 23.08.2026
 

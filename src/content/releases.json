@@ -5,6 +5,18 @@
     "titel": "Arbeitsrapporte, Disposition, Mengenartikel und Standorte",
     "eintraege": [
       {
+        "typ": "behoben",
+        "text": "**Auf dem iPhone überschrieb der rechte Teil der Kopfleiste das Logo.** Die Leiste bricht jetzt um, statt zu überlappen – das hält bei jedem Namen; eine Breite, die für „Demo AG“ passt, bricht bei „Stiftung Tagesheime Allschwil“. Auf dem Telefon entfallen dafür der Name der Organisation (er steht in der Maske darunter), das Wort „Neuigkeiten“ (das Zeichen bleibt) und der Zusatz „(Admin)“."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Die Positionen eines Rapports sind auf dem Telefon Karten statt einer Tabelle.** Vorher musste man waagrecht wischen, und der Timer-Knopf stand dann neben einer Zeile, deren Leistung man nicht mehr sah. Jetzt steht alles untereinander: Leistung, Beschreibung, Menge, Betrag und die Knöpfe – ohne Wischen."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Auf dem Telefon stehen die Positionen vor dem Rapportkopf.** Kunde, Auftrag und Datum sind beim Losfahren gesetzt; gearbeitet wird an den Positionen. Am Arbeitsplatz bleibt die Reihenfolge wie sie war."
+      },
+      {
         "typ": "neu",
         "text": "**„Mein Tag“ auf der Startseite**: der laufende Timer, die Einsätze von heute (eigene und die, in deren Team du stehst) und die offenen Rapporte aus vergangenen Tagen – ganz oben, mit grossen Flächen. Auf dem Telefon ist das der erste Bildschirm, den man antippt."
       },

@@ -39,6 +39,57 @@ import { darf } from "@/lib/berechtigungen";
 import { mitKunde } from "@/lib/rapport-kunde";
 import { begriff, getBegriffe } from "@/lib/begriffe";
 
+/**
+ * Was man mit einer Position tun kann: Timer, bearbeiten, entfernen.
+ *
+ * Eine eigene Komponente, weil zwei Darstellungen sie brauchen – die Tabelle
+ * am Arbeitsplatz und die Karten auf dem Telefon. Das Verhalten steht damit
+ * einmal da; nur die Anordnung ist zweimal beschrieben, und die beiden Stellen
+ * liegen direkt nebeneinander.
+ */
+function PositionsAktionen({
+  rapportId,
+  z,
+}: {
+  rapportId: string;
+  z: ZeiteintragMitDetails;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-3">
+      {/* Nur bei Arbeitszeit: Kilometer und Material misst man nicht mit
+          der Uhr. */}
+      {z.menge == null && !z.beleg_id && (
+        <PositionsTimer
+          id={`timer_${z.id}`}
+          action={
+            z.timer_gestartet_um
+              ? stoppeZeitAnPosition.bind(null, rapportId, z.id)
+              : starteZeitAnPosition.bind(null, rapportId, z.id)
+          }
+          laeuft={Boolean(z.timer_gestartet_um)}
+          seit={z.timer_gestartet_um}
+        />
+      )}
+      {/* fokus: Das Bearbeitungsformular steht unter der Liste – ohne den
+          Parameter beginnt die Seite oben und man scrollt erst einmal hin. */}
+      <Link
+        href={`/rapporte/${rapportId}?bearbeiten=${z.id}&fokus=pos_artikel`}
+        className="inline-flex min-h-[44px] md:min-h-0 items-center text-xs text-arcos-steel hover:underline"
+      >
+        bearbeiten
+      </Link>
+      <form action={loeschePosition.bind(null, rapportId, z.id)}>
+        <button
+          type="submit"
+          className="inline-flex min-h-[44px] md:min-h-0 items-center text-xs text-gray-400 hover:text-red-600"
+        >
+          entfernen
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default async function RapportDetailPage({
   params,
   searchParams,
@@ -282,6 +333,14 @@ export default async function RapportDetailPage({
           braucht sie zuerst – und dieselbe Liste steht auf dem Ausdruck. */}
       {offen && <RapportKontakte kontakte={kontakte} />}
 
+      {/* Auf dem Telefon stehen die Positionen VOR dem Kopf: Kunde, Auftrag
+          und Datum sind beim Losfahren gesetzt, gearbeitet wird an den
+          Positionen. Rückmeldung vom Gerät: „dann muss man relativ weit nach
+          unten scrollen bis zu den Positionen".
+
+          flex-col-reverse und nicht order-Klassen: So tauschen genau diese
+          zwei Blöcke, und die übrigen bleiben, wo sie sind. */}
+      <div className="flex flex-col-reverse md:flex-col gap-8">
       {/* Bei gebuchter Disposition liegt der Tagesplan neben dem Formular –
           der Platz rechts war ohnehin ungenutzt, und beim Planen wechselt
           man sonst dauernd zwischen Kalender und Rapport. */}
@@ -354,100 +413,111 @@ export default async function RapportDetailPage({
             Noch keine Positionen erfasst.
           </p>
         ) : (
-          <div className="bg-white rounded-lg border overflow-x-auto mb-4">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left text-gray-500">
-                <tr>
-                  <th className="px-2 sm:px-4 py-2">Leistung</th>
-                  <th className="hidden sm:table-cell px-4 py-2">Beschreibung</th>
-                  <th className="px-4 py-2 text-right">Menge</th>
-                  <th className="px-4 py-2 text-right">Betrag</th>
-                  {offen && <th className="px-4 py-2"></th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {positionen.map((z) => (
-                  <tr key={z.id}>
-                    <td className="px-2 sm:px-4 py-2">
-                      {z.artikel_bezeichnung}
-                      {/* Auf dem Telefon steht die Beschreibung unter der
-                          Leistung statt in einer eigenen Spalte – dieselben
-                          Daten, eine Spalte weniger zum Wischen. */}
-                      {z.beschreibung && (
-                        <span className="sm:hidden block text-xs text-gray-500 whitespace-pre-line">
-                          {z.beschreibung}
-                        </span>
-                      )}
-                    </td>
-                    <td className="hidden sm:table-cell px-4 py-2 text-gray-500 whitespace-pre-line">
-                      {z.beschreibung ?? "–"}
-                    </td>
-                    <td className="px-4 py-2 text-right whitespace-nowrap">
+          <>
+            {/* Auf dem Telefon Karten statt Tabelle.
+                Der erste Versuch war, nur eine Spalte auszublenden – das
+                genügte nicht: Bei fünf Spalten musste man auf 375 px immer
+                noch waagrecht wischen, und dann stand der Timer-Knopf neben
+                einer Zeile, deren Leistung man nicht mehr sah. Rückmeldung
+                vom Gerät, 23.08.2026: „sieht dann aber nicht mehr, bei
+                welcher Position man ist".
+
+                Zwei Darstellungen derselben Daten, absichtlich direkt
+                nebeneinander: Wer die eine ändert, sieht die andere. Das
+                Verhalten steht nur einmal da – in PositionsAktionen. */}
+            <ul className="md:hidden space-y-2 mb-4">
+              {positionen.map((z) => (
+                <li
+                  key={z.id}
+                  className={`rounded-lg border bg-white p-3 ${
+                    z.timer_gestartet_um ? "border-red-400 bg-red-50" : ""
+                  }`}
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-medium">{z.artikel_bezeichnung}</span>
+                    <span className="whitespace-nowrap text-sm">
                       {z.timer_gestartet_um ? (
-                        <span className="font-medium text-red-700">⏱ Timer läuft</span>
+                        <span className="font-medium text-red-700">⏱ läuft</span>
                       ) : (
                         mengeLabel(z)
                       )}
+                    </span>
+                  </div>
+                  {z.beschreibung && (
+                    <p className="mt-0.5 text-sm text-gray-500 whitespace-pre-line">
+                      {z.beschreibung}
+                    </p>
+                  )}
+                  <div className="mt-1 flex items-center justify-between gap-2">
+                    <span className="text-sm text-gray-500">
+                      CHF {Number(z.betrag ?? 0).toFixed(2)}
+                    </span>
+                    {offen && <PositionsAktionen rapportId={id} z={z} />}
+                  </div>
+                </li>
+              ))}
+              <li className="flex items-baseline justify-between gap-2 rounded-lg border bg-gray-50 px-3 py-2 font-medium">
+                <span>Total</span>
+                <span className="whitespace-nowrap">
+                  {summeStunden > 0 ? `${summeStunden.toFixed(2)} h · ` : ""}
+                  CHF {summeBetrag.toFixed(2)}
+                </span>
+              </li>
+            </ul>
+
+            <div className="hidden md:block bg-white rounded-lg border overflow-x-auto mb-4">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-left text-gray-500">
+                  <tr>
+                    <th className="px-4 py-2">Leistung</th>
+                    <th className="px-4 py-2">Beschreibung</th>
+                    <th className="px-4 py-2 text-right">Menge</th>
+                    <th className="px-4 py-2 text-right">Betrag</th>
+                    {offen && <th className="px-4 py-2"></th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {positionen.map((z) => (
+                    <tr key={z.id}>
+                      <td className="px-4 py-2">{z.artikel_bezeichnung}</td>
+                      <td className="px-4 py-2 text-gray-500 whitespace-pre-line">
+                        {z.beschreibung ?? "–"}
+                      </td>
+                      <td className="px-4 py-2 text-right whitespace-nowrap">
+                        {z.timer_gestartet_um ? (
+                          <span className="font-medium text-red-700">⏱ Timer läuft</span>
+                        ) : (
+                          mengeLabel(z)
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-right whitespace-nowrap">
+                        CHF {Number(z.betrag ?? 0).toFixed(2)}
+                      </td>
+                      {offen && (
+                        <td className="px-4 py-2 text-right whitespace-nowrap">
+                          <PositionsAktionen rapportId={id} z={z} />
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-50 font-medium">
+                  <tr>
+                    <td className="px-4 py-2" colSpan={2}>
+                      Total
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
-                      CHF {Number(z.betrag ?? 0).toFixed(2)}
+                      {summeStunden > 0 ? `${summeStunden.toFixed(2)} h` : "–"}
                     </td>
-                    {offen && (
-                      <td className="px-4 py-2 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-3">
-                          {/* Nur bei Arbeitszeit: Kilometer und Material
-                              misst man nicht mit der Uhr. */}
-                          {z.menge == null && !z.beleg_id && (
-                            <PositionsTimer
-                              id={`timer_${z.id}`}
-                              action={
-                                z.timer_gestartet_um
-                                  ? stoppeZeitAnPosition.bind(null, id, z.id)
-                                  : starteZeitAnPosition.bind(null, id, z.id)
-                              }
-                              laeuft={Boolean(z.timer_gestartet_um)}
-                              seit={z.timer_gestartet_um}
-                            />
-                          )}
-                          <Link
-                            // fokus: Das Bearbeitungsformular steht unter
-                            // der Tabelle – ohne den Parameter beginnt die
-                            // Seite oben und man scrollt erst einmal hin.
-                            href={`/rapporte/${id}?bearbeiten=${z.id}&fokus=pos_artikel`}
-                            className="inline-flex min-h-[44px] md:min-h-0 items-center text-xs text-arcos-steel hover:underline"
-                          >
-                            bearbeiten
-                          </Link>
-                          <form action={loeschePosition.bind(null, id, z.id)}>
-                            <button
-                              type="submit"
-                              className="inline-flex min-h-[44px] md:min-h-0 items-center text-xs text-gray-400 hover:text-red-600"
-                            >
-                              entfernen
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    )}
+                    <td className="px-4 py-2 text-right whitespace-nowrap">
+                      CHF {summeBetrag.toFixed(2)}
+                    </td>
+                    {offen && <td />}
                   </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-50 font-medium">
-                <tr>
-                  <td className="px-2 sm:px-4 py-2" colSpan={2}>
-                    Total
-                  </td>
-                  <td className="px-4 py-2 text-right whitespace-nowrap">
-                    {summeStunden > 0 ? `${summeStunden.toFixed(2)} h` : "–"}
-                  </td>
-                  <td className="px-4 py-2 text-right whitespace-nowrap">
-                    CHF {summeBetrag.toFixed(2)}
-                  </td>
-                  {offen && <td />}
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                </tfoot>
+              </table>
+            </div>
+          </>
         )}
 
         {offen && inBearbeitung && (
@@ -475,6 +545,7 @@ export default async function RapportDetailPage({
             anreiseKm={anreiseKm}
           />
         )}
+      </div>
       </div>
 
       <div className="max-w-2xl">

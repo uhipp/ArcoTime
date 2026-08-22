@@ -111,7 +111,13 @@ export default async function AppLayout({
             Datenzeile mehr. Das ganze Logo mit Slogan bleibt auf der
             Anmeldeseite, der Startseite und auf allem, was das Haus
             verlässt – PDF und Systemmails. */}
-        <div className="h-12 px-4 flex items-center justify-between gap-4 border-b border-gray-100">
+        {/* flex-wrap und min-h statt fester Höhe: Auf einem iPhone hat die
+            rechte Gruppe die linke ÜBERSCHRIEBEN – sie war shrink-0, und bei
+            375 px reicht der Platz nicht. Umbrechen statt überlappen ist die
+            einzige Lösung, die bei jedem Namen und jeder Sprache hält; eine
+            Breite, die für „Demo AG" passt, bricht bei „Stiftung Tagesheime
+            Allschwil". */}
+        <div className="min-h-12 px-3 md:px-4 py-1 md:py-0 flex flex-wrap md:flex-nowrap items-center justify-between gap-x-4 gap-y-1 border-b border-gray-100">
           <div className="flex items-center gap-3.5 min-w-0">
             <Link href="/" className="shrink-0">
               <Image
@@ -125,16 +131,20 @@ export default async function AppLayout({
             </Link>
             {organisation && (
               <>
-                <span className="w-px h-[22px] bg-gray-200 shrink-0" aria-hidden />
-                <span className="font-heading font-semibold text-sm text-arcos-navy tracking-tight truncate">
+                <span className="hidden sm:block w-px h-[22px] bg-gray-200 shrink-0" aria-hidden />
+                <span className="hidden sm:block font-heading font-semibold text-sm text-arcos-navy tracking-tight truncate">
                   {organisation.name}
                 </span>
               </>
             )}
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-500 shrink-0">
-            <Link href="/aenderungen" className="hover:text-arcos-navy whitespace-nowrap">
-              🆕 Neuigkeiten
+            <Link
+              href="/aenderungen"
+              title="Neuigkeiten"
+              className="hover:text-arcos-navy whitespace-nowrap"
+            >
+              🆕<span className="hidden md:inline"> Neuigkeiten</span>
             </Link>
             <KontextHilfeLink />
             {profile && (
@@ -142,7 +152,8 @@ export default async function AppLayout({
                 href={`/mitarbeiter/${profile.id}`}
                 className="hover:text-arcos-navy whitespace-nowrap"
               >
-                {profile.name} {isAdmin && "(Admin)"}
+                {profile.name}
+                {isAdmin && <span className="hidden md:inline"> (Admin)</span>}
               </Link>
             )}
             <form action={logout}>
