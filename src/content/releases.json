@@ -17,6 +17,10 @@
         "text": "Auf dem **Arbeitsrapport** steht neu der Einsatzort mit dem Zugangshinweis – aber nur, wenn er etwas Neues sagt: Trägt der Ort dieselbe Adresse wie der Kunde, bleibt die Zeile weg."
       },
       {
+        "typ": "neu",
+        "text": "**Dokumente am Standort**: Grundriss, Fotos vom Zustand, Schlüsselquittung – unter dem gewählten Ort liegt eine eigene Ablage. Die Dateien wandern von selbst in den Vollexport und in das Dokumentenarchiv; ein neuer Ordner „Standorte“ hält sie dort zusammen."
+      },
+      {
         "typ": "verbessert",
         "text": "**Die Kundenmaske ist neu gebaut.** Links die Liste, rechts der gewählte Kunde, und alles, was vorher untereinander stand, in Reitern: Adresse, Ansprechpersonen, Standorte, Aufträge, Preise und Rabatte, Dokumente, Historie. Die Seite selbst scrollt nicht mehr – gescrollt wird nur in der Liste und in der Detailfläche, und Menü, Bereich und der Name des gewählten Kunden bleiben immer sichtbar. Wer zwischendurch ans Telefon muss, findet danach zurück."
       },

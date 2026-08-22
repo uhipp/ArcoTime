@@ -356,6 +356,10 @@ export type BelegExport = {
 
 export type DokumentBereich =
   | "kunde"
+  // Der Einsatzort (0076): Grundrisse, Fotos, Schlüsselquittungen gehören
+  // an den Ort und nicht an den Kunden – bei vierzig Liegenschaften wäre
+  // die Kundenablage sonst eine Kiste ohne Ordnung.
+  | "standort"
   | "projekt"
   | "mitarbeitende"
   | "anfrage"

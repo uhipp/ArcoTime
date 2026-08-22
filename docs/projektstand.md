@@ -141,6 +141,16 @@ Betrieb: Der Standardstandort entsteht beim Anlegen eines Kunden von selbst, und
 derselben Migration gefahrlos, obwohl der laufende Code die Spalte noch nicht
 kannte.
 
+**Nach dem Ausführen von 0076/0077 nachgezählt** (`scripts/standorte-pruefen.mjs`):
+14 Kunden, 14 Standardstandorte – genau einer je Kunde; die fünf Anfahrten am
+Kunden sind alle am Ort angekommen; alle 19 Aufträge haben einen Einsatzort, und
+keiner zeigt auf den Standort eines fremden Kunden. Beide Trigger greifen auch
+bei einem neu angelegten Kunden und einem Auftrag ohne Ortsangabe (an einer
+Probe geprüft und wieder entfernt). Das Skript bleibt liegen, weil eine seiner
+Regeln für einen Fremdschlüssel unerreichbar ist: „Der Einsatzort eines Auftrags
+muss ein Standort SEINES Kunden sein" – die Zugehörigkeit ist selbst eine
+Beteiligtenzeile, und keine Bedingung kann das ausdrücken.
+
 Am selben Tag ist die **Kundenmaske** nach `docs/masken-leitlinie.md` neu
 gebaut: Liste links, Detail rechts, sieben Reiter, keine scrollende Seite mehr –
 Anlass war die Beobachtung des Nutzers, dass man „nicht mehr klar kommt" und
@@ -177,6 +187,7 @@ Logo und die Umbenennung aller Speicherknöpfe („Adresse speichern" statt
 node --env-file=.env.local scripts/mandanten-pruefen.mjs          # Mandantentrennung
 node --env-file=.env.local scripts/mandant-loeschen.mjs "Name"    # Probelauf
 node --env-file=.env.local scripts/dokumente-pruefen.mjs          # Dateien vs. Zeilen
+node --env-file=.env.local scripts/standorte-pruefen.mjs          # Ortsebene (0076/0077)
 find .next -name "* [0-9].*" -delete                              # OneDrive-Kopien vor tsc
 ```
 

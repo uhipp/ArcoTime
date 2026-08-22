@@ -41,6 +41,7 @@ export type ArchivDatei = DokumentZeile & {
 
 export const BEREICH_ORDNER: Record<string, string> = {
   kunde: "Kunden",
+  standort: "Standorte",
   projekt: "Projekte",
   mitarbeitende: "Mitarbeitende",
   anfrage: "Anfragen",
@@ -128,14 +129,18 @@ export async function sammleDokumentDateien(
   // Anfragen und Rapporten, die längst gelöscht sind – im Demo-Mandanten vier
   // von neun. Sie kommen trotzdem mit, unter "Ohne Zuordnung": Sie gehören
   // dem Betrieb, und weglassen wäre stiller Datenverlust.
-  const [kunden, projekte, personen, anfragen, zeiteintraege, rapporte] = await Promise.all([
-    holeNamen(admin, "kunden", "id, name, vorname", idsFuer("kunde")),
-    holeNamen(admin, "projekte", "id, bezeichnung", idsFuer("projekt")),
-    holeNamen(admin, "profiles", "id, name", idsFuer("mitarbeitende")),
-    holeNamen(admin, "anfragen", "id, titel", idsFuer("anfrage")),
-    holeNamen(admin, "zeiteintraege", "id, datum, beschreibung", idsFuer("zeiteintrag")),
-    holeNamen(admin, "rapporte", "id, jahr, nummer, datum", idsFuer("rapport")),
-  ]);
+  const [kunden, standorte, projekte, personen, anfragen, zeiteintraege, rapporte] =
+    await Promise.all([
+      holeNamen(admin, "kunden", "id, name, vorname", idsFuer("kunde")),
+      // Läuft nur an, wenn es Dokumente dieses Bereichs gibt (holeNamen kehrt
+      // bei leerer Liste sofort um) – die Tabelle darf also noch fehlen.
+      holeNamen(admin, "standorte", "id, bezeichnung, ort", idsFuer("standort")),
+      holeNamen(admin, "projekte", "id, bezeichnung", idsFuer("projekt")),
+      holeNamen(admin, "profiles", "id, name", idsFuer("mitarbeitende")),
+      holeNamen(admin, "anfragen", "id, titel", idsFuer("anfrage")),
+      holeNamen(admin, "zeiteintraege", "id, datum, beschreibung", idsFuer("zeiteintrag")),
+      holeNamen(admin, "rapporte", "id, jahr, nummer, datum", idsFuer("rapport")),
+    ]);
 
   const bezeichnung = (zeile: DokumentZeile): string => {
     switch (zeile.bereich) {
@@ -144,6 +149,12 @@ export async function sammleDokumentDateien(
           | { name: string; vorname: string | null }
           | undefined;
         return k ? `${k.vorname ? `${k.vorname} ` : ""}${k.name}` : "";
+      }
+      case "standort": {
+        const o = standorte.get(zeile.bezug_id) as
+          | { bezeichnung: string; ort: string | null }
+          | undefined;
+        return o ? `${o.bezeichnung}${o.ort ? `, ${o.ort}` : ""}` : "";
       }
       case "projekt":
         return (

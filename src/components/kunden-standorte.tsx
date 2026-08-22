@@ -8,7 +8,8 @@ import {
 import { DeleteButton } from "@/components/delete-button";
 import { KundenKontakt } from "@/components/kunden-kontakt";
 import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
-import type { Beteiligter, BeteiligtenRolle, Standort } from "@/lib/types";
+import { DokumenteBereich } from "@/components/dokumente-bereich";
+import type { Beteiligter, BeteiligtenRolle, Dokument, Standort } from "@/lib/types";
 
 // Die Standorte eines Kunden (0076/0077) – Liste links, Detail rechts, wie
 // docs/masken-leitlinie.md es für Nebenobjekte vorsieht.
@@ -345,6 +346,9 @@ export function KundenStandorte({
   beteiligte,
   rollen,
   partner,
+  dokumente,
+  kategorien,
+  userId,
   istAdmin,
 }: {
   kundeId: string;
@@ -353,6 +357,9 @@ export function KundenStandorte({
   beteiligte: Beteiligter[];
   rollen: BeteiligtenRolle[];
   partner: PartnerOption[];
+  dokumente: Dokument[];
+  kategorien: { id: string; bezeichnung: string; aktiv: boolean }[];
+  userId: string;
   istAdmin: boolean;
 }) {
   return (
@@ -422,6 +429,26 @@ export function KundenStandorte({
               partner={partner}
               istAdmin={istAdmin}
             />
+          )}
+
+          {/* Grundriss, Fotos vom Zustand, die Schlüsselquittung – die
+              gehören an den Ort und nicht an den Kunden: Bei vierzig
+              Liegenschaften wäre die Kundenablage eine Kiste ohne
+              Ordnung. */}
+          {gewaehlt && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-500 mb-2">
+                Dokumente zu diesem Standort
+              </h4>
+              <DokumenteBereich
+                bereich="standort"
+                bezugId={gewaehlt.id}
+                initialDokumente={dokumente}
+                kategorien={kategorien}
+                aktuellerUserId={userId}
+                istAdmin={istAdmin}
+              />
+            </div>
           )}
         </div>
       </div>

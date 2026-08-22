@@ -263,6 +263,7 @@ export default async function KundeDetailPage({
               <StandorteReiter
                 kundeId={id}
                 standortWahl={standortWahl}
+                userId={profile?.id ?? ""}
                 istAdmin={istAdmin}
               />
             )}
@@ -369,10 +370,12 @@ async function PersonenReiter({ kundeId, istAdmin }: { kundeId: string; istAdmin
 async function StandorteReiter({
   kundeId,
   standortWahl,
+  userId,
   istAdmin,
 }: {
   kundeId: string;
   standortWahl?: string;
+  userId: string;
   istAdmin: boolean;
 }) {
   const supabase = await createClient();
@@ -404,7 +407,7 @@ async function StandorteReiter({
       ? null
       : (standorte.find((s) => s.id === standortWahl) ?? standorte[0] ?? null);
 
-  const [{ data: beteiligte }, { data: rollen }, { data: partner }] = await Promise.all([
+  const [{ data: beteiligte }, { data: rollen }, { data: partner }, ablage] = await Promise.all([
     gewaehlt
       ? supabase
           .from("beteiligte")
@@ -422,6 +425,9 @@ async function StandorteReiter({
     // Das ganze Adressbuch, nicht nur die Kunden: Der Architekt steht dort
     // ohne Kundenrolle und muss trotzdem wählbar sein.
     supabase.from("kunden").select("id, name, vorname, ort").order("name").limit(500),
+    gewaehlt
+      ? ladeDokumente(supabase, "standort", gewaehlt.id)
+      : Promise.resolve({ dokumente: [], kategorien: [] }),
   ]);
 
   return (
@@ -432,6 +438,9 @@ async function StandorteReiter({
       beteiligte={(beteiligte ?? []) as unknown as Beteiligter[]}
       rollen={(rollen ?? []) as BeteiligtenRolle[]}
       partner={(partner ?? []) as PartnerOption[]}
+      dokumente={ablage.dokumente}
+      kategorien={ablage.kategorien}
+      userId={userId}
       istAdmin={istAdmin}
     />
   );

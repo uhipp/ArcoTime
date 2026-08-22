@@ -91,6 +91,8 @@ Warum das eine eigene Ebene ist und nicht einfach eine zweite Adresse am Kunden:
 
 **Zugang**: Wo der Schlüsselkasten hängt, welcher Code gilt, wer aufschliesst. Das steht auf dem Arbeitsrapport – es nützt dort mehr als in einer Notiz, die niemand liest.
 
+**Dokumente am Standort**: Unter dem gewählten Ort liegt eine eigene Ablage – für den Grundriss, Fotos vom Zustand, die Schlüsselquittung, das Farbmuster von 2019. Die gehören an den Ort und nicht an den Kunden: Bei vierzig Liegenschaften wäre die Kundenablage eine Kiste ohne Ordnung.
+
 **Löschen** geht nur, solange kein Auftrag am Standort hängt. Wer einen Ort nicht mehr braucht, nimmt ihm das Häkchen **aktiv**: Er bleibt lesbar und verschwindet aus den Vorschlägen.
 
 ## Beteiligte an einem Standort
