@@ -17,14 +17,16 @@ import { STAND_FELD } from "@/lib/konflikt";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
 type KundeOption = Pick<Kunde, "id" | "name" | "vorname">;
+// Die Anfahrt steht seit 0080 am Auftrag und nicht mehr am Kunden: Eine
+// Verwaltung mit vierzig Liegenschaften hat vierzig Distanzen. Der Weg wird
+// dadurch sogar kürzer – der Zeiteintrag hängt am Auftrag.
 type ProjektOption = Pick<Projekt, "id" | "bezeichnung" | "status" | "kunde_id"> & {
+  anreise_km?: number | null;
   kunden?: {
     name: string;
     vorname: string | null;
     // Vorbelegung des Rabatts, siehe kunden.standard_rabatt_prozent.
     standard_rabatt_prozent?: number | null;
-    // Vorbelegung der Menge bei Anreise-Leistungen (0050).
-    anreise_km?: number | null;
   } | null;
 };
 type ArtikelOption = Pick<
@@ -284,10 +286,10 @@ export function ZeiterfassungForm({
   // etwas überschreiben, das jemand selbst eingetragen hat. Ersetzt wird
   // deshalb nur ein leeres Feld oder der zuvor gemachte Vorschlag –
   // etwa wenn nachträglich ein anderes Projekt gewählt wird.
-  const anreiseVon = (projektIdNeu: string): string =>
-    projekteListe.find((p) => p.id === projektIdNeu)?.kunden?.anreise_km != null
-      ? String(Number(projekteListe.find((p) => p.id === projektIdNeu)!.kunden!.anreise_km))
-      : "";
+  const anreiseVon = (projektIdNeu: string): string => {
+    const km = projekteListe.find((p) => p.id === projektIdNeu)?.anreise_km;
+    return km != null ? String(Number(km)) : "";
+  };
 
   function mengeMitAnreise(
     aktuell: string,

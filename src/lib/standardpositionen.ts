@@ -75,13 +75,16 @@ export async function legeStandardpositionenAn(
   // Der Kunde des Auftrags – Grundlage für Anreise und Rabatt. Vor 0071 stand
   // er am Rapport; jetzt führt der Weg über das Projekt, und zwar nur hier
   // statt an zwei Stellen.
+  // Die Anfahrt kommt aus derselben Abfrage: Sie steht seit 0080 am Auftrag
+  // und nicht mehr am Kunden – der Weg wird dadurch kürzer, nicht länger.
   const { data: projekt } = await supabase
     .from("projekte")
-    .select("kunde_id")
+    .select("kunde_id, anreise_km")
     .eq("id", rapport.projekt_id)
     .maybeSingle();
 
-  const kundeId = (projekt as { kunde_id: string } | null)?.kunde_id ?? null;
+  const auftrag = projekt as { kunde_id: string; anreise_km: number | null } | null;
+  const kundeId = auftrag?.kunde_id ?? null;
 
   const { data: vorlagen, error: ladeFehler } = await supabase
     .from("rapport_standardpositionen")
@@ -96,21 +99,17 @@ export async function legeStandardpositionenAn(
   const zeilen = (vorlagen ?? []) as unknown as Standardposition[];
   if (zeilen.length === 0) return { anzahl: 0 };
 
-  const { data: kunde } = kundeId
-    ? await supabase.from("kunden").select("anreise_km").eq("id", kundeId).maybeSingle()
-    : { data: null };
-
   const positionen = [];
   for (const zeile of zeilen) {
     const dl = zeile.artikel;
     if (!dl) continue;
 
-    // Die Anreise des Kunden schlägt die Vorgabe: Genau dafür ist das
-    // Häkchen an der Leistung da (0050). Fehlt sie beim Kunden, bleibt
-    // es bei der Vorgabe.
+    // Die Anreise des Auftrags schlägt die Vorgabe: Genau dafür ist das
+    // Häkchen am Artikel da (0050). Fehlt sie am Auftrag, bleibt es bei
+    // der Vorgabe.
     const menge =
-      !dl.zaehlt_als_arbeitszeit && dl.menge_aus_anreise && kunde?.anreise_km != null
-        ? Number(kunde.anreise_km)
+      !dl.zaehlt_als_arbeitszeit && dl.menge_aus_anreise && auftrag?.anreise_km != null
+        ? Number(auftrag.anreise_km)
         : Number(zeile.vorgabe);
 
     if (!(menge > 0)) continue;

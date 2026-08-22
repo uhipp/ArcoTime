@@ -224,7 +224,7 @@ Rundumschlag.
 | Maske | Zustand |
 |---|---|
 | Kunden | **umgebaut** (Etappe 4, 22.08.2026) – Punkte 1 bis 6, 8 und 9 erfüllt; siehe die Einschränkungen darunter |
-| Aufträge (Projekte) | lange Seite, kein Detail neben der Liste |
+| Aufträge (Projekte) | **umgebaut** (23.08.2026) – fünf Reiter, Liste links; dieselben Einschränkungen wie bei den Kunden (Punkt 7 und 10) |
 | Anfragen | Board statt Liste + Detail — hier ist das Board wahrscheinlich das bessere Muster, zu prüfen |
 | Rapporte | Detailseite eigenständig; Positionen sind der Kern, Reiter denkbar |
 | Zeiterfassung | Formular über Liste, funktioniert; Feldaktionen fehlen |
@@ -255,6 +255,7 @@ Ehrlich statt gerundet — die Maske erfüllt die Prüfliste nicht vollständig:
   eine normale Seite — schmaler, aber vollständig. Der Preis dafür war eine
   Zeile CSS statt eines Umbaus aller dreissig Seiten.
 
-**Nächster Schritt:** Die Auftragsmaske (`/projekte`) — dort kommt mit dem
-Einsatzort ohnehin ein Feld dazu, und sie ist die zweite Maske, die täglich
-benutzt wird.
+**Nächster Schritt:** Das Rapport-Dokument und die Handy-Ansicht des Rapports
+(`docs/plan-ablauf-standorte.md`, Etappe 3 und 4). Der Rapport ist die Maske,
+die ein Monteur täglich in der Hand hat, und die einzige, die auch auf Papier
+funktionieren muss.

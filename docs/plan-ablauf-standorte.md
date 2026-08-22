@@ -1,6 +1,6 @@
 # Plan: Der Ablauf mit und ohne Standorte
 
-Stand: 22.08.2026 · **zur Abnahme** · Entwicklungsstop bis zur Freigabe
+Stand: 23.08.2026 · **abgenommen** · Etappe 1 und 2 umgesetzt (0078–0080)
 
 Dieses Dokument beschreibt nicht das Datenmodell, sondern die **Wege**: welche
 Maske ein Mensch in welcher Reihenfolge anfasst, bis Hans Chefmaler am
@@ -441,8 +441,8 @@ schlechteste aller Varianten.
 | Nr | Inhalt | |
 |---|---|---|
 | **0078** | Umbenennung `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`, die drei Fremdschlüsselspalten, die View, Bedingungen/Indizes/Regeln/Trigger · Tabellenliste und Zeilen des Änderungsprotokolls, Spaltenwahl-Schlüssel, Begriffsschlüssel | **geschrieben** |
-| **0079** | `standorte.kunde_id` (aus der Beteiligtenzeile befüllt, dann not null) · Rolle „Kunde" entfernen · `standorte.zugang`, `anreise_km`, `notiz` löschen · `ansprechpersonen.standort_id` löschen | |
-| **0080** | `projekte.anreise_km`, `projekte.zugang` · Werte aus `kunden.anreise_km` je Projekt nachziehen · `kunden.anreise_km` löschen · `rapporte.kunde_id` löschen (steht seit 0071 aus) | |
+| **0079** | ✔ `standorte.kunde_id` (aus der Beteiligtenzeile befüllt, dann not null) · Rolle „Kunde" entfernen · `standorte.zugang`, `anreise_km`, `notiz` löschen · `ansprechpersonen.standort_id` löschen | |
+| **0080** | ✔ `projekte.anreise_km`, `projekte.zugang` · Werte aus `kunden.anreise_km` je Projekt nachziehen · `kunden.anreise_km` löschen · `rapporte.kunde_id` löschen (steht seit 0071 aus) | |
 | **0081** | `artikelklassen.menge_summieren` mit den zwei Prüftriggern | |
 | **0082** | Umbenennungen: `beteiligte` → `projekt_adressen` (nur noch `projekt_id`), `beteiligten_rollen` → `adress_rollen`, `rapport_beteiligte` → `rapport_mitarbeiter` · Bezug der Rollenzeilen von Standort auf Projekt umstellen | |
 | **0083** | Begriff `adresse` neu · Einstellungsfelder für den Vortrag an `organisationen` | |
@@ -465,8 +465,8 @@ einen Stand mit echten Fehlern geprüft.
 
 | | Inhalt | Ergebnis |
 |---|---|---|
-| **1** | 0078/0079, Standortmaske auf die sieben Adressfelder zurückbauen | Der Standort ist eine Adresse, nichts weiter |
-| **2** | Projektmaske neu nach `masken-leitlinie.md`: Einsatzort, Anfahrt, Zugang, zusätzliche Adressen mit Rolle, Team · dazu die Vortrags-Einstellungen und die Regel „fehlt eine Einstellung, wird nicht erfasst" (Abschnitt 8a) | Alles Betriebswissen an einer Stelle, in A und B gleich |
+| **1** | ✔ 0079, Standortmaske auf die sieben Adressfelder zurückgebaut | Der Standort ist eine Adresse, nichts weiter |
+| **2** | ✔ 0080, Projektmaske neu nach `masken-leitlinie.md`: Einsatzort, Anfahrt, Zugang, zusätzliche Adressen mit Rolle, Team · dazu die Vortrags-Einstellungen und die Regel „fehlt eine Einstellung, wird nicht erfasst" (Abschnitt 8a) | Alles Betriebswissen an einer Stelle, in A und B gleich |
 | **3** | Rapport-Dokument: Ansprechperson und zusätzliche Adressen mit Nummer, Navigation auf den Einsatzort | Hans Chefmaler braucht nur den Rapport |
 | **4** | Handy-Ansicht des Rapports (Nacheinander, 44 px, Timer/Anruf/Navigation unten) | Der Rapport lässt sich unterwegs fertig machen |
 | **5** | 0080/0081: Umbenennungen, „Adressen" mit Filter | Die Wörter stimmen |

@@ -127,7 +127,7 @@ export default async function KalenderPage({
   // Beteiligte seit 0045: Der Filter läuft über den eingebetteten
   // Verbund, nicht mehr über geplant_fuer.
   if (params.mitarbeiter_id) {
-    planFilter["rapport_beteiligte.mitarbeiter_id"] = params.mitarbeiter_id;
+    planFilter["rapport_mitarbeiter.mitarbeiter_id"] = params.mitarbeiter_id;
   }
 
   // Nur OFFENE Rapporte: Ein abgeschlossener zeigt seine tatsächlich
@@ -145,8 +145,8 @@ export default async function KalenderPage({
         .select(
           `id, datum, projekt_id, mitarbeiter_id, geplant_von, geplant_bis, projekte(bezeichnung, kunden(name, vorname, ort)), ${
             params.mitarbeiter_id
-              ? "rapport_beteiligte!inner(mitarbeiter_id)"
-              : "rapport_beteiligte(mitarbeiter_id)"
+              ? "rapport_mitarbeiter!inner(mitarbeiter_id)"
+              : "rapport_mitarbeiter(mitarbeiter_id)"
           }`
         )
         .eq("status", "offen")
@@ -196,7 +196,7 @@ export default async function KalenderPage({
         id: string;
         datum: string;
         mitarbeiter_id: string | null;
-        rapport_beteiligte?: { mitarbeiter_id: string }[];
+        rapport_mitarbeiter?: { mitarbeiter_id: string }[];
         geplant_von: string | null;
         geplant_bis: string | null;
         // Der Kunde hängt seit 0071 am Projekt, nicht am Rapport.
@@ -247,7 +247,7 @@ export default async function KalenderPage({
       // Beteiligten kann die Farbe nicht "die Person" bedeuten.
       name: nameVon(r.mitarbeiter_id),
       farbe: farbeVon(r.mitarbeiter_id),
-      weitere: (r.rapport_beteiligte ?? [])
+      weitere: (r.rapport_mitarbeiter ?? [])
         .map((b) => b.mitarbeiter_id)
         .filter((id) => id !== r.mitarbeiter_id)
         .map(nameVon),
@@ -302,7 +302,7 @@ export default async function KalenderPage({
   }
   for (const p of planungRoh) {
     if (p.mitarbeiter_id) sichtbareMitarbeiterIds.add(p.mitarbeiter_id);
-    for (const b of p.rapport_beteiligte ?? []) sichtbareMitarbeiterIds.add(b.mitarbeiter_id);
+    for (const b of p.rapport_mitarbeiter ?? []) sichtbareMitarbeiterIds.add(b.mitarbeiter_id);
   }
   const legende = (alleMitarbeitende ?? []).filter((m) => sichtbareMitarbeiterIds.has(m.id));
 

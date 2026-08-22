@@ -5,6 +5,38 @@
     "titel": "Arbeitsrapporte, Disposition, Mengenartikel und Standorte",
     "eintraege": [
       {
+        "typ": "neu",
+        "text": "**Zusätzliche Adressen am Auftrag**: Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde – mit Rolle und, wenn nötig, mit „ab“ und „bis“. Jede Adresse steht einmal im Adressbuch: Zieht das Architekturbüro um, wird eine Adresse geändert und es stimmt in allen Aufträgen. Nummer und Mailadresse sind anklickbar – wer vor verschlossener Tür steht, ruft an."
+      },
+      {
+        "typ": "neu",
+        "text": "**Anfahrt und Zugang stehen jetzt am Auftrag.** Der Zugang ist neu („Schlüssel Nr. 4 im Kasten links, Code 4711, sonst beim Hauswart klingeln“) und erscheint auf dem Arbeitsrapport. Die Anfahrt ist vom Kunden an den Auftrag gewandert: Eine Verwaltung mit vierzig Liegenschaften hat vierzig Distanzen, und ein Unterhaltsvertrag kann am selben Ort andere Ansätze haben als eine Sanierung. Bestehende Werte sind mitgezogen, es geht nichts verloren."
+      },
+      {
+        "typ": "neu",
+        "text": "**Beim neuen Auftrag wird übernommen, was am letzten Auftrag derselben Adresse stand** – Anfahrt, Zugang und die zusätzlichen Adressen. Das Formular sagt, woher der Wert kommt; überschreiben genügt. Beim ersten Auftrag an einer Adresse bleiben die Felder leer, denn ein Wert von einer anderen Liegenschaft wäre plausibel und falsch. Was übernommen wird, stellt ein Admin unter Einstellungen ein."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Die Auftragsmaske ist neu gebaut** – dasselbe Muster wie bei den Kunden: links die Liste, rechts der Auftrag, fünf Reiter (Auftrag, Adressen, Team, Rapporte, Dokumente), und die Seite scrollt nicht mehr."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Der Standort ist jetzt nur noch eine Adresse** – sieben Felder, dazu „wird vorgeschlagen“ und „aktiv“. Anfahrt, Zugang und die Beteiligten sind an den Auftrag gezogen. Der Grund: So kann ein Betrieb **ohne** Standorte genau dasselbe wie einer mit. Die Ortsebene gibt einem Betrieb genau zwei Dinge – mehrere Adressen je Kunde und Auswertungen je Adresse – und nicht mehr."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Wird eine Liegenschaft an einen anderen Kunden **derselben Organisation** verkauft, wird beim Standort der Kunde geändert und die Historie zieht mit. Die alten Rechnungen bleiben beim früheren Eigentümer – sonst wäre die Vergangenheit gefälscht. Wird sie nach draussen verkauft, nimmt man ihr das Häkchen „aktiv“."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Zwei Tabellen hiessen fast gleich und bedeuteten Verschiedenes: Die **Mitarbeitenden** an einem Teamrapport und die **externen Adressen** an einem Auftrag. Umbenannt, solange fast keine Daten darin stehen – im Änderungsprotokoll heissen sie jetzt „Rapport – Mitarbeitende“ und „Auftrag – zusätzliche Adresse“."
+      },
+      {
+        "typ": "behoben",
+        "text": "Ein neuer Standort liess sich nicht speichern („Could not find the 'notizen' column“), und die Standortliste zeigte 0 Einträge. Beides war **ein** Tippfehler: Die Spalte hiess `notiz`, der Code schrieb und las `notizen`. Mit dem Umbau ist das Feld ganz weggefallen – die Notiz gehört zum Auftrag."
+      },
+      {
         "typ": "verbessert",
         "text": "**Aus Dienstleistungen werden Artikel**, aus Dienstleistungsklassen Artikelklassen. Der Grund: In der Liste stehen längst auch Material, Spesen und Anfahrt – eine Dose Farbe ist keine Dienstleistung. „Artikel“ ist im ERP-Bereich das übliche Wort und deckt beides. Wer ein anderes Wort will, setzt es unter Einstellungen → Bezeichnungen; die Hilfeseite findet man weiterhin, wenn man „Dienstleistung“ sucht. Die Adresse der Seite heisst neu /artikel."
       },

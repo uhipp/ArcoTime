@@ -113,8 +113,8 @@ export default async function DispositionPage({
   // Rapporte, an denen sie beteiligt ist – ohne den Umweg über eine
   // zweite Abfrage nach ihren Rapport-Kennungen.
   const einbettung = params.mitarbeiter_id
-    ? "rapport_beteiligte!inner(mitarbeiter_id)"
-    : "rapport_beteiligte(mitarbeiter_id)";
+    ? "rapport_mitarbeiter!inner(mitarbeiter_id)"
+    : "rapport_mitarbeiter(mitarbeiter_id)";
 
   let query = supabase
     .from("rapporte")
@@ -125,7 +125,7 @@ export default async function DispositionPage({
     .order("geplant_von", { ascending: true, nullsFirst: false });
 
   if (params.mitarbeiter_id) {
-    query = query.eq("rapport_beteiligte.mitarbeiter_id", params.mitarbeiter_id);
+    query = query.eq("rapport_mitarbeiter.mitarbeiter_id", params.mitarbeiter_id);
   }
 
   const [
@@ -162,7 +162,7 @@ export default async function DispositionPage({
   const beteiligtePro = new Map<string, string[]>();
   if (params.mitarbeiter_id && rapporte.length > 0) {
     const { data: alle } = await supabase
-      .from("rapport_beteiligte")
+      .from("rapport_mitarbeiter")
       .select("rapport_id, mitarbeiter_id")
       .in("rapport_id", rapporte.map((r) => r.id));
     for (const z of alle ?? []) {
@@ -170,8 +170,8 @@ export default async function DispositionPage({
     }
   } else {
     for (const r of rapporte) {
-      const eingebettet = (r as unknown as { rapport_beteiligte?: { mitarbeiter_id: string }[] })
-        .rapport_beteiligte;
+      const eingebettet = (r as unknown as { rapport_mitarbeiter?: { mitarbeiter_id: string }[] })
+        .rapport_mitarbeiter;
       beteiligtePro.set(r.id, (eingebettet ?? []).map((b) => b.mitarbeiter_id));
     }
   }

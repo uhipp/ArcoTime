@@ -13,18 +13,12 @@ import {
   type KontaktArt,
   type KontaktZeile,
 } from "@/components/kunden-kontaktkanaele";
-import { KundenStandorte, type PartnerOption } from "@/components/kunden-standorte";
+import { KundenStandorte } from "@/components/kunden-standorte";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { updateKunde, deleteKunde } from "@/app/actions/kunden";
 import { DeleteButton } from "@/components/delete-button";
 import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
-import type {
-  Beteiligter,
-  BeteiligtenRolle,
-  Kunde,
-  Standort,
-  ZeiteintragMitDetails,
-} from "@/lib/types";
+import type { Kunde, Standort, ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
 import { darf } from "@/lib/berechtigungen";
@@ -409,64 +403,35 @@ async function StandorteReiter({
 }) {
   const supabase = await createClient();
 
-  // Die Standorte eines Kunden hängen an der Beteiligtenrolle „Kunde“ – eine
-  // Spalte kunde_id am Standort gibt es bewusst nicht (0076). Deshalb ist
-  // hier beteiligte die Basistabelle und der Standort die Einbettung.
-  const { data: zugehoerig } = await supabase
-    .from("beteiligte")
-    .select(
-      "standorte!inner(id, bezeichnung, adresse_zusatz, strasse, hausnummer, plz, ort, land, ist_standard, anreise_km, zugang, notizen, aktiv), beteiligten_rollen!inner(bezeichnung)"
-    )
-    .eq("partner_id", kundeId)
-    .eq("beteiligten_rollen.bezeichnung", "Kunde")
-    .not("standort_id", "is", null);
+  // Seit 0079 eine gewöhnliche Abfrage: Der Standort trägt seinen Kunden als
+  // Spalte. Vorher lief der Weg über eine Beteiligtenzeile mit der Rolle
+  // „Kunde" – nötig, solange dieselbe Liegenschaft zwei Kunden gehören
+  // konnte, und mit dem Umzug der zusätzlichen Adressen an den Auftrag
+  // hinfällig.
+  const { data: standorte } = await supabase
+    .from("standorte")
+    .select("*")
+    .eq("kunde_id", kundeId)
+    .order("ist_standard", { ascending: false })
+    .order("bezeichnung");
 
-  const standorte = ((zugehoerig ?? []) as unknown as { standorte: Standort }[])
-    .map((z) => z.standorte)
-    .filter(Boolean)
-    .sort(
-      (a, b) =>
-        Number(b.ist_standard) - Number(a.ist_standard) ||
-        a.bezeichnung.localeCompare(b.bezeichnung, "de-CH")
-    );
+  const liste = (standorte ?? []) as Standort[];
 
-  // „neu“ ist kein Datensatz, sondern der Wunsch nach einem leeren Formular.
+  // „neu" ist kein Datensatz, sondern der Wunsch nach einem leeren Formular.
   const gewaehlt =
     standortWahl === "neu"
       ? null
-      : (standorte.find((s) => s.id === standortWahl) ?? standorte[0] ?? null);
+      : (liste.find((s) => s.id === standortWahl) ?? liste[0] ?? null);
 
-  const [{ data: beteiligte }, { data: rollen }, { data: partner }, ablage] = await Promise.all([
-    gewaehlt
-      ? supabase
-          .from("beteiligte")
-          .select(
-            "id, standort_id, projekt_id, rapport_id, partner_id, rolle_id, gueltig_von, gueltig_bis, notiz, kunden(id, name, vorname, ort), beteiligten_rollen(id, bezeichnung)"
-          )
-          .eq("standort_id", gewaehlt.id)
-          .order("created_at")
-      : Promise.resolve({ data: [] }),
-    supabase
-      .from("beteiligten_rollen")
-      .select("id, bezeichnung, sortierung, aktiv")
-      .eq("aktiv", true)
-      .order("sortierung"),
-    // Das ganze Adressbuch, nicht nur die Kunden: Der Architekt steht dort
-    // ohne Kundenrolle und muss trotzdem wählbar sein.
-    supabase.from("kunden").select("id, name, vorname, ort").order("name").limit(500),
-    gewaehlt
-      ? ladeDokumente(supabase, "standort", gewaehlt.id)
-      : Promise.resolve({ dokumente: [], kategorien: [] }),
-  ]);
+  const ablage = gewaehlt
+    ? await ladeDokumente(supabase, "standort", gewaehlt.id)
+    : { dokumente: [], kategorien: [] };
 
   return (
     <KundenStandorte
       kundeId={kundeId}
-      standorte={standorte}
+      standorte={liste}
       gewaehlt={gewaehlt}
-      beteiligte={(beteiligte ?? []) as unknown as Beteiligter[]}
-      rollen={(rollen ?? []) as BeteiligtenRolle[]}
-      partner={(partner ?? []) as PartnerOption[]}
       dokumente={ablage.dokumente}
       kategorien={ablage.kategorien}
       userId={userId}
@@ -476,7 +441,7 @@ async function StandorteReiter({
 }
 
 // Die Einbettung ist eine 1:1-Beziehung, die erzeugten Typen kennen aber nur
-// „irgendeine Einbettung“ und geben ein Array her. Statt einer Zusicherung an
+// „irgendeine Einbettung" und geben ein Array her. Statt einer Zusicherung an
 // jeder Verwendungsstelle steht die Umrechnung einmal hier.
 function ortEinesAuftrags(standort: unknown): string {
   const s = (Array.isArray(standort) ? standort[0] : standort) as

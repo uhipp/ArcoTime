@@ -106,13 +106,23 @@ export async function ladeRapportDokument(id: string): Promise<RapportDokument |
   const projektId = (rapportRoh as { projekt_id?: string | null }).projekt_id ?? null;
   let einsatzort: DokumentEinsatzort | null = null;
   if (projektId && (await standorteAktiv())) {
+    // Die Adresse kommt vom Standort, der Zugang vom Auftrag: Der Standort ist
+    // seit 0079 eine Postadresse und trägt nichts weiter, und der Zugang kann
+    // sich von Vorhaben zu Vorhaben unterscheiden (0080).
     const { data } = await supabase
       .from("projekte")
-      .select("standorte(bezeichnung, strasse, hausnummer, plz, ort, zugang)")
+      .select("zugang, standorte(bezeichnung, strasse, hausnummer, plz, ort)")
       .eq("id", projektId)
       .maybeSingle();
-    const roh = (data as { standorte?: unknown } | null)?.standorte;
-    const ort = (Array.isArray(roh) ? roh[0] : roh) as DokumentEinsatzort | null | undefined;
+    const auftrag = data as { zugang?: string | null; standorte?: unknown } | null;
+    const roh = auftrag?.standorte;
+    const adresse = (Array.isArray(roh) ? roh[0] : roh) as
+      | Omit<DokumentEinsatzort, "zugang">
+      | null
+      | undefined;
+    const ort: DokumentEinsatzort | null = adresse
+      ? { ...adresse, zugang: auftrag?.zugang ?? null }
+      : null;
     // Trägt der Ort dieselbe Adresse wie der Kunde – der Normalfall beim
     // Standardstandort –, bleibt die Zeile weg. Sie soll auffallen, wenn sie
     // etwas Neues sagt.

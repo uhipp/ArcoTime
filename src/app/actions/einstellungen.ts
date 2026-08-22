@@ -115,6 +115,20 @@ export async function updateOrganisation(formData: FormData) {
       ...(formData.has("standorte_feld_vorhanden")
         ? { standorte_aktiv: formData.get("standorte_aktiv") === "on" }
         : {}),
+      // Was ein neuer Auftrag vom letzten an derselben Adresse übernimmt
+      // (0080). Dasselbe Muster: Fehlt das Feld im Formular, bleibt der
+      // Wert unangetastet.
+      ...(formData.has("vortrag_feld_vorhanden")
+        ? {
+            vortrag_anreise_km: formData.get("vortrag_anreise_km") === "on",
+            vortrag_zugang: formData.get("vortrag_zugang") === "on",
+            vortrag_adressen: formData.get("vortrag_adressen") === "on",
+            vortrag_projektleitung: formData.get("vortrag_projektleitung") === "on",
+            vortrag_team: formData.get("vortrag_team") === "on",
+            vortrag_kostenstelle: formData.get("vortrag_kostenstelle") === "on",
+            vortrag_notizen: formData.get("vortrag_notizen") === "on",
+          }
+        : {}),
       warnung_ab_minuten_pro_tag: alsMinuten("warnung_ab_stunden"),
       // Arbeitszeitfenster: Rahmen für die Vorschläge freier Zeiten in der
       // Disposition. Als Uhrzeit erfasst, in Minuten gespeichert – so lässt

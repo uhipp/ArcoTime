@@ -36,19 +36,27 @@ export type Kunde = {
   // Vorbelegung des Rabatts bei neuen Zeiteinträgen dieses Kunden. Wirkt
   // nicht rückwirkend – der Rabatt wird pro Eintrag gespeichert.
   standard_rabatt_prozent: number;
-  // Zu verrechnende Kilometer je Einsatz – Vorschlag beim Erfassen (0050).
-  anreise_km: number | null;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;
 };
 
 /**
- * Der Einsatzort (0076). Bewusst OHNE kunde_id: Wer zu einem Standort
- * gehört, sagen die Beteiligten – die Liegenschaft der Verwaltung x kann
- * dem Eigentümer y gehören, und beide sind Partner desselben Orts.
+ * Der Einsatzort: eine Postadresse, nichts weiter (0079).
+ *
+ * Der Standort ist ein Vervielfältiger der Adresse. Er gibt einem Betrieb
+ * genau zwei Dinge – mehrere Adressen je Kunde, und Auswertungen je Adresse.
+ * Alles Betriebswissen (Anfahrt, Zugang, zusätzliche Adressen, Notizen) hängt
+ * am Auftrag, damit ein Betrieb OHNE Standorte genau dasselbe kann.
+ *
+ * 0076 hatte hier mehr stehen; die Ebene war eine zu viel. Siehe
+ * docs/plan-ablauf-standorte.md.
  */
 export type Standort = {
   id: string;
+  // Wer diese Adresse betreuen lässt. Ein Verkauf innerhalb der Organisation
+  // ist ein Wechsel dieser Spalte; die Historie zieht mit, weil Aufträge und
+  // Rapporte am Standort hängen.
+  kunde_id: string;
   bezeichnung: string;
   adresse_zusatz: string | null;
   strasse: string | null;
@@ -56,20 +64,18 @@ export type Standort = {
   plz: string | null;
   ort: string | null;
   land: string;
-  // Der Standort, der beim Anlegen eines Auftrags vorgeschlagen wird. Je
-  // Kunde entsteht genau einer automatisch (Trigger in 0076).
+  // Die Adresse, die beim Anlegen eines Auftrags vorgeschlagen wird. Genau
+  // eine je Kunde; in Variante B ist sie unsichtbar.
   ist_standard: boolean;
-  // Die Anfahrt gehört zum Ort, nicht zum Kunden: Eine Verwaltung mit
-  // vierzig Liegenschaften hat vierzig Distanzen (0077).
-  anreise_km: number | null;
-  // Wie man hineinkommt – Schlüsselkasten, Code, Ansprechperson vor Ort.
-  zugang: string | null;
-  notizen: string | null;
+  // Stilllegung statt Löschen: Eine verkaufte Liegenschaft mit zehn
+  // abgeschlossenen Aufträgen lässt sich nicht löschen und soll in keiner
+  // Auswahl mehr auftauchen.
   aktiv: boolean;
   updated_at?: string;
 };
 
-export type BeteiligtenRolle = {
+/** In welcher Rolle eine Adresse an einem Auftrag beteiligt ist (0079). */
+export type AdressRolle = {
   id: string;
   bezeichnung: string;
   sortierung: number;
@@ -77,21 +83,24 @@ export type BeteiligtenRolle = {
 };
 
 /**
- * Wer in welcher Rolle an einem Standort, Auftrag oder Rapport beteiligt
- * ist (0076). Genau ein Bezug je Zeile, erzwungen durch num_nonnulls.
+ * Eine zusätzliche Adresse an einem Auftrag: Eigentümer, Verwaltung,
+ * Architekt, Bauleitung, Subunternehmer, Behörde, Hauswart, Mieter.
+ *
+ * Eine Verknüpfung und keine Kopie: Die Adresse steht einmal im Adressbuch.
+ * Zieht das Architekturbüro um, stimmt es in allen Aufträgen – genau das war
+ * die Anforderung vom 20.08.2026.
  */
-export type Beteiligter = {
+export type ProjektAdresse = {
   id: string;
-  standort_id: string | null;
-  projekt_id: string | null;
-  rapport_id: string | null;
+  projekt_id: string;
   partner_id: string;
   rolle_id: string;
+  ansprechperson_id: string | null;
   gueltig_von: string | null;
   gueltig_bis: string | null;
   notiz: string | null;
-  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "ort">;
-  beteiligten_rollen?: Pick<BeteiligtenRolle, "id" | "bezeichnung">;
+  kunden?: Pick<Kunde, "id" | "name" | "vorname" | "ort" | "email" | "telefon">;
+  adress_rollen?: Pick<AdressRolle, "id" | "bezeichnung">;
 };
 
 export type ProjektStatus = "aktiv" | "inaktiv";
@@ -110,11 +119,19 @@ export type Projekt = {
   status: ProjektStatus;
   kostenstelle: string | null;
   startdatum: string;
+  // Verrechnet je Einsatz. Steht am Auftrag und nicht am Kunden oder am
+  // Standort (0080): Eine Verwaltung mit vierzig Liegenschaften hat vierzig
+  // Distanzen, und ein Unterhaltsvertrag kann andere Ansätze haben als eine
+  // Sanierung am selben Ort.
+  anreise_km: number | null;
+  // Was der Ausführende vor Ort braucht – Schlüsselkasten, Code, „klingeln
+  // beim Hauswart". Steht auf dem Arbeitsrapport.
+  zugang: string | null;
   notizen: string | null;
   sichtbar_fuer_alle: boolean;
   naechste_belegnummer: number;
   kunden?: Pick<Kunde, "id" | "name" | "vorname">;
-  standorte?: Pick<Standort, "id" | "bezeichnung" | "strasse" | "hausnummer" | "plz" | "ort" | "anreise_km" | "zugang">;
+  standorte?: Pick<Standort, "id" | "bezeichnung" | "strasse" | "hausnummer" | "plz" | "ort">;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;
   // Verantwortliche Person des Projekts (0044).
@@ -262,7 +279,6 @@ export type KundeAmRapport = Pick<
   | "name"
   | "vorname"
   | "email"
-  | "anreise_km"
   // Für Navigation und Anruf vom Rapport aus (Phase 11, Etappe D).
   | "strasse"
   | "hausnummer"

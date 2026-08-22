@@ -1,46 +1,31 @@
 import Link from "next/link";
-import {
-  speichereStandort,
-  loescheStandort,
-  speichereBeteiligten,
-  loescheBeteiligten,
-} from "@/app/actions/standorte";
+import { speichereStandort, loescheStandort } from "@/app/actions/standorte";
 import { DeleteButton } from "@/components/delete-button";
 import { KundenKontakt } from "@/components/kunden-kontakt";
-import { OptionalesDatumFeld } from "@/components/optionales-datum-feld";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
-import type { Beteiligter, BeteiligtenRolle, Dokument, Standort } from "@/lib/types";
+import type { Dokument, Standort } from "@/lib/types";
 
-// Die Standorte eines Kunden (0076/0077) – Liste links, Detail rechts, wie
+// Die Adressen eines Kunden (0079) – Liste links, Detail rechts, wie
 // docs/masken-leitlinie.md es für Nebenobjekte vorsieht.
 //
-// Warum es diese Ebene gibt: Eine Verwaltung hat vierzig Liegenschaften mit
-// vierzig Adressen, vierzig Anfahrten und je eigenem Hauswart. Bis 0076 gab
-// es dafür nur die Adresse des Kunden – der Monteur bekam die Adresse der
-// Verwaltung aufs Rapport-PDF und stand vor dem falschen Haus.
+// Der Standort ist eine POSTADRESSE und nichts weiter. Das ist die
+// Entscheidung vom 22.08.2026, und sie hält diese Maske klein: sieben Felder,
+// ein Häkchen für die vorgeschlagene Adresse, eines für die Stilllegung.
 //
-// Der Kunde selbst steht NICHT als Spalte am Standort, sondern als
-// Beteiligtenzeile mit der Rolle „Kunde“. Das ist der Grund, warum
-// derselbe Ort dem Eigentümer y und der Verwaltung x gehören kann, ohne
-// zweimal erfasst zu werden.
-
-export type PartnerOption = {
-  id: string;
-  name: string;
-  vorname: string | null;
-  ort: string | null;
-};
+// Alles, was ein Einsatz braucht – Anfahrt, Zugang, die zusätzlichen Adressen
+// wie Architekt oder Hauswart –, steht am AUFTRAG. Nur so kann ein Betrieb
+// ohne Standorte genau dasselbe wie einer mit: Die Ortsebene gibt ihm zwei
+// Dinge und nicht mehr, mehrere Adressen je Kunde und Auswertungen je Adresse.
+//
+// 0076 hatte hier einen Block „Beteiligte an diesem Standort". Er ist mit 0079
+// an den Auftrag gezogen; wäre er hier geblieben, hätte der Rapport zwei
+// Listen zusammenführen müssen und Variante B hätte gar keine gehabt.
 
 const feld =
   "w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel";
 const beschriftung = "block text-xs text-gray-500 mb-1";
 
-function partnerName(p: { name: string; vorname?: string | null; ort?: string | null }) {
-  const name = [p.vorname, p.name].filter(Boolean).join(" ");
-  return p.ort ? `${name}, ${p.ort}` : name;
-}
-
-/** Ein Standort in der Liste – zwei Zeilen, damit der Ort ohne Klick lesbar ist. */
+/** Eine Adresse in der Liste – zwei Zeilen, damit der Ort ohne Klick lesbar ist. */
 function StandortZeile({
   kundeId,
   standort,
@@ -56,9 +41,7 @@ function StandortZeile({
       <Link
         href={`/kunden/${kundeId}?reiter=standorte&standort=${standort.id}`}
         className={`block border-l-2 px-3 py-2 text-sm ${
-          aktiv
-            ? "border-arcos-steel bg-arcos-steel/10"
-            : "border-transparent hover:bg-gray-50"
+          aktiv ? "border-arcos-steel bg-arcos-steel/10" : "border-transparent hover:bg-gray-50"
         }`}
       >
         <span className="flex items-center gap-1.5">
@@ -75,7 +58,7 @@ function StandortZeile({
           )}
           {!standort.aktiv && (
             <span className="shrink-0 rounded bg-amber-100 text-amber-800 text-[10px] px-1 py-0.5">
-              inaktiv
+              stillgelegt
             </span>
           )}
         </span>
@@ -85,7 +68,7 @@ function StandortZeile({
   );
 }
 
-/** Adress- und Zugangsangaben eines Standorts. */
+/** Die sieben Adressfelder, mehr nicht. */
 function StandortFormular({
   kundeId,
   standort,
@@ -112,16 +95,17 @@ function StandortFormular({
         />
       </div>
 
+      <div>
+        <label className={beschriftung}>Adresszusatz</label>
+        <input
+          name="adresse_zusatz"
+          defaultValue={standort?.adresse_zusatz ?? ""}
+          placeholder="Hintereingang, 3. Stock"
+          className={feld}
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2">
-          <label className={beschriftung}>Adresszusatz</label>
-          <input
-            name="adresse_zusatz"
-            defaultValue={standort?.adresse_zusatz ?? ""}
-            placeholder="Hintereingang, 3. Stock"
-            className={feld}
-          />
-        </div>
         <div>
           <label className={beschriftung}>Strasse</label>
           <input name="strasse" defaultValue={standort?.strasse ?? ""} className={feld} />
@@ -142,42 +126,9 @@ function StandortFormular({
           <label className={beschriftung}>Land</label>
           <input name="land" defaultValue={standort?.land ?? "CH"} className={feld} />
         </div>
-        <div>
-          <label className={beschriftung}>Anfahrt km</label>
-          {/* Die Anfahrt gehört zum Ort, nicht zum Kunden (0077). Leer
-              bleibt leer – eine 0 wäre die Aussage „null Kilometer“. */}
-          <input
-            name="anreise_km"
-            type="number"
-            step="0.1"
-            min="0"
-            defaultValue={standort?.anreise_km ?? ""}
-            className={feld}
-          />
-        </div>
       </div>
 
-      <div>
-        <label className={beschriftung}>Zugang</label>
-        <input
-          name="zugang"
-          defaultValue={standort?.zugang ?? ""}
-          placeholder="Schlüsselkasten Code 1234, Hauswart Meier 079…"
-          className={feld}
-        />
-      </div>
-
-      <div>
-        <label className={beschriftung}>Notizen</label>
-        <textarea
-          name="notizen"
-          rows={2}
-          defaultValue={standort?.notizen ?? ""}
-          className={feld}
-        />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-4 text-sm">
+      <div className="flex flex-wrap items-center gap-4 text-sm pt-1">
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -185,7 +136,7 @@ function StandortFormular({
             defaultChecked={standort ? standort.ist_standard : anzahl === 0}
             className="rounded border-gray-300"
           />
-          <span>Standardstandort</span>
+          <span>Wird beim Auftrag vorgeschlagen</span>
         </label>
         <label className="flex items-center gap-2">
           <input
@@ -198,14 +149,18 @@ function StandortFormular({
         </label>
       </div>
 
-      {/* Jeder Knopf nennt sein Objekt – auf einer Maske mit mehreren
-          Blöcken sagt ein nacktes „Speichern“ nicht, was gespeichert wird. */}
+      <p className="text-xs text-gray-400">
+        Anfahrt, Zugang und die zusätzlichen Adressen (Eigentümer, Architekt,
+        Hauswart) stehen am Auftrag – dort werden sie vom letzten Auftrag an
+        dieser Adresse vorgeschlagen.
+      </p>
+
       <div className="flex items-center gap-2 pt-1">
         <button
           type="submit"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          Standort speichern
+          Adresse speichern
         </button>
         <Link
           href={`/kunden/${kundeId}?reiter=standorte`}
@@ -218,135 +173,10 @@ function StandortFormular({
   );
 }
 
-/** Wer sonst noch an diesem Ort beteiligt ist: Eigentümer, Architekt, Amt. */
-function Beteiligte({
-  kundeId,
-  standortId,
-  beteiligte,
-  rollen,
-  partner,
-  istAdmin,
-}: {
-  kundeId: string;
-  standortId: string;
-  beteiligte: Beteiligter[];
-  rollen: BeteiligtenRolle[];
-  partner: PartnerOption[];
-  istAdmin: boolean;
-}) {
-  return (
-    <div>
-      <h4 className="text-sm font-semibold text-gray-500 mb-2">Beteiligte an diesem Standort</h4>
-
-      {beteiligte.length === 0 ? (
-        <p className="text-xs text-gray-400 mb-2">
-          Noch niemand erfasst. Eigentümer, Verwaltung, Architekt oder Hauswart kommen
-          unten dazu – jede Adresse einmal, nicht bei jedem Standort neu.
-        </p>
-      ) : (
-        <ul className="divide-y border rounded bg-white mb-3">
-          {beteiligte.map((b) => (
-            <li key={b.id} className="flex flex-wrap items-baseline gap-2 px-3 py-2 text-sm">
-              <span className="text-xs text-gray-500 w-28 shrink-0">
-                {b.beteiligten_rollen?.bezeichnung ?? "Rolle"}
-              </span>
-              <span>
-                {b.kunden ? (
-                  <Link
-                    href={`/kunden/${b.kunden.id}`}
-                    className="text-arcos-steel hover:underline"
-                  >
-                    {partnerName(b.kunden)}
-                  </Link>
-                ) : (
-                  "–"
-                )}
-              </span>
-              {/* Ein Rollenwechsel braucht ein Datum: Wer bis gestern
-                  Eigentümer war, war es für die Rapporte von damals
-                  trotzdem. */}
-              {(b.gueltig_von || b.gueltig_bis) && (
-                <span className="text-xs text-gray-400">
-                  {b.gueltig_von ? `ab ${b.gueltig_von}` : ""}
-                  {b.gueltig_bis ? ` bis ${b.gueltig_bis}` : ""}
-                </span>
-              )}
-              {b.notiz && <span className="text-xs text-gray-400">({b.notiz})</span>}
-              {istAdmin && (
-                <span className="ml-auto">
-                  <DeleteButton
-                    action={loescheBeteiligten.bind(null, kundeId, b.id, standortId)}
-                    label="entfernen"
-                    leise
-                    confirmText="Beteiligung entfernen? Die Adresse selbst bleibt bestehen."
-                  />
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <form
-        action={speichereBeteiligten.bind(null, kundeId)}
-        className="flex flex-wrap items-end gap-2"
-      >
-        <input type="hidden" name="standort_id" value={standortId} />
-        <div>
-          <label className={beschriftung}>Rolle</label>
-          <select name="rolle_id" required id="neuer_beteiligter" className={feld}>
-            <option value="">wählen…</option>
-            {rollen.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.bezeichnung}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="min-w-56">
-          <label className={beschriftung}>Adresse</label>
-          <select name="partner_id" required className={feld}>
-            <option value="">wählen…</option>
-            {partner.map((p) => (
-              <option key={p.id} value={p.id}>
-                {partnerName(p)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className={beschriftung}>ab</label>
-          <OptionalesDatumFeld name="gueltig_von" />
-        </div>
-        <div>
-          <label className={beschriftung}>bis</label>
-          <OptionalesDatumFeld name="gueltig_bis" />
-        </div>
-        <button
-          type="submit"
-          className="rounded border border-gray-300 text-sm px-3 py-1.5 hover:bg-gray-50"
-        >
-          Beteiligung speichern
-        </button>
-      </form>
-      <p className="text-xs text-gray-400 mt-2">
-        Fehlt eine Adresse in der Auswahl, wird sie unter{" "}
-        <Link href="/kunden/neu" className="text-arcos-steel hover:underline">
-          Neue Adresse
-        </Link>{" "}
-        einmal erfasst – ohne Häkchen „ist Kunde“, wenn sie nur beteiligt ist.
-      </p>
-    </div>
-  );
-}
-
 export function KundenStandorte({
   kundeId,
   standorte,
   gewaehlt,
-  beteiligte,
-  rollen,
-  partner,
   dokumente,
   kategorien,
   userId,
@@ -355,9 +185,6 @@ export function KundenStandorte({
   kundeId: string;
   standorte: Standort[];
   gewaehlt: Standort | null;
-  beteiligte: Beteiligter[];
-  rollen: BeteiligtenRolle[];
-  partner: PartnerOption[];
   dokumente: Dokument[];
   kategorien: { id: string; bezeichnung: string; aktiv: boolean }[];
   userId: string;
@@ -365,17 +192,16 @@ export function KundenStandorte({
 }) {
   return (
     <div className="flex h-full min-h-0">
-      {/* Liste der Orte */}
       <div className="w-56 shrink-0 border-r flex flex-col min-h-0">
         <div className="px-3 py-2 border-b flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-gray-500">
-            {standorte.length} {standorte.length === 1 ? "Standort" : "Standorte"}
+            {standorte.length} {standorte.length === 1 ? "Adresse" : "Adressen"}
           </span>
           <Link
             href={`/kunden/${kundeId}?reiter=standorte&standort=neu`}
             className="text-xs text-arcos-steel hover:underline"
           >
-            + Neuer Standort
+            + Neue Adresse
           </Link>
         </div>
         <ul className="flex-1 min-h-0 overflow-y-auto divide-y">
@@ -389,25 +215,24 @@ export function KundenStandorte({
           ))}
           {standorte.length === 0 && (
             <li className="px-3 py-4 text-xs text-gray-400">
-              Noch kein Standort erfasst – „+ Neuer Standort“ legt einen an.
+              Noch keine Adresse erfasst – „+ Neue Adresse“ legt eine an.
             </li>
           )}
         </ul>
       </div>
 
-      {/* Detail des gewählten Orts */}
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         <div className="max-w-2xl space-y-6">
           <div>
             <div className="flex items-start justify-between gap-3 mb-3">
               <h3 className="font-medium">
-                {gewaehlt ? gewaehlt.bezeichnung : "Neuer Standort"}
+                {gewaehlt ? gewaehlt.bezeichnung : "Neue Adresse"}
               </h3>
               {gewaehlt && istAdmin && (
                 <DeleteButton
                   action={loescheStandort.bind(null, kundeId, gewaehlt.id)}
-                  label="Standort löschen"
-                  confirmText={`Standort „${gewaehlt.bezeichnung}“ löschen? Das geht nur, solange kein Auftrag daran hängt.`}
+                  label="Adresse löschen"
+                  confirmText={`Adresse „${gewaehlt.bezeichnung}“ löschen? Das geht nur, solange kein Auftrag daran hängt.`}
                 />
               )}
             </div>
@@ -421,25 +246,13 @@ export function KundenStandorte({
             </div>
           </div>
 
-          {gewaehlt && (
-            <Beteiligte
-              kundeId={kundeId}
-              standortId={gewaehlt.id}
-              beteiligte={beteiligte}
-              rollen={rollen}
-              partner={partner}
-              istAdmin={istAdmin}
-            />
-          )}
-
-          {/* Grundriss, Fotos vom Zustand, die Schlüsselquittung – die
-              gehören an den Ort und nicht an den Kunden: Bei vierzig
-              Liegenschaften wäre die Kundenablage eine Kiste ohne
-              Ordnung. */}
+          {/* Der Grundriss und die Fotos gehören zur Adresse, nicht zum
+              Vorhaben: Sie überleben das Projekt, in dem sie entstanden
+              sind. */}
           {gewaehlt && (
             <div>
               <h4 className="text-sm font-semibold text-gray-500 mb-2">
-                Dokumente zu diesem Standort
+                Dokumente zu dieser Adresse
               </h4>
               <DokumenteBereich
                 bereich="standort"

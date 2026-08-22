@@ -52,7 +52,21 @@ Der Schalter für die Ortsebene: Zwischen Kunde und Auftrag eine Stufe für den 
 
 Die **Rollen** der Beteiligten (Kunde, Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde) sind vorgegeben und lassen sich ergänzen. Die Rolle „Kunde" wird gebraucht, um einen Standort seinem Kunden zuzuordnen – sie sollte stehen bleiben.
 
+Der Standort ist eine **Postadresse und nichts weiter**. Alles, was ein Einsatz braucht – Anfahrt, Zugang, die zusätzlichen Adressen –, steht am [Auftrag](/hilfe/projekte). Nur so kann ein Betrieb ohne Standorte genau dasselbe wie einer mit.
+
 Mehr dazu unter [Kunden](/hilfe/kunden).
+
+## Beim neuen Auftrag übernehmen
+
+Was ein neuer Auftrag vom letzten Auftrag **an derselben Adresse** mitbekommt. Vorgeschlagen sind Anfahrt, Zugang und die zusätzlichen Adressen; Projektleitung, Team, Kostenstelle und Notizen bleiben aus, weil sie von Vorhaben zu Vorhaben wechseln.
+
+Beim **ersten** Auftrag an einer Adresse bleiben die Felder leer. Das ist Absicht: Ein Wert von einer anderen Liegenschaft wäre plausibel und falsch, und stille falsche Zahlen sind schlimmer als leere Felder.
+
+Ein Unterschied, der die Wahl leichter macht: Bei den **zusätzlichen Adressen** ist die Übernahme eine Verknüpfung – zieht das Architekturbüro um, stimmt es auch in den Aufträgen, die den Eintrag geerbt haben. Bei **Anfahrt und Zugang** ist es eine Kopie: Ändert der Hauswart den Code, ist er in jedem laufenden Auftrag an diesem Ort nachzutragen. Bei abgeschlossenen Aufträgen ist der alte Code richtig – der Rapport von damals soll zeigen, was damals galt.
+
+## Adressrollen
+
+Die Rollen für die zusätzlichen Adressen an einem Auftrag: Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde. Eigene lassen sich ergänzen – ein Elektriker oder Sanitär ist in der Regel ein **Subunternehmer** und braucht keine eigene Rolle.
 
 ## Einheiten
 

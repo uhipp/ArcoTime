@@ -39,7 +39,7 @@ export default async function ZeiteintragDetailPage({
     getCurrentProfile(),
     supabase
       .from("projekte")
-      .select("*, kunden(name, vorname, standard_rabatt_prozent, anreise_km)")
+      .select("*, anreise_km, kunden(name, vorname, standard_rabatt_prozent)")
       .order("bezeichnung"),
     supabase
       .from("artikel")

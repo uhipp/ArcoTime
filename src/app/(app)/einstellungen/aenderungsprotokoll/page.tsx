@@ -27,7 +27,7 @@ const BEREICHE: Record<string, string> = {
   artikel: "Artikel",
   zeiteintraege: "Zeiteintrag",
   rapporte: "Rapport",
-  rapport_beteiligte: "Rapport – Beteiligte",
+  rapport_mitarbeiter: "Rapport – Mitarbeitende",
   rapport_standardpositionen: "Standardposition",
   anfragen: "Anfrage",
   dokumente: "Dokument",
@@ -48,6 +48,15 @@ const BEREICHE: Record<string, string> = {
   anfrage_prioritaeten: "Anfrage-Priorität",
   dokument_kategorien: "Dokument-Kategorie",
   belege_exporte: "Export",
+  // Seit 0076/0079 protokolliert: die Ortsebene und die zusätzlichen
+  // Adressen am Auftrag.
+  standorte: "Adresse (Einsatzort)",
+  projekt_adressen: "Auftrag – zusätzliche Adresse",
+  adress_rollen: "Adressrolle",
+  ansprechpersonen: "Ansprechperson",
+  kontakte: "Kontaktangabe",
+  kontakt_arten: "Kontaktart",
+  begriffe: "Bezeichnung",
 };
 
 // Felder, die niemandem etwas sagen oder nichts zu suchen haben.

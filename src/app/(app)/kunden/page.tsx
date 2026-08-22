@@ -90,14 +90,6 @@ const SPALTEN: Spalte<Kunde>[] = [
     zelle: (k) => k.adress_schluessel ?? "–",
   },
   {
-    key: "anreise",
-    titel: "Anfahrt km",
-    aus: true,
-    wert: (k) => k.anreise_km,
-    zelle: (k) => (k.anreise_km != null ? `${Number(k.anreise_km)} km` : "–"),
-    klasse: "px-4 py-2 whitespace-nowrap",
-  },
-  {
     key: "rabatt",
     titel: "Rabatt",
     aus: true,

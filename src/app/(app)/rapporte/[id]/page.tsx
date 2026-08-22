@@ -75,7 +75,7 @@ export default async function RapportDetailPage({
     supabase
       .from("rapporte")
       .select(
-        "*, projekte(id, bezeichnung, kunden(id, name, vorname, email, anreise_km, strasse, hausnummer, plz, ort, land, telefon)), profiles!rapporte_mitarbeiter_id_fkey(id, name)"
+        "*, projekte(id, bezeichnung, anreise_km, zugang, kunden(id, name, vorname, email, strasse, hausnummer, plz, ort, land, telefon)), profiles!rapporte_mitarbeiter_id_fkey(id, name)"
       )
       .eq("id", id)
       .single(),
@@ -109,6 +109,14 @@ export default async function RapportDetailPage({
   const rapport = mitKunde(rapportRoh as Rapport);
   const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
   const offen = rapport.status === "offen";
+
+  // Die Anfahrt steht seit 0080 am Auftrag und nicht mehr am Kunden: Eine
+  // Verwaltung mit vierzig Liegenschaften hat vierzig Distanzen. Die
+  // Einbettung liefert je nach Beziehung ein Objekt oder eine Liste.
+  const auftrag = (Array.isArray(rapport.projekte) ? rapport.projekte[0] : rapport.projekte) as
+    | { anreise_km?: number | null; zugang?: string | null }
+    | undefined;
+  const anreiseKm = auftrag?.anreise_km != null ? Number(auftrag.anreise_km) : null;
   const laufendePosition = positionen.find((z) => z.timer_gestartet_um) ?? null;
 
   // PostgREST liefert die eingebettete Zeile je nach Beziehung als Objekt
@@ -384,7 +392,7 @@ export default async function RapportDetailPage({
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
             beteiligte={beteiligte}
-            anreiseKm={rapport.kunde?.anreise_km ?? null}
+            anreiseKm={anreiseKm}
             abbrechenHref={`/rapporte/${id}`}
           />
         )}
@@ -396,7 +404,7 @@ export default async function RapportDetailPage({
             mitarbeiterId={rapport.mitarbeiter_id}
             datum={rapport.datum}
             beteiligte={beteiligte}
-            anreiseKm={rapport.kunde?.anreise_km ?? null}
+            anreiseKm={anreiseKm}
           />
         )}
       </div>

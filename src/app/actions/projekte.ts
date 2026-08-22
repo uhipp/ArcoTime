@@ -25,6 +25,13 @@ function projektFromForm(formData: FormData) {
     sichtbar_fuer_alle: formData.get("sichtbar_fuer_alle") === "on",
   };
 
+  // Anfahrt und Zugang stehen seit 0080 am Auftrag. Leer bleibt leer: Eine 0
+  // wäre die Aussage „null Kilometer" und würde später einen Vorschlag 0
+  // machen, wo gar keiner gemeint ist.
+  const km = str(formData.get("anreise_km"));
+  werte.anreise_km = km !== null ? Number(km) : null;
+  werte.zugang = str(formData.get("zugang"));
+
   // Der Einsatzort (0077). Nur setzen, wenn das Formular einen mitschickt:
   // Wo die Ortsebene ausgeschaltet ist, gibt es das Feld nicht, und dann
   // füllt der Trigger in der Datenbank den Standardstandort des Kunden. Ein

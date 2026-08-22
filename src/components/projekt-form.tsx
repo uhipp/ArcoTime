@@ -12,6 +12,7 @@ import {
   ladeStandorteDesKunden,
   type StandortOption,
 } from "@/app/actions/standorte";
+import { ladeVortrag } from "@/app/actions/projekt-adressen";
 
 export function ProjektForm({
   projekt,
@@ -47,6 +48,20 @@ export function ProjektForm({
   const [standorte, setStandorte] = useState<StandortOption[]>([]);
   const [standortId, setStandortId] = useState(projekt?.standort_id ?? "");
 
+  // Anfahrt und Zugang stehen seit 0080 am Auftrag. Beim Anlegen werden sie
+  // vom letzten Auftrag am SELBEN Standort vorgeschlagen – was übernommen
+  // wird, stellt der Betrieb ein.
+  const [anreise, setAnreise] = useState(
+    projekt?.anreise_km != null ? String(projekt.anreise_km) : ""
+  );
+  const [zugang, setZugang] = useState(projekt?.zugang ?? "");
+  // Merkt sich den eigenen Vorschlag: Nur er darf ersetzt werden, wenn der
+  // Standort noch einmal wechselt. Was jemand selbst getippt hat, bleibt –
+  // dieselbe Regel wie beim Mengenvorschlag in der Zeiterfassung.
+  const [vortrag, setVortrag] = useState<{ km: string; zugang: string; quelle: string } | null>(
+    null
+  );
+
   useEffect(() => {
     // Kein Zurücksetzen im Effektkörper: Das Kundenfeld hat keinen wählbaren
     // Leerwert, es geht also nie von einem Kunden zurück auf keinen. Die Liste
@@ -70,6 +85,26 @@ export function ProjektForm({
       abgebrochen = true;
     };
   }, [kundeId, standorteAktiv]);
+
+  const istNeu = !projekt;
+  useEffect(() => {
+    if (!istNeu || !standortId) return;
+    let abgebrochen = false;
+    void ladeVortrag(standortId).then((werte) => {
+      if (abgebrochen || !werte) return;
+      const km = werte.anreise_km != null ? String(werte.anreise_km) : "";
+      const zg = werte.zugang ?? "";
+      setAnreise((bisher) => (bisher === "" || bisher === vortrag?.km ? km : bisher));
+      setZugang((bisher) => (bisher === "" || bisher === vortrag?.zugang ? zg : bisher));
+      setVortrag(km || zg ? { km, zugang: zg, quelle: werte.quelle ?? "" } : null);
+    });
+    return () => {
+      abgebrochen = true;
+    };
+    // vortrag bewusst nicht in den Abhängigkeiten: Der Effekt SETZT ihn, und
+    // ein Neulauf bei jeder Änderung wäre eine Schleife.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [standortId, istNeu]);
 
   const kundeHook = useKundeSchnellErstellen((kunde) => {
     setKundenListe((liste) => [...liste, kunde].sort((a, b) => a.name.localeCompare(b.name, "de-CH")));
@@ -194,6 +229,54 @@ export function ProjektForm({
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="anreise_km">
+            Anfahrt km (verrechnet je Einsatz)
+          </label>
+          <input
+            id="anreise_km"
+            name="anreise_km"
+            type="number"
+            step="0.1"
+            min="0"
+            value={anreise}
+            onChange={(e) => setAnreise(e.target.value)}
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            {/* „Verrechnet je Einsatz" und nicht „Distanz": Sonst trägt der
+                eine die einfache Strecke ein und der andere Hin und Zurück,
+                und niemand merkt es (0050). */}
+            In der Regel Hin- und Rückfahrt. Wird bei Artikeln vorgeschlagen, die
+            als Anreise gekennzeichnet sind.
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="zugang">
+            Zugang
+          </label>
+          <textarea
+            id="zugang"
+            name="zugang"
+            rows={2}
+            value={zugang}
+            onChange={(e) => setZugang(e.target.value)}
+            placeholder="Schlüssel Nr. 4 im Kasten links, Code 4711, sonst beim Hauswart klingeln (079…)"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Steht auf dem Arbeitsrapport – dort nützt es mehr als in einer Notiz.
+          </p>
+        </div>
+        {vortrag?.quelle && (
+          <p className="sm:col-span-2 text-xs text-arcos-steel">
+            Aus „{vortrag.quelle}“ übernommen – dem letzten Auftrag an dieser Adresse.
+            Überschreiben genügt.
+          </p>
+        )}
       </div>
 
       <div>

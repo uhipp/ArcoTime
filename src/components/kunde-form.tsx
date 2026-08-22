@@ -107,16 +107,6 @@ export function KundeForm({
             type="number"
             defaultValue={kunde?.standard_rabatt_prozent ?? 0}
           />
-          {/* "Verrechnet je Einsatz" und nicht "Distanz": Sonst trägt der
-              eine die einfache Strecke ein und der andere Hin und
-              Zurück – beides sieht plausibel aus, und niemand merkt es. */}
-          <Field
-            label="Anfahrt km (verrechnet je Einsatz)"
-            name="anreise_km"
-            type="number"
-            step="0.1"
-            defaultValue={kunde?.anreise_km ?? ""}
-          />
         </div>
         <p className="text-xs text-gray-400 mt-2">
           Der Standardrabatt wird bei neuen Zeiteinträgen dieses Kunden
@@ -124,10 +114,10 @@ export function KundeForm({
           spätere Änderung wirkt nicht auf bereits erfasste Einträge.
         </p>
         <p className="text-xs text-gray-400 mt-1">
-          Die Anfahrt-Kilometer werden bei Leistungen vorgeschlagen, die
-          unter Artikel als Anreise gekennzeichnet sind – in der
-          Regel Hin- und Rückfahrt. Auch dieser Wert lässt sich pro Eintrag
-          überschreiben.
+          Die Anfahrt steht seit dem Umbau am Auftrag und nicht mehr hier: Eine
+          Verwaltung mit vierzig Liegenschaften hat vierzig Distanzen. Beim
+          Anlegen eines Auftrags wird sie vom letzten Auftrag an derselben
+          Adresse vorgeschlagen.
         </p>
       </section>
 

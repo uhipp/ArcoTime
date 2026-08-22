@@ -70,6 +70,19 @@ export default async function EinstellungenPage({
   const { error } = await searchParams;
   const organisation = await getCurrentOrganisation();
   const standorteEingeschaltet = await standorteAktiv();
+  // Einzeln gelesen und nicht über getCurrentOrganisation: Die läuft im Layout
+  // über jeder Seite, und Spalten, die es vor der Migration noch nicht gibt,
+  // würden dort die ganze Anwendung anhalten.
+  const { data: vortragZeile } = await createClient().then((c) =>
+    c
+      .from("organisationen")
+      .select(
+        "vortrag_anreise_km, vortrag_zugang, vortrag_adressen, vortrag_projektleitung, vortrag_team, vortrag_kostenstelle, vortrag_notizen"
+      )
+      .eq("id", organisation?.id ?? "")
+      .maybeSingle()
+  );
+  const vortrag = (vortragZeile ?? {}) as Record<string, boolean | undefined>;
   const logoAdresse = logoAdresseVon(organisation?.logo_pfad);
   const supabase = await createClient();
   const [
@@ -613,6 +626,49 @@ export default async function EinstellungenPage({
             </span>
           </label>
           <input type="hidden" name="standorte_feld_vorhanden" value="1" />
+
+          {/* Was ein neuer Auftrag vom letzten am SELBEN Standort übernimmt.
+              Als Einstellung und nicht als feste Regel, weil nicht jeder
+              Betrieb dasselbe will – Wunsch des Nutzers vom 22.08.2026.
+              Vorgetragen wird nur vom Auftrag an derselben Adresse; beim
+              ersten dort bleiben die Felder leer. Eine Distanz von einer
+              anderen Liegenschaft wäre plausibel und falsch. */}
+          <fieldset className="border-t pt-4">
+            <legend className="text-sm font-medium mb-1">
+              Beim neuen Auftrag übernehmen
+            </legend>
+            <p className="text-xs text-gray-400 mb-3">
+              Vom letzten Auftrag an derselben Adresse. Beim ersten Auftrag an einer
+              Adresse bleiben die Felder leer – ein vorgetragener Wert von einem
+              anderen Ort wäre plausibel und falsch.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+              {[
+                { name: "vortrag_anreise_km", titel: "Anfahrt km", vorgabe: true },
+                { name: "vortrag_zugang", titel: "Zugang", vorgabe: true },
+                {
+                  name: "vortrag_adressen",
+                  titel: "Zusätzliche Adressen (Eigentümer, Architekt …)",
+                  vorgabe: true,
+                },
+                { name: "vortrag_projektleitung", titel: "Projektleitung", vorgabe: false },
+                { name: "vortrag_team", titel: "Team", vorgabe: false },
+                { name: "vortrag_kostenstelle", titel: "Kostenstelle", vorgabe: false },
+                { name: "vortrag_notizen", titel: "Notizen", vorgabe: false },
+              ].map((feld) => (
+                <label key={feld.name} className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    name={feld.name}
+                    defaultChecked={vortrag[feld.name] ?? feld.vorgabe}
+                    className="mt-0.5"
+                  />
+                  <span>{feld.titel}</span>
+                </label>
+              ))}
+            </div>
+            <input type="hidden" name="vortrag_feld_vorhanden" value="1" />
+          </fieldset>
         </form>
 
         {/* Eigenes Formular: Ein Datei-Upload gehört nicht in dasselbe

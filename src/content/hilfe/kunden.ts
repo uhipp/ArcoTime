@@ -65,7 +65,7 @@ Alles, was früher untereinander stand, steht jetzt in **Reitern**:
 |---|---|
 | Adresse | Anschrift, Adress-Schlüssel, Zahlungskonditionen, Notizen und die Kontaktkanäle des Betriebs |
 | Ansprechpersonen | wer beim Kunden zuständig ist, mit eigenen Kontaktangaben |
-| Standorte | die Einsatzorte, ihre Anfahrt, ihr Zugang und die Beteiligten |
+| Standorte | die Adressen, an denen gearbeitet wird |
 | Aufträge | alle Aufträge dieses Kunden, mit ihrem Einsatzort |
 | Preise und Rabatte | die Konditionen dieses Kunden |
 | Dokumente | Dateien zum Kunden |
@@ -77,35 +77,23 @@ Der gewählte Reiter steht in der Adresse – „…?reiter=standorte“. Der Zu
 
 **Jeder Knopf nennt sein Objekt**: „Adresse speichern", „Person speichern", „Standort speichern", „Preis speichern". Ein nacktes „Speichern" gibt es nicht mehr, „Übernehmen" auch nicht – es hat gespeichert, ohne es zu sagen. Gespeichert wird nur auf Knopfdruck; nichts wird still im Hintergrund übernommen.
 
-## Standorte – wo gearbeitet wird
+## Standorte – die Adressen eines Kunden
 
-Zwischen Kunde und Auftrag liegt der **Einsatzort**: die Liegenschaft, die Filiale, die Baustelle, das Serverzimmer. Er hat seine eigene Adresse, seine eigene Anfahrt, seinen eigenen Zugang und seine eigenen Ansprechpersonen.
+Zwischen Kunde und Auftrag liegt der **Einsatzort**: die Liegenschaft, die Filiale, die Baustelle, das Serverzimmer. Ein Kunde kann mehrere haben.
 
-Warum das eine eigene Ebene ist und nicht einfach eine zweite Adresse am Kunden: Eine Liegenschaftsverwaltung mit vierzig Häusern ist **ein** Kunde mit **einer** Rechnungsadresse – und vierzig Orten mit vierzig verschiedenen Anfahrten. Bis dahin stand auf dem Rapport die Adresse der Verwaltung, und der Monteur fuhr an den falschen Ort.
+Der Standort ist eine **Postadresse und nichts weiter** – sieben Felder: Bezeichnung, Adresszusatz, Strasse, Nummer, PLZ, Ort, Land. Dazu zwei Häkchen: welche Adresse beim Anlegen eines Auftrags **vorgeschlagen** wird, und ob sie noch **aktiv** ist.
 
-**Ein- und ausschalten**: Wer je Kunde nur eine Adresse hat, braucht die Ebene nicht. Ein Admin schaltet sie unter [Einstellungen](/hilfe/einstellungen) mit **„Standorte führen"** ein oder aus. Ist sie aus, ist sie unsichtbar – die Daten stimmen trotzdem: Jeder Kunde hat still einen **Standardstandort** mit seiner Adresse, und auf dem Rapport steht wie bisher die Kundenadresse.
+Warum so wenig: Die Ortsebene gibt einem Betrieb genau zwei Dinge – mehrere Adressen je Kunde, und Auswertungen je Adresse. Alles andere, was ein Einsatz braucht, steht am **Auftrag**: Anfahrt, Zugang und die zusätzlichen Adressen (Eigentümer, Verwaltung, Architekt, Hauswart). Nur so kann ein Betrieb **ohne** Standorte genau dasselbe wie einer mit – sonst hätte er keinen Weg dorthin.
 
-**Der Standardstandort** entsteht beim Anlegen eines Kunden von selbst, mit dessen Name, Adresse und Anfahrt. Er ist der Ort, der beim Anlegen eines Auftrags vorgeschlagen wird. Es gibt genau einen je Kunde; wer einen anderen als Standard markiert, löst den ersten ab.
+**Ein- und ausschalten**: Wer je Kunde nur eine Adresse hat, braucht die Ebene nicht. Ein Admin schaltet sie unter [Einstellungen](/hilfe/einstellungen) mit „Standorte führen" ein oder aus. Ist sie aus, ist sie unsichtbar – die Daten stimmen trotzdem: Jeder Kunde hat still eine Adresse aus seinem Kundenstamm, und jeder Auftrag hängt daran.
 
-**Anfahrt**: Die Kilometer stehen am Standort, nicht mehr am Kunden – bei vierzig Liegenschaften sind es vierzig Distanzen. Der Wert des Kunden ist beim Umstellen in seinen Standardstandort gewandert.
+**Die vorgeschlagene Adresse** entsteht beim Anlegen eines Kunden von selbst, mit dessen Name und Adresse. Es gibt genau eine je Kunde; wer eine andere markiert, löst die erste ab.
 
-**Zugang**: Wo der Schlüsselkasten hängt, welcher Code gilt, wer aufschliesst. Das steht auf dem Arbeitsrapport – es nützt dort mehr als in einer Notiz, die niemand liest.
+**Verkauft?** Wechselt die Liegenschaft zu einem anderen Kunden **derselben Organisation**, wird beim Standort der Kunde geändert – die Historie zieht mit, weil Aufträge und Rapporte an der Adresse hängen. Die alten Rechnungen bleiben beim früheren Eigentümer; das ist Absicht, sonst wäre die Vergangenheit gefälscht. Wird die Liegenschaft **nach draussen** verkauft und nicht mehr betreut, nimmt man ihr das Häkchen **aktiv**: Sie bleibt lesbar und verschwindet aus jeder Auswahl.
 
-**Dokumente am Standort**: Unter dem gewählten Ort liegt eine eigene Ablage – für den Grundriss, Fotos vom Zustand, die Schlüsselquittung, das Farbmuster von 2019. Die gehören an den Ort und nicht an den Kunden: Bei vierzig Liegenschaften wäre die Kundenablage eine Kiste ohne Ordnung.
+**Dokumente**: Grundriss, Fotos vom Zustand, die Schlüsselquittung liegen an der Adresse – sie überleben das Vorhaben, in dem sie entstanden sind.
 
-**Löschen** geht nur, solange kein Auftrag am Standort hängt. Wer einen Ort nicht mehr braucht, nimmt ihm das Häkchen **aktiv**: Er bleibt lesbar und verschwindet aus den Vorschlägen.
-
-## Beteiligte an einem Standort
-
-An einem Ort hängen mehr Adressen als der Auftraggeber. Der Maler muss auseinanderhalten können, welche Liegenschaft der Verwaltung X dem Eigentümer Y gehört; bei einem grösseren Vorhaben kommen Architekt, Bauleitung, Subunternehmer und Behörden dazu.
-
-Deshalb steht unter jedem Standort eine Liste **Beteiligte**: eine Adresse aus dem Adressbuch plus eine **Rolle** (Kunde, Eigentümer, Verwaltung, Mieter, Hauswart, Architekt, Bauleitung, Subunternehmer, Behörde – die Liste lässt sich ergänzen).
-
-Der Gewinn ist die **einmalige Erfassung**: Der Architekt steht genau einmal im Adressbuch und ist an zehn Standorten beteiligt. Zieht sein Büro um, wird eine Adresse geändert und es stimmt überall. Vorher hätte dieselbe Adresse zehnmal dagestanden – und beim Umzug wäre sie neunmal falsch geblieben.
-
-Eine Beteiligung kann **ab** und **bis** tragen. Ein Rollenwechsel braucht ein Datum: Wer bis gestern Eigentümer war, war es für die Rapporte von damals trotzdem.
-
-Fehlt eine Adresse in der Auswahl, wird sie einmal als Kunde erfasst – **ohne** das Häkchen „ist Kunde", wenn kein Auftrag an sie geht (siehe unten).
+**Löschen** geht nur, solange kein Auftrag an der Adresse hängt.
 
 ## Kontaktangaben des Betriebs
 
@@ -117,7 +105,7 @@ Sie stehen dort und nicht bei den Ansprechpersonen, weil sie zur Adresse gehöre
 
 Im Reiter **Ansprechpersonen** steht, wer beim Kunden zuständig ist. Sobald ein Betrieb grösser ist, gibt es dort mehrere Personen mit eigener Nummer und eigener Mailadresse – die Sachbearbeiterin der Verwaltung, der Hauswart, die Filialleitung. Je Person gibt es Anrede, Vor- und Nachname, Funktion, eine Notiz und beliebig viele Kontaktkanäle.
 
-Eine **postalische Adresse** hat eine Ansprechperson **nicht**. Post geht an die Adresse des Kunden oder an den Einsatzort; braucht jemand eine eigene Anschrift, ist er eine eigene Adresse im Adressbuch (ohne Häkchen „ist Kunde") und wird am Standort als **Beteiligter** geführt.
+Eine **postalische Adresse** hat eine Ansprechperson **nicht**. Post geht an die Adresse des Kunden oder an den Einsatzort; braucht jemand eine eigene Anschrift, ist er eine eigene Adresse im Adressbuch (ohne Häkchen „ist Kunde") und wird am Auftrag als zusätzliche Adresse geführt.
 
 Die **Kontaktarten** (E-Mail, Telefon, Mobil, Direktwahl, WhatsApp) verwaltet ein Admin unter [Einstellungen](/hilfe/einstellungen); eigene lassen sich ergänzen. Mailadressen und Nummern sind anklickbar – auf dem Telefon führt der Tipp direkt in den Anruf.
 

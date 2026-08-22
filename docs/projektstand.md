@@ -1,6 +1,6 @@
 # ArcoTime – Projektstand
 
-Lebendes Dokument. Letzte Nachführung: **22.08.2026.**
+Lebendes Dokument. Letzte Nachführung: **23.08.2026.**
 Es beantwortet drei Fragen: Wo stehen wir, wie arbeiten wir, was ist offen.
 
 ---
@@ -160,7 +160,59 @@ Logo und die Umbenennung aller Speicherknöpfe („Adresse speichern" statt
 
 ---
 
-## 5. Wie wir arbeiten
+## 5. Was am 23.08.2026 entstanden ist: der Standort ist eine Adresse
+
+Ein Tag, der mit einem Entwicklungsstop begann. Der Nutzer hat ihn ausgerufen,
+nachdem die Standortmaske einen Fehler zeigte — und die Begründung war nicht
+der Fehler, sondern das Fehlende: *„Was wir bisher offenbar noch nicht
+überlegt haben, ist, was aus diesem Datenmodell dann für Bildschirmmasken und
+Papierausdrucke entstehen können."*
+
+Aus dem Gespräch danach kam der Satz, an dem sich künftig jede Maske messen
+lässt:
+
+> **Variante A gibt dem Betrieb genau zwei Dinge:** mehrere Adressen je Kunde
+> erfassen und wählen, und Auswertungen je Adresse.
+> **Alles andere ist in A und B identisch** — bis auf die Anzeige.
+
+Damit sind zwei Entscheidungen aus 0076 zurückgenommen, und beide waren meine:
+
+- **Die zusätzlichen Adressen hängen am Auftrag, nicht am Standort.** Mein
+  Vorschlag, beides zu erlauben, hätte Variante B schwächer gemacht (ohne
+  Ortsebene gäbe es keinen Weg dorthin) und den Rapport zwei Listen
+  zusammenführen lassen.
+- **`standorte` bekommt `kunde_id` zurück.** Der Grund, es weggelassen zu
+  haben — dieselbe Liegenschaft kann der Verwaltung und dem Eigentümer
+  gehören —, ist entfallen: Diese Parteien hängen jetzt am Auftrag, also hat
+  ein Standort zu jedem Zeitpunkt genau einen Kunden. Der Verkauf innerhalb
+  der Organisation ist ein Wechsel dieser Spalte, protokolliert seit 0053, und
+  die Historie zieht mit.
+
+**Was drei Migrationen getan haben**
+
+| | |
+|---|---|
+| **0078** | `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`. Der Name war falsch, seit die Tabelle auch Material und Spesen hält. 505 Zeilen Code, kein Datenverlust. |
+| **0079** | Der Standort trägt nur noch die Postadresse. `beteiligte` → `projekt_adressen` (nur am Auftrag), `beteiligten_rollen` → `adress_rollen`, `rapport_beteiligte` → `rapport_mitarbeiter`. |
+| **0080** | Anfahrt und Zugang am Auftrag, `kunden.anreise_km` und `rapporte.kunde_id` gefallen, die Vortrags-Einstellungen. |
+
+**Der Vortrag** ins nächste Projekt ist eine Einstellung je Betrieb, kein
+Gesetz. Dabei fiel auf, dass ein Einwand von mir sich selbst auflöst: Für die
+zusätzlichen Adressen ist der Vortrag eine **Verknüpfung** und kostet nichts —
+der Eigentümer kommt beim zweiten Auftrag an derselben Liegenschaft von selbst
+mit. Nur Anfahrt und Zugang sind Kopien.
+
+**Zwei Masken sind nach der Leitlinie umgebaut**: Kunden (22.08.) und Aufträge
+(23.08.). Beide: Liste links, Reiter rechts, keine scrollende Seite. Nebenher
+laden sie nur, was der offene Reiter zeigt — die Kundenmaske hatte vorher alle
+dreizehn Abfragen in einem `Promise.all`.
+
+**Eine neue Arbeitsregel** ist dabei entstanden und steht unten: Ein erkannter
+Fehler wird ganz behoben, nicht dokumentiert.
+
+---
+
+## 6. Wie wir arbeiten
 
 - **Deutsch überall** – Variablen, Funktionen, Routen, Spalten, Commit-Texte.
 - **Kommentare erklären das Warum**, gern mit dem Vorfall, der zur Entscheidung
@@ -207,7 +259,7 @@ find .next -name "* [0-9].*" -delete                              # OneDrive-Kop
 
 ---
 
-## 6. Was offen ist
+## 7. Was offen ist
 
 **Zurückgestellt am 21.08.2026: Phase 13 (Angebote, Lieferscheine, Lager).**
 Die Ideensammlung (`phase13-angebote-ideen.md`) und die Comatic-Analyse
