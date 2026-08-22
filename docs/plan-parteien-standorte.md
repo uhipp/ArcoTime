@@ -1,7 +1,13 @@
 # Plan: Parteien, Standorte und Beschriftungen
 
-Stand: 21.08.2026 · **abgenommen** · **Etappen 1 bis 3 erledigt** ·
-Etappe 4 (Standorte, 0076) als Nächstes
+Stand: 22.08.2026 · **abgenommen** · **Etappen 1 bis 3 erledigt** ·
+**Etappe 4 geschrieben** (0076 und 0077 warten auf die Ausführung)
+
+> **Abweichung vom Plan, beim Schreiben erzwungen:** Die Beteiligten stehen
+> in 0076 zusammen mit den Standorten, nicht in einer eigenen Migration
+> danach. Der Standardstandort lässt sich seinem Kunden nur über eine
+> Beteiligten-Rolle zuordnen — ohne sie gäbe es keinen Weg von `projekte` zum
+> Ort. 0077 bindet dann die Aufträge an den Standort.
 
 > **Nummern verschoben:** 0075 ist neu die Freigabe der Branchenvorlagen für
 > Arcos (Wunsch vom 21.08.: neue Vorlagen sollen ohne Deployment entstehen und
@@ -345,9 +351,19 @@ Comatic-Export), und zwei Wahrheiten gleichzeitig anzufassen wäre der Fehler,
 den wir gerade abbauen. Und die Tabellenliste des Änderungsprotokolls ist
 mitgezogen — Punkt 4 der Prüfliste, die Stelle, die man still verliert.
 
-**Etappe 4 — Standorte** (0075, 0076). Die Ebene, der Standardstandort, die
+**Etappe 4 — Standorte** (0076, 0077) — *geschrieben am 22.08.2026,
+Migrationen warten auf die Ausführung.* Die Ebene, der Standardstandort, die
 Beteiligten mit Rollen. Ab hier ist die Struktur da, die die Handwerker
 beschrieben haben.
+
+Zwei Entscheidungen beim Bauen, beide dem laufenden Betrieb geschuldet:
+**Der Standardstandort entsteht per Trigger** auf `kunden` (nur bei
+`ist_kunde`, wiederholbar, greift auch bei Import und Schnellerfassung) — und
+`projekte.standort_id` **füllt sich selbst** über einen weiteren Trigger, der
+den Standardstandort des Kunden einsetzt, wenn nichts angegeben ist. Damit ist
+die Reihenfolge Migration → Deploy gefahrlos: Der laufende Code kennt die
+Standorte nicht und legt trotzdem gültige Aufträge an. Ohne diesen Trigger
+hätte `not null` jeden neuen Auftrag abgelehnt, bis der neue Code oben ist.
 
 **Etappe 5 — Belege und Historie** (0077, 0078). Adressat je Dokument,
 Standortseite mit Historie, Aufräumen.
