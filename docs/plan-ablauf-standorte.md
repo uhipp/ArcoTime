@@ -243,25 +243,47 @@ Daumenreichweite. Dort ist Scrollen richtig.
 | — | Filter in der Liste: **Alle · nur Kunden · nur Adressen** | |
 | Route `/kunden` | **bleibt** | URLs zu ändern kostet nur kaputte Lesezeichen. Steht schon so in der Hilfe zu den Bezeichnungen. |
 
-### „Dienstleistungsklassen" heisst falsch
+### Aus Dienstleistungen werden Artikel
 
-Beobachtung des Nutzers am 22.08.:
+**Entschieden am 22.08.2026:**
 
-> Da wir auch Material, Spesen etc. als Klasse haben, frage ich mich gerade ob
-> der Titel noch richtig ist.
+> Dann nennen wir statt Dienstleistungen Artikel und statt
+> Dienstleistungsklassen Artikelklassen, so wie das im ERP-Bereich üblich ist.
+> Ein Artikel kann sowohl eine Dienstleistung wie auch ein Material sein.
 
-Er ist es nicht. Die Klasse gruppiert **alles**, was in einer Position stehen
-kann — Arbeit, Material, Spesen, Anfahrt — und sie trägt zwei Aufgaben: den
-Rabatt je Klasse und die Gruppierung der Auswertungen.
+Der Anlass: Die Klasse gruppiert **alles**, was in einer Rapportposition stehen
+kann — Arbeit, Material, Spesen, Anfahrt. „Dienstleistungsklasse" war für eine
+Dose Farbe schon immer der falsche Titel.
 
-Der naheliegende Weg wäre, sie aus dem Begriff „Dienstleistung" abzuleiten. Das
-geht nicht: Aus „Leistung" würde „Leistungklasse", das Fugen-s lässt sich nicht
-ableiten (dieselbe Falle wie bei „Auftragleitung", siehe Masken-Leitlinie
-Abschnitt 7). **Vorschlag:** In der Oberfläche heisst es einfach **„Klassen"**,
-mit dem Untertitel „Gruppierung für Rabatte und Auswertungen". Wer ein anderes
-Wort will, bekommt einen eigenen Begriff `klasse` in den Bezeichnungen. Die
-Tabelle behält ihren Namen — sie umzubenennen wäre Aufwand ohne Nutzen, weil
-sie in acht Dateien vorkommt und niemand sie sieht.
+| bisher | neu |
+|---|---|
+| Dienstleistungen | **Artikel** |
+| Dienstleistungsklassen | **Artikelklassen** |
+| Dienstleistungskatalog | **Artikelstamm** |
+
+Bemerkenswert daran: Diese Lösung **folgt der bestehenden Regel**, während mein
+Vorschlag („Klassen") sie umgehen wollte. Aus der Masken-Leitlinie, Abschnitt 7:
+Zusammengesetzte Wörter bleiben fest, weil sich das Fugen-s nicht ableiten
+lässt. „Artikelklassen" ist genau so ein festes zusammengesetztes Wort — es
+bleibt stehen, auch wenn ein Betrieb den Artikel „Leistung" nennt.
+
+**Umfang, gemessen:** 87 Dateien und 505 Zeilen erwähnen „dienstleistung". Die
+sichtbaren Beschriftungen kommen aber schon aus den Bezeichnungen (0073), das
+Wort steht also meist nur im Code. Im Comatic-Export kommt es **nicht** vor —
+es gibt keine externe Zusage, die bricht.
+
+**Empfehlung zum Umfang:** Beschriftungen und Vorgaben umstellen, **Tabellen-
+und Spaltennamen behalten**. `dienstleistungen` ist ein veralteter, aber kein
+irreführender Name — anders als `beteiligte`/`rapport_beteiligte`, wo zwei fast
+gleiche Namen Verschiedenes bedeuten. Umbenennen kostet 505 Zeilen Risiko für
+null Nutzen an der Oberfläche. Im Typ und in der Hilfe steht dafür ein Satz,
+der die Zuordnung festhält.
+
+Konkret in der Migration: die **Vorgabe** des Begriffs `dienstleistung` wird
+„Artikel/Artikel" (Einzahl und Mehrzahl sind gleich, Genus m), die drei
+Branchenvorlagen ziehen mit, und die bestehenden Zeilen unserer beiden
+Mandanten werden mitgeändert. Ein Kundenmandant, der bewusst ein eigenes Wort
+gesetzt hat, behält es — dafür gibt es die Bezeichnungen.
 
 **Zwei Tabellen mit fast gleichem Namen für Verschiedenes** — umzubenennen,
 solange fast keine Daten darin stehen:
@@ -389,7 +411,7 @@ schlechteste aller Varianten.
 | **0078** | `standorte.kunde_id` (aus der Beteiligtenzeile befüllt, dann not null) · Rolle „Kunde" entfernen · `standorte.zugang`, `anreise_km`, `notiz` löschen · `ansprechpersonen.standort_id` löschen |
 | **0079** | `projekte.anreise_km`, `projekte.zugang` · Werte aus `kunden.anreise_km` je Projekt nachziehen · `kunden.anreise_km` löschen · `rapporte.kunde_id` löschen (steht seit 0071 aus) |
 | **0080** | Umbenennungen: `beteiligte` → `projekt_adressen` (nur noch `projekt_id`), `beteiligten_rollen` → `adress_rollen`, `rapport_beteiligte` → `rapport_mitarbeiter` · Bezug der Rollenzeilen von Standort auf Projekt umstellen |
-| **0081** | Begriff `adresse` in `begriffe` und den Vorlagen · Einstellungsfelder für den Vortrag an `organisationen` |
+| **0081** | Begriffe: `adresse` neu, Vorgabe für `dienstleistung` auf „Artikel" · Branchenvorlagen und die Zeilen unserer Mandanten mitziehen · Einstellungsfelder für den Vortrag an `organisationen` |
 
 Für jede berührte Tabelle gilt die Zehn-Punkte-Prüfliste aus
 `plan-parteien-standorte.md`, Abschnitt 11 (organisation_id, RLS,
@@ -410,7 +432,7 @@ einen Stand mit echten Fehlern geprüft.
 | **3** | Rapport-Dokument: Ansprechperson und zusätzliche Adressen mit Nummer, Navigation auf den Einsatzort | Hans Chefmaler braucht nur den Rapport |
 | **4** | Handy-Ansicht des Rapports (Nacheinander, 44 px, Timer/Anruf/Navigation unten) | Der Rapport lässt sich unterwegs fertig machen |
 | **5** | 0080/0081: Umbenennungen, „Adressen" mit Filter | Die Wörter stimmen |
-| **6** | Auswertungen: Gruppierung je Klasse, je Projekt, je Standort — mit Menge und CHF | Der Nutzen von Variante A ist sichtbar |
+| **6** | Auswertungen: Gruppierung je Artikelklasse, je Projekt, je Standort — mit Menge und CHF | Der Nutzen von Variante A ist sichtbar |
 
 Etappe 1 und 2 gehören zusammen und sollten nicht getrennt ausgeliefert
 werden: Zwischen ihnen gibt es den Zugang nirgends.
@@ -421,7 +443,8 @@ werden: Zwischen ihnen gibt es den Zugang nirgends.
 
 **Entschieden am 22.08.2026**
 
-Standort trägt nur die Postadresse · Häkchen Standardadresse · Stilllegung über
+Aus Dienstleistungen werden **Artikel**, aus Dienstleistungsklassen
+**Artikelklassen** (Tabellennamen bleiben) · Standort trägt nur die Postadresse · Häkchen Standardadresse · Stilllegung über
 `aktiv` (Verkauf innerhalb der Organisation ist ein Umzug mit Historie, Verkauf
 nach draussen eine Stilllegung) · alles Betriebswissen am Projekt · Vortrag vom
 letzten Projekt am selben Standort, **einstellbar je Betrieb** · beim ersten
@@ -434,25 +457,44 @@ Tabellennamen · Historie nach dem Verkauf bleibt am Standort, `projekte.kunde_i
 wird nicht umgeschrieben · erst Plan, dann eine Migrationsfolge ohne
 Zwischenzustand.
 
-**Offen — zwei Fragen, die aus den Antworten von heute neu entstanden sind:**
+**Offen — eine Frage, und zwar aus dem Malergewerbe selbst:**
 
-1. **Menge je Klasse: Menge von was?** Eine Klasse kann Positionen in mehreren
-   Einheiten enthalten — Stunden, km, Pauschalen, Stück. Eine Summe „17" über
-   verschiedene Einheiten ist bedeutungslos. Zwei Wege:
+**Ist eine Artikelklasse immer einheitenrein?** Die Aussage vom 22.08. lautet:
 
-   - **Klasse × Einheit** als Zeile: „Material · Stück · 42 · CHF 1'260" und
-     darunter „Material · Liter · 18 · CHF 340". Immer korrekt, aber mehr
-     Zeilen.
-   - **Eine Zeile je Klasse**, die Menge mehrteilig: „12.5 h · 340 km".
-     Kompakter, aber nicht sortierbar nach Menge.
+> Innerhalb einer Klasse gibt es nicht unterschiedliche Einheiten. Klasse
+> Dienstleistungen sind immer in Std.
 
-   Ich empfehle **Klasse × Einheit**, weil die Auswertung sonst nur noch
-   angeschaut und nicht mehr gerechnet werden kann. Deine Entscheidung.
+Für Arbeit stimmt das ohne Zweifel. Bei **Material** ist der eigene Fall der
+Gegenbeweis: Farbe in Liter, Pinsel in Stück, Abdeckvlies in m² — alle drei
+sind Material. Summiert die Auswertung dann „60" über eine Klasse, ist die Zahl
+bedeutungslos, und niemand sieht es der Zeile an.
 
-2. **Heisst die Gruppierung künftig „Klassen"?** Siehe Abschnitt 7. Mein
-   Vorschlag: in der Oberfläche „Klassen", die Tabelle bleibt wie sie heisst.
-   Ein eigener Begriff `klasse` in den Bezeichnungen, wenn ein Betrieb ein
-   anderes Wort braucht.
+Die Datenbank hilft heute nicht: `einheit` steht am Artikel (seit 0022 als
+freier Wert gegen die Einheitenliste geprüft), die Klasse hat keine Einheit.
+Nichts verhindert also die gemischte Klasse.
+
+Zwei Wege, beide sauber:
+
+- **Klasse ist einheitenrein — und die Anwendung erzwingt es.** Die
+  Artikelklasse bekommt ihre Einheit, ein Artikel mit abweichender Einheit wird
+  abgelehnt („Die Klasse ‚Material' führt Stück; dieser Artikel hat Liter").
+  Dann brauchst du Material-Stück, Material-Liter, Material-m² als eigene
+  Klassen — mehr Klassen, aber jede Menge ist summierbar. Das ist die
+  Anwendung der Regel aus Abschnitt 8a auf diesen Fall.
+- **Klasse darf mischen — die Auswertung gruppiert Klasse × Einheit.** Eine
+  Zeile „Material · Liter · 18 · CHF 340", darunter „Material · Stück · 42 ·
+  CHF 1'260". Weniger Klassen, mehr Zeilen, und die Rabattregel je Klasse
+  bleibt so grob wie heute.
+
+Ich empfehle den **zweiten** Weg: Er passt zur Praxis (Material ist
+naturgemäss gemischt), er braucht keine Umstellung des Artikelstamms, und die
+Auswertung bleibt in jedem Fall rechenbar. Der erste Weg wäre strenger, aber er
+verlangt vom Anwender eine Klassenstruktur nach Einheiten statt nach Sachlogik
+— und die Klasse trägt auch die Rabattregel, wo die Sachlogik zählt.
+
+Wenn in deinen Betrieben eine Klasse tatsächlich immer nur eine Einheit hat,
+kostet der zweite Weg nichts: Dann steht je Klasse genau eine Zeile, und die
+Spalte „Einheit" bestätigt es nur.
 
 **Was die Auswertungen heute schon können** — damit die Etappe 6 nicht grösser
 aussieht als sie ist:
@@ -462,7 +504,7 @@ aussieht als sie ist:
 | Filter Zeitraum, Kunde, Projekt, Klasse, Mitarbeitende | ✔ | |
 | Gruppierung je **Projekt** mit Stunden, Betrag, Anzahl | ✔ | |
 | Summenzeile Stunden und CHF | ✔ | |
-| Gruppierung je **Klasse** | | ✗ |
+| Gruppierung je **Artikelklasse** | | ✗ |
 | **Menge** statt nur Stunden (km, Stück, Pauschalen gehen heute unter) | | ✗ |
 | Gruppierung je **Standort** | | ✗ |
 
