@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
 import { heuteIso } from "@/lib/date-utils";
 import { normalisiereZeit } from "@/lib/zeit";
-import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
+import { pruefeGegenArtikel } from "@/lib/zeiteintrag-pruefung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { mitNamePraefix } from "@/lib/mitarbeiter-praefix";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
@@ -312,7 +312,7 @@ export async function fuegePositionHinzu(
 
   const werte = {
     projekt_id: rapport.projekt_id,
-    dienstleistung_id: String(formData.get("dienstleistung_id") ?? "").trim(),
+    artikel_id: String(formData.get("artikel_id") ?? "").trim(),
     // Datum und ausführende Person kommen vom Rapport, nicht aus dem
     // Positionsformular – sie gelten für den ganzen Einsatz.
     datum: rapport.datum,
@@ -333,7 +333,7 @@ export async function fuegePositionHinzu(
   const gesperrt = await monatGesperrt(supabase, werte.mitarbeiter_id, werte.datum);
   if (gesperrt) return { fehler: gesperrt };
 
-  const fehler = await pruefeGegenDienstleistung(supabase, werte);
+  const fehler = await pruefeGegenArtikel(supabase, werte);
   if (fehler) {
     return { fehler };
   }
@@ -379,7 +379,7 @@ export async function fuegePositionHinzu(
   revalidatePath("/zeiterfassung");
   // Zurück ins leere Positionsformular – siehe components/auto-fokus.tsx.
   redirect(
-    mitErfolg(`/rapporte/${rapportId}?fokus=pos_dienstleistung`, "Position hinzugefügt.")
+    mitErfolg(`/rapporte/${rapportId}?fokus=pos_artikel`, "Position hinzugefügt.")
   );
 }
 
@@ -406,7 +406,7 @@ export async function aktualisierePosition(
   const mengeRoh = str(formData.get("menge"));
 
   const werte = {
-    dienstleistung_id: String(formData.get("dienstleistung_id") ?? "").trim(),
+    artikel_id: String(formData.get("artikel_id") ?? "").trim(),
     start_zeit: normalisiereZeit(str(formData.get("start_zeit"))),
     end_zeit: normalisiereZeit(str(formData.get("end_zeit"))),
     dauer_minuten: Number(formData.get("dauer_minuten") ?? 0),
@@ -431,7 +431,7 @@ export async function aktualisierePosition(
   );
   if (gesperrt) return { fehler: gesperrt };
 
-  const fehler = await pruefeGegenDienstleistung(supabase, werte);
+  const fehler = await pruefeGegenArtikel(supabase, werte);
   if (fehler) {
     return { fehler };
   }
@@ -455,17 +455,17 @@ export async function aktualisierePosition(
   // Preis und MWSt-Satz bleiben unangetastet: Sie wurden beim Erfassen
   // eingefroren (0003 und 0021) und dürfen sich durch eine Korrektur der
   // Beschreibung oder Menge nicht ändern. Nur bei gewechselter
-  // Dienstleistung ergibt der alte Preis keinen Sinn mehr – dann neu
+  // Artikel ergibt der alte Preis keinen Sinn mehr – dann neu
   // ermitteln lassen, indem beide Felder geleert werden; der Trigger
   // füllt sie wieder.
   const { data: bisher } = await supabase
     .from("zeiteintraege")
-    .select("dienstleistung_id, mitarbeiter_id")
+    .select("artikel_id, mitarbeiter_id")
     .eq("id", zeiteintragId)
     .single();
 
-  const dienstleistungGewechselt =
-    bisher != null && bisher.dienstleistung_id !== werte.dienstleistung_id;
+  const artikelGewechselt =
+    bisher != null && bisher.artikel_id !== werte.artikel_id;
 
   // Namenszeile auf die Person der Position, nicht auf die des Kopfs: Bei
   // einem Team leistet nicht die verantwortliche Person jede Stunde, und
@@ -483,7 +483,7 @@ export async function aktualisierePosition(
       ...(istArbeitszeit
         ? { menge: null }
         : { dauer_minuten: null, start_zeit: null, end_zeit: null }),
-      ...(dienstleistungGewechselt ? { preis: null, mwst_code: null, mwst_satz: null } : {}),
+      ...(artikelGewechselt ? { preis: null, mwst_code: null, mwst_satz: null } : {}),
     })
     .eq("id", zeiteintragId)
     .select("id");
@@ -507,7 +507,7 @@ export async function aktualisierePosition(
   // Erfassen. Ohne den Parameter beginnt die Seite wieder oben, und wer
   // eine Position korrigiert hat, scrollt jedes Mal von Hand zurück.
   redirect(
-    mitErfolg(`/rapporte/${rapportId}?fokus=pos_dienstleistung`, "Position gespeichert.")
+    mitErfolg(`/rapporte/${rapportId}?fokus=pos_artikel`, "Position gespeichert.")
   );
 }
 
@@ -525,7 +525,7 @@ export async function loeschePosition(rapportId: string, zeiteintragId: string) 
 
   revalidatePath(`/rapporte/${rapportId}`);
   redirect(
-    mitErfolg(`/rapporte/${rapportId}?fokus=pos_dienstleistung`, "Position entfernt.")
+    mitErfolg(`/rapporte/${rapportId}?fokus=pos_artikel`, "Position entfernt.")
   );
 }
 
@@ -1325,7 +1325,7 @@ export async function stoppeZeitAnPosition(rapportId: string, positionId: string
   revalidatePath("/zeiterfassung");
   redirect(
     mitErfolg(
-      `/rapporte/${rapportId}?fokus=pos_dienstleistung`,
+      `/rapporte/${rapportId}?fokus=pos_artikel`,
       `Timer gestoppt – ${dauerMinuten} Minuten übernommen.`
     )
   );

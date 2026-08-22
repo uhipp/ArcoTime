@@ -7,7 +7,7 @@ import { heuteIso } from "@/lib/date-utils";
 import { mitErfolg } from "@/lib/erfolg";
 import { ladeTagesbelegung, pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { normalisiereZeit } from "@/lib/zeit";
-import { pruefeGegenDienstleistung } from "@/lib/zeiteintrag-pruefung";
+import { pruefeGegenArtikel } from "@/lib/zeiteintrag-pruefung";
 import { oeffneAnfrageWieder } from "@/lib/anfrage-wieder-oeffnen";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
@@ -22,7 +22,7 @@ function zeiteintragFromForm(formData: FormData) {
 
   return {
     projekt_id: String(formData.get("projekt_id")),
-    dienstleistung_id: String(formData.get("dienstleistung_id")),
+    artikel_id: String(formData.get("artikel_id")),
     mitarbeiter_id: str(formData.get("mitarbeiter_id")),
     datum: str(formData.get("datum")) ?? heuteIso(),
     // Das Zeitfeld ist ein Textfeld (siehe lib/zeit.ts) – der Browser
@@ -90,7 +90,7 @@ export async function createZeiteintrag(
   );
   if (gesperrt) return { fehler: gesperrt };
 
-  const fehler = await pruefeGegenDienstleistung(supabase, values);
+  const fehler = await pruefeGegenArtikel(supabase, values);
   if (fehler) {
     return { fehler: fehler };
   }
@@ -132,7 +132,7 @@ export async function updateZeiteintrag(
     return { fehler: zukunft };
   }
 
-  const fehler = await pruefeGegenDienstleistung(supabase, values);
+  const fehler = await pruefeGegenArtikel(supabase, values);
   if (fehler) {
     return { fehler: fehler };
   }
@@ -246,7 +246,7 @@ async function starteTimer(formData: FormData): Promise<FormularErgebnis> {
     .from("zeiteintraege")
     .insert({
       projekt_id: values.projekt_id,
-      dienstleistung_id: values.dienstleistung_id,
+      artikel_id: values.artikel_id,
       mitarbeiter_id: mitarbeiterId,
       user_id: userData.user?.id,
       datum: values.datum,

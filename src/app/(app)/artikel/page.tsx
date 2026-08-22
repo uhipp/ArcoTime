@@ -2,25 +2,25 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { begriff, getBegriffe, neuLabel } from "@/lib/begriffe";
 
-export default async function DienstleistungenPage() {
+export default async function ArtikelPage() {
   const supabase = await createClient();
   // Wie dieser Betrieb den Bereich nennt (0073).
   const begriffe = await getBegriffe();
 
-  const { data: dienstleistungen, error } = await supabase
-    .from("dienstleistungen")
-    .select("*, dienstleistungsklassen(id, bezeichnung), mwst_codes(id, code)")
+  const { data: artikel, error } = await supabase
+    .from("artikel")
+    .select("*, artikelklassen(id, bezeichnung), mwst_codes(id, code)")
     .order("bezeichnung");
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">{begriff(begriffe, "dienstleistung", "mehrzahl")}</h1>
+        <h1 className="text-2xl font-semibold">{begriff(begriffe, "artikel", "mehrzahl")}</h1>
         <Link
-          href="/dienstleistungen/neu"
+          href="/artikel/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + {neuLabel(begriffe, "dienstleistung")}
+          + {neuLabel(begriffe, "artikel")}
         </Link>
       </div>
 
@@ -43,17 +43,17 @@ export default async function DienstleistungenPage() {
             </tr>
           </thead>
           <tbody>
-            {dienstleistungen?.map((d) => (
+            {artikel?.map((d) => (
               <tr key={d.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">
                   <Link
-                    href={`/dienstleistungen/${d.id}`}
+                    href={`/artikel/${d.id}`}
                     className="text-arcos-steel hover:underline"
                   >
                     {d.bezeichnung}
                   </Link>
                 </td>
-                <td className="px-4 py-2">{d.dienstleistungsklassen?.bezeichnung ?? "–"}</td>
+                <td className="px-4 py-2">{d.artikelklassen?.bezeichnung ?? "–"}</td>
                 <td className="px-4 py-2">
                   CHF {Number(d.preis).toFixed(2)} / {d.einheit}
                 </td>
@@ -72,10 +72,10 @@ export default async function DienstleistungenPage() {
                 </td>
               </tr>
             ))}
-            {dienstleistungen?.length === 0 && (
+            {artikel?.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
-                  Keine {begriff(begriffe, "dienstleistung", "mehrzahl")} gefunden.
+                  Keine {begriff(begriffe, "artikel", "mehrzahl")} gefunden.
                 </td>
               </tr>
             )}

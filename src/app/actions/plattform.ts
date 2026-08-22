@@ -541,7 +541,7 @@ const BEGRIFF_SCHLUESSEL = [
   "projekt",
   "anfrage",
   "rapport",
-  "dienstleistung",
+  "artikel",
 ] as const;
 
 export async function speichereBegriffVorlagePlattform(formData: FormData) {

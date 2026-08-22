@@ -182,11 +182,11 @@ export async function setzeStatus(id: string, status: AnfrageStatus) {
 }
 
 // Schliesst eine Anfrage ab und erzeugt dabei IMMER einen Zeiteintrag
-// (Dienstleistung + Dauer) – auch wenn nicht verrechnet wird (dann mit
+// (Artikel + Dauer) – auch wenn nicht verrechnet wird (dann mit
 // Rabatt 100%). So bleibt die tatsächlich aufgewendete Zeit vollständig
 // erfasst, was Soll/Ist-Stundenauswertungen je Mitarbeitendem erst möglich
 // macht (nicht verrechenbare Arbeit läuft dazu über ein internes Projekt +
-// eine unproduktive Dienstleistung in den Stammdaten).
+// eine unproduktive Artikel in den Stammdaten).
 async function erledigeAnfrage(
   id: string,
   _bisher: FormularErgebnis,
@@ -200,32 +200,32 @@ async function erledigeAnfrage(
   // sich projekt_id und beschreibung der beiden Bereiche gegenseitig
   // überschreiben.
   const projekt_id = String(formData.get("zeit_projekt_id") ?? "").trim();
-  const dienstleistung_id = String(formData.get("zeit_dienstleistung_id") ?? "").trim();
+  const artikel_id = String(formData.get("zeit_artikel_id") ?? "").trim();
   const dauer_minuten = Number(formData.get("zeit_dauer_minuten") ?? 0);
   const zeitText = String(formData.get("zeit_beschreibung") ?? "").trim();
   const mitarbeiter_id = String(formData.get("zeit_mitarbeiter_id") ?? "").trim();
   const rabatt_prozent = Number(formData.get("zeit_rabatt_prozent") ?? 0);
 
-  if (!projekt_id || !dienstleistung_id || dauer_minuten <= 0) {
-    return { fehler: "Bitte Projekt, Dienstleistung und eine gültige Dauer angeben. Für nicht verrechenbare Arbeit bitte das interne Projekt wählen und Rabatt auf 100% setzen." };
+  if (!projekt_id || !artikel_id || dauer_minuten <= 0) {
+    return { fehler: "Bitte Projekt, Artikel und eine gültige Dauer angeben. Für nicht verrechenbare Arbeit bitte das interne Projekt wählen und Rabatt auf 100% setzen." };
   }
 
-  // Rabattsperre der Dienstleistung gilt auch hier – sonst liesse sich ein
+  // Rabattsperre der Artikel gilt auch hier – sonst liesse sich ein
   // gesperrter Teilrabatt über den Umweg "Anfrage erledigen" doch vergeben.
   // 100% bleibt zulässig (= nicht verrechnet), siehe 0022.
-  const { data: dienstleistung } = await supabase
-    .from("dienstleistungen")
+  const { data: artikel } = await supabase
+    .from("artikel")
     .select("bezeichnung, rabatt_erlaubt")
-    .eq("id", dienstleistung_id)
+    .eq("id", artikel_id)
     .single();
 
   if (
-    dienstleistung &&
-    !dienstleistung.rabatt_erlaubt &&
+    artikel &&
+    !artikel.rabatt_erlaubt &&
     rabatt_prozent > 0 &&
     rabatt_prozent < 100
   ) {
-    return { fehler: `Für "${dienstleistung.bezeichnung}" sind keine Teilrabatte zugelassen (nur 0% oder 100%).` };
+    return { fehler: `Für "${artikel.bezeichnung}" sind keine Teilrabatte zugelassen (nur 0% oder 100%).` };
   }
 
   const { data: userData } = await supabase.auth.getUser();
@@ -262,7 +262,7 @@ async function erledigeAnfrage(
     .from("zeiteintraege")
     .insert({
       projekt_id,
-      dienstleistung_id,
+      artikel_id,
       mitarbeiter_id: ausfuehrendeId,
       user_id: userData.user?.id,
       datum: heuteIso(),

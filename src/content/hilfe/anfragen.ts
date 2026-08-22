@@ -71,7 +71,7 @@ Mehr dazu unter [Benachrichtigungen](/hilfe/benachrichtigungen).
 
 Auf der Detailseite stehen drei Wege zur Auswahl. Bei allen dreien werden Änderungen an Titel, Beschreibung und Zuweisung mitgespeichert – du musst vorher nicht separat auf "Speichern" klicken.
 
-**Erledigen mit Zeiteintrag** ist der übliche Weg: Projekt, Dienstleistung und Dauer angeben, fertig. Auch nicht verrechnete Arbeit gehört hier hinein (dann mit Rabatt 100%), damit die tatsächlich aufgewendete Zeit vollständig erfasst bleibt.
+**Erledigen mit Zeiteintrag** ist der übliche Weg: Projekt, Artikel und Dauer angeben, fertig. Auch nicht verrechnete Arbeit gehört hier hinein (dann mit Rabatt 100%), damit die tatsächlich aufgewendete Zeit vollständig erfasst bleibt.
 
 **Erledigen mit Rapport** legt einen [Rapport](/hilfe/rapporte)-Entwurf für diesen Kunden an und übernimmt Titel und Beschreibung der Anfrage als Bemerkung. Die einzelnen Positionen erfasst du danach direkt im Rapport – ArcoTime führt dich dorthin. Der richtige Weg, wenn aus der Anfrage ein Einsatz vor Ort mit mehreren Leistungen wird.
 

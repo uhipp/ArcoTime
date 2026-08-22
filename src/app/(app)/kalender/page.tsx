@@ -96,7 +96,7 @@ export default async function KalenderPage({
 
   // Anfragen erscheinen anhand ihres Wiedervorlage-Datums im Kalender – die
   // Klasse-Filterung betrifft nur Zeiteinträge (Anfragen haben keine
-  // Dienstleistungsklasse), daher bei aktivem Klasse-Filter bewusst keine
+  // Artikelklasse), daher bei aktivem Klasse-Filter bewusst keine
   // Anfragen anzeigen, statt unpassende Treffer zu zeigen.
   let anfrageQuery = params.klasse_id
     ? null
@@ -117,7 +117,7 @@ export default async function KalenderPage({
   // wichtiger als die erfassten Zeiten: Der Kalender beantwortet die Frage
   // "wer ist wann wo eingeteilt", und die Zeiterfassung kommt erst danach.
   // Wie bei den Anfragen entfallen sie bei aktivem Klassenfilter – ein
-  // Rapportkopf kennt keine Dienstleistungsklasse.
+  // Rapportkopf kennt keine Artikelklasse.
   // Filter als match-Objekt statt als Kette von Neuzuweisungen: Letzteres
   // treibt die Typherleitung von PostgREST in die Tiefe, bis TypeScript
   // aufgibt ("Type instantiation is excessively deep").
@@ -169,7 +169,7 @@ export default async function KalenderPage({
   ] = await Promise.all([
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
-    supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
+    supabase.from("artikelklassen").select("id, bezeichnung").order("sortierung"),
     // Farb-Zuordnung wird für ALLE gebraucht (auch nicht-Admins sehen im
     // gemeinsamen Anfragen-Board Kolleg:innen-Zuweisungen), nicht nur für
     // den Mitarbeitende-Filter, der weiterhin admin-exklusiv bleibt.

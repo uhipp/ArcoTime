@@ -6,6 +6,10 @@
     "eintraege": [
       {
         "typ": "verbessert",
+        "text": "**Aus Dienstleistungen werden Artikel**, aus Dienstleistungsklassen Artikelklassen. Der Grund: In der Liste stehen längst auch Material, Spesen und Anfahrt – eine Dose Farbe ist keine Dienstleistung. „Artikel“ ist im ERP-Bereich das übliche Wort und deckt beides. Wer ein anderes Wort will, setzt es unter Einstellungen → Bezeichnungen; die Hilfeseite findet man weiterhin, wenn man „Dienstleistung“ sucht. Die Adresse der Seite heisst neu /artikel."
+      },
+      {
+        "typ": "verbessert",
         "text": "**Die Kontaktangaben des Betriebs stehen jetzt im Reiter „Adresse“**, nicht mehr bei den Ansprechpersonen: Sie gehören der Adresse des Kunden und keiner Person. Der Reiter heisst deshalb nur noch „Ansprechpersonen“."
       },
       {

@@ -24,7 +24,7 @@ type Eintrag = {
 const BEREICHE: Record<string, string> = {
   kunden: "Kunde",
   projekte: "Projekt",
-  dienstleistungen: "Dienstleistung",
+  artikel: "Artikel",
   zeiteintraege: "Zeiteintrag",
   rapporte: "Rapport",
   rapport_beteiligte: "Rapport – Beteiligte",
@@ -35,7 +35,7 @@ const BEREICHE: Record<string, string> = {
   organisationen: "Organisation",
   kundenpreise: "Kundenpreis",
   kundenrabatte: "Kundenrabatt",
-  dienstleistungsklassen: "Dienstleistungsklasse",
+  artikelklassen: "Artikelklasse",
   einheiten: "Einheit",
   mwst_codes: "MWSt-Code",
   rabattsaetze: "Rabattsatz",
@@ -137,7 +137,7 @@ export default async function ProtokollPage({
         >
           Alle Bereiche
         </Link>
-        {["kunden", "projekte", "zeiteintraege", "rapporte", "dienstleistungen", "profiles"].map(
+        {["kunden", "projekte", "zeiteintraege", "rapporte", "artikel", "profiles"].map(
           (t) => (
             <Link
               key={t}

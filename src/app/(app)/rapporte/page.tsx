@@ -169,7 +169,7 @@ export default async function RapportePage({
   // öffnen.
   const { data: laufende } = await supabase
     .from("zeiteintraege")
-    .select("id, rapport_id, timer_gestartet_um, mitarbeiter_id, dienstleistung_id")
+    .select("id, rapport_id, timer_gestartet_um, mitarbeiter_id, artikel_id")
     .not("timer_gestartet_um", "is", null)
     .not("rapport_id", "is", null);
 

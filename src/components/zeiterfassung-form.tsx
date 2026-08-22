@@ -8,7 +8,7 @@ import { holeTagesbelegung } from "@/app/actions/zeiteintraege";
 import { ZeitFeld } from "@/components/zeit-feld";
 import { minutenZwischen } from "@/lib/zeit";
 import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
-import type { Dienstleistung, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
+import type { Artikel, Kunde, Projekt, Zeiteintrag } from "@/lib/types";
 import { DatumFeld } from "@/components/datum-feld";
 import Link from "next/link";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
@@ -27,8 +27,8 @@ type ProjektOption = Pick<Projekt, "id" | "bezeichnung" | "status" | "kunde_id">
     anreise_km?: number | null;
   } | null;
 };
-type DienstleistungOption = Pick<
-  Dienstleistung,
+type ArtikelOption = Pick<
+  Artikel,
   | "id"
   | "bezeichnung"
   | "beschreibung"
@@ -40,7 +40,7 @@ type DienstleistungOption = Pick<
   | "menge_aus_anreise"
 >;
 
-// Rabatt eines Kunden auf eine ganze Dienstleistungsklasse.
+// Rabatt eines Kunden auf eine ganze Artikelklasse.
 type KlassenRabatt = { kunde_id: string; klasse_id: string; rabatt_prozent: number };
 
 // Zahlenfelder sind mit 0 vorbelegt – wer hineinklickt, will die 0 ersetzen,
@@ -95,7 +95,7 @@ function LaufendeZeit({ seit }: { seit: string }) {
 export function ZeiterfassungForm({
   zeiteintrag,
   projekte,
-  dienstleistungen,
+  artikel,
   mitarbeitende,
   kunden,
   rabattsaetze,
@@ -107,7 +107,7 @@ export function ZeiterfassungForm({
 }: {
   zeiteintrag?: Zeiteintrag;
   projekte: ProjektOption[];
-  dienstleistungen: DienstleistungOption[];
+  artikel: ArtikelOption[];
   mitarbeitende: { id: string; name: string }[];
   kunden: KundeOption[];
   rabattsaetze: Rabattsatz[];
@@ -170,8 +170,8 @@ export function ZeiterfassungForm({
   // eine der beiden Zeiten nochmal anfasst.
   const [dauerManuell, setDauerManuell] = useState(false);
 
-  const [dienstleistungId, setDienstleistungId] = useState(
-    zeiteintrag?.dienstleistung_id ?? ""
+  const [artikelId, setArtikelId] = useState(
+    zeiteintrag?.artikel_id ?? ""
   );
   // Zeilenenden vereinheitlichen: Ein <textarea> schickt CRLF ab, in der
   // Datenbank kann also beides stehen. Alles Weitere hier zerlegt an "\n"
@@ -181,19 +181,19 @@ export function ZeiterfassungForm({
     (zeiteintrag?.beschreibung ?? "").replace(/\r\n?/g, "\n")
   );
   const beschreibungRef = useRef<HTMLTextAreaElement | null>(null);
-  const gewaehlteDienstleistung = dienstleistungen.find((d) => d.id === dienstleistungId);
+  const gewaehlteArtikel = artikel.find((d) => d.id === artikelId);
 
   // Mengenartikel (km, Spesen, Kleinmaterial) werden über eine Stückzahl
   // erfasst statt über Von/Bis – ein Kilometer hat keine Dauer. Solange
   // nichts gewählt ist, bleibt die Zeitmaske sichtbar (häufigster Fall).
   const istMengenartikel =
-    gewaehlteDienstleistung != null && !gewaehlteDienstleistung.zaehlt_als_arbeitszeit;
-  const einheit = gewaehlteDienstleistung?.einheit ?? "Stück";
+    gewaehlteArtikel != null && !gewaehlteArtikel.zaehlt_als_arbeitszeit;
+  const einheit = gewaehlteArtikel?.einheit ?? "Stück";
 
   // Bei gesperrten Artikeln bleibt nur "kein Rabatt" oder "100% = nicht
   // verrechnet" – Teilrabatte auf z.B. Reisespesen sind nicht erwünscht.
   const rabattGesperrt =
-    gewaehlteDienstleistung != null && !gewaehlteDienstleistung.rabatt_erlaubt;
+    gewaehlteArtikel != null && !gewaehlteArtikel.rabatt_erlaubt;
   const waehlbareRabatte = rabattGesperrt
     ? rabattsaetze.filter((r) => Number(r.prozent) === 0 || Number(r.prozent) === 100)
     : rabattsaetze;
@@ -252,22 +252,24 @@ export function ZeiterfassungForm({
   const hatUeberschneidung = (belegung?.ueberschneidungen.length ?? 0) > 0;
 
   // Vorgeschlagener Rabatt aus den Stammdaten. Reihenfolge:
-  //   1. Dienstleistung erlaubt keinen Teilrabatt -> 0
-  //   2. Rabatt des Kunden auf die Klasse der Dienstleistung (spezifischer)
+  //   1. Artikel erlaubt keinen Teilrabatt -> 0
+  //   2. Rabatt des Kunden auf die Klasse der Artikel (spezifischer)
   //   3. Standardrabatt des Kunden
   // Nur ein Vorschlag: Gespeichert wird der Wert am Eintrag, damit spätere
   // Stammdatenänderungen bestehende Einträge nicht verändern.
-  function vorschlagFuer(projektIdNeu: string, dienstleistungIdNeu: string): string | null {
+  function vorschlagFuer(projektIdNeu: string, artikelIdNeu: string): string | null {
     const projekt = projekteListe.find((p) => p.id === projektIdNeu);
-    const dienstleistung = dienstleistungen.find((d) => d.id === dienstleistungIdNeu);
+    // "gewaehlt" und nicht "artikel": Die Liste heisst seit 0078 selbst
+    // artikel, und ein gleichnamiger Einzelwert würde sie verdecken.
+    const gewaehlt = artikel.find((a) => a.id === artikelIdNeu);
     if (!projekt) return null;
 
-    if (dienstleistung && !dienstleistung.rabatt_erlaubt) return "0";
+    if (gewaehlt && !gewaehlt.rabatt_erlaubt) return "0";
 
     const kundeId = projekt.kunde_id;
-    if (kundeId && dienstleistung?.klasse_id) {
+    if (kundeId && gewaehlt?.klasse_id) {
       const klassenRabatt = klassenRabatte.find(
-        (r) => r.kunde_id === kundeId && r.klasse_id === dienstleistung.klasse_id
+        (r) => r.kunde_id === kundeId && r.klasse_id === gewaehlt.klasse_id
       );
       if (klassenRabatt) return String(Number(klassenRabatt.rabatt_prozent));
     }
@@ -290,16 +292,16 @@ export function ZeiterfassungForm({
   function mengeMitAnreise(
     aktuell: string,
     alteProjektId: string,
-    alteDienstleistungId: string,
+    alteArtikelId: string,
     neueProjektId: string,
-    neueDienstleistungId: string
+    neueArtikelId: string
   ): string {
     const neueTraegt =
-      dienstleistungen.find((d) => d.id === neueDienstleistungId)?.menge_aus_anreise ?? false;
+      artikel.find((d) => d.id === neueArtikelId)?.menge_aus_anreise ?? false;
     if (!neueTraegt) return aktuell;
 
     const alteTraegt =
-      dienstleistungen.find((d) => d.id === alteDienstleistungId)?.menge_aus_anreise ?? false;
+      artikel.find((d) => d.id === alteArtikelId)?.menge_aus_anreise ?? false;
     const alterVorschlag = alteTraegt ? anreiseVon(alteProjektId) : "";
     if (aktuell !== "" && aktuell !== alterVorschlag) return aktuell;
 
@@ -311,23 +313,23 @@ export function ZeiterfassungForm({
     const alteProjektId = projektId;
     setProjektId(neueProjektId);
     setMengeText((aktuell) =>
-      mengeMitAnreise(aktuell, alteProjektId, dienstleistungId, neueProjektId, dienstleistungId)
+      mengeMitAnreise(aktuell, alteProjektId, artikelId, neueProjektId, artikelId)
     );
     if (!istNeu) return;
-    const vorschlag = vorschlagFuer(neueProjektId, dienstleistungId);
+    const vorschlag = vorschlagFuer(neueProjektId, artikelId);
     if (vorschlag != null) setRabatt(vorschlag);
   }
 
-  // Die Beschreibung einer Dienstleistung ist eine Vorgabe für den
+  // Die Beschreibung eines Artikels ist eine Vorgabe für den
   // Beschreibungstext des Zeiteintrags – sie landet unter der Namenszeile
   // der/des Mitarbeitenden. Übernommen wird sie nur, solange dort nichts
   // Eigenes steht: entweder ist das Feld leer, oder es enthält nur die
   // Namenszeile, oder darunter steht noch unverändert die Vorgabe der
-  // zuvor gewählten Dienstleistung. Selbst getippter Text bleibt in jedem
+  // zuvor gewählten Artikel. Selbst getippter Text bleibt in jedem
   // Fall stehen – eine Vorgabe darf niemals Arbeit überschreiben.
   function mitVorgabe(aktuell: string, alteId: string, neueId: string): string {
-    const alteVorgabe = dienstleistungen.find((d) => d.id === alteId)?.beschreibung ?? "";
-    const neueVorgabe = dienstleistungen.find((d) => d.id === neueId)?.beschreibung ?? "";
+    const alteVorgabe = artikel.find((d) => d.id === alteId)?.beschreibung ?? "";
+    const neueVorgabe = artikel.find((d) => d.id === neueId)?.beschreibung ?? "";
 
     const zeilen = aktuell === "" ? [] : aktuell.split("\n");
     const name = nameFuer(mitarbeiterId);
@@ -346,9 +348,9 @@ export function ZeiterfassungForm({
     return teile.join("\n") + (neueVorgabe === "" ? "" : "\n");
   }
 
-  function onDienstleistungChange(neueId: string) {
-    const alteId = dienstleistungId;
-    setDienstleistungId(neueId);
+  function onArtikelChange(neueId: string) {
+    const alteId = artikelId;
+    setArtikelId(neueId);
     setBeschreibung((aktuell) => mitVorgabe(aktuell, alteId, neueId));
     setMengeText((aktuell) =>
       mengeMitAnreise(aktuell, projektId, alteId, projektId, neueId)
@@ -365,7 +367,7 @@ export function ZeiterfassungForm({
     // Auch beim Bearbeiten: Wechsel auf einen gesperrten Artikel darf keinen
     // unzulässigen Teilrabatt stehen lassen – die Option verschwindet aus
     // der Auswahl und würde sonst unsichtbar mitgeschickt.
-    const dl = dienstleistungen.find((d) => d.id === neueId);
+    const dl = artikel.find((d) => d.id === neueId);
     if (dl && !dl.rabatt_erlaubt) {
       const aktuell = Number(rabatt);
       if (aktuell !== 0 && aktuell !== 100) setRabatt("0");
@@ -485,23 +487,23 @@ export function ZeiterfassungForm({
         <div>
           <label
             className="block text-sm font-medium mb-1"
-            htmlFor="dienstleistung_id"
+            htmlFor="artikel_id"
           >
-            Dienstleistung
+            Artikel
           </label>
           <select
-            id="dienstleistung_id"
-            name="dienstleistung_id"
+            id="artikel_id"
+            name="artikel_id"
             required
             disabled={laeuft}
-            value={dienstleistungId}
-            onChange={(e) => onDienstleistungChange(e.target.value)}
+            value={artikelId}
+            onChange={(e) => onArtikelChange(e.target.value)}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel disabled:bg-gray-100 disabled:text-gray-500"
           >
             <option value="" disabled>
               Bitte wählen…
             </option>
-            {dienstleistungen.map((d) => (
+            {artikel.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.bezeichnung}
                 {!d.aktiv ? " (inaktiv)" : ""}
@@ -743,7 +745,7 @@ export function ZeiterfassungForm({
             </select>
             {rabattGesperrt && (
               <p className="text-xs text-gray-400 mt-1">
-                Für diese Dienstleistung sind keine Teilrabatte zugelassen. 100%
+                Für diesen Artikel sind keine Teilrabatte zugelassen. 100%
                 bleibt möglich, um sie als nicht verrechnet zu buchen.
               </p>
             )}

@@ -5,7 +5,7 @@ import {
   loescheKundenrabatt,
 } from "@/app/actions/kunden";
 
-type DienstleistungOption = {
+type ArtikelOption = {
   id: string;
   bezeichnung: string;
   einheit: string;
@@ -17,15 +17,15 @@ type KlasseOption = { id: string; bezeichnung: string };
 type PreisZeile = {
   id: string;
   preis: number;
-  dienstleistung_id: string;
-  dienstleistungen: { id: string; bezeichnung: string; einheit: string } | null;
+  artikel_id: string;
+  artikel: { id: string; bezeichnung: string; einheit: string } | null;
 };
 
 type RabattZeile = {
   id: string;
   rabatt_prozent: number;
   klasse_id: string;
-  dienstleistungsklassen: { id: string; bezeichnung: string } | null;
+  artikelklassen: { id: string; bezeichnung: string } | null;
 };
 
 // Preis- und Rabattvereinbarungen eines Kunden. Beides sind reine
@@ -34,14 +34,14 @@ type RabattZeile = {
 // verändern also nie bestehende Einträge.
 export function KundenPreiseRabatte({
   kundeId,
-  dienstleistungen,
+  artikel,
   klassen,
   preise,
   rabatte,
   standardRabatt,
 }: {
   kundeId: string;
-  dienstleistungen: DienstleistungOption[];
+  artikel: ArtikelOption[];
   klassen: KlasseOption[];
   preise: PreisZeile[];
   rabatte: RabattZeile[];
@@ -66,7 +66,7 @@ export function KundenPreiseRabatte({
         <section className="bg-white rounded-lg border p-5">
           <h3 className="text-sm font-semibold mb-1">Abweichende Preise</h3>
           <p className="text-xs text-gray-500 mb-4">
-            Überschreibt den Katalogpreis der Dienstleistung für diesen Kunden.
+            Überschreibt den Katalogpreis der Artikel für diesen Kunden.
           </p>
 
           {preise.length === 0 ? (
@@ -81,10 +81,10 @@ export function KundenPreiseRabatte({
                   className="flex items-center justify-between px-3 py-2 text-sm"
                 >
                   <span>
-                    {p.dienstleistungen?.bezeichnung ?? "Unbekannt"}
+                    {p.artikel?.bezeichnung ?? "Unbekannt"}
                     <span className="text-gray-400">
                       {" "}
-                      / {p.dienstleistungen?.einheit ?? "–"}
+                      / {p.artikel?.einheit ?? "–"}
                     </span>
                   </span>
                   <span className="flex items-center gap-3">
@@ -105,10 +105,10 @@ export function KundenPreiseRabatte({
 
           <form action={preisAction} className="flex flex-wrap items-end gap-2">
             <div className="flex-1 min-w-[10rem]">
-              <label className="block text-xs text-gray-500 mb-1">Dienstleistung</label>
+              <label className="block text-xs text-gray-500 mb-1">Artikel</label>
               <select
                 id="neuer_kundenpreis"
-                name="dienstleistung_id"
+                name="artikel_id"
                 required
                 defaultValue=""
                 className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
@@ -116,7 +116,7 @@ export function KundenPreiseRabatte({
                 <option value="" disabled>
                   Bitte wählen…
                 </option>
-                {dienstleistungen.map((d) => (
+                {artikel.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.bezeichnung} (Katalog CHF {Number(d.preis).toFixed(2)})
                   </option>
@@ -147,9 +147,9 @@ export function KundenPreiseRabatte({
         {/* Rabatt je Klasse                                            */}
         {/* ----------------------------------------------------------- */}
         <section className="bg-white rounded-lg border p-5">
-          <h3 className="text-sm font-semibold mb-1">Rabatt je Dienstleistungsklasse</h3>
+          <h3 className="text-sm font-semibold mb-1">Rabatt je Artikelklasse</h3>
           <p className="text-xs text-gray-500 mb-4">
-            Gilt für alle Dienstleistungen der Klasse – auch für später neu
+            Gilt für alle Artikel der Klasse – auch für später neu
             angelegte. Hat Vorrang vor dem Standardrabatt von{" "}
             {standardRabatt.toFixed(0)}%.
           </p>
@@ -165,7 +165,7 @@ export function KundenPreiseRabatte({
                   key={r.id}
                   className="flex items-center justify-between px-3 py-2 text-sm"
                 >
-                  <span>{r.dienstleistungsklassen?.bezeichnung ?? "Unbekannt"}</span>
+                  <span>{r.artikelklassen?.bezeichnung ?? "Unbekannt"}</span>
                   <span className="flex items-center gap-3">
                     <strong>{Number(r.rabatt_prozent)}%</strong>
                     <form action={loescheKundenrabatt.bind(null, kundeId, r.id)}>
@@ -223,7 +223,7 @@ export function KundenPreiseRabatte({
           </form>
 
           <p className="text-xs text-gray-400 mt-3">
-            Bei Dienstleistungen ohne Rabatterlaubnis (z.B. Reisespesen) greift
+            Bei Artikel ohne Rabatterlaubnis (z.B. Reisespesen) greift
             weder dieser noch der Standardrabatt.
           </p>
         </section>

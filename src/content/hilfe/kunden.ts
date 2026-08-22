@@ -37,7 +37,7 @@ Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfas
 
 Auf **"+ Neuer Kunde"** klicken und die Felder ausfüllen. Pflichtfeld ist nur der **Name** (Nach- oder Firmenname); alles andere kann später ergänzt werden.
 
-**Anfahrt km (verrechnet je Einsatz)**: Die Kilometer, die bei einem Einsatz verrechnet werden. Führt der Betrieb **Standorte**, steht dieser Wert am Standort und nicht mehr hier – bei vierzig Liegenschaften sind es vierzig Distanzen. Sonst gilt: die Kilometer, die bei einem Einsatz bei diesem Kunden verrechnet werden – in der Regel Hin- und Rückfahrt. Der Wert wird beim Erfassen als **Menge vorgeschlagen**, sobald eine Leistung gewählt wird, die unter [Dienstleistungen](/hilfe/dienstleistungen) als Anreise gekennzeichnet ist. Wie beim Standardrabatt gilt: Es ist ein Vorschlag, überschreibbar, und eine spätere Änderung wirkt nicht auf bereits erfasste Einträge.
+**Anfahrt km (verrechnet je Einsatz)**: Die Kilometer, die bei einem Einsatz verrechnet werden. Führt der Betrieb **Standorte**, steht dieser Wert am Standort und nicht mehr hier – bei vierzig Liegenschaften sind es vierzig Distanzen. Sonst gilt: die Kilometer, die bei einem Einsatz bei diesem Kunden verrechnet werden – in der Regel Hin- und Rückfahrt. Der Wert wird beim Erfassen als **Menge vorgeschlagen**, sobald eine Leistung gewählt wird, die unter [Artikel](/hilfe/artikel) als Anreise gekennzeichnet ist. Wie beim Standardrabatt gilt: Es ist ein Vorschlag, überschreibbar, und eine spätere Änderung wirkt nicht auf bereits erfasste Einträge.
 
 Das Feld heisst bewusst „verrechnet je Einsatz" und nicht „Distanz" – sonst trägt die eine Person die einfache Strecke ein und die andere Hin und Zurück, und niemand merkt es, weil beides plausibel aussieht.
 
@@ -135,13 +135,13 @@ Dafür gibt es im Kundenformular das Häkchen **„Ist Kunde"**. Ohne dieses Hä
 
 Unter den Stammdaten liegt der Block **"Preise & Rabatte"** mit zwei Listen. Beide wirken ausschliesslich auf **neu erfasste** Zeiteinträge – bestehende behalten Preis und Rabatt, die beim Erfassen galten. Eine Änderung rechnet also nie rückwirkend um.
 
-**Abweichende Preise** überschreiben den Katalogpreis einer Dienstleistung für diesen Kunden. Beim Erfassen eines Zeiteintrags wird dieser Preis eingefroren.
+**Abweichende Preise** überschreiben den Katalogpreis eines Artikels für diesen Kunden. Beim Erfassen eines Zeiteintrags wird dieser Preis eingefroren.
 
-**Rabatt je Dienstleistungsklasse** ist der bequemere Weg als Rabatte pro Dienstleistung: Gib dem Kunden z.B. 10% auf die ganze Klasse "Beratung", und jede Dienstleistung dieser Klasse erbt den Rabatt – auch die, die ihr erst später anlegt.
+**Rabatt je Artikelklasse** ist der bequemere Weg als Rabatte pro Artikel: Gib dem Kunden z.B. 10% auf die ganze Klasse "Beratung", und jede Artikel dieser Klasse erbt den Rabatt – auch die, die ihr erst später anlegt.
 
 Welcher Rabatt vorgeschlagen wird, entscheidet sich in dieser Reihenfolge:
 
-1. Die Dienstleistung erlaubt keinen Teilrabatt → **0%** (siehe [Dienstleistungen](/hilfe/dienstleistungen))
+1. Die Artikel erlaubt keinen Teilrabatt → **0%** (siehe [Artikel](/hilfe/artikel))
 2. Ein **Klassenrabatt** für diesen Kunden → dieser Wert
 3. Sonst der **Standardrabatt** aus den Stammdaten des Kunden
 
@@ -149,7 +149,7 @@ Es ist immer nur ein Vorschlag: Beim Erfassen lässt sich der Rabatt überschrei
 
 ## Standardrabatt
 
-Im Block "Rechnungswesen" der Stammdaten. Gilt für alle Dienstleistungen, für die kein Klassenrabatt hinterlegt ist.
+Im Block "Rechnungswesen" der Stammdaten. Gilt für alle Artikel, für die kein Klassenrabatt hinterlegt ist.
 `,
   },
 ];

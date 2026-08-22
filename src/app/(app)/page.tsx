@@ -139,10 +139,10 @@ export default async function DashboardPage() {
           <div className="text-sm text-gray-500">Projekte je Kunde</div>
         </Link>
         <Link
-          href="/dienstleistungen"
+          href="/artikel"
           className="block rounded-lg border bg-white p-5 hover:shadow"
         >
-          <div className="font-medium">Dienstleistungen</div>
+          <div className="font-medium">Artikel</div>
           <div className="text-sm text-gray-500">Katalog & Preise</div>
         </Link>
         {isAdmin && (

@@ -152,9 +152,9 @@ export async function createKlasse(formData: FormData) {
   const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
   if (!bezeichnung) return;
 
-  await supabase.from("dienstleistungsklassen").insert({
+  await supabase.from("artikelklassen").insert({
     bezeichnung,
-    sortierung: await naechsteSortierung(supabase, "dienstleistungsklassen"),
+    sortierung: await naechsteSortierung(supabase, "artikelklassen"),
   });
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen?fokus=neue_klasse", "Klasse hinzugefügt."));
@@ -166,7 +166,7 @@ export async function updateKlasse(id: string, formData: FormData) {
     redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
   }
   await speichereListeneintrag(
-    "dienstleistungsklassen",
+    "artikelklassen",
     id,
     { bezeichnung, sortierung: sortierungAus(formData) },
     "Klasse gespeichert."
@@ -175,7 +175,7 @@ export async function updateKlasse(id: string, formData: FormData) {
 
 export async function toggleKlasse(id: string, aktiv: boolean) {
   const supabase = await createClient();
-  await supabase.from("dienstleistungsklassen").update({ aktiv }).eq("id", id);
+  await supabase.from("artikelklassen").update({ aktiv }).eq("id", id);
   revalidatePath("/einstellungen");
   redirect(mitErfolg("/einstellungen", aktiv ? "Klasse aktiviert." : "Klasse deaktiviert."));
 }
@@ -235,7 +235,7 @@ export async function toggleMwstCode(id: string, aktiv: boolean) {
 }
 
 // ---------------------------------------------------------
-// Einheiten (Auswahlliste für den Dienstleistungskatalog)
+// Einheiten (Auswahlliste für den Artikelstamm)
 // ---------------------------------------------------------
 export async function createEinheit(formData: FormData) {
   const supabase = await createClient();
@@ -253,8 +253,8 @@ export async function createEinheit(formData: FormData) {
   redirect(mitErfolg("/einstellungen?fokus=neue_einheit", "Einheit hinzugefügt."));
 }
 
-// Umbenennen ist gefahrlos: dienstleistungen.einheit speichert den Text,
-// nicht eine Referenz. Bestehende Dienstleistungen behalten also ihren
+// Umbenennen ist gefahrlos: artikel.einheit speichert den Text,
+// nicht eine Referenz. Bestehende Artikel behalten also ihren
 // bisherigen Wert – er taucht dann nur nicht mehr in der Auswahl auf.
 export async function updateEinheit(id: string, formData: FormData) {
   const bezeichnung = String(formData.get("bezeichnung") ?? "").trim();
@@ -762,10 +762,10 @@ export async function setzeGruppenMitglieder(gruppeId: string, formData: FormDat
 
 export async function createStandardposition(formData: FormData) {
   const supabase = await createClient();
-  const dienstleistungId = String(formData.get("dienstleistung_id") ?? "").trim();
+  const artikelId = String(formData.get("artikel_id") ?? "").trim();
   const vorgabe = Number(formData.get("vorgabe") ?? 0);
 
-  if (!dienstleistungId) return;
+  if (!artikelId) return;
   if (!(vorgabe > 0)) {
     redirect(
       `/einstellungen?error=${encodeURIComponent(
@@ -775,12 +775,12 @@ export async function createStandardposition(formData: FormData) {
   }
 
   // Freundlich statt roher Datenbankfehler: Die Bedingung unique
-  // (organisation_id, dienstleistung_id) verhindert Dubletten, und eine
+  // (organisation_id, artikel_id) verhindert Dubletten, und eine
   // bereits deaktivierte Zeile ist der wahrscheinlichere Fall.
   const { data: bestehend } = await supabase
     .from("rapport_standardpositionen")
     .select("id, aktiv")
-    .eq("dienstleistung_id", dienstleistungId)
+    .eq("artikel_id", artikelId)
     .maybeSingle();
 
   if (bestehend) {
@@ -794,7 +794,7 @@ export async function createStandardposition(formData: FormData) {
   }
 
   const { error } = await supabase.from("rapport_standardpositionen").insert({
-    dienstleistung_id: dienstleistungId,
+    artikel_id: artikelId,
     vorgabe,
     sortierung: await naechsteSortierung(supabase, "rapport_standardpositionen"),
   });

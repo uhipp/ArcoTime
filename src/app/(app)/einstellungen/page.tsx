@@ -85,10 +85,10 @@ export default async function EinstellungenPage({
     { data: gruppen },
     { data: gruppenMitglieder },
     { data: mitarbeitende },
-    { data: dienstleistungen },
+    { data: artikel },
     { data: standardpositionen },
   ] = await Promise.all([
-    supabase.from("dienstleistungsklassen").select("*").order("sortierung"),
+    supabase.from("artikelklassen").select("*").order("sortierung"),
     supabase.from("einheiten").select("*").order("sortierung"),
     supabase.from("schliesstage").select("*").order("von"),
     supabase.from("abwesenheitsarten").select("*").order("sortierung"),
@@ -105,13 +105,13 @@ export default async function EinstellungenPage({
       .is("deaktiviert_am", null)
       .order("name"),
     supabase
-      .from("dienstleistungen")
+      .from("artikel")
       .select("id, bezeichnung, einheit, zaehlt_als_arbeitszeit")
       .eq("aktiv", true)
       .order("bezeichnung"),
     supabase
       .from("rapport_standardpositionen")
-      .select("*, dienstleistungen(id, bezeichnung, einheit, zaehlt_als_arbeitszeit)")
+      .select("*, artikel(id, bezeichnung, einheit, zaehlt_als_arbeitszeit)")
       .order("sortierung"),
   ]);
 
@@ -138,7 +138,7 @@ export default async function EinstellungenPage({
     { schluessel: "projekt", hinweis: "Auftrag, Mandat" },
     { schluessel: "anfrage", hinweis: "Ticket, Pendenz" },
     { schluessel: "rapport", hinweis: "Serviceschein, Montagebericht" },
-    { schluessel: "dienstleistung", hinweis: "Leistung, Artikel" },
+    { schluessel: "artikel", hinweis: "Leistung, Artikel" },
   ];
 
   return (
@@ -660,9 +660,9 @@ export default async function EinstellungenPage({
       </section>
 
       <section>
-        <h2 className="text-lg font-medium mb-3">Dienstleistungsklassen</h2>
+        <h2 className="text-lg font-medium mb-3">Artikelklassen</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Auswahlliste für den Dienstleistungskatalog.
+          Auswahlliste für den Artikelstamm.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {klassen?.map((k) => (
@@ -720,7 +720,7 @@ export default async function EinstellungenPage({
       <section>
         <h2 className="text-lg font-medium mb-3">Einheiten</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Auswahlliste für das Feld „Einheit“ im Dienstleistungskatalog –
+          Auswahlliste für das Feld „Einheit“ im Artikelstamm –
           Stunde, Pauschale, Stück, km, was ihr braucht.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
@@ -1141,7 +1141,7 @@ export default async function EinstellungenPage({
                 className="flex flex-wrap items-center gap-2"
               >
                 <span className={`flex-1 min-w-[10rem] ${sp.aktiv ? "" : "text-gray-400"}`}>
-                  {sp.dienstleistungen?.bezeichnung ?? "Gelöschte Leistung"}
+                  {sp.artikel?.bezeichnung ?? "Gelöschte Leistung"}
                 </span>
                 <input
                   name="vorgabe"
@@ -1154,9 +1154,9 @@ export default async function EinstellungenPage({
                   className="w-24 rounded border border-gray-300 px-2 py-1"
                 />
                 <span className="text-xs text-gray-400 w-12">
-                  {sp.dienstleistungen?.zaehlt_als_arbeitszeit
+                  {sp.artikel?.zaehlt_als_arbeitszeit
                     ? "Min."
-                    : sp.dienstleistungen?.einheit ?? ""}
+                    : sp.artikel?.einheit ?? ""}
                 </span>
                 <input
                   name="sortierung"
@@ -1189,7 +1189,7 @@ export default async function EinstellungenPage({
         <form action={createStandardposition} className="flex flex-wrap items-end gap-2">
           <select
             id="neue_standardposition"
-            name="dienstleistung_id"
+            name="artikel_id"
             required
             defaultValue=""
             className="flex-1 min-w-[12rem] rounded border border-gray-300 px-3 py-2 text-sm"
@@ -1197,7 +1197,7 @@ export default async function EinstellungenPage({
             <option value="" disabled>
               Leistung wählen…
             </option>
-            {dienstleistungen?.map((d) => (
+            {artikel?.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.bezeichnung}
               </option>

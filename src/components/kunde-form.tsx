@@ -125,7 +125,7 @@ export function KundeForm({
         </p>
         <p className="text-xs text-gray-400 mt-1">
           Die Anfahrt-Kilometer werden bei Leistungen vorgeschlagen, die
-          unter Dienstleistungen als Anreise gekennzeichnet sind – in der
+          unter Artikel als Anreise gekennzeichnet sind – in der
           Regel Hin- und Rückfahrt. Auch dieser Wert lässt sich pro Eintrag
           überschreiben.
         </p>

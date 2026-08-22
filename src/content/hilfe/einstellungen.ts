@@ -36,7 +36,7 @@ Wie euer Betrieb die Dinge nennt. Die Struktur von ArcoTime ist für alle diesel
 
 Je Bezeichnung hinterlegst du **Einzahl**, **Mehrzahl** und den **Artikel**. Alle drei sind nötig: Die Mehrzahl lässt sich im Deutschen nicht ableiten (Objekt/Objekte, aber Auftrag/Aufträge), und ohne Artikel stünde auf dem Knopf „Neues Auftrag" statt „Neuer Auftrag".
 
-Über **Vorlage übernehmen** setzt du alle Bezeichnungen auf einmal – etwa auf „Handwerk" oder „IT-Dienstleistung" – und passt danach einzelne an.
+Über **Vorlage übernehmen** setzt du alle Bezeichnungen auf einmal – etwa auf „Handwerk" oder „IT-Artikel" – und passt danach einzelne an.
 
 **Wo die Bezeichnung wirkt:** in der Navigation, auf der Startseite, in Seitentiteln, auf den Knöpfen, in Spaltentiteln der Listen und in den Hinweisen leerer Listen. **Unverändert** bleiben die Adressen im Browser (die Seite heisst weiter /projekte), die Hilfeseiten, die Spaltennamen im Comatic-Export – und zusammengesetzte Wörter wie „Projektleitung“ oder „Rapportnummer“. Ein Artikel lässt sich aus dem Geschlecht ableiten, ein Fugen-s nicht: Aus „Auftrag“ würde sonst „Auftragleitung“.
 
@@ -56,21 +56,21 @@ Mehr dazu unter [Kunden](/hilfe/kunden).
 
 ## Einheiten
 
-Die Auswahl für das Feld „Einheit" im [Dienstleistungskatalog](/hilfe/dienstleistungen) – Stunde, Pauschale, Stück, km, und was ihr sonst braucht. Neue Einheiten legst du hier an, danach stehen sie beim Anlegen einer Dienstleistung zur Verfügung.
+Die Auswahl für das Feld „Einheit" im [Artikelstamm](/hilfe/artikel) – Stunde, Pauschale, Stück, km, und was ihr sonst braucht. Neue Einheiten legst du hier an, danach stehen sie beim Anlegen einer Artikel zur Verfügung.
 
-Umbenennen ist gefahrlos: Die Dienstleistung speichert den Text der Einheit, keine Referenz. Bestehende Dienstleistungen behalten deshalb ihren bisherigen Wert – er erscheint dort dann als „nicht mehr in der Liste" und lässt sich bei Bedarf umstellen.
+Umbenennen ist gefahrlos: Die Artikel speichert den Text der Einheit, keine Referenz. Bestehende Artikel behalten deshalb ihren bisherigen Wert – er erscheint dort dann als „nicht mehr in der Liste" und lässt sich bei Bedarf umstellen.
 
 ## MWSt-Codes
 
-Die Steuercodes aus eurem Buchhaltungssystem, bestehend aus **Code** (z.B. \`B81\`), **Bezeichnung** und **Satz in Prozent**. Sie hängen an den [Dienstleistungen](/hilfe/dienstleistungen) und landen über den [Export](/hilfe/export) in der Buchhaltung.
+Die Steuercodes aus eurem Buchhaltungssystem, bestehend aus **Code** (z.B. \`B81\`), **Bezeichnung** und **Satz in Prozent**. Sie hängen an den [Artikel](/hilfe/artikel) und landen über den [Export](/hilfe/export) in der Buchhaltung.
 
-> **Satzänderungen wirken nicht rückwirkend.** Beim Erfassen eines Zeiteintrags werden Code und Satz eingefroren – genau wie der Preis der Dienstleistung. Änderst du hier den Satz, gilt der neue Wert nur für **ab jetzt** erfasste Einträge; alle bestehenden behalten den Satz, der beim Erfassen gültig war. Ein bereits erzeugter Export einer vergangenen Periode bleibt damit reproduzierbar.
+> **Satzänderungen wirken nicht rückwirkend.** Beim Erfassen eines Zeiteintrags werden Code und Satz eingefroren – genau wie der Preis der Artikel. Änderst du hier den Satz, gilt der neue Wert nur für **ab jetzt** erfasste Einträge; alle bestehenden behalten den Satz, der beim Erfassen gültig war. Ein bereits erzeugter Export einer vergangenen Periode bleibt damit reproduzierbar.
 >
 > Bei einer gesetzlichen Satzänderung kannst du also einfach den Satz anpassen. Einen neuen Code brauchst du nur, wenn dein Buchhaltungssystem alt und neu getrennt sehen will.
 
-## Dienstleistungsklassen
+## Artikelklassen
 
-Gruppieren die [Dienstleistungen](/hilfe/dienstleistungen) für die [Auswertungen](/hilfe/auswertungen). Auch hier gilt: deaktivieren statt löschen.
+Gruppieren die [Artikel](/hilfe/artikel) für die [Auswertungen](/hilfe/auswertungen). Auch hier gilt: deaktivieren statt löschen.
 
 ## Rabattsätze
 
@@ -187,7 +187,7 @@ Womit ein neuer [Arbeitsrapport](/hilfe/rapporte) beginnt. In vielen Betrieben i
 
 Je Zeile eine Leistung und eine **Menge**. Diese Menge ist eine **Annahme**, die vor Ort korrigiert wird – bei Leistungen, die als Arbeitszeit zählen, in **Minuten**, sonst in der Einheit der Leistung. Eine Vorgabe ist zwingend: Eine Position ohne Wert lässt sich nicht speichern.
 
-Trägt die Leistung das Häkchen **„Anreise zum Kunden"** (siehe [Dienstleistungen](/hilfe/dienstleistungen)), schlägt die beim Kunden hinterlegte Anfahrt diese Vorgabe. Der Rapport für einen Kunden mit 24 hinterlegten Kilometern beginnt also mit genau diesen 24 – ohne dass jemand etwas eintippt.
+Trägt die Leistung das Häkchen **„Anreise zum Kunden"** (siehe [Artikel](/hilfe/artikel)), schlägt die beim Kunden hinterlegte Anfahrt diese Vorgabe. Der Rapport für einen Kunden mit 24 hinterlegten Kilometern beginnt also mit genau diesen 24 – ohne dass jemand etwas eintippt.
 
 Angelegt werden die Positionen nur, wenn der Rapport ein **Projekt** hat; ohne Projekt lässt sich nichts verrechnen. Wird eine Leistung nicht mehr gebraucht, wird die Zeile **deaktiviert** statt gelöscht.
 

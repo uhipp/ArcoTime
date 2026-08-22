@@ -38,7 +38,7 @@ Jede Person hat eine eigene Farbe, die automatisch bei der Einladung vergeben wi
 
 ## Filtern
 
-Wie in den Auswertungen lässt sich nach Kunde, Projekt und Dienstleistungsklasse filtern; Admins zusätzlich nach Mitarbeitenden. Ist ein Klasse-Filter aktiv, werden keine Anfragen angezeigt (Anfragen haben keine Dienstleistungsklasse).
+Wie in den Auswertungen lässt sich nach Kunde, Projekt und Artikelklasse filtern; Admins zusätzlich nach Mitarbeitenden. Ist ein Klasse-Filter aktiv, werden keine Anfragen angezeigt (Anfragen haben keine Artikelklasse).
 
 ## Was sehe ich als normale/r Mitarbeitende/r?
 

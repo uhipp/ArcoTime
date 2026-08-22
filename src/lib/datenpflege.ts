@@ -38,12 +38,12 @@ type Kandidat = { kunde_id: string; name: string; km: number };
 // Kunden ohne Anfahrt-km, für die es bereits eine Anreise-Position gibt.
 //
 // Gelesen wird über die View: Sie führt Kunde, Leistung und Menge
-// zusammen, und die Position kennt ihre Dienstleistung ohnehin. Der
+// zusammen, und die Position kennt ihren Artikel ohnehin. Der
 // zuletzt erfasste Wert gewinnt – wer die Distanz einmal korrigiert hat,
 // hat es beim jüngsten Eintrag getan.
 async function kandidaten(supabase: Client): Promise<Kandidat[]> {
   const { data: leistungen } = await supabase
-    .from("dienstleistungen")
+    .from("artikel")
     .select("id")
     .eq("menge_aus_anreise", true);
 
@@ -61,7 +61,7 @@ async function kandidaten(supabase: Client): Promise<Kandidat[]> {
   const { data: positionen } = await supabase
     .from("v_zeiteintraege")
     .select("kunde_id, menge, datum")
-    .in("dienstleistung_id", ids)
+    .in("artikel_id", ids)
     .not("menge", "is", null)
     .order("datum", { ascending: false });
 

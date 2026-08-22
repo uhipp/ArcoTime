@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
-import { DienstleistungForm } from "@/components/dienstleistung-form";
-import { updateDienstleistung, deleteDienstleistung } from "@/app/actions/dienstleistungen";
+import { ArtikelForm } from "@/components/artikel-form";
+import { updateArtikel, deleteArtikel } from "@/app/actions/artikel";
 import { DeleteButton } from "@/components/delete-button";
-import type { Dienstleistung } from "@/lib/types";
+import type { Artikel } from "@/lib/types";
 import { PraesenzSperre } from "@/components/praesenz-sperre";
 import { darf } from "@/lib/berechtigungen";
 
-export default async function DienstleistungDetailPage({
+export default async function ArtikelDetailPage({
   params,
   searchParams,
 }: {
@@ -19,17 +19,17 @@ export default async function DienstleistungDetailPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const { data: dienstleistung } = await supabase
-    .from("dienstleistungen")
+  const { data: artikel } = await supabase
+    .from("artikel")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (!dienstleistung) notFound();
+  if (!artikel) notFound();
 
   const [{ data: klassen }, { data: mwstCodes }, { data: einheiten }] = await Promise.all([
     supabase
-      .from("dienstleistungsklassen")
+      .from("artikelklassen")
       .select("id, bezeichnung")
       .eq("aktiv", true)
       .order("sortierung"),
@@ -46,27 +46,27 @@ export default async function DienstleistungDetailPage({
   ]);
 
   const profile = await getCurrentProfile();
-  const istAdmin = darf(profile, "dienstleistungen.loeschen");
+  const istAdmin = darf(profile, "artikel.loeschen");
 
-  const updateAction = updateDienstleistung.bind(null, id);
-  const deleteAction = deleteDienstleistung.bind(null, id);
+  const updateAction = updateArtikel.bind(null, id);
+  const deleteAction = deleteArtikel.bind(null, id);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">{dienstleistung.bezeichnung}</h1>
+        <h1 className="text-2xl font-semibold">{artikel.bezeichnung}</h1>
         {/* Löschen bleibt beim Admin – siehe 0031. */}
         {istAdmin && (
           <DeleteButton
             action={deleteAction}
-            label="Dienstleistung löschen"
-            confirmText="Dienstleistung wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
+            label="Artikel löschen"
+            confirmText="Artikel wirklich löschen? Geht nur, wenn keine Zeiteinträge vorhanden sind."
           />
         )}
       </div>
-      <PraesenzSperre bereich="dienstleistung" bezugId={id}>
-        <DienstleistungForm
-          dienstleistung={dienstleistung as Dienstleistung}
+      <PraesenzSperre bereich="artikel" bezugId={id}>
+        <ArtikelForm
+          artikel={artikel as Artikel}
           klassen={klassen ?? []}
           mwstCodes={mwstCodes ?? []}
           einheiten={einheiten ?? []}

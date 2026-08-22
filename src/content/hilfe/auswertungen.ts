@@ -12,7 +12,7 @@ Auswertung erfasster Zeit nach **Tag**, **Woche** oder **Monat**, mit Navigation
 
 ## Filtern
 
-Nach Kunde, Projekt, Dienstleistungsklasse und (nur für Admins) nach Mitarbeitenden filterbar. Ohne Filter werden alle passenden Einträge im gewählten Zeitraum angezeigt.
+Nach Kunde, Projekt, Artikelklasse und (nur für Admins) nach Mitarbeitenden filterbar. Ohne Filter werden alle passenden Einträge im gewählten Zeitraum angezeigt.
 
 ## Admin: fremde Einträge bearbeiten
 
@@ -20,7 +20,7 @@ Als Admin kannst du hier auch Zeiteinträge anderer Mitarbeitender öffnen, korr
 
 ## Was in den Stunden steckt – und was nicht
 
-Die Stundensummen enthalten **ausschliesslich Arbeitszeit**. Positionen, die nach Menge abgerechnet werden – Kilometergeld, Spesen, Kleinmaterial – erscheinen in der Liste und im Betrag, zählen aber nicht als Stunden (siehe [Dienstleistungen](/hilfe/dienstleistungen)).
+Die Stundensummen enthalten **ausschliesslich Arbeitszeit**. Positionen, die nach Menge abgerechnet werden – Kilometergeld, Spesen, Kleinmaterial – erscheinen in der Liste und im Betrag, zählen aber nicht als Stunden (siehe [Artikel](/hilfe/artikel)).
 
 In der Mengenspalte steht deshalb je nach Position "3.5 h" oder "120 km". Die Summenzeile addiert nur die Stunden; der Betrag umfasst alles.
 

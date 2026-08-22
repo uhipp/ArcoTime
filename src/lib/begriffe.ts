@@ -15,7 +15,7 @@ export type BegriffSchluessel =
   | "projekt"
   | "anfrage"
   | "rapport"
-  | "dienstleistung";
+  | "artikel";
 
 export type Genus = "m" | "f" | "n";
 export type Begriff = { einzahl: string; mehrzahl: string; genus: Genus };
@@ -33,7 +33,9 @@ export const VORGABEN: Record<BegriffSchluessel, Begriff> = {
   projekt: { einzahl: "Projekt", mehrzahl: "Projekte", genus: "n" },
   anfrage: { einzahl: "Anfrage", mehrzahl: "Anfragen", genus: "f" },
   rapport: { einzahl: "Rapport", mehrzahl: "Rapporte", genus: "m" },
-  dienstleistung: { einzahl: "Dienstleistung", mehrzahl: "Dienstleistungen", genus: "f" },
+  // Einzahl und Mehrzahl sind gleich, das Genus wechselte mit dem Wort:
+  // die Dienstleistung war weiblich, der Artikel ist männlich.
+  artikel: { einzahl: "Artikel", mehrzahl: "Artikel", genus: "m" },
 };
 
 export type Begriffe = Record<BegriffSchluessel, Begriff>;

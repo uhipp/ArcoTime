@@ -121,7 +121,7 @@ export type Projekt = {
   projektleiter_id: string | null;
 };
 
-export type Dienstleistungsklasse = {
+export type Artikelklasse = {
   id: string;
   bezeichnung: string;
   sortierung: number;
@@ -141,7 +141,7 @@ export type MwstCode = {
 // allein "zaehlt_als_arbeitszeit".
 export type Einheit = string;
 
-export type Dienstleistung = {
+export type Artikel = {
   id: string;
   bezeichnung: string;
   beschreibung: string | null;
@@ -160,7 +160,7 @@ export type Dienstleistung = {
   konto: string | null;
   mwst_code_id: string | null;
   aktiv: boolean;
-  dienstleistungsklassen?: Pick<Dienstleistungsklasse, "id" | "bezeichnung">;
+  artikelklassen?: Pick<Artikelklasse, "id" | "bezeichnung">;
   mwst_codes?: Pick<MwstCode, "id" | "code">;
   // Stand des Datensatzes – trägt die Konfliktprüfung (0039).
   updated_at?: string;
@@ -169,26 +169,26 @@ export type Dienstleistung = {
 export type Kundenpreis = {
   id: string;
   kunde_id: string;
-  dienstleistung_id: string;
+  artikel_id: string;
   ab_menge: number;
   preis: number;
-  dienstleistungen?: Pick<Dienstleistung, "id" | "bezeichnung" | "einheit">;
+  artikel?: Pick<Artikel, "id" | "bezeichnung" | "einheit">;
 };
 
-// Rabatt eines Kunden auf eine ganze Dienstleistungsklasse. Hat bei der
+// Rabatt eines Kunden auf eine ganze Artikelklasse. Hat bei der
 // Vorbelegung Vorrang vor kunden.standard_rabatt_prozent.
 export type Kundenrabatt = {
   id: string;
   kunde_id: string;
   klasse_id: string;
   rabatt_prozent: number;
-  dienstleistungsklassen?: Pick<Dienstleistungsklasse, "id" | "bezeichnung">;
+  artikelklassen?: Pick<Artikelklasse, "id" | "bezeichnung">;
 };
 
 export type Zeiteintrag = {
   id: string;
   projekt_id: string;
-  dienstleistung_id: string;
+  artikel_id: string;
   user_id: string;
   mitarbeiter_id: string;
   datum: string;
@@ -224,7 +224,7 @@ export type ZeiteintragMitDetails = Zeiteintrag & {
   kunde_id: string;
   kunde_name: string;
   vorname: string | null;
-  dienstleistung_bezeichnung: string;
+  artikel_bezeichnung: string;
   mitarbeiter_name: string;
   klasse_id: string | null;
   klasse_bezeichnung: string | null;

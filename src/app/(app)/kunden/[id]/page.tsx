@@ -599,21 +599,21 @@ async function KonditionenReiter({
   standardRabatt: number;
 }) {
   const supabase = await createClient();
-  const [{ data: dienstleistungen }, { data: klassen }, { data: preise }, { data: rabatte }] =
+  const [{ data: artikel }, { data: klassen }, { data: preise }, { data: rabatte }] =
     await Promise.all([
       supabase
-        .from("dienstleistungen")
+        .from("artikel")
         .select("id, bezeichnung, einheit, preis")
         .eq("aktiv", true)
         .order("bezeichnung"),
-      supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
+      supabase.from("artikelklassen").select("id, bezeichnung").order("sortierung"),
       supabase
         .from("kundenpreise")
-        .select("id, preis, dienstleistung_id, dienstleistungen(id, bezeichnung, einheit)")
+        .select("id, preis, artikel_id, artikel(id, bezeichnung, einheit)")
         .eq("kunde_id", kundeId),
       supabase
         .from("kundenrabatte")
-        .select("id, rabatt_prozent, klasse_id, dienstleistungsklassen(id, bezeichnung)")
+        .select("id, rabatt_prozent, klasse_id, artikelklassen(id, bezeichnung)")
         .eq("kunde_id", kundeId),
     ]);
 
@@ -622,7 +622,7 @@ async function KonditionenReiter({
   return (
     <KundenPreiseRabatte
       kundeId={kundeId}
-      dienstleistungen={dienstleistungen ?? []}
+      artikel={artikel ?? []}
       klassen={klassen ?? []}
       preise={(preise ?? []) as never[]}
       rabatte={(rabatte ?? []) as never[]}
@@ -785,7 +785,7 @@ async function HistorieReiter({
               <tr>
                 <th className="px-4 py-2">Datum</th>
                 <th className="px-4 py-2">{begriff(begriffe, "projekt", "einzahl")}</th>
-                <th className="px-4 py-2">{begriff(begriffe, "dienstleistung", "einzahl")}</th>
+                <th className="px-4 py-2">{begriff(begriffe, "artikel", "einzahl")}</th>
                 <th className="px-4 py-2">Mitarbeitende</th>
                 <th className="px-4 py-2">Dauer</th>
                 <th className="px-4 py-2"></th>
@@ -803,7 +803,7 @@ async function HistorieReiter({
                       {new Date(z.datum).toLocaleDateString("de-CH")}
                     </td>
                     <td className="px-4 py-2">{z.projekt_bezeichnung}</td>
-                    <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
+                    <td className="px-4 py-2">{z.artikel_bezeichnung}</td>
                     <td className="px-4 py-2">{z.mitarbeiter_name}</td>
                     <td className="px-4 py-2 whitespace-nowrap">
                       {laeuft ? (

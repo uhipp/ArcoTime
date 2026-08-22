@@ -1,18 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
-import { DienstleistungForm } from "@/components/dienstleistung-form";
-import { createDienstleistung } from "@/app/actions/dienstleistungen";
+import { ArtikelForm } from "@/components/artikel-form";
+import { createArtikel } from "@/app/actions/artikel";
+import { getBegriffe, neuLabel } from "@/lib/begriffe";
 
-export default async function NeueDienstleistungPage({
+export default async function NeuerArtikelPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
   const supabase = await createClient();
+  const begriffe = await getBegriffe();
 
   const [{ data: klassen }, { data: mwstCodes }, { data: einheiten }] = await Promise.all([
     supabase
-      .from("dienstleistungsklassen")
+      .from("artikelklassen")
       .select("id, bezeichnung")
       .eq("aktiv", true)
       .order("sortierung"),
@@ -30,12 +32,12 @@ export default async function NeueDienstleistungPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Neue Dienstleistung</h1>
-      <DienstleistungForm
+      <h1 className="text-2xl font-semibold mb-6">{neuLabel(begriffe, "artikel")}</h1>
+      <ArtikelForm
         klassen={klassen ?? []}
         mwstCodes={mwstCodes ?? []}
         einheiten={einheiten ?? []}
-        action={createDienstleistung}
+        action={createArtikel}
         error={error}
       />
     </div>

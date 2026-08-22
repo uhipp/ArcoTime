@@ -37,7 +37,7 @@ export default async function AnfrageDetailPage({
     { data: kunden },
     { data: projekte },
     { data: mitarbeitende },
-    { data: dienstleistungen },
+    { data: artikel },
     { data: rabattsaetze },
     { data: kanaele },
     { data: prioritaeten },
@@ -48,7 +48,7 @@ export default async function AnfrageDetailPage({
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("id, bezeichnung, kunde_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
-    supabase.from("dienstleistungen").select("id, bezeichnung, aktiv").eq("aktiv", true).order("bezeichnung"),
+    supabase.from("artikel").select("id, bezeichnung, aktiv").eq("aktiv", true).order("bezeichnung"),
     supabase.from("rabattsaetze").select("id, prozent, bezeichnung, aktiv").order("sortierung"),
     supabase.from("anfrage_kanaele").select("*").order("sortierung"),
     supabase.from("anfrage_prioritaeten").select("*").order("sortierung"),
@@ -141,13 +141,13 @@ export default async function AnfrageDetailPage({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Dienstleistung</label>
+                  <label className="block text-xs text-gray-500 mb-1">Artikel</label>
                   <select
-                    name="zeit_dienstleistung_id"
+                    name="zeit_artikel_id"
                     className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                   >
                     <option value="">Bitte wählen…</option>
-                    {dienstleistungen?.map((d) => (
+                    {artikel?.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.bezeichnung}
                       </option>

@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       // NICHT menge_stunden – das ist seit den Mengenartikeln ausschliesslich
       // Arbeitszeit und bei Spesen leer.
       z.menge_verrechnet,
-      z.dienstleistung_bezeichnung,
+      z.artikel_bezeichnung,
       z.beschreibung ?? null,
       z.konto ?? null,
       z.kostenstelle ?? null,

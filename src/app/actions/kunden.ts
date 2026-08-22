@@ -170,11 +170,11 @@ export async function erstelleKundeSchnell(
 
 export async function setzeKundenpreis(kundeId: string, formData: FormData) {
   const supabase = await createClient();
-  const dienstleistung_id = String(formData.get("dienstleistung_id") ?? "").trim();
+  const artikel_id = String(formData.get("artikel_id") ?? "").trim();
   const preis = Number(formData.get("preis") ?? NaN);
 
-  if (!dienstleistung_id) {
-    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Bitte eine Dienstleistung wählen.")}`);
+  if (!artikel_id) {
+    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Bitte einen Artikel wählen.")}`);
   }
   if (Number.isNaN(preis) || preis < 0) {
     redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Bitte einen gültigen Preis angeben.")}`);
@@ -185,8 +185,8 @@ export async function setzeKundenpreis(kundeId: string, formData: FormData) {
   const { error } = await supabase
     .from("kundenpreise")
     .upsert(
-      { kunde_id: kundeId, dienstleistung_id, ab_menge: 0, preis },
-      { onConflict: "kunde_id,dienstleistung_id,ab_menge" }
+      { kunde_id: kundeId, artikel_id, ab_menge: 0, preis },
+      { onConflict: "kunde_id,artikel_id,ab_menge" }
     );
 
   if (error) {

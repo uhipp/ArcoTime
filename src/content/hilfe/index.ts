@@ -2,7 +2,7 @@ import { ersteSchritte } from "./erste-schritte";
 import { zeiterfassung } from "./zeiterfassung";
 import { kunden } from "./kunden";
 import { projekte } from "./projekte";
-import { dienstleistungen } from "./dienstleistungen";
+import { artikel } from "./artikel";
 import { anfragen } from "./anfragen";
 import { rapporte } from "./rapporte";
 import { disposition } from "./disposition";
@@ -32,7 +32,7 @@ export const ALLE_HILFE_ARTIKEL = [
   ...auswertungen,
   ...kunden,
   ...projekte,
-  ...dienstleistungen,
+  ...artikel,
   ...dokumente,
   ...benachrichtigungen,
   ...mitarbeitende,

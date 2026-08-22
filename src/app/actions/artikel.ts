@@ -8,7 +8,7 @@ import { loeschHinweis } from "@/lib/loeschen";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { konfliktMeldung, STAND_FELD } from "@/lib/konflikt";
 
-function dienstleistungFromForm(formData: FormData) {
+function artikelFromForm(formData: FormData) {
   const str = (v: FormDataEntryValue | null) =>
     v && String(v).trim() !== "" ? String(v).trim() : null;
 
@@ -29,34 +29,34 @@ function dienstleistungFromForm(formData: FormData) {
   };
 }
 
-export async function createDienstleistung(
+export async function createArtikel(
   _bisher: FormularErgebnis,
   formData: FormData
 ): Promise<FormularErgebnis> {
   const supabase = await createClient();
-  const values = dienstleistungFromForm(formData);
+  const values = artikelFromForm(formData);
 
-  const { error } = await supabase.from("dienstleistungen").insert(values);
+  const { error } = await supabase.from("artikel").insert(values);
   if (error) {
     return { fehler: error.message };
   }
 
-  revalidatePath("/dienstleistungen");
-  redirect(mitErfolg("/dienstleistungen", "Dienstleistung gespeichert."));
+  revalidatePath("/artikel");
+  redirect(mitErfolg("/artikel", "Artikel gespeichert."));
 }
 
-export async function updateDienstleistung(
+export async function updateArtikel(
   id: string,
   _bisher: FormularErgebnis,
   formData: FormData
 ): Promise<FormularErgebnis> {
   const supabase = await createClient();
-  const values = dienstleistungFromForm(formData);
+  const values = artikelFromForm(formData);
 
   // Konfliktprüfung – siehe lib/konflikt.
   const stand = String(formData.get(STAND_FELD) ?? "") || null;
   let abfrage = supabase
-    .from("dienstleistungen")
+    .from("artikel")
     .update(values)
     .eq("id", id);
   if (stand) abfrage = abfrage.eq("updated_at", stand);
@@ -66,26 +66,26 @@ export async function updateDienstleistung(
     return { fehler: error.message };
   }
   if (!geaendert || geaendert.length === 0) {
-    return { fehler: await konfliktMeldung(supabase, "dienstleistungen", id, stand) };
+    return { fehler: await konfliktMeldung(supabase, "artikel", id, stand) };
   }
 
-  revalidatePath("/dienstleistungen");
-  redirect(mitErfolg("/dienstleistungen", "Dienstleistung gespeichert."));
+  revalidatePath("/artikel");
+  redirect(mitErfolg("/artikel", "Artikel gespeichert."));
 }
 
-export async function deleteDienstleistung(id: string) {
+export async function deleteArtikel(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("dienstleistungen")
+    .from("artikel")
     .delete()
     .eq("id", id)
     .select("id");
 
-  const meldung = loeschHinweis(data, error, "Dienstleistung", "Dienstleistungen");
+  const meldung = loeschHinweis(data, error, "Artikel", "Artikel");
   if (meldung) {
-    redirect(`/dienstleistungen/${id}?error=${encodeURIComponent(meldung)}`);
+    redirect(`/artikel/${id}?error=${encodeURIComponent(meldung)}`);
   }
 
-  revalidatePath("/dienstleistungen");
-  redirect(mitErfolg("/dienstleistungen", "Dienstleistung gelöscht."));
+  revalidatePath("/artikel");
+  redirect(mitErfolg("/artikel", "Artikel gelöscht."));
 }

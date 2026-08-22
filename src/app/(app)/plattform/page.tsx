@@ -89,7 +89,7 @@ export default async function PlattformPage({
     { schluessel: "projekt", hinweis: "Auftrag, Mandat" },
     { schluessel: "anfrage", hinweis: "Ticket, Pendenz" },
     { schluessel: "rapport", hinweis: "Serviceschein, Montagebericht" },
-    { schluessel: "dienstleistung", hinweis: "Leistung, Artikel" },
+    { schluessel: "artikel", hinweis: "Leistung, Artikel" },
   ];
   const feldWert = (branche: string, schluessel: string, feld: keyof VorlageZeile) =>
     vorlagen.get(branche)?.find((z) => z.schluessel === schluessel)?.[feld] ?? "";

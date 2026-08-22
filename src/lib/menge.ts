@@ -1,7 +1,7 @@
 import type { ZeiteintragMitDetails } from "./types";
 
 // Beschriftet eine Zeile mit ihrer eigenen Mengengrösse: Stunden bei
-// Arbeitszeit, sonst die Menge mit der Einheit der Dienstleistung
+// Arbeitszeit, sonst die Menge mit der Einheit der Artikel
 // (7.00 km, 3 Stück, …).
 //
 // Ohne das stünde bei Mengenartikeln "null h", weil menge_stunden für sie

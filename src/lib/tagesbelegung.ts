@@ -53,7 +53,7 @@ export async function ladeTagesbelegung({
       .maybeSingle(),
     supabase
       .from("v_zeiteintraege")
-      .select("id, start_zeit, end_zeit, dauer_minuten, dienstleistung_bezeichnung, kunde_name")
+      .select("id, start_zeit, end_zeit, dauer_minuten, artikel_bezeichnung, kunde_name")
       .eq("mitarbeiter_id", mitarbeiterId)
       .eq("datum", datum)
       .not("dauer_minuten", "is", null)
@@ -67,7 +67,7 @@ export async function ladeTagesbelegung({
       start_zeit: z.start_zeit ? String(z.start_zeit).slice(0, 5) : null,
       end_zeit: z.end_zeit ? String(z.end_zeit).slice(0, 5) : null,
       dauer_minuten: z.dauer_minuten,
-      bezeichnung: `${z.dienstleistung_bezeichnung} (${z.kunde_name})`,
+      bezeichnung: `${z.artikel_bezeichnung} (${z.kunde_name})`,
     }));
 
   const summeMinuten = eintraege.reduce((s, e) => s + Number(e.dauer_minuten ?? 0), 0);

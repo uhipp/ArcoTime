@@ -1,22 +1,22 @@
 "use client";
 
-import type { Dienstleistung, Dienstleistungsklasse, MwstCode } from "@/lib/types";
+import type { Artikel, Artikelklasse, MwstCode } from "@/lib/types";
 import Link from "next/link";
 import { useActionState } from "react";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { AbsendeKnopf } from "@/components/absende-knopf";
 import { STAND_FELD } from "@/lib/konflikt";
 
-export function DienstleistungForm({
-  dienstleistung,
+export function ArtikelForm({
+  artikel,
   klassen,
   mwstCodes,
   einheiten,
   action,
   error,
 }: {
-  dienstleistung?: Dienstleistung;
-  klassen: Pick<Dienstleistungsklasse, "id" | "bezeichnung">[];
+  artikel?: Artikel;
+  klassen: Pick<Artikelklasse, "id" | "bezeichnung">[];
   mwstCodes: Pick<MwstCode, "id" | "code" | "bezeichnung">[];
   einheiten: { id: string; bezeichnung: string; aktiv: boolean }[];
   action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
@@ -31,8 +31,8 @@ export function DienstleistungForm({
     <form action={formAction} className="space-y-6 max-w-2xl">
       {/* Stand beim Öffnen. Beim Speichern wird geprüft, ob der
           Datensatz seither unverändert ist – siehe lib/konflikt. */}
-      {dienstleistung?.updated_at && (
-        <input type="hidden" name={STAND_FELD} value={String(dienstleistung.updated_at)} />
+      {artikel?.updated_at && (
+        <input type="hidden" name={STAND_FELD} value={String(artikel.updated_at)} />
       )}
       {meldung && (
         <div className="rounded bg-red-50 text-red-700 text-sm px-3 py-2">
@@ -48,7 +48,7 @@ export function DienstleistungForm({
           id="bezeichnung"
           name="bezeichnung"
           required
-          defaultValue={dienstleistung?.bezeichnung ?? ""}
+          defaultValue={artikel?.bezeichnung ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
@@ -61,7 +61,7 @@ export function DienstleistungForm({
           id="beschreibung"
           name="beschreibung"
           rows={2}
-          defaultValue={dienstleistung?.beschreibung ?? ""}
+          defaultValue={artikel?.beschreibung ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
@@ -75,7 +75,7 @@ export function DienstleistungForm({
             id="klasse_id"
             name="klasse_id"
             required
-            defaultValue={dienstleistung?.klasse_id ?? ""}
+            defaultValue={artikel?.klasse_id ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="" disabled>
@@ -99,7 +99,7 @@ export function DienstleistungForm({
           <select
             id="einheit"
             name="einheit"
-            defaultValue={dienstleistung?.einheit ?? einheiten[0]?.bezeichnung ?? "Stunde"}
+            defaultValue={artikel?.einheit ?? einheiten[0]?.bezeichnung ?? "Stunde"}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             {einheiten.map((e) => (
@@ -108,10 +108,10 @@ export function DienstleistungForm({
                 {!e.aktiv ? " (inaktiv)" : ""}
               </option>
             ))}
-            {dienstleistung?.einheit &&
-              !einheiten.some((e) => e.bezeichnung === dienstleistung.einheit) && (
-                <option value={dienstleistung.einheit}>
-                  {dienstleistung.einheit} (nicht mehr in der Liste)
+            {artikel?.einheit &&
+              !einheiten.some((e) => e.bezeichnung === artikel.einheit) && (
+                <option value={artikel.einheit}>
+                  {artikel.einheit} (nicht mehr in der Liste)
                 </option>
               )}
           </select>
@@ -126,7 +126,7 @@ export function DienstleistungForm({
           <input
             type="checkbox"
             name="zaehlt_als_arbeitszeit"
-            defaultChecked={dienstleistung?.zaehlt_als_arbeitszeit ?? true}
+            defaultChecked={artikel?.zaehlt_als_arbeitszeit ?? true}
             className="mt-0.5"
           />
           <span>
@@ -144,7 +144,7 @@ export function DienstleistungForm({
           <input
             type="checkbox"
             name="rabatt_erlaubt"
-            defaultChecked={dienstleistung?.rabatt_erlaubt ?? true}
+            defaultChecked={artikel?.rabatt_erlaubt ?? true}
             className="mt-0.5"
           />
           <span>
@@ -165,7 +165,7 @@ export function DienstleistungForm({
           <input
             type="checkbox"
             name="menge_aus_anreise"
-            defaultChecked={dienstleistung?.menge_aus_anreise ?? false}
+            defaultChecked={artikel?.menge_aus_anreise ?? false}
             className="mt-0.5"
           />
           <span>
@@ -191,7 +191,7 @@ export function DienstleistungForm({
           step="0.05"
           min="0"
           required
-          defaultValue={dienstleistung?.preis ?? ""}
+          defaultValue={artikel?.preis ?? ""}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
         />
       </div>
@@ -205,7 +205,7 @@ export function DienstleistungForm({
           <input
             id="konto"
             name="konto"
-            defaultValue={dienstleistung?.konto ?? ""}
+            defaultValue={artikel?.konto ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           />
         </div>
@@ -216,7 +216,7 @@ export function DienstleistungForm({
           <select
             id="mwst_code_id"
             name="mwst_code_id"
-            defaultValue={dienstleistung?.mwst_code_id ?? ""}
+            defaultValue={artikel?.mwst_code_id ?? ""}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-arcos-steel"
           >
             <option value="">Keiner</option>
@@ -233,7 +233,7 @@ export function DienstleistungForm({
         <input
           type="checkbox"
           name="aktiv"
-          defaultChecked={dienstleistung?.aktiv ?? true}
+          defaultChecked={artikel?.aktiv ?? true}
         />
         Aktiv (in Auswahllisten sichtbar)
       </label>
@@ -246,7 +246,7 @@ export function DienstleistungForm({
           Speichern
         </AbsendeKnopf>
         <Link
-          href="/dienstleistungen"
+          href="/artikel"
           className="rounded border text-sm font-medium px-4 py-2 hover:bg-gray-50"
         >
           Abbrechen

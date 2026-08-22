@@ -438,14 +438,18 @@ Tippfehler, zwei Symptome.
 Eine Reihenfolge, kein Zwischenzustand: Zugang an zwei Orten wäre die
 schlechteste aller Varianten.
 
-| Nr | Inhalt |
-|---|---|
-| **0078** | `standorte.kunde_id` (aus der Beteiligtenzeile befüllt, dann not null) · Rolle „Kunde" entfernen · `standorte.zugang`, `anreise_km`, `notiz` löschen · `ansprechpersonen.standort_id` löschen |
-| **0079** | `projekte.anreise_km`, `projekte.zugang` · Werte aus `kunden.anreise_km` je Projekt nachziehen · `kunden.anreise_km` löschen · `rapporte.kunde_id` löschen (steht seit 0071 aus) |
-| **0080** | Umbenennungen: `beteiligte` → `projekt_adressen` (nur noch `projekt_id`), `beteiligten_rollen` → `adress_rollen`, `rapport_beteiligte` → `rapport_mitarbeiter` · Bezug der Rollenzeilen von Standort auf Projekt umstellen |
-| **0080a** | Umbenennung `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`, die vier Fremdschlüsselspalten, die View · Tabellenliste im Änderungsprotokoll, die Protokollzeilen und die Spaltenwahl-Schlüssel nachführen |
-| **0080b** | `artikelklassen.menge_summieren` mit den zwei Prüftriggern |
-| **0081** | Begriffe: `adresse` neu, Vorgabe für `dienstleistung` auf „Artikel" · Branchenvorlagen und die Zeilen unserer Mandanten mitziehen · Einstellungsfelder für den Vortrag an `organisationen` |
+| Nr | Inhalt | |
+|---|---|---|
+| **0078** | Umbenennung `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`, die drei Fremdschlüsselspalten, die View, Bedingungen/Indizes/Regeln/Trigger · Tabellenliste und Zeilen des Änderungsprotokolls, Spaltenwahl-Schlüssel, Begriffsschlüssel | **geschrieben** |
+| **0079** | `standorte.kunde_id` (aus der Beteiligtenzeile befüllt, dann not null) · Rolle „Kunde" entfernen · `standorte.zugang`, `anreise_km`, `notiz` löschen · `ansprechpersonen.standort_id` löschen | |
+| **0080** | `projekte.anreise_km`, `projekte.zugang` · Werte aus `kunden.anreise_km` je Projekt nachziehen · `kunden.anreise_km` löschen · `rapporte.kunde_id` löschen (steht seit 0071 aus) | |
+| **0081** | `artikelklassen.menge_summieren` mit den zwei Prüftriggern | |
+| **0082** | Umbenennungen: `beteiligte` → `projekt_adressen` (nur noch `projekt_id`), `beteiligten_rollen` → `adress_rollen`, `rapport_beteiligte` → `rapport_mitarbeiter` · Bezug der Rollenzeilen von Standort auf Projekt umstellen | |
+| **0083** | Begriff `adresse` neu · Einstellungsfelder für den Vortrag an `organisationen` | |
+
+**Die Umbenennung läuft zuerst**, entschieden am 22.08.2026: Jede Etappe davor
+würde neuen Code mit dem falschen Wort schreiben — nach der Regel „ein erkannter
+Fehler wird ganz behoben" wäre das Arbeit, die man zweimal macht.
 
 Für jede berührte Tabelle gilt die Zehn-Punkte-Prüfliste aus
 `plan-parteien-standorte.md`, Abschnitt 11 (organisation_id, RLS,

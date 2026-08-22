@@ -227,8 +227,8 @@ export default async function AppLayout({
           <Link href="/projekte" className="hover:text-arcos-navy">
             {begriff(begriffe, "projekt", "mehrzahl")}
           </Link>
-          <Link href="/dienstleistungen" className="hover:text-arcos-navy">
-            {begriff(begriffe, "dienstleistung", "mehrzahl")}
+          <Link href="/artikel" className="hover:text-arcos-navy">
+            {begriff(begriffe, "artikel", "mehrzahl")}
           </Link>
           {isAdmin && (
             <Link href="/mitarbeiter" className="hover:text-arcos-navy">

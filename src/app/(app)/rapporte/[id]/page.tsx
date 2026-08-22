@@ -63,7 +63,7 @@ export default async function RapportDetailPage({
     { data: kunden },
     { data: projekte },
     { data: mitarbeitende },
-    { data: dienstleistungen },
+    { data: artikel },
     { data: rabattsaetze },
     { data: herkunft },
     { data: beteiligteRoh },
@@ -88,7 +88,7 @@ export default async function RapportDetailPage({
     supabase.from("projekte").select("id, bezeichnung, kunde_id, projektleiter_id").order("bezeichnung"),
     supabase.from("profiles").select("id, name").is("deaktiviert_am", null).order("name"),
     supabase
-      .from("dienstleistungen")
+      .from("artikel")
       .select("id, bezeichnung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, menge_aus_anreise")
       .eq("aktiv", true)
       .order("bezeichnung"),
@@ -268,7 +268,7 @@ export default async function RapportDetailPage({
         {offen && laufendePosition && (
           <div className="mb-4 rounded-lg border-2 border-red-500 bg-red-50 p-4">
             <p className="text-sm font-medium text-red-800 mb-1">
-              Timer läuft: {laufendePosition.dienstleistung_bezeichnung}
+              Timer läuft: {laufendePosition.artikel_bezeichnung}
             </p>
             <p className="text-xs text-red-700 mb-3">
               Gestartet um {laufendePosition.start_zeit?.slice(0, 5) ?? "–"} Uhr. Die
@@ -302,7 +302,7 @@ export default async function RapportDetailPage({
               <tbody className="divide-y">
                 {positionen.map((z) => (
                   <tr key={z.id}>
-                    <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
+                    <td className="px-4 py-2">{z.artikel_bezeichnung}</td>
                     <td className="px-4 py-2 text-gray-500 whitespace-pre-line">
                       {z.beschreibung ?? "–"}
                     </td>
@@ -337,7 +337,7 @@ export default async function RapportDetailPage({
                             // fokus: Das Bearbeitungsformular steht unter
                             // der Tabelle – ohne den Parameter beginnt die
                             // Seite oben und man scrollt erst einmal hin.
-                            href={`/rapporte/${id}?bearbeiten=${z.id}&fokus=pos_dienstleistung`}
+                            href={`/rapporte/${id}?bearbeiten=${z.id}&fokus=pos_artikel`}
                             className="text-xs text-arcos-steel hover:underline"
                           >
                             bearbeiten
@@ -377,7 +377,7 @@ export default async function RapportDetailPage({
         {offen && inBearbeitung && (
           <RapportPositionForm
             key={inBearbeitung.id}
-            dienstleistungen={dienstleistungen ?? []}
+            artikel={artikel ?? []}
             rabattsaetze={rabattsaetze ?? []}
             action={aktualisierePosition.bind(null, id, inBearbeitung.id)}
             position={inBearbeitung}
@@ -390,7 +390,7 @@ export default async function RapportDetailPage({
         )}
         {offen && !inBearbeitung && (
           <RapportPositionForm
-            dienstleistungen={dienstleistungen ?? []}
+            artikel={artikel ?? []}
             rabattsaetze={rabattsaetze ?? []}
             action={fuegePositionHinzu.bind(null, id)}
             mitarbeiterId={rapport.mitarbeiter_id}

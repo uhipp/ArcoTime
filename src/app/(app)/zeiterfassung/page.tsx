@@ -46,10 +46,10 @@ const SPALTEN: Spalte<ZeiteintragMitDetails>[] = [
     zelle: (z) => z.kostenstelle ?? "–",
   },
   {
-    key: "dienstleistung",
-    titel: "Dienstleistung",
-    wert: (z) => z.dienstleistung_bezeichnung,
-    zelle: (z) => z.dienstleistung_bezeichnung,
+    key: "artikel",
+    titel: "Artikel",
+    wert: (z) => z.artikel_bezeichnung,
+    zelle: (z) => z.artikel_bezeichnung,
   },
   {
     key: "beschreibung",
@@ -139,7 +139,7 @@ export default async function ZeiterfassungPage({
 
   const [
     { data: projekte },
-    { data: dienstleistungen },
+    { data: artikel },
     { data: mitarbeitende },
     { data: kunden },
     { data: rabattsaetze },
@@ -151,7 +151,7 @@ export default async function ZeiterfassungPage({
       .select("*, kunden(name, vorname, standard_rabatt_prozent, anreise_km)")
       .order("bezeichnung"),
     supabase
-      .from("dienstleistungen")
+      .from("artikel")
       .select("id, bezeichnung, beschreibung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id, menge_aus_anreise")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
@@ -195,7 +195,7 @@ export default async function ZeiterfassungPage({
       <div className="mb-8">
         <ZeiterfassungForm
           projekte={projekte ?? []}
-          dienstleistungen={dienstleistungen ?? []}
+          artikel={artikel ?? []}
           mitarbeitende={mitarbeitende ?? []}
           kunden={kunden ?? []}
           rabattsaetze={rabattsaetze ?? []}

@@ -112,7 +112,7 @@ Je nach gewählter Leistung erscheint das passende Feld:
 - **Arbeitszeit**: Von/Bis oder direkt eine Dauer in Minuten
 - **Mengenartikel** wie Kilometer oder Material: ein Mengenfeld mit der Einheit der Leistung
 
-Welche Leistungen als Arbeitszeit zählen, legt ein Admin unter [Dienstleistungen](/hilfe/dienstleistungen) fest. Preis, MWSt-Satz und Rabatt werden beim Hinzufügen eingefroren – eine spätere Änderung an den Stammdaten verändert einen bestehenden Rapport nicht.
+Welche Leistungen als Arbeitszeit zählen, legt ein Admin unter [Artikel](/hilfe/artikel) fest. Preis, MWSt-Satz und Rabatt werden beim Hinzufügen eingefroren – eine spätere Änderung an den Stammdaten verändert einen bestehenden Rapport nicht.
 
 **Timer für die Fahrzeit**: An jeder Position, die als Arbeitszeit zählt, steht bei einem offenen Rapport ein Knopf **„▶ Timer starten"**. Gedacht ist er für die Anfahrt: Der Monteur sitzt im Fahrzeug, öffnet den Rapport des Kunden, startet den Timer und fährt los. Bei der Ankunft stoppt er ihn – die gemessene Zeit ersetzt die Dauer dieser Position.
 

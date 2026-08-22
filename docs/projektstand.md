@@ -185,8 +185,9 @@ Logo und die Umbenennung aller Speicherknöpfe („Adresse speichern" statt
   höchst unprofessionell." Der Umfang der Änderung ist kein Argument dagegen;
   es gibt zwei Datenbanken und nur Testdaten. Notfalls werden Bewegungsdaten
   gelöscht, umgestellt und neu erfasst.
-  *Erster Anwendungsfall: `dienstleistungen` → `artikel`, weil die Tabelle
-  längst auch Material und Spesen enthält.*
+  *Erster Anwendungsfall, umgesetzt am 22.08.2026 (Migration 0078):
+  `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`,
+  weil die Tabelle längst auch Material, Spesen und Anfahrt enthält.*
 - **Bei fachlichen Regeln (Recht, Buchhaltung, HR) nicht raten, sondern fragen.**
 - **Jede Arbeitsmaske wird beim Anfassen gegen `docs/masken-leitlinie.md`
   geprüft.** Kein Scrollen auf der Seite, Liste links und Detail rechts,

@@ -31,7 +31,7 @@ Neue Mitarbeitende werden von einem Admin eingeladen (siehe [Mitarbeitende](/hil
 Oben in der Kopfzeile findest du:
 
 - **Links**: Name deiner Organisation, dein eigener Name (Klick öffnet dein Mitarbeitenden-Profil) und "Abmelden".
-- **Mitte/rechts**: die Hauptnavigation zu allen Modulen (Zeiterfassung, Anfragen, Auswertungen, Kalender, Kunden, Projekte, Dienstleistungen). Admins sehen zusätzlich Mitarbeitende, Export und Einstellungen.
+- **Mitte/rechts**: die Hauptnavigation zu allen Modulen (Zeiterfassung, Anfragen, Auswertungen, Kalender, Kunden, Projekte, Artikel). Admins sehen zusätzlich Mitarbeitende, Export und Einstellungen.
 - **"❓ Hilfe"** ganz rechts in der Navigation öffnet immer den zur aktuellen Seite passenden Hilfe-Artikel – auf der Zeiterfassung landest du direkt bei der Zeiterfassungs-Hilfe, auf den Anfragen bei der Anfragen-Hilfe, und so weiter.
 
 ## Die Übersichtsseite

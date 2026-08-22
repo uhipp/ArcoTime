@@ -21,7 +21,7 @@ export type Recht =
   // im Betrieb – die Regel aus 0031.
   | "kunden.loeschen"
   | "projekte.loeschen"
-  | "dienstleistungen.loeschen"
+  | "artikel.loeschen"
   | "anfragen.loeschen"
   | "dokumente.loeschen"
   // Fremde Rapporte abschliessen. Der Regelfall ist die verantwortliche

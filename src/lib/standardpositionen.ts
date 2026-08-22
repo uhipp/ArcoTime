@@ -3,9 +3,9 @@ import type { createClient } from "@/lib/supabase/server";
 type Client = Awaited<ReturnType<typeof createClient>>;
 
 type Standardposition = {
-  dienstleistung_id: string;
+  artikel_id: string;
   vorgabe: number;
-  dienstleistungen: {
+  artikel: {
     zaehlt_als_arbeitszeit: boolean;
     rabatt_erlaubt: boolean;
     menge_aus_anreise: boolean;
@@ -23,16 +23,16 @@ type Standardposition = {
 async function rabattFuer(
   supabase: Client,
   kundeId: string,
-  dienstleistung: NonNullable<Standardposition["dienstleistungen"]>
+  artikel: NonNullable<Standardposition["artikel"]>
 ): Promise<number> {
-  if (!dienstleistung.rabatt_erlaubt) return 0;
+  if (!artikel.rabatt_erlaubt) return 0;
 
-  if (dienstleistung.klasse_id) {
+  if (artikel.klasse_id) {
     const { data: klassenRabatt } = await supabase
       .from("kundenrabatte")
       .select("rabatt_prozent")
       .eq("kunde_id", kundeId)
-      .eq("klasse_id", dienstleistung.klasse_id)
+      .eq("klasse_id", artikel.klasse_id)
       .maybeSingle();
     if (klassenRabatt) return Number(klassenRabatt.rabatt_prozent);
   }
@@ -86,7 +86,7 @@ export async function legeStandardpositionenAn(
   const { data: vorlagen, error: ladeFehler } = await supabase
     .from("rapport_standardpositionen")
     .select(
-      "dienstleistung_id, vorgabe, dienstleistungen(zaehlt_als_arbeitszeit, rabatt_erlaubt, menge_aus_anreise, klasse_id)"
+      "artikel_id, vorgabe, artikel(zaehlt_als_arbeitszeit, rabatt_erlaubt, menge_aus_anreise, klasse_id)"
     )
     .eq("aktiv", true)
     .order("sortierung");
@@ -102,7 +102,7 @@ export async function legeStandardpositionenAn(
 
   const positionen = [];
   for (const zeile of zeilen) {
-    const dl = zeile.dienstleistungen;
+    const dl = zeile.artikel;
     if (!dl) continue;
 
     // Die Anreise des Kunden schlägt die Vorgabe: Genau dafür ist das
@@ -118,7 +118,7 @@ export async function legeStandardpositionenAn(
     positionen.push({
       rapport_id: rapport.id,
       projekt_id: rapport.projekt_id,
-      dienstleistung_id: zeile.dienstleistung_id,
+      artikel_id: zeile.artikel_id,
       datum: rapport.datum,
       mitarbeiter_id: rapport.mitarbeiter_id,
       user_id: userId,

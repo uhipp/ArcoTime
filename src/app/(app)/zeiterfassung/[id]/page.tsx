@@ -27,7 +27,7 @@ export default async function ZeiteintragDetailPage({
     { data: zeiteintrag },
     profile,
     { data: projekte },
-    { data: dienstleistungen },
+    { data: artikel },
     { data: mitarbeitende },
     { data: kunden },
     { data: rabattsaetze },
@@ -42,7 +42,7 @@ export default async function ZeiteintragDetailPage({
       .select("*, kunden(name, vorname, standard_rabatt_prozent, anreise_km)")
       .order("bezeichnung"),
     supabase
-      .from("dienstleistungen")
+      .from("artikel")
       .select("id, bezeichnung, beschreibung, aktiv, einheit, zaehlt_als_arbeitszeit, rabatt_erlaubt, klasse_id, menge_aus_anreise")
       .order("bezeichnung"),
     supabase.from("profiles").select("id, name").order("name"),
@@ -120,7 +120,7 @@ export default async function ZeiteintragDetailPage({
           <ZeiterfassungForm
             zeiteintrag={zeiteintrag as Zeiteintrag}
             projekte={projekte ?? []}
-            dienstleistungen={dienstleistungen ?? []}
+            artikel={artikel ?? []}
             mitarbeitende={mitarbeitende ?? []}
             kunden={kunden ?? []}
             rabattsaetze={rabattsaetze ?? []}

@@ -9,11 +9,11 @@ import { holeTagesbelegung } from "@/app/actions/zeiteintraege";
 import { stundenLabel, type Tagesbelegung } from "@/lib/tagesbelegung";
 import type { FormularErgebnis } from "@/lib/formular-ergebnis";
 import { AbsendeKnopf } from "@/components/absende-knopf";
-import type { Dienstleistung, ZeiteintragMitDetails } from "@/lib/types";
+import type { Artikel, ZeiteintragMitDetails } from "@/lib/types";
 
 type Rabattsatz = { id: string; prozent: number; bezeichnung: string | null; aktiv: boolean };
-type DienstleistungOption = Pick<
-  Dienstleistung,
+type ArtikelOption = Pick<
+  Artikel,
   | "id"
   | "bezeichnung"
   | "aktiv"
@@ -31,7 +31,7 @@ type DienstleistungOption = Pick<
 // Position in der Tabelle darüber (Phase 11, Etappe C). Wer im Fahrzeug
 // losfährt, drückt einen Knopf – er füllt kein Formular aus.
 export function RapportPositionForm({
-  dienstleistungen,
+  artikel,
   rabattsaetze,
   action,
   position,
@@ -41,7 +41,7 @@ export function RapportPositionForm({
   beteiligte,
   anreiseKm,
 }: {
-  dienstleistungen: DienstleistungOption[];
+  artikel: ArtikelOption[];
   rabattsaetze: Rabattsatz[];
   action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   // Gesetzt beim Bearbeiten einer bestehenden Position.
@@ -67,7 +67,7 @@ export function RapportPositionForm({
   // Formular neu aufbauen würde.
   const [ergebnis, formAction] = useActionState(action, null);
 
-  const [dienstleistungId, setDienstleistungId] = useState(position?.dienstleistung_id ?? "");
+  const [artikelId, setArtikelId] = useState(position?.artikel_id ?? "");
   const [startZeit, setStartZeit] = useState(position?.start_zeit?.slice(0, 5) ?? "");
   const [endZeit, setEndZeit] = useState(position?.end_zeit?.slice(0, 5) ?? "");
   const [dauerText, setDauerText] = useState(
@@ -80,7 +80,7 @@ export function RapportPositionForm({
   // errechnete – sie kann bewusst abweichen, etwa wegen einer Pause.
   const [dauerManuell, setDauerManuell] = useState(bearbeiten);
 
-  const gewaehlt = dienstleistungen.find((d) => d.id === dienstleistungId);
+  const gewaehlt = artikel.find((d) => d.id === artikelId);
 
   // Anreise-Kilometer als Menge vorschlagen – dieselbe Regel wie in der
   // Zeiterfassung: Ein Vorschlag darf nie überschreiben, was jemand
@@ -88,10 +88,10 @@ export function RapportPositionForm({
   // Vorschlag der zuvor gewählten Leistung.
   const anreiseVorschlag = anreiseKm != null ? String(Number(anreiseKm)) : "";
 
-  function waehleDienstleistung(neueId: string) {
-    const alte = dienstleistungen.find((d) => d.id === dienstleistungId);
-    const neue = dienstleistungen.find((d) => d.id === neueId);
-    setDienstleistungId(neueId);
+  function waehleArtikel(neueId: string) {
+    const alte = artikel.find((d) => d.id === artikelId);
+    const neue = artikel.find((d) => d.id === neueId);
+    setArtikelId(neueId);
 
     if (!neue?.menge_aus_anreise || anreiseVorschlag === "") return;
     setMengeText((aktuell) => {
@@ -161,21 +161,21 @@ export function RapportPositionForm({
       </h3>
 
       <div>
-        <label className="block text-xs text-gray-500 mb-1" htmlFor="pos_dienstleistung">
+        <label className="block text-xs text-gray-500 mb-1" htmlFor="pos_artikel">
           Leistung
         </label>
         <select
-          id="pos_dienstleistung"
-          name="dienstleistung_id"
+          id="pos_artikel"
+          name="artikel_id"
           required
-          value={dienstleistungId}
-          onChange={(e) => waehleDienstleistung(e.target.value)}
+          value={artikelId}
+          onChange={(e) => waehleArtikel(e.target.value)}
           className="w-full max-w-md rounded border border-gray-300 px-3 py-2 text-sm"
         >
           <option value="" disabled>
             Bitte wählen…
           </option>
-          {dienstleistungen.map((d) => (
+          {artikel.map((d) => (
             <option key={d.id} value={d.id}>
               {d.bezeichnung} ({d.einheit})
             </option>

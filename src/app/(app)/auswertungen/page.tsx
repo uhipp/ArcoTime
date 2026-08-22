@@ -74,7 +74,7 @@ export default async function AuswertungenPage({
   ] = await Promise.all([
     supabase.from("kunden").select("id, name, vorname").order("name"),
     supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
-    supabase.from("dienstleistungsklassen").select("id, bezeichnung").order("sortierung"),
+    supabase.from("artikelklassen").select("id, bezeichnung").order("sortierung"),
     isAdmin
       ? supabase.from("profiles").select("id, name").order("name")
       : Promise.resolve({ data: null }),
@@ -285,7 +285,7 @@ export default async function AuswertungenPage({
                 <th className="px-4 py-2">Datum</th>
                 {isAdmin && <th className="px-4 py-2">Mitarbeitende</th>}
                 <th className="px-4 py-2">Kunde / Projekt</th>
-                <th className="px-4 py-2">Dienstleistung</th>
+                <th className="px-4 py-2">Artikel</th>
                 <th className="px-4 py-2">Klasse</th>
                 <th className="px-4 py-2">Dauer</th>
                 <th className="px-4 py-2">Betrag</th>
@@ -306,7 +306,7 @@ export default async function AuswertungenPage({
                       {z.vorname ? `${z.vorname} ` : ""}
                       {z.kunde_name} – {z.projekt_bezeichnung}
                     </td>
-                    <td className="px-4 py-2">{z.dienstleistung_bezeichnung}</td>
+                    <td className="px-4 py-2">{z.artikel_bezeichnung}</td>
                     <td className="px-4 py-2">{z.klasse_bezeichnung ?? "–"}</td>
                     <td className="px-4 py-2 whitespace-nowrap">
                       {laeuft ? (

@@ -161,7 +161,7 @@ export default async function RapportDruckPage({
         <tbody>
           {positionen.map((z) => (
             <tr key={z.id} className="border-b align-top break-inside-avoid">
-              <td className="py-2 pr-3 whitespace-nowrap">{z.dienstleistung_bezeichnung}</td>
+              <td className="py-2 pr-3 whitespace-nowrap">{z.artikel_bezeichnung}</td>
               <td className="py-2 pr-3 whitespace-pre-line">{z.beschreibung ?? ""}</td>
               <td className="py-2 text-right whitespace-nowrap">{mengeLabel(z)}</td>
             </tr>

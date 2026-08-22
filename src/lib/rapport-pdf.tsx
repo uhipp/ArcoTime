@@ -192,7 +192,7 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
           // wrap={false}: Eine Position mit mehrzeiliger Beschreibung wird
           // nicht über zwei Seiten zerrissen.
           <View key={z.id} style={stil.zeile} wrap={false}>
-            <Text style={stil.spalteLeistung}>{z.dienstleistung_bezeichnung}</Text>
+            <Text style={stil.spalteLeistung}>{z.artikel_bezeichnung}</Text>
             <Text style={stil.spalteBeschreibung}>{z.beschreibung ?? ""}</Text>
             <Text style={stil.spalteMenge}>{mengeLabel(z)}</Text>
           </View>
