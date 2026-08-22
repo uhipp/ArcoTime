@@ -5,6 +5,14 @@
     "titel": "Arbeitsrapporte, Disposition, Mengenartikel und Standorte",
     "eintraege": [
       {
+        "typ": "behoben",
+        "text": "**„Person entfernen“ tat nichts.** Bei den Ansprechpersonen eines Kunden stand der Löschknopf innerhalb des Personenformulars – verschachtelte Formulare sind in HTML verboten, der Browser wirft das innere weg, und der Knopf hat danach die Person **gespeichert** statt sie zu löschen. Ohne Rückfrage, ohne Fehlermeldung. Derselbe Fehler steckte in der Spaltenwahl der Zeiterfassung (sie filterte statt zu speichern) und beim Entfernen einer Branchenvorlage im Plattformbereich. Alle drei sind behoben, und ein neues Werkzeug sucht diese Verschachtelung künftig im ganzen Code."
+      },
+      {
+        "typ": "behoben",
+        "text": "**Nach dem Speichern blieb die Kundenmaske auf dem Reiter, von dem man kam.** Vorher sprang sie zurück auf „Adresse“ – wer eine Ansprechperson erfasst hatte, landete auf dem Adressformular, hielt das Speichern für gescheitert und erfasste die Person ein zweites Mal. Das gilt jetzt für Ansprechpersonen, Kontakte, Preise, Rabatte und Standorte, auch auf den Fehlerwegen."
+      },
+      {
         "typ": "neu",
         "text": "**Standorte**: Zwischen Kunde und Auftrag gibt es jetzt den **Einsatzort** – Liegenschaft, Filiale, Baustelle, Serverzimmer – mit eigener Adresse, eigener Anfahrt, eigenem Zugang und eigenen Ansprechpersonen. Eine Verwaltung mit vierzig Häusern ist ein Kunde mit einer Rechnungsadresse und vierzig Orten; bisher stand auf dem Rapport die Adresse der Verwaltung. Ein Admin schaltet die Ebene unter Einstellungen mit „Standorte führen“ ein – wer je Kunde nur eine Adresse hat, lässt sie aus, und dann ändert sich nichts."
       },

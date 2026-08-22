@@ -198,6 +198,28 @@ export function KundenAnsprechpersonen({
           key={p.id}
           className={`rounded-lg border bg-white p-4 mb-3 ${p.aktiv ? "" : "opacity-60"}`}
         >
+          {/* Der Löschknopf steht ÜBER dem Formular und nicht darin.
+              Zweimal begründet: DeleteButton ist selbst ein <form>, und
+              verschachtelte Formulare sind in HTML verboten – der Browser
+              wirft das innere weg, der Knopf gehört dann zum äusseren und
+              speichert, statt zu löschen (genau das ist am 22.08. passiert:
+              "Wenn ich auf Person entfernen klicke passiert nichts").
+              Ausserdem sagt die Masken-Leitlinie, dass Löschen nie neben dem
+              Speichern steht, sondern am Objekt, das es entfernt. */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="text-xs font-semibold text-gray-500">
+              {p.ist_standard ? "Standardperson" : "Person"}
+              {!p.aktiv && " · inaktiv"}
+            </span>
+            {istAdmin && (
+              <DeleteButton
+                action={loescheAnsprechperson.bind(null, kundeId, p.id)}
+                label="Person entfernen"
+                confirmText={`„${p.vorname ? `${p.vorname} ` : ""}${p.name}“ entfernen? Die Kontaktangaben dieser Person gehen mit.`}
+              />
+            )}
+          </div>
+
           <form action={speichereAnsprechperson.bind(null, kundeId)} className="space-y-2">
             <input type="hidden" name="id" value={p.id} />
             <div className="flex flex-wrap items-end gap-2">
@@ -253,13 +275,6 @@ export function KundenAnsprechpersonen({
               >
                 Person speichern
               </button>
-              {istAdmin && (
-                <DeleteButton
-                  action={loescheAnsprechperson.bind(null, kundeId, p.id)}
-                  label="Person entfernen"
-                  confirmText={`„${p.vorname ? `${p.vorname} ` : ""}${p.name}" entfernen? Die Kontaktangaben dieser Person gehen mit.`}
-                />
-              )}
             </div>
           </form>
 

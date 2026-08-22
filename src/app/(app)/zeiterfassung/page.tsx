@@ -209,6 +209,7 @@ export default async function ZeiterfassungPage({
 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-medium">Meine Einträge</h2>
+        <div className="flex items-center gap-2">
         <form className="flex items-center gap-2 text-sm">
           <DatumFeld
             name="von"
@@ -227,12 +228,17 @@ export default async function ZeiterfassungPage({
           <button type="submit" className="rounded border px-3 py-1.5 hover:bg-gray-50">
             Filtern
           </button>
-          <SpaltenWahl
-            alle={SPALTEN.map(({ key, titel, fest }) => ({ key, titel, fest }))}
-            gewaehlt={gewaehlt}
-            action={speichereSpaltenwahl.bind(null, "zeiterfassung", "/zeiterfassung")}
-          />
         </form>
+        {/* Die Spaltenwahl steht NEBEN dem Filterformular, nicht darin: Sie
+            bringt ihr eigenes <form> mit, und verschachtelte Formulare sind
+            in HTML verboten – der Browser wirft das innere weg, und dann
+            filtert das Speichern der Spaltenwahl statt zu speichern. */}
+        <SpaltenWahl
+          alle={SPALTEN.map(({ key, titel, fest }) => ({ key, titel, fest }))}
+          gewaehlt={gewaehlt}
+          action={speichereSpaltenwahl.bind(null, "zeiterfassung", "/zeiterfassung")}
+        />
+        </div>
       </div>
 
       {listError && (

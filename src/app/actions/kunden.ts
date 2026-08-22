@@ -85,7 +85,10 @@ export async function updateKunde(
   }
 
   revalidatePath("/kunden");
-  redirect(mitErfolg("/kunden", "Kunde gespeichert."));
+  revalidatePath(`/kunden/${id}`);
+  // Auf dem Kunden bleiben. Die Liste steht links in derselben Maske – wer
+  // eine Adresse korrigiert, will danach nicht suchen, wo er war.
+  redirect(mitErfolg(`/kunden/${id}?reiter=adresse`, "Adresse gespeichert."));
 }
 
 export async function deleteKunde(id: string) {
@@ -171,10 +174,10 @@ export async function setzeKundenpreis(kundeId: string, formData: FormData) {
   const preis = Number(formData.get("preis") ?? NaN);
 
   if (!dienstleistung_id) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte eine Dienstleistung wählen.")}`);
+    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Bitte eine Dienstleistung wählen.")}`);
   }
   if (Number.isNaN(preis) || preis < 0) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte einen gültigen Preis angeben.")}`);
+    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Bitte einen gültigen Preis angeben.")}`);
   }
 
   // ab_menge 0 = Grundpreis. Die Staffel-Spalte existiert bereits, wird
@@ -187,17 +190,20 @@ export async function setzeKundenpreis(kundeId: string, formData: FormData) {
     );
 
   if (error) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}?fokus=neuer_kundenpreis`, "Kundenpreis gespeichert."));
+  redirect(mitErfolg(
+      `/kunden/${kundeId}?reiter=konditionen&fokus=neuer_kundenpreis`,
+      "Kundenpreis gespeichert."
+    ));
 }
 
 export async function loescheKundenpreis(kundeId: string, id: string) {
   const supabase = await createClient();
   await supabase.from("kundenpreise").delete().eq("id", id);
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}`, "Kundenpreis entfernt."));
+  redirect(mitErfolg(`/kunden/${kundeId}?reiter=konditionen`, "Kundenpreis entfernt."));
 }
 
 export async function setzeKundenrabatt(kundeId: string, formData: FormData) {
@@ -206,11 +212,11 @@ export async function setzeKundenrabatt(kundeId: string, formData: FormData) {
   const rabatt_prozent = Number(formData.get("rabatt_prozent") ?? NaN);
 
   if (!klasse_id) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte eine Klasse wählen.")}`);
+    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Bitte eine Klasse wählen.")}`);
   }
   if (Number.isNaN(rabatt_prozent) || rabatt_prozent < 0 || rabatt_prozent > 100) {
     redirect(
-      `/kunden/${kundeId}?error=${encodeURIComponent("Rabatt muss zwischen 0 und 100% liegen.")}`
+      `/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent("Rabatt muss zwischen 0 und 100% liegen.")}`
     );
   }
 
@@ -219,17 +225,20 @@ export async function setzeKundenrabatt(kundeId: string, formData: FormData) {
     .upsert({ kunde_id: kundeId, klasse_id, rabatt_prozent }, { onConflict: "kunde_id,klasse_id" });
 
   if (error) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=konditionen&error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}?fokus=neuer_klassenrabatt`, "Klassenrabatt gespeichert."));
+  redirect(mitErfolg(
+      `/kunden/${kundeId}?reiter=konditionen&fokus=neuer_klassenrabatt`,
+      "Klassenrabatt gespeichert."
+    ));
 }
 
 export async function loescheKundenrabatt(kundeId: string, id: string) {
   const supabase = await createClient();
   await supabase.from("kundenrabatte").delete().eq("id", id);
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}`, "Klassenrabatt entfernt."));
+  redirect(mitErfolg(`/kunden/${kundeId}?reiter=konditionen`, "Klassenrabatt entfernt."));
 }
 
 // ---------------------------------------------------------------------
@@ -251,7 +260,9 @@ export async function speichereAnsprechperson(kundeId: string, formData: FormDat
   const id = str(formData.get("id"));
   const name = str(formData.get("name"));
   if (!name) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Der Name ist ein Pflichtfeld.")}`);
+    redirect(
+      `/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent("Der Name ist ein Pflichtfeld.")}`
+    );
   }
 
   const werte = {
@@ -282,13 +293,13 @@ export async function speichereAnsprechperson(kundeId: string, formData: FormDat
     : await supabase.from("ansprechpersonen").insert(werte);
 
   if (error) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/kunden/${kundeId}`);
   redirect(
     mitErfolg(
-      `/kunden/${kundeId}?fokus=neue_ansprechperson`,
+      `/kunden/${kundeId}?reiter=personen&fokus=neue_ansprechperson`,
       id ? "Ansprechperson gespeichert." : "Ansprechperson erfasst."
     )
   );
@@ -300,10 +311,10 @@ export async function loescheAnsprechperson(kundeId: string, id: string) {
   // gehören ihr und niemandem sonst.
   const { error } = await supabase.from("ansprechpersonen").delete().eq("id", id);
   if (error) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}`, "Ansprechperson entfernt."));
+  redirect(mitErfolg(`/kunden/${kundeId}?reiter=personen`, "Ansprechperson entfernt."));
 }
 
 // Ein Kontakt hängt entweder am Kunden oder an einer Person – genau an einem
@@ -319,10 +330,14 @@ export async function speichereKontakt(kundeId: string, formData: FormData) {
   const ansprechpersonId = str(formData.get("ansprechperson_id"));
 
   if (!artId) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte eine Kontaktart wählen.")}`);
+    redirect(
+      `/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent("Bitte eine Kontaktart wählen.")}`
+    );
   }
   if (!wert) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent("Bitte einen Wert angeben.")}`);
+    redirect(
+      `/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent("Bitte einen Wert angeben.")}`
+    );
   }
 
   const { error } = await supabase.from("kontakte").insert({
@@ -335,19 +350,19 @@ export async function speichereKontakt(kundeId: string, formData: FormData) {
   });
 
   if (error) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}?fokus=neuer_kontakt`, "Kontakt erfasst."));
+  redirect(mitErfolg(`/kunden/${kundeId}?reiter=personen&fokus=neuer_kontakt`, "Kontakt erfasst."));
 }
 
 export async function loescheKontakt(kundeId: string, id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("kontakte").delete().eq("id", id);
   if (error) {
-    redirect(`/kunden/${kundeId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/kunden/${kundeId}?reiter=personen&error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath(`/kunden/${kundeId}`);
-  redirect(mitErfolg(`/kunden/${kundeId}`, "Kontakt entfernt."));
+  redirect(mitErfolg(`/kunden/${kundeId}?reiter=personen`, "Kontakt entfernt."));
 }

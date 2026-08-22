@@ -373,26 +373,24 @@ export default async function PlattformPage({
 
         {[...vorlagen.keys()].map((branche) => (
           <div key={branche} className="border-t pt-4 mt-4 first:border-0 first:pt-0 first:mt-0">
+            {/* Der Löschknopf steht AUSSERHALB des Vorlagenformulars:
+                DeleteButton ist selbst ein <form>, und verschachtelte
+                Formulare sind in HTML verboten – der Browser wirft das
+                innere weg, der Knopf gehört dann zum äusseren und speichert
+                die Vorlage, statt sie zu entfernen. Ohne Rückfrage und ohne
+                Fehlermeldung. */}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-medium text-sm">{branche}</h3>
+              {branche !== "Neutral" && (
+                <DeleteButton
+                  action={loescheBegriffVorlagePlattform.bind(null, branche)}
+                  label="Vorlage entfernen"
+                  confirmText={`Vorlage „${branche}“ entfernen? Bereits übernommene Bezeichnungen bleiben bei den Betrieben bestehen.`}
+                />
+              )}
+            </div>
             <form action={speichereBegriffVorlagePlattform} className="space-y-2">
               <input type="hidden" name="branche" value={branche} />
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-sm">{branche}</h3>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="submit"
-                    className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
-                  >
-                    speichern
-                  </button>
-                  {branche !== "Neutral" && (
-                    <DeleteButton
-                      action={loescheBegriffVorlagePlattform.bind(null, branche)}
-                      label="entfernen"
-                      confirmText={`Vorlage „${branche}“ entfernen? Bereits übernommene Bezeichnungen bleiben bei den Betrieben bestehen.`}
-                    />
-                  )}
-                </div>
-              </div>
               {BEGRIFF_FELDER.map(({ schluessel, hinweis }) => (
                 <div key={schluessel} className="flex flex-wrap items-end gap-2">
                   <div className="w-28 shrink-0">
@@ -424,6 +422,13 @@ export default async function PlattformPage({
                   </select>
                 </div>
               ))}
+              {/* Jeder Knopf nennt sein Objekt (Masken-Leitlinie). */}
+              <button
+                type="submit"
+                className="rounded border px-3 py-1.5 text-sm hover:bg-gray-50"
+              >
+                Vorlage speichern
+              </button>
             </form>
           </div>
         ))}

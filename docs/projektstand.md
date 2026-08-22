@@ -174,7 +174,9 @@ Logo und die Umbenennung aller Speicherknöpfe („Adresse speichern" statt
   `scripts/mandanten-pruefen.mjs`. Listen über „alle Mandantentabellen" kommen aus
   dem Postgres-Katalog, nie aus einer Aufzählung im Code.
 - **Eine Prüfung, die still nichts findet, ist schlimmer als keine.** Werkzeuge
-  brechen ab, statt eine unvollständige Vorschau zu zeigen.
+  brechen ab, statt eine unvollständige Vorschau zu zeigen. Ein neuer Prüfer
+  wird gegen den Stand geprüft, in dem der Fehler noch drinsteckt – sonst weiss
+  niemand, ob „keine Beanstandungen" etwas bedeutet.
 - **Bei fachlichen Regeln (Recht, Buchhaltung, HR) nicht raten, sondern fragen.**
 - **Jede Arbeitsmaske wird beim Anfassen gegen `docs/masken-leitlinie.md`
   geprüft.** Kein Scrollen auf der Seite, Liste links und Detail rechts,
@@ -188,6 +190,7 @@ node --env-file=.env.local scripts/mandanten-pruefen.mjs          # Mandantentre
 node --env-file=.env.local scripts/mandant-loeschen.mjs "Name"    # Probelauf
 node --env-file=.env.local scripts/dokumente-pruefen.mjs          # Dateien vs. Zeilen
 node --env-file=.env.local scripts/standorte-pruefen.mjs          # Ortsebene (0076/0077)
+node scripts/formulare-pruefen.mjs                                # verschachtelte <form>
 find .next -name "* [0-9].*" -delete                              # OneDrive-Kopien vor tsc
 ```
 
