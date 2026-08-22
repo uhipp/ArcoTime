@@ -228,6 +228,8 @@ Rundumschlag.
 | Anfragen | Board statt Liste + Detail — hier ist das Board wahrscheinlich das bessere Muster, zu prüfen |
 | Rapporte | Detailseite eigenständig; Positionen sind der Kern, Reiter denkbar |
 | Zeiterfassung | Formular über Liste, funktioniert; Feldaktionen fehlen |
+| Rapport | **auf dem Handy umgebaut** (23.08.2026): Aktionsleiste unten, Beschreibung unter der Leistung statt in eigener Spalte, 44-px-Flächen |
+| Startseite | **„Mein Tag“ zuoberst** (23.08.2026): laufender Timer, Einsätze von heute, offene Rapporte |
 | Einstellungen, Plattform | Einstellungsmasken — Länge ist dort in Ordnung |
 
 ### Was an der Kundenmaske noch offen ist
@@ -241,10 +243,12 @@ Ehrlich statt gerundet — die Maske erfüllt die Prüfliste nicht vollständig:
   (`/kunden`), und der Knopf dorthin steht in der Bereichsleiste. Ob das
   reicht oder die Liste breiter und aufklappbar werden muss, entscheidet die
   erste Woche Arbeit damit.
-- **Punkt 10 ungeprüft.** Das Nebeneinander bricht auf dem Telefon nicht in
-  ein Nacheinander um; die Liste bleibt 288 px breit. Auf dem Tablet im
-  Querformat geht es, auf dem Handy nicht. Das ist der nächste Schritt an
-  dieser Maske und gehört zum Thema Handy-App.
+- **Punkt 10 umgesetzt am 23.08.2026, aber nur am Schreibtisch geprüft.** Auf
+  dem Telefon ist die Liste ausgeblendet (`hidden md:flex`), aus dem
+  Nebeneinander wird ein Nacheinander, und der Weg zurück ist „Ganze Liste“.
+  Die Reiterleiste ist auf 48 px gewachsen. Was ich **nicht** prüfen konnte:
+  wie es sich auf einem echten Gerät anfühlt — dafür braucht es eine
+  Anmeldung, und die gehört dem Nutzer.
 - **Die Feldaktionen (Punkt 6)** stehen bei den Ansprechpersonen und am
   Standort (`mailto:`, `tel:`, Navigation), aber noch nicht am Adressblock des
   Kunden selbst und nicht überall gleich aussehend. Die Einstellung „Mail
@@ -255,7 +259,24 @@ Ehrlich statt gerundet — die Maske erfüllt die Prüfliste nicht vollständig:
   eine normale Seite — schmaler, aber vollständig. Der Preis dafür war eine
   Zeile CSS statt eines Umbaus aller dreissig Seiten.
 
-**Nächster Schritt:** Das Rapport-Dokument und die Handy-Ansicht des Rapports
-(`docs/plan-ablauf-standorte.md`, Etappe 3 und 4). Der Rapport ist die Maske,
-die ein Monteur täglich in der Hand hat, und die einzige, die auch auf Papier
-funktionieren muss.
+### Was auf dem Telefon gilt — entschieden am 23.08.2026
+
+**Reihenfolge statt Umfang.** Auf dem Telefon ist der Funktionsumfang
+derselbe wie am Arbeitsplatz; nur die Anordnung ändert sich. Kein Knopf
+verschwindet, weil das Gerät klein ist.
+
+Die Begründung, kurz: Etwas zu verstecken kostet Arbeit statt sie zu sparen —
+der Code ist derselbe, und es käme eine zweite Entscheidungsebene dazu. Auf dem
+Telefon sitzt nicht nur der Monteur, sondern auch die Geschäftsleitung im Auto.
+Und es erzeugt genau eine Sorte Supportfall, auf die es keine gute Antwort
+gibt: „Warum kann ich das am Handy nicht?“
+
+**Was der Monteur nicht sehen soll, ist eine Rollenfrage und keine
+Gerätefrage.** Preise, Umsätze, Löhne gehören ins Berechtigungssystem und
+müssen am Schreibtisch genauso gelten — sonst ist es keine Regel, sondern eine
+Sichtblende, die ein grösserer Bildschirm umgeht.
+
+**Nächster Schritt:** Auswertungen je Artikelklasse, Auftrag und Standort
+(`docs/plan-ablauf-standorte.md`, Etappe 6). Und wenn die Handy-Ansicht im
+Einsatz war: prüfen, was sich dort wirklich schlecht anfühlt, statt es zu
+erraten.

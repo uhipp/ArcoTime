@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentProfile, getCurrentOrganisation } from "@/lib/get-profile";
 import { createClient } from "@/lib/supabase/server";
-import { heuteIso } from "@/lib/date-utils";
+import { heuteIso, formatDatumCH } from "@/lib/date-utils";
 import type { Anfrage } from "@/lib/types";
 import { darf } from "@/lib/berechtigungen";
 import { begriff, getBegriffe } from "@/lib/begriffe";
@@ -29,9 +29,165 @@ export default async function DashboardPage() {
 
   const offeneWiedervorlagen = (wiedervorlagen as Anfrage[] | null) ?? [];
 
+  // „Mein Tag" – was jemand HEUTE tut, und zwar zuoberst.
+  //
+  // Der Grund steht im Gespräch vom 23.08.2026: Auf dem Handy soll nicht der
+  // Funktionsumfang kleiner sein, sondern die Reihenfolge stimmen. Wer
+  // unterwegs die Anwendung öffnet, will seinen Einsatz und seinen Timer –
+  // nicht die Kachel „Einstellungen". Erreichbar bleibt alles; es steht nur
+  // weiter unten.
+  const [{ data: eigeneRapporte }, { data: imTeam }, { data: laufenderTimer }] = profile
+    ? await Promise.all([
+        supabase
+          .from("rapporte")
+          .select(
+            "id, datum, status, projekte(bezeichnung, zugang, standorte(bezeichnung, ort), kunden(name, vorname))"
+          )
+          .eq("mitarbeiter_id", profile.id)
+          .eq("datum", heute)
+          .order("created_at"),
+        // Teamrapporte: Wer mitarbeitet, ohne die ausführende Person zu sein,
+        // hat den Einsatz genauso im Kalender.
+        supabase
+          .from("rapport_mitarbeiter")
+          .select(
+            "rapport_id, rapporte!inner(id, datum, status, projekte(bezeichnung, zugang, standorte(bezeichnung, ort), kunden(name, vorname)))"
+          )
+          .eq("mitarbeiter_id", profile.id)
+          .eq("rapporte.datum", heute),
+        supabase
+          .from("zeiteintraege")
+          .select("id, rapport_id, timer_gestartet_um, beschreibung")
+          .eq("mitarbeiter_id", profile.id)
+          .not("timer_gestartet_um", "is", null)
+          .limit(1)
+          .maybeSingle(),
+      ])
+    : [{ data: null }, { data: null }, { data: null }];
+
+  type TagesRapport = {
+    id: string;
+    datum: string;
+    status: string;
+    projekte?: unknown;
+  };
+  const einzeln = <T,>(w: unknown): T | undefined =>
+    (Array.isArray(w) ? w[0] : w) as T | undefined;
+
+  // Beide Quellen in eine Liste, doppelte Einträge weg: Wer ausführende Person
+  // UND im Team ist, soll den Einsatz einmal sehen.
+  const tagesRapporte = new Map<string, TagesRapport>();
+  for (const r of (eigeneRapporte ?? []) as unknown as TagesRapport[]) {
+    tagesRapporte.set(r.id, r);
+  }
+  for (const z of (imTeam ?? []) as unknown as { rapporte?: unknown }[]) {
+    const r = einzeln<TagesRapport>(z.rapporte);
+    if (r) tagesRapporte.set(r.id, r);
+  }
+  const meinTag = [...tagesRapporte.values()];
+
+  const { count: offeneVergangene } = profile
+    ? await supabase
+        .from("rapporte")
+        .select("id", { count: "exact", head: true })
+        .eq("mitarbeiter_id", profile.id)
+        .eq("status", "offen")
+        .lt("datum", heute)
+    : { count: 0 };
+
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-6">Übersicht</h1>
+
+      {/* Mein Tag. Berührungsflächen mindestens 44 px, weil dieser Block auf
+          dem Telefon der erste ist, den jemand antippt. */}
+      <section className="mb-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+          <h2 className="text-lg font-medium">Mein Tag</h2>
+          <span className="text-sm text-gray-500">{formatDatumCH(heute)}</span>
+        </div>
+
+        {/* Der laufende Timer zuerst und unübersehbar: Der vergessene Timer
+            vom Freitagabend ist der erste Supportfall. */}
+        {laufenderTimer && (
+          <Link
+            href={
+              laufenderTimer.rapport_id
+                ? `/rapporte/${laufenderTimer.rapport_id}`
+                : `/zeiterfassung/${laufenderTimer.id}`
+            }
+            className="flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3 mb-3 hover:bg-red-100"
+          >
+            <span className="font-medium text-red-800">⏱ Ein Timer läuft</span>
+            <span className="text-sm text-red-700">
+              {laufenderTimer.beschreibung || "hier stoppen"}
+            </span>
+          </Link>
+        )}
+
+        {meinTag.length > 0 ? (
+          <ul className="space-y-2">
+            {meinTag.map((r) => {
+              const auftrag = einzeln<{
+                bezeichnung: string;
+                zugang: string | null;
+                standorte?: unknown;
+                kunden?: unknown;
+              }>(r.projekte);
+              const ort = einzeln<{ bezeichnung: string; ort: string | null }>(
+                auftrag?.standorte
+              );
+              const kunde = einzeln<{ name: string; vorname: string | null }>(auftrag?.kunden);
+              return (
+                <li key={r.id}>
+                  <Link
+                    href={`/rapporte/${r.id}`}
+                    className="flex min-h-[44px] items-center justify-between gap-3 rounded-lg border bg-white px-4 py-3 hover:bg-gray-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-medium truncate">
+                        {kunde
+                          ? [kunde.vorname, kunde.name].filter(Boolean).join(" ")
+                          : "Ohne Kunde"}
+                      </span>
+                      <span className="block text-sm text-gray-500 truncate">
+                        {auftrag?.bezeichnung}
+                        {ort?.ort ? ` · ${ort.ort}` : ""}
+                      </span>
+                    </span>
+                    <span className="text-sm text-gray-400 shrink-0">
+                      {r.status === "offen" ? "offen" : r.status}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-500">
+            Für heute ist kein Einsatz erfasst.{" "}
+            <Link href="/rapporte/neu" className="text-arcos-steel hover:underline">
+              {begriff(begriffe, "rapport", "einzahl")} anlegen
+            </Link>{" "}
+            oder{" "}
+            <Link href="/zeiterfassung" className="text-arcos-steel hover:underline">
+              Zeit erfassen
+            </Link>
+            .
+          </p>
+        )}
+
+        {Boolean(offeneVergangene) && (
+          <Link
+            href="/rapporte"
+            className="mt-3 flex min-h-[44px] items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 hover:bg-amber-100"
+          >
+            <strong>{offeneVergangene}</strong> offene{" "}
+            {begriff(begriffe, "rapport", "mehrzahl")} aus vergangenen Tagen — unverrechnete
+            Arbeit, solange sie offen sind.
+          </Link>
+        )}
+      </section>
 
       {offeneWiedervorlagen.length > 0 && (
         <div className="mb-8">

@@ -124,7 +124,7 @@ export default async function KundeDetailPage({
     <div data-vollbild className="h-full flex flex-col">
       {/* Zone 3 – Bereichsleiste: wo bin ich, und was ist gewählt. Bleibt
           nach einer Unterbrechung ohne Scrollen sichtbar. */}
-      <div className="h-12 shrink-0 border-b bg-white px-4 flex items-center gap-3">
+      <div className="shrink-0 border-b bg-white px-3 md:px-4 py-2 md:py-0 md:h-12 flex flex-wrap md:flex-nowrap items-center gap-2 md:gap-3">
         <Link href="/kunden" className="font-heading font-semibold text-arcos-navy hover:underline">
           {begriff(begriffe, "kunde", "mehrzahl")}
         </Link>
@@ -164,7 +164,11 @@ export default async function KundeDetailPage({
 
       <div className="flex-1 min-h-0 flex">
         {/* Liste links */}
-        <div className="w-72 shrink-0 border-r bg-white flex flex-col min-h-0">
+        {/* Auf dem Telefon wird aus dem Nebeneinander ein Nacheinander
+            (Masken-Leitlinie, Abschnitt 6): Bei 375 px blieben dem Detail
+            neben dieser Spalte 87 px. Der Weg zurück zur Liste ist der Knopf
+            „Ganze Liste" oben rechts. */}
+        <div className="hidden md:flex w-72 shrink-0 border-r bg-white flex-col min-h-0">
           <form className="p-2 border-b">
             <input
               type="search"
@@ -220,7 +224,7 @@ export default async function KundeDetailPage({
 
         {/* Detail rechts */}
         <div className="flex-1 min-h-0 flex flex-col">
-          <nav className="h-10 shrink-0 border-b bg-white px-2 flex items-stretch gap-1 text-sm overflow-x-auto whitespace-nowrap">
+          <nav className="h-12 md:h-10 shrink-0 border-b bg-white px-2 flex items-stretch gap-1 text-sm overflow-x-auto whitespace-nowrap">
             {reiter.map((r) => (
               <Link
                 key={r.name}

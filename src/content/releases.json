@@ -6,6 +6,22 @@
     "eintraege": [
       {
         "typ": "neu",
+        "text": "**„Mein Tag“ auf der Startseite**: der laufende Timer, die Einsätze von heute (eigene und die, in deren Team du stehst) und die offenen Rapporte aus vergangenen Tagen – ganz oben, mit grossen Flächen. Auf dem Telefon ist das der erste Bildschirm, den man antippt."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Auf dem Telefon bricht die Kunden- und Auftragsmaske um**: aus Liste links und Detail rechts wird ein Nacheinander. Bei 375 Pixel blieben dem Detail neben der Liste 87 Pixel – die Maske war dort unbenutzbar. Zurück zur Liste geht über „Ganze Liste“ oben rechts."
+      },
+      {
+        "typ": "verbessert",
+        "text": "**Beim offenen Rapport kleben Navigation und Anrufen unten am Bildschirmrand** – oben rechts ist auf einem Telefon die am schlechtesten erreichbare Ecke. Am Arbeitsplatz steht dieselbe Karte weiterhin oben, wo man plant."
+      },
+      {
+        "typ": "verbessert",
+        "text": "Klargestellt und so gebaut: **Auf dem Telefon ist der Funktionsumfang derselbe wie am Arbeitsplatz** – nur die Reihenfolge ändert sich. Kein Knopf verschwindet, weil das Gerät klein ist. Was einzelne Personen nicht sehen sollen, wird später über Rollen geregelt und gilt dann auf beiden Geräten."
+      },
+      {
+        "typ": "neu",
         "text": "**Auf dem Rapport stehen jetzt die Menschen.** „Erreichbar vor Ort“ nennt die Ansprechperson beim Kunden und die zusätzlichen Adressen des Auftrags – mit Rolle, Name und Nummer, auf dem Bildschirm und auf dem Ausdruck. Nummer und Mailadresse sind anklickbar. Wer vor verschlossener Tür steht, ruft an; bisher standen diese Angaben in der Datenbank und nicht auf dem Blatt."
       },
       {

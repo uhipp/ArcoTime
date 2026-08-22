@@ -1,6 +1,6 @@
 # Plan: Der Ablauf mit und ohne Standorte
 
-Stand: 23.08.2026 · **abgenommen** · Etappen 1 bis 3 umgesetzt (0078–0081)
+Stand: 23.08.2026 · **abgenommen** · Etappen 1 bis 4 umgesetzt (0078–0081)
 
 Dieses Dokument beschreibt nicht das Datenmodell, sondern die **Wege**: welche
 Maske ein Mensch in welcher Reihenfolge anfasst, bis Hans Chefmaler am
@@ -468,7 +468,7 @@ einen Stand mit echten Fehlern geprüft.
 | **1** | ✔ 0079, Standortmaske auf die sieben Adressfelder zurückgebaut | Der Standort ist eine Adresse, nichts weiter |
 | **2** | ✔ 0080, Projektmaske neu nach `masken-leitlinie.md`: Einsatzort, Anfahrt, Zugang, zusätzliche Adressen mit Rolle, Team · dazu die Vortrags-Einstellungen und die Regel „fehlt eine Einstellung, wird nicht erfasst" (Abschnitt 8a) | Alles Betriebswissen an einer Stelle, in A und B gleich |
 | **3** | ✔ Rapport-Dokument: Ansprechperson und zusätzliche Adressen mit Nummer, Zugang neben der Navigation, Navigation auf den Einsatzort | Hans Chefmaler braucht nur den Rapport |
-| **4** | Handy-Ansicht des Rapports (Nacheinander, 44 px, Timer/Anruf/Navigation unten) | Der Rapport lässt sich unterwegs fertig machen |
+| **4** | ✔ Handy-Ansicht (Nacheinander in den Masken, Aktionsleiste unten, 44 px) und die Startseite „Mein Tag“ | Der Rapport lässt sich unterwegs fertig machen |
 | **5** | 0080/0081: Umbenennungen, „Adressen" mit Filter | Die Wörter stimmen |
 | **6** | Auswertungen: Gruppierung je Artikelklasse, je Projekt, je Standort — mit Menge und CHF | Der Nutzen von Variante A ist sichtbar |
 

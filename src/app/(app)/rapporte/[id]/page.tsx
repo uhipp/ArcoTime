@@ -10,6 +10,7 @@ import { DispoTagesspalte } from "@/components/dispo-tagesspalte";
 import { PositionsTimer } from "@/components/positions-timer";
 import { KundenKontakt } from "@/components/kunden-kontakt";
 import { RapportKontakte } from "@/components/rapport-kontakte";
+import { RapportAktionsleiste } from "@/components/rapport-aktionsleiste";
 import { ladeRapportKontakte } from "@/lib/rapport-dokument-daten";
 import { DokumenteBereich } from "@/components/dokumente-bereich";
 import { ladeDokumente } from "@/lib/dokumente-laden";
@@ -251,7 +252,13 @@ export default async function RapportDetailPage({
       {/* Navigation und Anruf zuoberst: Das ist der Moment vor der
           Abfahrt, und der Monteur soll dafür nicht durch den Rapport
           scrollen müssen. */}
-      {offen && <KundenKontakt kunde={navigationsziel} />}
+      {/* Am Arbeitsplatz oben, wo man plant; auf dem Telefon unten, wo der
+          Daumen hinkommt (Aktionsleiste am Ende der Seite). */}
+      {offen && (
+        <div className="hidden md:block">
+          <KundenKontakt kunde={navigationsziel} />
+        </div>
+      )}
 
       {/* Der Zugang gehört neben die Navigation und nicht in eine Notiz
           weiter unten: Er wird in der Minute gebraucht, in der man ankommt.
@@ -351,8 +358,8 @@ export default async function RapportDetailPage({
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-gray-500">
                 <tr>
-                  <th className="px-4 py-2">Leistung</th>
-                  <th className="px-4 py-2">Beschreibung</th>
+                  <th className="px-2 sm:px-4 py-2">Leistung</th>
+                  <th className="hidden sm:table-cell px-4 py-2">Beschreibung</th>
                   <th className="px-4 py-2 text-right">Menge</th>
                   <th className="px-4 py-2 text-right">Betrag</th>
                   {offen && <th className="px-4 py-2"></th>}
@@ -361,8 +368,18 @@ export default async function RapportDetailPage({
               <tbody className="divide-y">
                 {positionen.map((z) => (
                   <tr key={z.id}>
-                    <td className="px-4 py-2">{z.artikel_bezeichnung}</td>
-                    <td className="px-4 py-2 text-gray-500 whitespace-pre-line">
+                    <td className="px-2 sm:px-4 py-2">
+                      {z.artikel_bezeichnung}
+                      {/* Auf dem Telefon steht die Beschreibung unter der
+                          Leistung statt in einer eigenen Spalte – dieselben
+                          Daten, eine Spalte weniger zum Wischen. */}
+                      {z.beschreibung && (
+                        <span className="sm:hidden block text-xs text-gray-500 whitespace-pre-line">
+                          {z.beschreibung}
+                        </span>
+                      )}
+                    </td>
+                    <td className="hidden sm:table-cell px-4 py-2 text-gray-500 whitespace-pre-line">
                       {z.beschreibung ?? "–"}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
@@ -397,14 +414,14 @@ export default async function RapportDetailPage({
                             // der Tabelle – ohne den Parameter beginnt die
                             // Seite oben und man scrollt erst einmal hin.
                             href={`/rapporte/${id}?bearbeiten=${z.id}&fokus=pos_artikel`}
-                            className="text-xs text-arcos-steel hover:underline"
+                            className="inline-flex min-h-[44px] md:min-h-0 items-center text-xs text-arcos-steel hover:underline"
                           >
                             bearbeiten
                           </Link>
                           <form action={loeschePosition.bind(null, id, z.id)}>
                             <button
                               type="submit"
-                              className="text-xs text-gray-400 hover:text-red-600"
+                              className="inline-flex min-h-[44px] md:min-h-0 items-center text-xs text-gray-400 hover:text-red-600"
                             >
                               entfernen
                             </button>
@@ -417,7 +434,7 @@ export default async function RapportDetailPage({
               </tbody>
               <tfoot className="bg-gray-50 font-medium">
                 <tr>
-                  <td className="px-4 py-2" colSpan={2}>
+                  <td className="px-2 sm:px-4 py-2" colSpan={2}>
                     Total
                   </td>
                   <td className="px-4 py-2 text-right whitespace-nowrap">
@@ -544,6 +561,11 @@ export default async function RapportDetailPage({
       {!offen && rapport.status !== "storniert" && (
         <RapportStorno action={storniereRapport.bind(null, id)} />
       )}
+
+      {/* Die Leiste liegt fest am unteren Rand; der Abstand darüber sorgt
+          dafür, dass sie nichts verdeckt. */}
+      {offen && <RapportAktionsleiste ziel={navigationsziel} />}
+      {offen && <div className="h-16 md:hidden" aria-hidden />}
     </div>
   );
 }

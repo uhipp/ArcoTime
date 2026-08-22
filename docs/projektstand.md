@@ -224,6 +224,25 @@ Regel. Der Nutzer hat es zurückgewiesen, und er hatte recht: Ein Betrieb ohne
 Ortsebene hätte keinen Weg zu dieser Ablage, also könnte Variante A etwas, das
 Variante B nicht kann.
 
+**Etappe 4, und eine Entscheidung dazu.** Der Nutzer hat vor dem Start gefragt,
+ob die Handy-Ansicht den Funktionsumfang kürzt. Antwort und Beschluss:
+**Reihenfolge statt Umfang** — auf dem Telefon ist derselbe Umfang verfügbar,
+nur anders angeordnet. Etwas zu verstecken kostet Arbeit statt sie zu sparen,
+auf dem Telefon sitzt nicht nur der Monteur, und es erzeugt eine Sorte
+Supportfall ohne gute Antwort. Was einzelne nicht sehen sollen, ist eine
+**Rollenfrage** und gehört ins Berechtigungssystem, wo es auf beiden Geräten
+gilt. Eine App im Store bleibt zurückgestellt, bis die Nachfrage da ist.
+
+Umgesetzt: „Mein Tag" zuoberst auf der Startseite (laufender Timer, Einsätze
+von heute inklusive Teamrapporte, offene Rapporte aus vergangenen Tagen), die
+Kunden- und Auftragsmaske brechen auf dem Telefon in ein Nacheinander um, und
+beim offenen Rapport kleben Navigation und Anrufen unten am Rand. Zwei Dinge
+waren schon richtig gebaut und blieben unangetastet: der Positions-Timer
+(44 px) und das Unterschriftsfeld (Pointer-Events, `touch-none`).
+
+**Was ich nicht prüfen konnte**: wie sich das auf einem echten Gerät anfühlt.
+Dafür braucht es eine Anmeldung, und die gehört dem Nutzer.
+
 **Eine neue Arbeitsregel** ist dabei entstanden und steht unten: Ein erkannter
 Fehler wird ganz behoben, nicht dokumentiert.
 

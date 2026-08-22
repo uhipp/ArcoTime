@@ -30,6 +30,26 @@ export function adresseEinzeilig(k: Adresse): string {
 // installiert, sonst den Browser; der zweite führt zu Apple Karten. Wird
 // die Navigation dort gestartet, läuft sie auf CarPlay weiter – dafür
 // braucht es hier nichts.
+/**
+ * Die Ziele für Navigation und Anruf – als Funktion, weil zwei Stellen sie
+ * brauchen: die Karte hier und die Aktionsleiste, die auf dem Telefon unten
+ * klebt. Zwei Stellen, die dieselbe Adresse verschieden zusammenbauen, wären
+ * über kurz oder lang zwei verschiedene Ziele.
+ */
+export function navigationsZiele(kunde: Adresse | null | undefined) {
+  if (!kunde) return null;
+  const adresse = adresseEinzeilig(kunde);
+  const telefon = kunde.telefon?.trim() || null;
+  if (!adresse && !telefon) return null;
+  const ziel = encodeURIComponent(adresse);
+  return {
+    adresse,
+    telefon,
+    google: adresse ? `https://www.google.com/maps/dir/?api=1&destination=${ziel}` : null,
+    apple: adresse ? `https://maps.apple.com/?daddr=${ziel}` : null,
+  };
+}
+
 export function KundenKontakt({ kunde }: { kunde: Adresse | null | undefined }) {
   if (!kunde) return null;
 
