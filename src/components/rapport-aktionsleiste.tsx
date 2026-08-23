@@ -23,7 +23,10 @@ export function RapportAktionsleiste({
   if (!ziele) return null;
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 border-t bg-white/95 backdrop-blur px-3 py-2 flex gap-2 print:hidden">
+    // Der untere Rand nimmt den sicheren Bereich des Geräts mit: Auf einem
+    // iPhone liegt darunter die Streiche für den Startbildschirm, und ein
+    // Knopf direkt am Rand wird dort halb verdeckt.
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 border-t bg-white/95 backdrop-blur px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex gap-2 print:hidden">
       {ziele.google && (
         <a
           href={ziele.google}

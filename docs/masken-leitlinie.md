@@ -279,6 +279,18 @@ gefunden:
 Was gut war und bleibt: Navigation und Anrufen sofort sichtbar und mit dem
 Daumen erreichbar.
 
+**Nach dem Umbau am Gerät bestätigt** (23.08.2026): Kopfleiste ohne
+Überlappung, Positionen ohne Wischen bedienbar, Timer bei der richtigen
+Position sichtbar, feste Leiste unten. Zwei Nachbesserungen aus demselben
+Bild: Die umgebrochene Zeile der Kopfleiste sitzt rechts statt links, und die
+Leiste unten nimmt den sicheren Bereich des Geräts mit.
+
+**Ein Verhalten, das bleibt und kein Fehler ist:** Beim Scrollen läuft Inhalt
+hinter der festen Leiste durch. Ein Abstand am Seitenende schützt die letzte
+Zeile; mitten im Scrollen kann ein Knopf trotzdem kurz darunter liegen. Das
+ist der Preis einer Leiste, die immer erreichbar ist — eine Leiste, die sich
+beim Scrollen versteckt, wäre genau dann weg, wenn man sie braucht.
+
 ### Was auf dem Telefon gilt — entschieden am 23.08.2026
 
 **Reihenfolge statt Umfang.** Auf dem Telefon ist der Funktionsumfang

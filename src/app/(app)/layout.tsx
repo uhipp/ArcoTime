@@ -138,7 +138,10 @@ export default async function AppLayout({
               </>
             )}
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-500 shrink-0">
+          {/* ml-auto: Bricht die Zeile um, sitzt die Gruppe rechts und nicht
+              links am Rand – sonst sieht das erste Zeichen aus wie
+              verrutscht. */}
+          <div className="ml-auto flex items-center gap-4 text-sm text-gray-500 shrink-0">
             <Link
               href="/aenderungen"
               title="Neuigkeiten"
