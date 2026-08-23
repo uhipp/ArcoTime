@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
-import { heuteIso, jetztUhrzeit, zeitstempelCH } from "@/lib/date-utils";
+import { heuteIso, jetztUhrzeit, minutenAus, zeitstempelCH } from "@/lib/date-utils";
 import { normalisiereZeit } from "@/lib/zeit";
 import { pruefeGegenArtikel } from "@/lib/zeiteintrag-pruefung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
@@ -545,9 +545,8 @@ export async function loeschePosition(rapportId: string, zeiteintragId: string) 
 // oder mitten in dessen Ferien einplant, wäre schlimmer als gar keiner.
 
 function alsMinuten(zeitstempel: string | null): number | null {
-  if (!zeitstempel) return null;
-  const [h, m] = zeitstempel.slice(11, 16).split(":").map(Number);
-  return Number.isNaN(h) || Number.isNaN(m) ? null : h * 60 + m;
+  // Siehe minutenAus(): slice(11, 16) las UTC.
+  return minutenAus(zeitstempel);
 }
 
 function alsUhrzeit(minuten: number): string {

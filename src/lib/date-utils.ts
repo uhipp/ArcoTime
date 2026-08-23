@@ -66,6 +66,20 @@ export function uhrzeitAus(zeitstempel: string | null | undefined): string | nul
   return `${t.hour}:${t.minute}`;
 }
 
+/**
+ * Minute des Tages eines Zeitstempels in Schweizer Zeit – 08:30 wird 510.
+ *
+ * Für Überschneidungsprüfungen im Zeitraster. Vorher stand dafür überall
+ * `zeitstempel.slice(11, 16)`, was die UTC-Stunde aus der Zeichenkette
+ * schnitt: Zwei Einsätze wurden gegen die falsche Tagesgrenze geprüft.
+ */
+export function minutenAus(zeitstempel: string | null | undefined): number | null {
+  const zeit = uhrzeitAus(zeitstempel);
+  if (!zeit) return null;
+  const [h, m] = zeit.split(":").map(Number);
+  return Number.isNaN(h) || Number.isNaN(m) ? null : h * 60 + m;
+}
+
 /** Kalendertag eines Zeitstempels in Schweizer Zeit, als "JJJJ-MM-TT". */
 export function tagAus(zeitstempel: string | null | undefined): string | null {
   if (!zeitstempel) return null;

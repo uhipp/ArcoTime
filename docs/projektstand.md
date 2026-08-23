@@ -248,7 +248,60 @@ Fehler wird ganz behoben, nicht dokumentiert.
 
 ---
 
-## 6. Wie wir arbeiten
+## 6. Was am 23.08.2026 entstanden ist: Schweizer Zeit statt Serverzeit
+
+Beim Testen ist aufgefallen, dass der Timer zwei Stunden zu wenig eintrug:
+Start um 14:30 ergab 12:30. Die Ursache ist einfach und die Reichweite war
+grösser als der Timer – **der Server läuft auf UTC, die Betriebe arbeiten in
+UTC+1 im Winter und UTC+2 im Sommer.**
+
+Betroffen war jede Stelle, an der eine Uhrzeit oder ein Kalendertag aus der
+Serverzeit entstand, und das waren drei Muster:
+
+| Muster | Was es lieferte |
+|---|---|
+| `new Date().getHours()` | die UTC-Stunde |
+| `toISOString().slice(0, 10)` | den UTC-Kalendertag |
+| `zeitstempel.slice(11, 16)` | die UTC-Stunde aus der Zeichenkette |
+
+**Der lehrreiche Teil sind die Planzeiten der Disposition.** Sie wurden als
+Zeichenkette ohne Offset geschrieben (`2026-08-23T08:00:00`), und Postgres
+legt eine Angabe ohne Offset in der Zeitzone der Sitzung ab – also UTC. Ein
+auf 08:00 geplanter Einsatz stand damit als 08:00 UTC in der Datenbank, was
+10:00 Schweizer Zeit ist. Beim Anzeigen wurde derselbe Fehler rückwärts
+gemacht, deshalb sah es auf dem Bildschirm richtig aus. **Ein Fehler, der sich
+selbst verdeckt, weil er auf beiden Seiten gleich gross ist** – aber jeder
+Vergleich mit `now()` und jeder Cron-Lauf rechnete zwei Stunden daneben.
+
+Neu steht die Zeitzone an genau einer Stelle (`src/lib/date-utils.ts`,
+Konstante `ZEITZONE`), und Uhrzeiten wie Kalendertage entstehen nur noch über
+`heuteIso()`, `jetztUhrzeit()`, `uhrzeitAus()`, `tagAus()`, `minutenAus()` und
+`zeitstempelCH()`. In der Datenbank ersetzt `heute_ch()` das `current_date`
+(0085) – auch in den Funktionskörpern, die Postgres nicht mitzieht (Lehre aus
+0082).
+
+**`scripts/zeitzone-pruefen.mjs` hält es dicht.** Der Prüfer hat sich sofort
+bezahlt: Nach der Korrektur, die ich für vollständig hielt, hat er **drei
+weitere Stellen** gefunden – die Überschneidungsprüfung der Disposition, die
+Uhrzeiten im Kalender und die Terminvorschläge im Rapport. Alle drei hätten
+weiter mit UTC gerechnet. Zeilen, die richtig sind aber wie der Fehler
+aussehen (der Mittagsanker `${datum}T12:00:00`), werden mit dem Kommentar
+`zeitzone-ok: <Grund>` freigegeben – ausdrücklich und mit Begründung, statt
+über eine Heuristik geraten.
+
+**Was NICHT automatisch korrigiert werden kann:** Die Uhrzeiten in
+`start_zeit`/`end_zeit` bestehender Zeiteinträge. Von Hand eingetippte sind
+richtig, aus dem Timer stammende um den Offset zu früh – und nach dem Stoppen
+wird `timer_gestartet_um` auf null gesetzt, hinterher ist die Herkunft nicht
+mehr erkennbar. Eine pauschale Verschiebung würde die von Hand erfassten
+kaputtmachen. **Die Dauer stimmt in allen Fällen** (sie wird aus zwei
+Zeitstempeln gerechnet, und die Differenz zweier UTC-Zeitpunkte ist richtig);
+falsch sind nur die beiden Uhrzeiten daneben. Laufende Timer setzt 0085
+gerade, weil dort der Zeitstempel noch steht.
+
+---
+
+## 7. Wie wir arbeiten
 
 - **Deutsch überall** – Variablen, Funktionen, Routen, Spalten, Commit-Texte.
 - **Kommentare erklären das Warum**, gern mit dem Vorfall, der zur Entscheidung
@@ -300,6 +353,7 @@ node --env-file=.env.local scripts/mandant-loeschen.mjs "Name"    # Probelauf
 node --env-file=.env.local scripts/dokumente-pruefen.mjs          # Dateien vs. Zeilen
 node --env-file=.env.local scripts/standorte-pruefen.mjs          # Ortsebene (0076/0077)
 node scripts/formulare-pruefen.mjs                                # verschachtelte <form>
+node scripts/zeitzone-pruefen.mjs                                 # Serverzeit statt Schweizer Zeit
 node scripts/datenmodell-diagramm.mjs ziel.pdf                    # A3-Datenmodell
 python3 scripts/testprotokoll.py ziel.xlsx                        # Testprotokoll
 bash scripts/dokumente-erzeugen.sh "$ONEDRIVE/ArcoSoftware"       # Doku und Flyer
@@ -308,7 +362,7 @@ find .next -name "* [0-9].*" -delete                              # OneDrive-Kop
 
 ---
 
-## 7. Was offen ist
+## 8. Was offen ist
 
 **Zurückgestellt am 21.08.2026: Phase 13 (Angebote, Lieferscheine, Lager).**
 Die Ideensammlung (`phase13-angebote-ideen.md`) und die Comatic-Analyse

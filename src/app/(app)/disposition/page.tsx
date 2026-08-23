@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrganisation } from "@/lib/get-profile";
-import { formatDatumCH, heuteIso, label, type Ansicht, uhrzeitAus, verschieben, zeitraumFuer } from "@/lib/date-utils";
+import { formatDatumCH, heuteIso, label, minutenAus, type Ansicht, uhrzeitAus, verschieben, zeitraumFuer } from "@/lib/date-utils";
 import { rapportNummer, type Rapport } from "@/lib/types";
 import { DispoRaster, type RasterEintrag, type RasterSpalte } from "@/components/dispo-raster";
 import { mitKunde } from "@/lib/rapport-kunde";
@@ -25,6 +25,7 @@ function tageZwischen(von: string, bis: string): string[] {
     // Hier ist toISOString() richtig: Der Mittag als Anker hält jeden Offset
     // aus, der Kalendertag kippt nicht. Für "heute" oder "jetzt" wäre es
     // falsch – dafür heuteIso() aus date-utils.
+    // zeitzone-ok: Mittagsanker oben, der Kalendertag kippt bei keinem Offset
     tage.push(d.toISOString().slice(0, 10));
     d.setDate(d.getDate() + 1);
   }
@@ -46,9 +47,9 @@ function uhrzeit(zeitstempel: string | null): string {
 // Nur vergleichbar, wenn beide Termine eine Person UND beide Zeiten haben.
 // Ganztägige oder unzugewiesene Einträge kollidieren mit nichts.
 function minuten(zeitstempel: string | null): number | null {
-  if (!zeitstempel) return null;
-  const [h, m] = zeitstempel.slice(11, 16).split(":").map(Number);
-  return Number.isNaN(h) || Number.isNaN(m) ? null : h * 60 + m;
+  // slice(11, 16) schnitt die UTC-Stunde aus der Zeichenkette – damit wurde
+  // gegen die falsche Tagesgrenze geprüft.
+  return minutenAus(zeitstempel);
 }
 
 // Seit 0045 hat ein Einsatz mehrere Beteiligte. Ein Konflikt entsteht,

@@ -10,6 +10,7 @@ function nachbartag(iso: string, richtung: 1 | -1): string {
   // Hier ist toISOString() richtig: Der Mittag als Anker hält jeden Offset
   // aus, der Kalendertag kippt nicht. Für "heute" oder "jetzt" wäre es
   // falsch – dafür heuteIso() aus date-utils.
+  // zeitzone-ok: Mittagsanker oben, der Kalendertag kippt bei keinem Offset
   return d.toISOString().slice(0, 10);
 }
 

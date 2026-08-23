@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/get-profile";
-import {
-  heuteIso,
-  label,
-  verschieben,
-  monatsRaster,
-  zeitraumFuer,
-} from "@/lib/date-utils";
+import { heuteIso, label, monatsRaster, tagAus, uhrzeitAus, verschieben, zeitraumFuer } from "@/lib/date-utils";
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { darf } from "@/lib/berechtigungen";
 
@@ -232,14 +226,14 @@ export default async function KalenderPage({
   const nameVon = (mitarbeiterId: string | null) =>
     alleMitarbeitende?.find((m) => m.id === mitarbeiterId)?.name ?? "Nicht zugeteilt";
 
-  // Uhrzeit aus dem Zeitstempel wie im Rapportformular: dort wird
-  // geplant_von/bis ebenso über die Zeichenkette gelesen, damit beide
-  // Seiten dieselbe Uhrzeit anzeigen.
-  const uhrzeit = (wert: string | null) => (wert ? wert.slice(11, 16) : "");
+  // Schweizer Uhrzeit. Vorher wurde die Zeichenkette geschnitten – das las
+  // UTC. Dass Kalender und Rapportformular dieselbe falsche Zahl zeigten,
+  // hat den Fehler verdeckt; jetzt gehen beide über date-utils.
+  const uhrzeit = (wert: string | null) => uhrzeitAus(wert) ?? "";
 
   for (const r of planungRoh) {
     // Planzeit bestimmt den Tag, wenn vorhanden – sonst das Rapportdatum.
-    const eintrag = tagEintrag(r.geplant_von ? r.geplant_von.slice(0, 10) : r.datum);
+    const eintrag = tagEintrag(tagAus(r.geplant_von) ?? r.datum);
     eintrag.plan.push({
       rapportId: r.id,
       mitarbeiterId: r.mitarbeiter_id,
