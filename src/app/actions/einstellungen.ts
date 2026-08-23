@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { mitErfolg } from "@/lib/erfolg";
+import { datenbankFehlerText } from "@/lib/db-fehler";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 import { normalisiereZeit } from "@/lib/zeit";
 
@@ -179,12 +180,27 @@ export async function updateKlasse(id: string, formData: FormData) {
   if (!bezeichnung) {
     redirect(`/einstellungen?error=${encodeURIComponent("Die Bezeichnung darf nicht leer sein.")}`);
   }
-  await speichereListeneintrag(
-    "artikelklassen",
-    id,
-    { bezeichnung, sortierung: sortierungAus(formData) },
-    "Klasse gespeichert."
-  );
+
+  // „Menge summieren" darf sich nicht einschalten lassen, solange die Klasse
+  // verschiedene Einheiten führt – das prüft ein Trigger (0084), und seine
+  // Meldung ist schon in Klartext geschrieben. Sie wird deshalb
+  // durchgelassen statt übersetzt.
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("artikelklassen")
+    .update({
+      bezeichnung,
+      sortierung: sortierungAus(formData),
+      menge_summieren: formData.get("menge_summieren") === "on",
+    })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/einstellungen?error=${encodeURIComponent(datenbankFehlerText(error))}`);
+  }
+
+  revalidatePath("/einstellungen");
+  redirect(mitErfolg("/einstellungen", "Klasse gespeichert."));
 }
 
 export async function toggleKlasse(id: string, aktiv: boolean) {

@@ -235,8 +235,11 @@ export default async function AppLayout({
           <Link href="/kalender" className="hover:text-arcos-navy">
             Kalender
           </Link>
+          {/* Die Liste ist das Adressbuch, nicht die Kundenliste – sie hält
+              auch Eigentümer, Architekten und Ämter (0083). Die Route bleibt
+              /kunden. */}
           <Link href="/kunden" className="hover:text-arcos-navy">
-            {begriff(begriffe, "kunde", "mehrzahl")}
+            {begriff(begriffe, "adresse", "mehrzahl")}
           </Link>
           <Link href="/projekte" className="hover:text-arcos-navy">
             {begriff(begriffe, "projekt", "mehrzahl")}

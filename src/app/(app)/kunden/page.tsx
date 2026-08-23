@@ -103,10 +103,10 @@ const SPALTEN: Spalte<Kunde>[] = [
 export default async function KundenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: string; richtung?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; richtung?: string; nur?: string }>;
 }) {
   const params = await searchParams;
-  const { q, sort, richtung } = params;
+  const { q, sort, richtung, nur } = params;
   const supabase = await createClient();
   // Wie dieser Betrieb den Bereich nennt (0073).
   const begriffe = await getBegriffe();
@@ -115,6 +115,12 @@ export default async function KundenPage({
     .from("kunden")
     .select("*")
     .order("name", { ascending: true });
+
+  // Die Liste IST das Adressbuch: Sie hält Kunden UND Adressen ohne
+  // Kundenrolle – Eigentümer, Architekten, Ämter. Der Filter macht aus einer
+  // Liste drei Sichten, ohne die Daten zu trennen (0083).
+  if (nur === "kunden") query = query.eq("ist_kunde", true);
+  if (nur === "adressen") query = query.eq("ist_kunde", false);
 
   if (q) {
     query = query.or(
@@ -129,14 +135,46 @@ export default async function KundenPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">{begriff(begriffe, "kunde", "mehrzahl")}</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold">{begriff(begriffe, "adresse", "mehrzahl")}</h1>
         <Link
           href="/kunden/neu"
           className="rounded bg-arcos-steel text-white text-sm font-medium px-4 py-2 hover:bg-arcos-navy"
         >
-          + {neuLabel(begriffe, "kunde")}
+          + {neuLabel(begriffe, "adresse")}
         </Link>
+      </div>
+
+      {/* Drei Sichten auf eine Liste. „nur Adressen" zeigt, wen man im
+          Adressbuch führt, ohne dass ein Auftrag an ihn geht – nach solchen
+          Zeilen sucht man sonst mit der Suchfunktion nach dem Vermerk. */}
+      <div className="mb-4 flex flex-wrap items-center gap-1 text-sm">
+        {[
+          { wert: "", titel: "Alle" },
+          { wert: "kunden", titel: `nur ${begriff(begriffe, "kunde", "mehrzahl")}` },
+          { wert: "adressen", titel: "nur Adressen" },
+        ].map((f) => {
+          const aktiv = (nur ?? "") === f.wert;
+          const ziel = new URLSearchParams();
+          if (q) ziel.set("q", q);
+          if (sort) ziel.set("sort", sort);
+          if (richtung) ziel.set("richtung", richtung);
+          if (f.wert) ziel.set("nur", f.wert);
+          const abfrage = ziel.toString();
+          return (
+            <Link
+              key={f.wert || "alle"}
+              href={abfrage ? `/kunden?${abfrage}` : "/kunden"}
+              className={`rounded border px-3 py-1.5 ${
+                aktiv
+                  ? "border-arcos-steel bg-arcos-steel text-white"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              {f.titel}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -152,6 +190,7 @@ export default async function KundenPage({
               das Formular schickt sonst nur "q" ab. */}
           {sort && <input type="hidden" name="sort" value={sort} />}
           {richtung && <input type="hidden" name="richtung" value={richtung} />}
+          {nur && <input type="hidden" name="nur" value={nur} />}
         </form>
 
         <SpaltenWahl
@@ -172,7 +211,11 @@ export default async function KundenPage({
         zeilen={kunden}
         basis="/kunden"
         params={params}
-        leerText={`Keine ${begriff(begriffe, "kunde", "mehrzahl")} gefunden.`}
+        leerText={
+          nur === "adressen"
+            ? "Keine Adressen ohne Kundenrolle gefunden."
+            : `Keine ${begriff(begriffe, nur === "kunden" ? "kunde" : "adresse", "mehrzahl")} gefunden.`
+        }
       />
     </div>
   );

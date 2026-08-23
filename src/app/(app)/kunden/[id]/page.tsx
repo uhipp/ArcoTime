@@ -126,7 +126,7 @@ export default async function KundeDetailPage({
           nach einer Unterbrechung ohne Scrollen sichtbar. */}
       <div className="shrink-0 border-b bg-white px-3 md:px-4 py-2 md:py-0 md:h-12 flex flex-wrap md:flex-nowrap items-center gap-2 md:gap-3">
         <Link href="/kunden" className="font-heading font-semibold text-arcos-navy hover:underline">
-          {begriff(begriffe, "kunde", "mehrzahl")}
+          {begriff(begriffe, "adresse", "mehrzahl")}
         </Link>
         <span className="text-gray-300">›</span>
         <span className="font-medium truncate">{kundeName}</span>
@@ -217,7 +217,7 @@ export default async function KundeDetailPage({
               href="/kunden/neu"
               className="block rounded bg-arcos-steel text-white text-sm font-medium text-center px-3 py-2 hover:bg-arcos-navy"
             >
-              + {begriff(begriffe, "kunde", "einzahl")} erfassen
+              + {begriff(begriffe, "adresse", "einzahl")} erfassen
             </Link>
           </div>
         </div>

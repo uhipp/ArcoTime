@@ -84,6 +84,7 @@ export default async function PlattformPage({
     vorlagen.set(z.branche, liste);
   }
   const BEGRIFF_FELDER: { schluessel: string; hinweis: string }[] = [
+    { schluessel: "adresse", hinweis: "Adressbuch, Kontakte" },
     { schluessel: "kunde", hinweis: "Auftraggeber, Mandant" },
     { schluessel: "standort", hinweis: "Liegenschaft, Filiale, Fahrzeug" },
     { schluessel: "projekt", hinweis: "Auftrag, Mandat" },

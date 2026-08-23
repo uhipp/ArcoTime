@@ -10,6 +10,10 @@ import { createClient } from "./supabase/server";
 // Tabelle mit Beschriftungen.
 
 export type BegriffSchluessel =
+  // Die LISTE, die alles hält – Kunden, Eigentümer, Architekten, Ämter.
+  // Getrennt von „kunde": Das ist die Rolle am Auftrag, wer bestellt und
+  // schuldet (0083).
+  | "adresse"
   | "kunde"
   | "standort"
   | "projekt"
@@ -28,6 +32,7 @@ export type Begriff = { einzahl: string; mehrzahl: string; genus: Genus };
 // ohne Anmeldung. Die Werte sind identisch mit der neutralen Vorgabe der
 // Migration: Wer nichts einstellt, sieht genau das, was vorher dastand.
 export const VORGABEN: Record<BegriffSchluessel, Begriff> = {
+  adresse: { einzahl: "Adresse", mehrzahl: "Adressen", genus: "f" },
   kunde: { einzahl: "Kunde", mehrzahl: "Kunden", genus: "m" },
   standort: { einzahl: "Standort", mehrzahl: "Standorte", genus: "m" },
   projekt: { einzahl: "Projekt", mehrzahl: "Projekte", genus: "n" },

@@ -146,6 +146,7 @@ export default async function EinstellungenPage({
   const branchen = [...new Set((vorlagen ?? []).map((v) => v.branche as string))];
 
   const BEGRIFF_FELDER: { schluessel: BegriffSchluessel; hinweis: string }[] = [
+    { schluessel: "adresse", hinweis: "Adressbuch, Kontakte" },
     { schluessel: "kunde", hinweis: "Auftraggeber, Mandant" },
     { schluessel: "standort", hinweis: "Liegenschaft, Filiale, Objekt, Anlage" },
     { schluessel: "projekt", hinweis: "Auftrag, Mandat" },
@@ -718,7 +719,15 @@ export default async function EinstellungenPage({
       <section>
         <h2 className="text-lg font-medium mb-3">Artikelklassen</h2>
         <p className="text-sm text-gray-500 mb-3">
-          Auswahlliste für den Artikelstamm.
+          Auswahlliste für den Artikelstamm – und die Gruppierung für Rabatte und
+          Auswertungen.
+        </p>
+        <p className="text-xs text-gray-400 mb-3">
+          <strong className="font-medium text-gray-600">Menge summieren:</strong> Ein heisst,
+          die Auswertung zeigt für diese Klasse eine Menge mit Einheit („Arbeit · 128.5 h“).
+          Aus heisst, sie zeigt nur den Betrag – richtig, wo eine Klasse verschiedene
+          Einheiten führt, etwa Material in Liter, Stück und m². Eine Summe darüber wäre
+          bedeutungslos, und darum lässt sich das Häkchen dort auch nicht setzen.
         </p>
         <ul className="bg-white rounded-lg border divide-y mb-4">
           {klassen?.map((k) => (
@@ -744,6 +753,17 @@ export default async function EinstellungenPage({
                   title="Sortierung"
                   className="w-16 rounded border border-gray-300 px-2 py-1"
                 />
+                <label
+                  className="flex items-center gap-1.5 text-xs text-gray-600"
+                  title="Verträgt die Menge dieser Klasse eine Summe?"
+                >
+                  <input
+                    type="checkbox"
+                    name="menge_summieren"
+                    defaultChecked={k.menge_summieren ?? true}
+                  />
+                  Menge summieren
+                </label>
                 <button type="submit" className="text-xs text-arcos-steel hover:underline">
                   speichern
                 </button>

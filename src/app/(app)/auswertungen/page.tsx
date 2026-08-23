@@ -12,6 +12,8 @@ import {
 import type { ZeiteintragMitDetails } from "@/lib/types";
 import { mengeLabel } from "@/lib/menge";
 import { darf } from "@/lib/berechtigungen";
+import { begriff, getBegriffe } from "@/lib/begriffe";
+import { standorteAktiv } from "@/lib/standorte";
 
 type SearchParams = {
   ansicht?: string;
@@ -42,7 +44,12 @@ export default async function AuswertungenPage({
     params.ansicht === "tag" || params.ansicht === "monat" ? (params.ansicht as Ansicht) : "woche";
   const bezugsdatum = params.datum ?? heuteIso();
   const [von, bis] = zeitraumFuer(ansicht, bezugsdatum);
-  const gruppieren = params.gruppieren === "projekt";
+  // Drei Gruppierungen statt eines Ja/Nein. „" heisst: alle Positionen
+  // einzeln, wie bisher.
+  const GRUPPIERUNGEN = ["projekt", "klasse", "standort"] as const;
+  const gruppieren = (GRUPPIERUNGEN as readonly string[]).includes(params.gruppieren ?? "")
+    ? (params.gruppieren as "projekt" | "klasse" | "standort")
+    : "";
 
   const profile = await getCurrentProfile();
   const isAdmin = darf(profile, "auswertungen.alle");
@@ -66,15 +73,25 @@ export default async function AuswertungenPage({
   // Alle Queries unabhängig voneinander gleichzeitig statt nacheinander
   // abschicken (die Haupt-Query hängt nicht von den Filter-Listen ab).
   const [
+    begriffe,
+    ortsebene,
     { data: kunden },
     { data: projekte },
     { data: klassen },
     { data: mitarbeitende },
     { data, error },
   ] = await Promise.all([
+    getBegriffe(),
+    standorteAktiv(),
     supabase.from("kunden").select("id, name, vorname").order("name"),
-    supabase.from("projekte").select("*, kunden(name, vorname)").order("bezeichnung"),
-    supabase.from("artikelklassen").select("id, bezeichnung").order("sortierung"),
+    supabase
+      .from("projekte")
+      .select("*, kunden(name, vorname), standorte(id, bezeichnung, ort)")
+      .order("bezeichnung"),
+    supabase
+      .from("artikelklassen")
+      .select("id, bezeichnung, menge_summieren")
+      .order("sortierung"),
     isAdmin
       ? supabase.from("profiles").select("id, name").order("name")
       : Promise.resolve({ data: null }),
@@ -90,27 +107,96 @@ export default async function AuswertungenPage({
   const summeStunden = zeilen.reduce((s, z) => s + stundenVon(z), 0);
   const summeBetrag = zeilen.reduce((s, z) => s + Number(z.betrag), 0);
 
-  // Gruppierung nach Kunde/Projekt (Client-seitig aggregiert, Datensatz pro
-  // Periode ist klein genug für eine einfache JS-Aggregation).
-  const gruppen = new Map<
-    string,
-    { kunde: string; projekt: string; stunden: number; betrag: number; anzahl: number }
-  >();
+  // Drei Gruppierungen, eine Rechnung.
+  //
+  // Die Mengenfrage stellt sich nur je Artikelklasse: Eine Klasse kann Farbe
+  // in Liter und Pinsel in Stück enthalten, und „60" darüber wäre
+  // bedeutungslos. Deshalb sagt die Klasse selbst, ob ihre Menge eine Summe
+  // verträgt (artikelklassen.menge_summieren, 0084); sagt sie nein, steht in
+  // der Mengenspalte ein Strich und nur der Betrag zählt.
+  //
+  // Bei Auftrag und Einsatzort gibt es die Frage nicht: Dort steht die DAUER
+  // in Stunden, und die ist über alle Zeilen dieselbe Einheit.
+  const klassenInfo = new Map(
+    ((klassen ?? []) as { id: string; bezeichnung: string; menge_summieren?: boolean }[]).map(
+      (k) => [k.id, k]
+    )
+  );
+
+  // Der Einsatzort hängt am Auftrag (0077). Die View kennt ihn nicht, also
+  // kommt die Zuordnung aus der Auftragsliste, die ohnehin geladen ist –
+  // billiger als eine zweite Abfrage oder eine breitere View.
+  type ProjektMitOrt = {
+    id: string;
+    standorte?: { id: string; bezeichnung: string; ort: string | null } | null;
+  };
+  const ortVonProjekt = new Map<string, { id: string; titel: string; ort: string | null }>();
+  for (const pr of (projekte ?? []) as unknown as ProjektMitOrt[]) {
+    const st = Array.isArray(pr.standorte) ? pr.standorte[0] : pr.standorte;
+    if (st) ortVonProjekt.set(pr.id, { id: st.id, titel: st.bezeichnung, ort: st.ort });
+  }
+
+  type Gruppe = {
+    titel: string;
+    zusatz: string;
+    anzahl: number;
+    stunden: number;
+    menge: number;
+    einheit: string | null;
+    mengeZeigen: boolean;
+    betrag: number;
+  };
+
+  const gruppen = new Map<string, Gruppe>();
   for (const z of zeilen) {
-    const key = z.projekt_id;
-    const bestehend = gruppen.get(key);
-    const kundeLabel = `${z.vorname ? `${z.vorname} ` : ""}${z.kunde_name}`;
-    if (bestehend) {
-      bestehend.stunden += stundenVon(z);
-      bestehend.betrag += Number(z.betrag);
-      bestehend.anzahl += 1;
+    let schluessel: string;
+    let titel: string;
+    let zusatz: string;
+    let mengeZeigen = false;
+    let einheit: string | null = null;
+
+    if (gruppieren === "klasse") {
+      schluessel = z.klasse_id ?? "ohne";
+      titel = z.klasse_bezeichnung ?? "Ohne Klasse";
+      const info = z.klasse_id ? klassenInfo.get(z.klasse_id) : undefined;
+      // Ohne Klasse wird nicht summiert: Was nicht eingeordnet ist, kann
+      // alles sein.
+      mengeZeigen = Boolean(z.klasse_id) && info?.menge_summieren !== false;
+      einheit = z.einheit ?? null;
+      zusatz = mengeZeigen ? (einheit ?? "") : "verschiedene Einheiten";
+    } else if (gruppieren === "standort") {
+      const ort = ortVonProjekt.get(z.projekt_id);
+      schluessel = ort?.id ?? "ohne";
+      titel = ort?.titel ?? "Ohne Einsatzort";
+      zusatz = ort?.ort ?? "";
     } else {
-      gruppen.set(key, {
-        kunde: kundeLabel,
-        projekt: z.projekt_bezeichnung,
-        stunden: stundenVon(z),
-        betrag: Number(z.betrag),
+      schluessel = z.projekt_id;
+      titel = z.projekt_bezeichnung;
+      zusatz = `${z.vorname ? `${z.vorname} ` : ""}${z.kunde_name}`;
+    }
+
+    const bestehend = gruppen.get(schluessel);
+    if (bestehend) {
+      bestehend.anzahl += 1;
+      bestehend.stunden += stundenVon(z);
+      bestehend.menge += Number(z.menge_verrechnet ?? 0);
+      bestehend.betrag += Number(z.betrag);
+      // Tauchen in einer Klasse doch verschiedene Einheiten auf, wird die
+      // Menge stumm – lieber ein Strich als eine falsche Zahl.
+      if (bestehend.einheit !== null && einheit !== bestehend.einheit) {
+        bestehend.mengeZeigen = false;
+        bestehend.zusatz = "verschiedene Einheiten";
+      }
+    } else {
+      gruppen.set(schluessel, {
+        titel,
+        zusatz,
         anzahl: 1,
+        stunden: stundenVon(z),
+        menge: Number(z.menge_verrechnet ?? 0),
+        einheit,
+        mengeZeigen,
+        betrag: Number(z.betrag),
       });
     }
   }
@@ -261,14 +347,23 @@ export default async function AuswertungenPage({
         >
           Alle Positionen
         </Link>
-        <Link
-          href={baueQuery(params, { gruppieren: "projekt" })}
-          className={`px-3 py-1.5 rounded border ${
-            gruppieren ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
-          }`}
-        >
-          Gruppiert nach Projekt
-        </Link>
+        {[
+          { wert: "projekt", titel: `Nach ${begriff(begriffe, "projekt", "einzahl")}` },
+          { wert: "klasse", titel: "Nach Artikelklasse" },
+          ...(ortsebene
+            ? [{ wert: "standort", titel: `Nach ${begriff(begriffe, "standort", "einzahl")}` }]
+            : []),
+        ].map((g) => (
+          <Link
+            key={g.wert}
+            href={baueQuery(params, { gruppieren: g.wert })}
+            className={`px-3 py-1.5 rounded border ${
+              gruppieren === g.wert ? "bg-gray-100 font-medium" : "hover:bg-gray-50"
+            }`}
+          >
+            {g.titel}
+          </Link>
+        ))}
       </div>
 
       {error && (
@@ -372,20 +467,54 @@ export default async function AuswertungenPage({
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
-                <th className="px-4 py-2">Kunde</th>
-                <th className="px-4 py-2">Projekt</th>
+                <th className="px-4 py-2">
+                  {gruppieren === "klasse"
+                    ? "Artikelklasse"
+                    : gruppieren === "standort"
+                      ? begriff(begriffe, "standort", "einzahl")
+                      : begriff(begriffe, "projekt", "einzahl")}
+                </th>
+                <th className="px-4 py-2">
+                  {gruppieren === "klasse"
+                    ? "Einheit"
+                    : gruppieren === "standort"
+                      ? "Ort"
+                      : begriff(begriffe, "kunde", "einzahl")}
+                </th>
                 <th className="px-4 py-2">Positionen</th>
-                <th className="px-4 py-2">Dauer</th>
+                {/* Die Menge nur bei der Klasse: Dort ist sie die Aussage.
+                    Bei Auftrag und Ort steht die Dauer, und die ist über
+                    alle Zeilen dieselbe Einheit. */}
+                {gruppieren === "klasse" ? (
+                  <th className="px-4 py-2">Menge</th>
+                ) : (
+                  <th className="px-4 py-2">Dauer</th>
+                )}
                 <th className="px-4 py-2">Betrag</th>
               </tr>
             </thead>
             <tbody>
               {gruppenListe.map((g, i) => (
                 <tr key={i} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-2">{g.kunde}</td>
-                  <td className="px-4 py-2">{g.projekt}</td>
+                  <td className="px-4 py-2">{g.titel}</td>
+                  <td className="px-4 py-2 text-gray-500">{g.zusatz || "–"}</td>
                   <td className="px-4 py-2">{g.anzahl}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{g.stunden.toFixed(2)} h</td>
+                  {gruppieren === "klasse" ? (
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      {g.mengeZeigen ? (
+                        `${g.menge.toFixed(2)}${g.einheit ? ` ${g.einheit}` : ""}`
+                      ) : (
+                        <span
+                          title="Diese Klasse führt verschiedene Einheiten – eine Summe darüber wäre bedeutungslos."
+                          className="text-gray-400"
+                        >
+                          –
+                        </span>
+                      )}
+                    </td>
+                  ) : (
+                    <td className="px-4 py-2 whitespace-nowrap">{g.stunden.toFixed(2)} h</td>
+                  )}
                   <td className="px-4 py-2 whitespace-nowrap">CHF {g.betrag.toFixed(2)}</td>
                 </tr>
               ))}
@@ -403,7 +532,12 @@ export default async function AuswertungenPage({
                   <td className="px-4 py-2" colSpan={3}>
                     Summe
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap">{summeStunden.toFixed(2)} h</td>
+                  {/* Über alle Klassen wird die Menge NICHT summiert – das
+                      wäre genau die sinnlose Zahl, die der Schalter
+                      verhindert. */}
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {gruppieren === "klasse" ? "–" : `${summeStunden.toFixed(2)} h`}
+                  </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     CHF {summeBetrag.toFixed(2)}
                   </td>

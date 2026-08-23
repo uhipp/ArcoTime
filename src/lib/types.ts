@@ -143,6 +143,10 @@ export type Artikelklasse = {
   bezeichnung: string;
   sortierung: number;
   aktiv: boolean;
+  // Verträgt die Menge dieser Klasse eine Summe? (0084) Aus, wo eine Klasse
+  // verschiedene Einheiten führt – Material in Liter, Stück und m². „60"
+  // darüber wäre bedeutungslos, und man sieht es der Zahl nicht an.
+  menge_summieren?: boolean;
 };
 
 export type MwstCode = {
