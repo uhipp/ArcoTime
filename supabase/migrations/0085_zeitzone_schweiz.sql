@@ -43,6 +43,16 @@ comment on table zeitzonen_korrektur is
   'Einmal-Sperre für 0085. Existiert die Zeile, ist die Verschiebung der '
   'Planzeiten erledigt und darf nicht wiederholt werden.';
 
+-- RLS an, absichtlich OHNE Richtlinie: Keine Anwendung greift je auf diese
+-- Tabelle zu, sie ist reine Buchführung der Migration. Ohne Richtlinie kommt
+-- über den anon- oder authenticated-Schlüssel niemand heran, während die
+-- Migration weiterarbeitet – sie läuft als Eigentümer, und der umgeht RLS.
+--
+-- Steht hier und nicht nur im Dialog des SQL-Editors: Auf der nächsten
+-- Datenbank soll die Migration dasselbe tun, ohne dass jemand die richtige
+-- Schaltfläche erwischt.
+alter table zeitzonen_korrektur enable row level security;
+
 -- ---------------------------------------------------------
 -- 1) Der Schweizer Kalendertag als Funktion
 -- ---------------------------------------------------------
