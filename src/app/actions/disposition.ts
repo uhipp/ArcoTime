@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { zeitstempelCH } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/server";
 import { freieZeitenAm } from "@/app/actions/rapporte";
 
@@ -13,10 +14,11 @@ function alsUhrzeit(minuten: number): string {
   return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(minuten % 60).padStart(2, "0")}`;
 }
 
+// Mit Offset, nicht als nackter String – siehe zeitstempelCH(). Ohne Offset
+// legte Postgres die Planzeit als UTC ab: Ein auf 08:00 gezogener Balken
+// stand als 08:00 UTC in der Datenbank, also 10:00 Schweizer Zeit.
 function alsZeitstempel(datum: string, minuten: number): string {
-  const h = String(Math.floor(minuten / 60)).padStart(2, "0");
-  const m = String(minuten % 60).padStart(2, "0");
-  return `${datum}T${h}:${m}:00`;
+  return zeitstempelCH(datum, alsUhrzeit(minuten));
 }
 
 // Verschiebt einen geplanten Einsatz – aufgerufen vom Ziehen im

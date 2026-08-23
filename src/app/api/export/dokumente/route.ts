@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { heuteIso } from "@/lib/date-utils";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentOrganisation, getCurrentProfile } from "@/lib/get-profile";
 import { darf } from "@/lib/berechtigungen";
@@ -77,7 +78,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: (fehler as Error).message }, { status: 500 });
   }
 
-  const heute = new Date().toISOString().slice(0, 10);
+  const heute = heuteIso();
   const dateiname = `ArcoTime-Dokumente-${organisationName.replace(
     /[^\p{L}\p{N}]+/gu,
     "-"

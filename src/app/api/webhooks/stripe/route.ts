@@ -7,10 +7,12 @@ import { erstelleUndVersendeRechnung } from "@/lib/rechnung-erstellen";
 import { sendeEinladung } from "@/lib/einladung";
 import { siteOrigin } from "@/lib/site-origin";
 import { SUPPORT_MAIL } from "@/lib/kontakt";
-import { formatDatumCH } from "@/lib/date-utils";
+import { formatDatumCH, tagAus } from "@/lib/date-utils";
 
 function unixZuDatum(unixSekunden: number | null | undefined): string | null {
-  return unixSekunden ? new Date(unixSekunden * 1000).toISOString().slice(0, 10) : null;
+  // Schweizer Kalendertag: Ein Stripe-Ereignis um 00:30 Ortszeit fällt in
+  // UTC noch auf den Vortag – die Nachfrist wäre einen Tag zu kurz gewesen.
+  return unixSekunden ? tagAus(new Date(unixSekunden * 1000).toISOString()) : null;
 }
 
 /**
@@ -321,7 +323,7 @@ export async function POST(request: NextRequest) {
           .update({
             status: "gekuendigt",
             sperrgrund: null,
-            nachfrist_bis: nachfristBis.toISOString().slice(0, 10),
+            nachfrist_bis: tagAus(nachfristBis.toISOString())!,
           })
           .eq("stripe_subscription_id", subscription.id)
           .select("id, name");
@@ -349,7 +351,7 @@ export async function POST(request: NextRequest) {
                   <p>Das Abonnement von <strong>${organisation.name}</strong> ist beendet.
                   Vielen Dank für die Zeit mit ArcoTime.</p>
                   <p>Eure Daten bleiben noch bis zum
-                  <strong>${formatDatumCH(nachfristBis.toISOString().slice(0, 10))}</strong>
+                  <strong>${formatDatumCH(tagAus(nachfristBis.toISOString())!)}</strong>
                   abrufbar. In dieser Zeit könnt ihr euch anmelden und alles ansehen und
                   herunterladen – neu erfassen lässt sich nichts mehr.</p>
                   <p><a href="${origin}/export">Jetzt Daten exportieren</a></p>

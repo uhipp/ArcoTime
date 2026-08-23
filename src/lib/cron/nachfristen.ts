@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendeMail } from "@/lib/email";
-import { formatDatumCH, heuteIso } from "@/lib/date-utils";
+import { formatDatumCH, heuteIso, tagAus } from "@/lib/date-utils";
 import { APP_URL } from "@/lib/app-url";
 import { FIRMA } from "@/content/recht";
 import { SUPPORT_MAIL } from "@/lib/kontakt";
@@ -31,7 +31,7 @@ type Zeile = {
 function inTagen(tage: number): string {
   const d = new Date();
   d.setDate(d.getDate() + tage);
-  return d.toISOString().slice(0, 10);
+  return tagAus(d.toISOString())!;
 }
 
 export async function pruefeNachfristen(): Promise<{

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { mitErfolg } from "@/lib/erfolg";
-import { heuteIso } from "@/lib/date-utils";
+import { heuteIso, jetztUhrzeit, zeitstempelCH } from "@/lib/date-utils";
 import { normalisiereZeit } from "@/lib/zeit";
 import { pruefeGegenArtikel } from "@/lib/zeiteintrag-pruefung";
 import { pruefeTagesgrenze } from "@/lib/tagesbelegung";
@@ -71,9 +71,12 @@ function planzeitenAus(formData: FormData) {
   if (!formData.has("geplant_von_zeit")) return {};
 
   const datum = String(formData.get("datum") ?? "").trim() || heuteIso();
+  // Mit Offset, nicht als nackter String: Eine Angabe ohne Offset legt
+  // Postgres in der Zeitzone der Sitzung ab, und die ist UTC – 08:00 wurde
+  // damit zu 08:00 UTC, also 10:00 Schweizer Zeit.
   const zeitstempel = (feld: string) => {
     const zeit = normalisiereZeit(String(formData.get(feld) ?? ""));
-    return zeit ? `${datum}T${zeit}:00` : null;
+    return zeit ? zeitstempelCH(datum, zeit) : null;
   };
 
   // geplant_fuer wird seit 0045 nicht mehr geschrieben: Wer eingeplant
@@ -1264,9 +1267,8 @@ export async function starteZeitAnPosition(rapportId: string, positionId: string
   }
 
   const jetzt = new Date();
-  const startZeit = `${String(jetzt.getHours()).padStart(2, "0")}:${String(
-    jetzt.getMinutes()
-  ).padStart(2, "0")}`;
+  // Schweizer Uhrzeit, nicht Serverzeit – siehe date-utils.
+  const startZeit = jetztUhrzeit();
 
   const { data: geaendert } = await supabase
     .from("zeiteintraege")
@@ -1310,9 +1312,7 @@ export async function stoppeZeitAnPosition(rapportId: string, positionId: string
   // Mindestens eine Minute: Eine Fahrt von null Minuten gibt es nicht,
   // und die Datenbank verlangt einen Wert grösser als null.
   const dauerMinuten = Math.max(1, Math.round((jetzt.getTime() - start.getTime()) / 60000));
-  const endZeit = `${String(jetzt.getHours()).padStart(2, "0")}:${String(
-    jetzt.getMinutes()
-  ).padStart(2, "0")}`;
+  const endZeit = jetztUhrzeit();
 
   const { data: geaendert } = await supabase
     .from("zeiteintraege")

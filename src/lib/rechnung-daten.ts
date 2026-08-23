@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { tagAus } from "@/lib/date-utils";
 
 // Daten für die Rechnungs-PDF, aufbereitet aus der Stripe-Rechnung und den
 // Angaben der Organisation.
@@ -112,8 +113,9 @@ export function zeitraumAusStripe(invoice: Stripe.Invoice): {
   const periode = invoice.lines?.data?.[0]?.period;
   if (!periode?.start || !periode?.end) return { von: null, bis: null, text: null };
 
-  const von = new Date(periode.start * 1000).toISOString().slice(0, 10);
-  const bis = new Date(periode.end * 1000).toISOString().slice(0, 10);
+  // Auf einer Schweizer Rechnung steht die Periode in Schweizer Tagen.
+  const von = tagAus(new Date(periode.start * 1000).toISOString())!;
+  const bis = tagAus(new Date(periode.end * 1000).toISOString())!;
   const alsCH = (iso: string) => iso.split("-").reverse().join(".");
   return { von, bis, text: `Leistungszeitraum ${alsCH(von)} bis ${alsCH(bis)}` };
 }

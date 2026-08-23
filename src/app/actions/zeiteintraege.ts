@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { heuteIso } from "@/lib/date-utils";
+import { heuteIso, jetztUhrzeit } from "@/lib/date-utils";
 import { mitErfolg } from "@/lib/erfolg";
 import { ladeTagesbelegung, pruefeTagesgrenze } from "@/lib/tagesbelegung";
 import { normalisiereZeit } from "@/lib/zeit";
@@ -238,9 +238,9 @@ async function starteTimer(formData: FormData): Promise<FormularErgebnis> {
   }
 
   const jetzt = new Date();
-  const startZeit = `${String(jetzt.getHours()).padStart(2, "0")}:${String(
-    jetzt.getMinutes()
-  ).padStart(2, "0")}`;
+  // Schweizer Uhrzeit, nicht Serverzeit: start_zeit ist eine Wanduhrzeit
+  // (Spaltentyp `time`), und der Server läuft auf UTC.
+  const startZeit = jetztUhrzeit();
 
   const { data: neu, error } = await supabase
     .from("zeiteintraege")
@@ -285,9 +285,7 @@ async function stoppeTimer(id: string, formData: FormData): Promise<FormularErge
   const start = new Date(bestehend.timer_gestartet_um);
   const jetzt = new Date();
   const dauerMinuten = Math.max(1, Math.round((jetzt.getTime() - start.getTime()) / 60000));
-  const endZeit = `${String(jetzt.getHours()).padStart(2, "0")}:${String(
-    jetzt.getMinutes()
-  ).padStart(2, "0")}`;
+  const endZeit = jetztUhrzeit();
 
   const beschreibung = String(formData.get("beschreibung") ?? "").trim() || null;
 

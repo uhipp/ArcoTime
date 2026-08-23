@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatDatumCH } from "@/lib/date-utils";
+import { formatDatumCH, uhrzeitAus } from "@/lib/date-utils";
 import { rapportNummer, type Rapport, type RapportStatus } from "@/lib/types";
 import { ListenTabelle } from "@/components/listen-tabelle";
 import { SpaltenWahl } from "@/components/spalten-wahl";
@@ -23,12 +23,6 @@ const STATUS_TEXT: Record<RapportStatus, string> = {
   abgeschlossen: "Abgeschlossen",
   storniert: "Storniert",
 };
-
-function uhrzeit(zeitstempel: string | null): string | null {
-  if (!zeitstempel) return null;
-  const d = new Date(zeitstempel);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
 
 // Der Katalog braucht den laufenden Timer, deshalb eine Funktion –
 // dasselbe Muster wie in der Mitarbeitendenliste.
@@ -72,8 +66,8 @@ function spalten(timerSeit: Map<string, string>, begriffe: Begriffe): Spalte<Rap
     wert: (r) => r.geplant_von,
     klasse: "px-4 py-2 whitespace-nowrap",
     zelle: (r) => {
-      const von = uhrzeit(r.geplant_von);
-      const bis = uhrzeit(r.geplant_bis);
+      const von = uhrzeitAus(r.geplant_von);
+      const bis = uhrzeitAus(r.geplant_bis);
       return von ? `${von}–${bis ?? ""}` : "–";
     },
   },

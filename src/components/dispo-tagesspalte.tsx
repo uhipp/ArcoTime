@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatDatumCH } from "@/lib/date-utils";
+import { formatDatumCH, uhrzeitAus } from "@/lib/date-utils";
 import { rapportNummer, type Rapport } from "@/lib/types";
 import { mitKunde } from "@/lib/rapport-kunde";
 
 function nachbartag(iso: string, richtung: 1 | -1): string {
   const d = new Date(`${iso}T12:00:00`);
   d.setDate(d.getDate() + richtung);
+  // Hier ist toISOString() richtig: Der Mittag als Anker hält jeden Offset
+  // aus, der Kalendertag kippt nicht. Für "heute" oder "jetzt" wäre es
+  // falsch – dafür heuteIso() aus date-utils.
   return d.toISOString().slice(0, 10);
 }
 
 function uhrzeit(zeitstempel: string | null): string {
-  return zeitstempel ? zeitstempel.slice(11, 16) : "";
+  // slice(11, 16) schnitt die UTC-Stunde aus der ISO-Zeichenkette.
+  return uhrzeitAus(zeitstempel) ?? "";
 }
 
 // Tagesplan als schmale Spalte neben dem Rapport. Beim Planen springt man

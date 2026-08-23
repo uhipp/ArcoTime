@@ -9,7 +9,7 @@ import { sendeMail } from "@/lib/email";
 import { getCurrentOrganisation, getCurrentProfile } from "@/lib/get-profile";
 import { darf } from "@/lib/berechtigungen";
 import { mitErfolg } from "@/lib/erfolg";
-import { formatDatumCH } from "@/lib/date-utils";
+import { formatDatumCH, tagAus } from "@/lib/date-utils";
 import { FIRMA } from "@/content/recht";
 
 const PFAD = "/einstellungen/abo";
@@ -78,7 +78,7 @@ export async function kuendigeAbo() {
       cancel_at_period_end: true,
     });
     const ende = abo.items.data[0]?.current_period_end;
-    endeAm = ende ? new Date(ende * 1000).toISOString().slice(0, 10) : null;
+    endeAm = ende ? tagAus(new Date(ende * 1000).toISOString()) : null;
   } catch (fehler) {
     redirect(
       `${PFAD}?error=${encodeURIComponent(

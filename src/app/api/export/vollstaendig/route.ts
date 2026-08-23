@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { heuteIso } from "@/lib/date-utils";
 import ExcelJS from "exceljs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentOrganisation, getCurrentProfile } from "@/lib/get-profile";
@@ -75,7 +76,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const heute = new Date().toISOString().slice(0, 10);
+  const heute = heuteIso();
   const dateiname = `ArcoTime-Export-${organisationName.replace(/[^\p{L}\p{N}]+/gu, "-")}-${heute}`;
 
   const format = new URL(request.url).searchParams.get("format");

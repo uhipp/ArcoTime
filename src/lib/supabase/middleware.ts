@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { heuteIso } from "@/lib/date-utils";
 import { NextResponse, type NextRequest } from "next/server";
 import { RECHTS_PFADE } from "@/content/recht/pfade";
 
@@ -130,7 +131,10 @@ export async function updateSession(request: NextRequest) {
     } | null;
 
     if (!profil?.ist_platform_admin && organisation && organisation.status !== "aktiv") {
-      const heute = new Date().toISOString().slice(0, 10);
+      // Schweizer Kalendertag: Zwischen 00:00 und 02:00 Ortszeit ist der
+      // UTC-Tag noch der vorherige – die Nachfrist hätte einen Tag zu lang
+      // gegolten.
+      const heute = heuteIso();
       const inNachfrist = Boolean(
         organisation.nachfrist_bis && organisation.nachfrist_bis >= heute
       );

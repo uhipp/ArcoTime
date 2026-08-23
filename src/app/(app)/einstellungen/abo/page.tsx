@@ -6,7 +6,7 @@ import { darf } from "@/lib/berechtigungen";
 import { ZurueckLinks } from "@/components/zurueck-links";
 import { ladeAbo } from "@/lib/abo";
 import { staffelBeschreibung } from "@/lib/lizenzpreise";
-import { formatDatumCH } from "@/lib/date-utils";
+import { formatDatumCH, tagAus } from "@/lib/date-utils";
 import { landName, rechnungsNummer } from "@/lib/rechnung-daten";
 import { kuendigeAbo, widerrufeKuendigung } from "@/app/actions/abo";
 import { FIRMA } from "@/content/recht";
@@ -22,7 +22,7 @@ import { FIRMA } from "@/content/recht";
 // desjenigen liegt, der sie damals bekommen hat, ist im Zweifel weg.
 
 function datumAusDate(d: Date | null): string | null {
-  return d ? d.toISOString().slice(0, 10) : null;
+  return d ? tagAus(d.toISOString()) : null;
 }
 
 export default async function AboPage({

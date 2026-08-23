@@ -1,11 +1,122 @@
-// Kleine Datums-Helfer für die Auswertungen (Tag/Woche/Monat).
-// Arbeitet bewusst mit lokalen Kalendertagen (kein UTC-Shift).
+// Datums- und Zeit-Helfer.
+//
+// ZEITZONE ist die einzige Stelle, an der die Schweizer Zeit steht.
+//
+// Warum das nötig ist: Der Server läuft auf UTC, die Betriebe arbeiten in
+// UTC+1 (Winter) bzw. UTC+2 (Sommer). Alles, was mit `new Date().getHours()`
+// oder `toISOString().slice(0, 10)` eine Uhrzeit oder einen Kalendertag
+// bestimmt, liefert deshalb serverseitig UTC – und damit im Sommer zwei
+// Stunden zu wenig. Am 23.08.2026 hat das der Timer sichtbar gemacht: Wer um
+// 14:30 startete, bekam 12:30 in den Eintrag.
+//
+// Regel für neuen Code: Eine Uhrzeit oder ein Kalendertag entsteht NIE aus
+// den lokalen Gettern eines Date, sondern immer über die Funktionen hier.
+// Reine Kalenderarithmetik (Wochentag, Tage im Monat) darf mit `new
+// Date(`${datum}T12:00:00`)` arbeiten – der Mittag hält jeden Offset aus.
+//
+// Deutschland und Österreich haben denselben Offset wie die Schweiz; eine
+// Zeitzone je Organisation braucht es erst für Märkte ausserhalb von MEZ.
+
+export const ZEITZONE = "Europe/Zurich";
 
 export type Ansicht = "tag" | "woche" | "monat";
 
+const CH_TEILE = new Intl.DateTimeFormat("de-CH", {
+  timeZone: ZEITZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  // h23 und nicht hour12:false – sonst steht für Mitternacht je nach
+  // ICU-Fassung "24" statt "00" in der Stunde.
+  hourCycle: "h23",
+});
+
+function chTeile(instant: Date): Record<string, string> {
+  const teile: Record<string, string> = {};
+  for (const p of CH_TEILE.formatToParts(instant)) teile[p.type] = p.value;
+  return teile;
+}
+
+/** Kalendertag in der Schweiz, als "JJJJ-MM-TT". */
+export function heuteIso(): string {
+  const t = chTeile(new Date());
+  return `${t.year}-${t.month}-${t.day}`;
+}
+
+/** Aktuelle Uhrzeit in der Schweiz, als "HH:MM". */
+export function jetztUhrzeit(): string {
+  const t = chTeile(new Date());
+  return `${t.hour}:${t.minute}`;
+}
+
+/**
+ * Uhrzeit eines Zeitstempels in Schweizer Zeit, als "HH:MM".
+ *
+ * Ersetzt das Muster `new Date(x).getHours()` – das las die Serverzeit – und
+ * ebenso `x.slice(11, 16)`, das die Zeichen 12 bis 16 aus der ISO-Zeichenkette
+ * schnitt und damit ebenfalls UTC ablas.
+ */
+export function uhrzeitAus(zeitstempel: string | null | undefined): string | null {
+  if (!zeitstempel) return null;
+  const d = new Date(zeitstempel);
+  if (Number.isNaN(d.getTime())) return null;
+  const t = chTeile(d);
+  return `${t.hour}:${t.minute}`;
+}
+
+/** Kalendertag eines Zeitstempels in Schweizer Zeit, als "JJJJ-MM-TT". */
+export function tagAus(zeitstempel: string | null | undefined): string | null {
+  if (!zeitstempel) return null;
+  const d = new Date(zeitstempel);
+  if (Number.isNaN(d.getTime())) return null;
+  const t = chTeile(d);
+  return `${t.year}-${t.month}-${t.day}`;
+}
+
+// Offset der Schweiz zu UTC in Minuten, für DIESEN Zeitpunkt – im Sommer
+// 120, im Winter 60. Aus der Zeitzonendatenbank gelesen und nicht gerechnet,
+// damit die Umstellungstermine nicht gepflegt werden müssen.
+function offsetMinuten(instant: Date): number {
+  const name =
+    new Intl.DateTimeFormat("en-US", { timeZone: ZEITZONE, timeZoneName: "longOffset" })
+      .formatToParts(instant)
+      .find((p) => p.type === "timeZoneName")?.value ?? "GMT+00:00";
+  const treffer = /GMT([+-])(\d{2}):(\d{2})/.exec(name);
+  if (!treffer) return 0;
+  const betrag = Number(treffer[2]) * 60 + Number(treffer[3]);
+  return treffer[1] === "-" ? -betrag : betrag;
+}
+
+/**
+ * Baut aus Schweizer Kalendertag und Uhrzeit einen echten Zeitstempel mit
+ * Offset – "2026-08-23" + "08:00" wird zu "2026-08-23T06:00:00.000Z".
+ *
+ * Vorher wurde `${datum}T${zeit}:00` ohne Offset in eine timestamptz-Spalte
+ * geschrieben. Postgres legt eine Angabe ohne Offset in der Zeitzone der
+ * Sitzung ab, und die ist UTC: Ein auf 08:00 geplanter Einsatz stand als
+ * 08:00 UTC in der Datenbank, also 10:00 Schweizer Zeit. Beim Anzeigen wurde
+ * derselbe Fehler rückwärts gemacht, deshalb sah es richtig aus – aber jeder
+ * Vergleich mit `now()` und jeder Cron-Lauf rechnete mit zwei Stunden Versatz.
+ *
+ * Zwei Durchgänge, weil der Offset am gesuchten Zeitpunkt hängt: Der erste
+ * schätzt ihn, der zweite bestätigt ihn. Das macht die Nacht der Umstellung
+ * Ende März und Ende Oktober richtig.
+ */
+export function zeitstempelCH(datumIso: string, zeit: string): string {
+  const alsUtc = new Date(`${datumIso}T${zeit}:00Z`).getTime();
+  if (Number.isNaN(alsUtc)) throw new Error(`Ungültige Zeitangabe: ${datumIso} ${zeit}`);
+  const ersterVersuch = alsUtc - offsetMinuten(new Date(alsUtc)) * 60_000;
+  const ms = alsUtc - offsetMinuten(new Date(ersterVersuch)) * 60_000;
+  return new Date(ms).toISOString();
+}
+
+// Nur für die Kalenderarithmetik unten (Wochen, Monate): Die Date-Objekte
+// dort werden mit parseISO() aus einem Kalendertag gebaut und lokal gelesen,
+// also im selben Bezug geschrieben wie gelesen. Für "jetzt" oder "heute" ist
+// das FALSCH – dafür heuteIso() oben.
 function toISO(d: Date) {
-  // Bewusst ohne toISOString(): die würde nach UTC konvertieren und könnte
-  // bei Zeitzonen östlich von UTC (z.B. Schweiz) auf den Vortag zurückfallen.
   const jahr = d.getFullYear();
   const monat = String(d.getMonth() + 1).padStart(2, "0");
   const tag = String(d.getDate()).padStart(2, "0");
@@ -54,10 +165,6 @@ export function verschieben(ansicht: Ansicht, bezugsdatumIso: string, richtung: 
   else if (ansicht === "woche") bezug.setDate(bezug.getDate() + 7 * richtung);
   else bezug.setMonth(bezug.getMonth() + richtung);
   return toISO(bezug);
-}
-
-export function heuteIso() {
-  return toISO(new Date());
 }
 
 export function formatDatumCH(iso: string) {

@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { heuteIso } from "@/lib/date-utils";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -85,7 +86,7 @@ export default async function OrganisationDetailPage({
   const dateien =
     loeschen === "1" ? await dateienEinerOrganisation(admin, id) : null;
 
-  const heute = new Date().toISOString().slice(0, 10);
+  const heute = heuteIso();
   const nochGeschuetzt =
     organisation.status === "aktiv" ||
     Boolean(organisation.nachfrist_bis && organisation.nachfrist_bis >= heute);

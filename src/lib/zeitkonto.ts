@@ -57,10 +57,6 @@ type Art = {
 
 type Schliesstag = { von: string; bis: string; belastet_ferien: boolean };
 
-function iso(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
 function tageDesMonats(jahr: number, monat: number): string[] {
   const tage: string[] = [];
   const anzahl = new Date(jahr, monat, 0).getDate();
@@ -388,8 +384,6 @@ export function stundenText(wert: number): string {
   const gerundet = Math.round(wert * 100) / 100;
   return `${gerundet > 0 ? "+" : ""}${gerundet.toFixed(2)}`;
 }
-
-export { iso };
 
 // Ist der Monat dieser Person abgeschlossen? Für Meldungen in der
 // Anwendung.

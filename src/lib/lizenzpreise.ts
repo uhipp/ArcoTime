@@ -1,3 +1,5 @@
+import { tagAus } from "@/lib/date-utils";
+
 // Gestaffelte Lizenzpreise (Volume-Pricing – die erreichte Stufe gilt für
 // ALLE Benutzer, nicht nur die zusätzlichen). Muss exakt mit den in Stripe
 // hinterlegten Preisstufen übereinstimmen (siehe STRIPE_PRICE_MONATLICH /
@@ -162,5 +164,7 @@ export function mitEinfuehrungsrabatt(betrag: number): number {
 }
 
 export function einfuehrungLaeuft(heute = new Date()): boolean {
-  return heute.toISOString().slice(0, 10) <= EINFUEHRUNG.bis;
+  // Schweizer Kalendertag: Der Server läuft auf UTC, und am 1. Januar um
+  // 00:30 Ortszeit wäre der Rabatt sonst noch einen Tag gelaufen.
+  return tagAus(heute.toISOString())! <= EINFUEHRUNG.bis;
 }

@@ -2,14 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrganisation } from "@/lib/get-profile";
-import {
-  heuteIso,
-  label,
-  verschieben,
-  zeitraumFuer,
-  formatDatumCH,
-  type Ansicht,
-} from "@/lib/date-utils";
+import { formatDatumCH, heuteIso, label, type Ansicht, uhrzeitAus, verschieben, zeitraumFuer } from "@/lib/date-utils";
 import { rapportNummer, type Rapport } from "@/lib/types";
 import { DispoRaster, type RasterEintrag, type RasterSpalte } from "@/components/dispo-raster";
 import { mitKunde } from "@/lib/rapport-kunde";
@@ -29,6 +22,9 @@ function tageZwischen(von: string, bis: string): string[] {
   const d = new Date(`${von}T12:00:00`);
   const ende = new Date(`${bis}T12:00:00`);
   while (d <= ende) {
+    // Hier ist toISOString() richtig: Der Mittag als Anker hält jeden Offset
+    // aus, der Kalendertag kippt nicht. Für "heute" oder "jetzt" wäre es
+    // falsch – dafür heuteIso() aus date-utils.
     tage.push(d.toISOString().slice(0, 10));
     d.setDate(d.getDate() + 1);
   }
@@ -36,8 +32,8 @@ function tageZwischen(von: string, bis: string): string[] {
 }
 
 function uhrzeit(zeitstempel: string | null): string {
-  if (!zeitstempel) return "";
-  return zeitstempel.slice(11, 16);
+  // slice(11, 16) schnitt die UTC-Stunde aus der ISO-Zeichenkette.
+  return uhrzeitAus(zeitstempel) ?? "";
 }
 
 // Doppelbelegungen je Person und Tag ermitteln.
