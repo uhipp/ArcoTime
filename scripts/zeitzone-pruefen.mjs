@@ -16,7 +16,7 @@
 // nachvollziehbar bleibt.
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { join, relative } from "node:path";
 
 const WURZEL = new URL("..", import.meta.url).pathname;
@@ -68,6 +68,7 @@ const FREIGABE = /zeitzone-ok:/;
 const ref = process.argv[2];
 let treffer = 0;
 let geprueft = 0;
+let uebersprungen = 0;
 
 for (const pfad of dateien(QUELLE)) {
   const rel = relative(WURZEL, pfad);
@@ -75,10 +76,27 @@ for (const pfad of dateien(QUELLE)) {
 
   let inhalt;
   if (ref) {
+    // execFileSync ohne Shell: Pfade wie src/app/(app)/... enthalten Klammern,
+    // und die Shell frisst sie. Mit execSync wurden dadurch 122 von 182
+    // Dateien still übersprungen – der Prüfer meldete "geprüft", ohne den
+    // grössten Teil der Anwendung angesehen zu haben. Ein Prüfer, der still
+    // weniger prüft als er behauptet, ist schlimmer als keiner.
     try {
-      inhalt = execSync(`git show ${ref}:${rel}`, { cwd: WURZEL, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-    } catch {
-      continue; // Datei gab es in diesem Stand noch nicht
+      inhalt = execFileSync("git", ["show", `${ref}:${rel}`], {
+        cwd: WURZEL,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+    } catch (fehler) {
+      const meldung = String(fehler.stderr ?? "");
+      // Nur das eine erwartete Scheitern wird verschluckt: Die Datei gab es
+      // in diesem Stand noch nicht. Alles andere ist zu melden.
+      if (/exists on disk, but not in|does not exist in|unknown revision/i.test(meldung)) {
+        uebersprungen++;
+        continue;
+      }
+      console.error(`FEHLER beim Lesen von ${rel} aus ${ref}: ${meldung.trim()}`);
+      process.exit(2);
     }
   } else {
     inhalt = readFileSync(pfad, "utf8");
@@ -105,5 +123,6 @@ for (const pfad of dateien(QUELLE)) {
   });
 }
 
-console.log(`${geprueft} Serverdateien geprüft, ${treffer} Fundstelle(n).`);
+const nachtrag = uebersprungen ? ` (${uebersprungen} in diesem Stand nicht vorhanden)` : "";
+console.log(`${geprueft} Serverdateien geprüft${nachtrag}, ${treffer} Fundstelle(n).`);
 process.exit(treffer > 0 ? 1 : 0);
