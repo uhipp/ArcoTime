@@ -300,6 +300,9 @@ node --env-file=.env.local scripts/mandant-loeschen.mjs "Name"    # Probelauf
 node --env-file=.env.local scripts/dokumente-pruefen.mjs          # Dateien vs. Zeilen
 node --env-file=.env.local scripts/standorte-pruefen.mjs          # Ortsebene (0076/0077)
 node scripts/formulare-pruefen.mjs                                # verschachtelte <form>
+node scripts/datenmodell-diagramm.mjs ziel.pdf                    # A3-Datenmodell
+python3 scripts/testprotokoll.py ziel.xlsx                        # Testprotokoll
+bash scripts/dokumente-erzeugen.sh "$ONEDRIVE/ArcoSoftware"       # Doku und Flyer
 find .next -name "* [0-9].*" -delete                              # OneDrive-Kopien vor tsc
 ```
 
@@ -367,21 +370,45 @@ in Export und Löschung von selbst mit? Was passiert beim Löschen des Bezugs?).
    Anwendung sieht sie danach niemand; im Export landen sie unter „Ohne
    Zuordnung", und beim Löschen des Mandanten gehen sie mit. Kein Datenverlust,
    aber unaufgeräumt – in der Demo AG betrifft es fünf Dateien.
-4. **Word-Dokumentation nachführen.** `docs/ArcoTime-Projektdokumentation.docx`
-   ist auf dem Stand vom 16.08.: Kapitel 4.6 „Export" kennt nur den
-   Comatic-Export, und der ganze Lebenszyklus eines Mandanten (Nachfrist,
-   Vollexport, Dokumentenarchiv, Löschung) fehlt. Es gibt kein Erzeugerskript
-   im Repo – das Kapitel ist von Hand nachzuziehen.
-5. **Sicherheitsdatenblatt (TOM)** – vom Nutzer gewünscht, nachdem ein Kunde
+4. *(erledigt am 23.08.2026)* Die Word-Dokumentation liegt jetzt als
+   Markdown im Repo (`docs/projektdokumentation.md`, `docs/flyer.md`) und
+   wird mit `bash scripts/dokumente-erzeugen.sh` erzeugt. Der Grund für den
+   Umbau steht im Skript: Eine Doku, die man nicht neu erzeugen kann, ist
+   nach der dritten Migration falsch – genau deshalb stand sie sieben Tage
+   still.
+5. **Stripe-Webhook der Sandbox zeigt auf die Live-Umgebung.** Stripe hat am
+   23.08.2026 gemeldet, dass Testmodus-Ereignisse an
+   `https://arco-time.vercel.app/api/webhooks/stripe` seit dem 17.08.
+   dreimal gescheitert sind, und stellt den Versand am **26.08.2026** ein.
+
+   Nachgemessen: Die Adresse lebt (die Startseite antwortet mit 307, der
+   Endpunkt mit 405 auf GET), und ein POST mit ungültiger Signatur bekommt
+   **400**. Genau das ist die Ursache: Hinter dieser Adresse liegt eine
+   Auslieferung mit dem **Live**-Webhook-Geheimnis, die Ereignisse kommen
+   aber aus der **Sandbox**. Die Signaturprüfung muss scheitern.
+
+   Für den Live-Betrieb ist nichts kaputt — der Live-Endpunkt auf
+   `arcotime.ch` antwortet erwartungsgemäss. Gefährlich ist der andere
+   Fall: Wer künftig einen Testkauf in der Sandbox durchspielt, bekommt
+   still keine Verarbeitung.
+
+   Drei Wege: den Sandbox-Endpunkt **löschen**, solange niemand mit ihm
+   testet · ihm eine **eigene Auslieferung mit Sandbox-Schlüsseln** geben
+   (das ist der schon notierte Punkt „Preview-Deployments auf die
+   Stripe-Sandbox umstellen") · oder Testereignisse mit
+   `stripe listen --forward-to` auf die Entwicklungsumgebung leiten. Die
+   Änderung selbst gehört ins Stripe-Dashboard und damit in die Hand des
+   Nutzers.
+6. **Sicherheitsdatenblatt (TOM)** – vom Nutzer gewünscht, nachdem ein Kunde
    mit sensiblen Personendaten nach einer eigenen Datenbank je Mandant gefragt
    hat. Entschieden ist: gemeinsame Datenbank als Regel, dedizierte Datenbank
    gegen Aufpreis auf Wunsch. Das Blatt hält die Massnahmen fest und läuft
    künftig wie die übrigen Dokus mit.
-6. **Die Ortsebene auf dem Handy.** Die neue Kundenmaske bricht das
+7. **Die Ortsebene auf dem Handy.** Die neue Kundenmaske bricht das
    Nebeneinander noch nicht in ein Nacheinander um – auf dem Tablet im
    Querformat geht sie, auf dem Telefon nicht. Steht in
    `docs/masken-leitlinie.md` als nächster Schritt an dieser Maske.
-7. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
+8. DMARC um `rua=` ergänzen · anwaltliche Durchsicht der Rechtstexte · DNS-Wildcard
    löschen · Preview-Deployments auf die Stripe-Sandbox umstellen.
 6. Optional: Video fürs Schaufenster (Bildschirmaufnahmen macht der Nutzer, Drehbuch
    und Einbau kommen von hier).
