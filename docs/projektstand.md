@@ -376,29 +376,36 @@ in Export und Löschung von selbst mit? Was passiert beim Löschen des Bezugs?).
    Umbau steht im Skript: Eine Doku, die man nicht neu erzeugen kann, ist
    nach der dritten Migration falsch – genau deshalb stand sie sieben Tage
    still.
-5. **Stripe-Webhook der Sandbox zeigt auf die Live-Umgebung.** Stripe hat am
-   23.08.2026 gemeldet, dass Testmodus-Ereignisse an
-   `https://arco-time.vercel.app/api/webhooks/stripe` seit dem 17.08.
-   dreimal gescheitert sind, und stellt den Versand am **26.08.2026** ein.
+5. *(erledigt am 23.08.2026)* **Stripe-Webhook der Sandbox.** Stripe meldete
+   gescheiterte Testmodus-Ereignisse an `arco-time.vercel.app`. Beim Nachsehen
+   im Dashboard kam heraus, dass es **zwei getrennte Testumgebungen** gibt: den
+   klassischen Test-Modus des Hauptkontos (`acct_1U3KZY…`, Webhook-Liste leer,
+   mit v1 und v2 nachgefragt) und eine **eigene Sandbox „Arcos Group GmbH
+   Sandbox"** (`acct_1U3KZk…`). Nur dort lag der Endpunkt.
 
-   Nachgemessen: Die Adresse lebt (die Startseite antwortet mit 307, der
-   Endpunkt mit 405 auf GET), und ein POST mit ungültiger Signatur bekommt
-   **400**. Genau das ist die Ursache: Hinter dieser Adresse liegt eine
-   Auslieferung mit dem **Live**-Webhook-Geheimnis, die Ereignisse kommen
-   aber aus der **Sandbox**. Die Signaturprüfung muss scheitern.
+   Gefunden: Ziel `fascinating-splendor` (`we_1U3MkO…`) auf
+   `arco-time.vercel.app/api/webhooks/stripe`, aktiv, **6 von 6 Übermittlungen
+   gescheitert (100 %)**, und zwar auf genau den vier Ereignissen, die der Code
+   verarbeitet: `checkout.session.completed`,
+   `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`.
 
-   Für den Live-Betrieb ist nichts kaputt — der Live-Endpunkt auf
-   `arcotime.ch` antwortet erwartungsgemäss. Gefährlich ist der andere
-   Fall: Wer künftig einen Testkauf in der Sandbox durchspielt, bekommt
-   still keine Verarbeitung.
+   Das war also kein vergessener Müll, sondern der bewusst eingerichtete
+   Sandbox-Zwilling des Live-Webhooks. Scheitern musste er trotzdem: Er hat ein
+   eigenes Signatur-Geheimnis, die Auslieferung hinter dieser Adresse prüft
+   aber mit dem **Live**-Geheimnis.
 
-   Drei Wege: den Sandbox-Endpunkt **löschen**, solange niemand mit ihm
-   testet · ihm eine **eigene Auslieferung mit Sandbox-Schlüsseln** geben
-   (das ist der schon notierte Punkt „Preview-Deployments auf die
-   Stripe-Sandbox umstellen") · oder Testereignisse mit
-   `stripe listen --forward-to` auf die Entwicklungsumgebung leiten. Die
-   Änderung selbst gehört ins Stripe-Dashboard und damit in die Hand des
-   Nutzers.
+   **Deaktiviert statt gelöscht** — die Fehlversuche und die Mails hören auf,
+   die Einrichtung (vier Ereignisse, Geheimnis, Adresse) bleibt für den Tag, an
+   dem es eine eigene Sandbox-Auslieferung mit eigener Datenbank gibt. Löschen
+   hätte bedeutet, das später neu aufzusetzen.
+
+   Live gegengeprüft: Ziel **ArcoTime Produktion** auf
+   `arcotime.ch/api/webhooks/stripe`, aktiv, **Fehlerquote 0 %**.
+
+   Offen bleibt die Ursache dahinter, und sie hat einen eigenen Namen weiter
+   unten: Entwicklung, Vorschau und Betrieb teilen dieselbe Datenbank. Solange
+   das so ist, kann es keine Sandbox-Auslieferung geben, die Testkäufe
+   verarbeitet, ohne Testdaten in den Betrieb zu schreiben.
 6. **Sicherheitsdatenblatt (TOM)** – vom Nutzer gewünscht, nachdem ein Kunde
    mit sensiblen Personendaten nach einer eigenen Datenbank je Mandant gefragt
    hat. Entschieden ist: gemeinsame Datenbank als Regel, dedizierte Datenbank
