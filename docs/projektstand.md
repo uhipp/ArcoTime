@@ -318,6 +318,39 @@ neuen Tabelle die Fragen stellen, die 0063/0064 beantwortet haben (Kommt sie
 in Export und Löschung von selbst mit? Was passiert beim Löschen des Bezugs?).
 
 **Als Nächstes**
+0. **Eine Lizenz, zwei Personen — die Lücke schliessen.** Aufgefallen dem
+   Nutzer am 23.08.2026 beim Testen: Ein Konto lässt sich gleichzeitig auf
+   mehreren Geräten benutzen. Ein Einmannbetrieb kann damit eine Lizenz
+   buchen, während der Monteur mit dem Handy arbeitet und das Büro am PC —
+   zwei Personen, eine Lizenz. Vertraglich ist es schon verboten (AGB Ziffer
+   4: „Eine Lizenz ist einer Person zugeordnet und darf nicht von mehreren
+   Personen gleichzeitig genutzt werden"), technisch verhindert es nichts.
+
+   Der Konflikt, der die Lösung schwierig macht: **Dieselbe Person auf zwei
+   Geräten ist der Normalfall, den wir gerade absichtlich gebaut haben** —
+   Handy unterwegs, Bildschirm im Büro. Wer parallele Sitzungen einfach
+   sperrt, trifft den ehrlichen Anwender und lässt den unehrlichen ein Gerät
+   abmelden. Mit Sicherheit unterscheiden lassen sich die zwei Fälle nicht;
+   es gibt nur Anzeichen (gleichzeitige Aktivität von verschiedenen Netzen,
+   verschiedene Geräteklassen zur selben Minute, zwei laufende Timer wären
+   ohnehin schon durch die Datenbank gesperrt).
+
+   Wege, die zu prüfen sind:
+
+   | Weg | Wirkung | Preis |
+   |---|---|---|
+   | Nur eine Sitzung je Konto, neue Anmeldung wirft die alte hinaus | wirksam | trifft den ehrlichen Zwei-Geräte-Nutzer täglich |
+   | Gleichzeitige Aktivität messen und dem Admin zeigen | weich, keine Sperre | wer es darauf anlegt, ignoriert den Hinweis |
+   | Nach gleichzeitigen Sitzungen abrechnen statt nach Konten | wirksam und ehrlich | Preismodell ändert sich |
+   | Zweite Lizenz billig genug machen (Büro-Zugang) | der Anreiz verschwindet | Umsatz je Betrieb sinkt, Zahl der Betriebe steigt |
+   | Hinweis in der Anwendung plus Auswertung für Arcos | Abschreckung | keine Durchsetzung |
+
+   Meine erste Einschätzung, zu bestätigen: **messen, zeigen, und einen
+   günstigen zweiten Zugang anbieten** — Sperren löst das Problem auf dem
+   Papier und schafft ein grösseres im Alltag. Vorher braucht es aber Zahlen:
+   Wie oft kommt gleichzeitige Nutzung von verschiedenen Netzen überhaupt
+   vor? Diese Messung ist der erste Schritt und kostet nichts.
+
 1. **Bestehenden Mandanten auf ein bezahltes Abo umstellen.** Der Checkout legt heute
    immer eine neue Organisation an – ein Testkunde, der bezahlen will, müsste von
    vorn anfangen.
