@@ -95,6 +95,14 @@ begin
      where n.nspname = 'public'
        and p.prokind = 'f'
        and p.prosrc ~* '\mcurrent_date\M'
+       -- Funktionen, die zu einer Erweiterung gehören, gehören uns nicht.
+       -- Ihre Definition neu auszuführen scheitert an den Rechten oder
+       -- löst sie aus der Erweiterung heraus.
+       and not exists (
+         select 1 from pg_depend d
+          where d.objid = p.oid
+            and d.deptype = 'e'
+       )
   loop
     -- \m und \M sind Wortgrenzen: "current_date" darf nicht in einem
     -- längeren Namen getroffen werden.
@@ -117,7 +125,12 @@ begin
     join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public'
      and p.prokind = 'f'
-     and p.prosrc ~* '\mcurrent_date\M';
+     and p.prosrc ~* '\mcurrent_date\M'
+     and not exists (
+       select 1 from pg_depend d
+        where d.objid = p.oid
+          and d.deptype = 'e'
+     );
   if v_rest is not null then
     raise exception 'Diese Funktionen rechnen weiter mit current_date: %', v_rest;
   end if;
@@ -192,6 +205,31 @@ end $$;
 
 -- Ein laufender Timer hat noch keine Endzeit, aber eine falsche Startzeit.
 -- Den kann man rechnen, denn timer_gestartet_um steht noch da.
+--
+-- `at time zone 'Europe/Zurich'` macht aus dem Zeitpunkt die dortige
+-- Wanduhrzeit, date_trunc schneidet die Sekunden ab (die Anwendung führt
+-- start_zeit auf Minuten), und ::time nimmt die Tageszeit heraus. to_char
+-- wäre der Umweg über Text gewesen – und die Spalte ist `time`.
 update zeiteintraege
-   set start_zeit = to_char(timer_gestartet_um at time zone 'Europe/Zurich', 'HH24:MI')
+   set start_zeit = date_trunc('minute', timer_gestartet_um at time zone 'Europe/Zurich')::time
  where timer_gestartet_um is not null;
+
+-- ---------------------------------------------------------
+-- 5) Nachzählen, sichtbar
+-- ---------------------------------------------------------
+-- Die raise notice oben zeigt der SQL-Editor nicht zuverlässig an. Eine
+-- Abfrage am Schluss zeigt er immer – und nachzählen ist ohnehin Pflicht,
+-- nicht Zierde.
+select
+  (select verschobene_zeilen from zeitzonen_korrektur)              as planzeiten_geraderueckt,
+  (select count(*) from rapporte
+    where geplant_von is not null or geplant_bis is not null)       as rapporte_mit_planzeit,
+  (select count(*) from zeiteintraege where start_zeit is not null) as uhrzeiten_von_hand_pruefen,
+  (select count(*) from zeiteintraege
+    where timer_gestartet_um is not null)                          as laufende_timer_gesetzt,
+  heute_ch()                                                       as heute_schweiz,
+  current_date                                                     as heute_utc,
+  (select count(*) from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.prokind = 'f'
+      and p.prosrc ~* '\mheute_ch\M')                              as funktionen_mit_heute_ch;
