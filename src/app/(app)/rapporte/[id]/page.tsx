@@ -55,7 +55,7 @@ function PositionsAktionen({
   z: ZeiteintragMitDetails;
 }) {
   return (
-    <div className="flex items-center justify-end gap-3">
+    <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 min-w-0">
       {/* Nur bei Arbeitszeit: Kilometer und Material misst man nicht mit
           der Uhr. */}
       {z.menge == null && !z.beleg_id && (
@@ -163,6 +163,10 @@ export default async function RapportDetailPage({
   const rapport = mitKunde(rapportRoh as Rapport);
   const positionen = (positionenRoh as ZeiteintragMitDetails[] | null) ?? [];
   const offen = rapport.status === "offen";
+  // Wie dieser Betrieb einen Artikel nennt (0073). Bis zum 23.08.2026 stand
+  // hier fest „Leistung" – und beim Hinzufügen einer Position suchte man das
+  // Wort „Artikel" vergebens.
+  const artikelLabel = begriff(begriffe, "artikel", "einzahl");
 
   // Die Anfahrt steht seit 0080 am Auftrag und nicht mehr am Kunden: Eine
   // Verwaltung mit vierzig Liegenschaften hat vierzig Distanzen. Die
@@ -448,7 +452,10 @@ export default async function RapportDetailPage({
                       {z.beschreibung}
                     </p>
                   )}
-                  <div className="mt-1 flex items-center justify-between gap-2">
+                  {/* flex-wrap: Ohne Umbruch schob die Knopfreihe die ganze
+                      Seite waagrecht, und der Kopf war links abgeschnitten –
+                      am Gerät gesehen, nicht am Schreibtisch. */}
+                  <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                     <span className="text-sm text-gray-500">
                       CHF {Number(z.betrag ?? 0).toFixed(2)}
                     </span>
@@ -469,7 +476,7 @@ export default async function RapportDetailPage({
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-left text-gray-500">
                   <tr>
-                    <th className="px-4 py-2">Leistung</th>
+                    <th className="px-4 py-2">{artikelLabel}</th>
                     <th className="px-4 py-2">Beschreibung</th>
                     <th className="px-4 py-2 text-right">Menge</th>
                     <th className="px-4 py-2 text-right">Betrag</th>
@@ -524,6 +531,7 @@ export default async function RapportDetailPage({
           <RapportPositionForm
             key={inBearbeitung.id}
             artikel={artikel ?? []}
+            artikelLabel={artikelLabel}
             rabattsaetze={rabattsaetze ?? []}
             action={aktualisierePosition.bind(null, id, inBearbeitung.id)}
             position={inBearbeitung}
@@ -537,6 +545,7 @@ export default async function RapportDetailPage({
         {offen && !inBearbeitung && (
           <RapportPositionForm
             artikel={artikel ?? []}
+            artikelLabel={artikelLabel}
             rabattsaetze={rabattsaetze ?? []}
             action={fuegePositionHinzu.bind(null, id)}
             mitarbeiterId={rapport.mitarbeiter_id}

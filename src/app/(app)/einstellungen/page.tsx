@@ -50,7 +50,7 @@ import {
   uebernehmeBegriffVorlage,
 } from "@/app/actions/einstellungen";
 import { darf } from "@/lib/berechtigungen";
-import { getBegriffe, type BegriffSchluessel } from "@/lib/begriffe";
+import { begriff, getBegriffe, type BegriffSchluessel } from "@/lib/begriffe";
 
 // Minuten seit Mitternacht als HH:MM, für die Anzeige der gespeicherten
 // Arbeitszeit. Gespeichert wird in Minuten, damit sich damit rechnen lässt.
@@ -1197,7 +1197,7 @@ export default async function EinstellungenPage({
                 className="flex flex-wrap items-center gap-2"
               >
                 <span className={`flex-1 min-w-[10rem] ${sp.aktiv ? "" : "text-gray-400"}`}>
-                  {sp.artikel?.bezeichnung ?? "Gelöschte Leistung"}
+                  {sp.artikel?.bezeichnung ?? `Gelöschter ${begriff(begriffe, "artikel", "einzahl")}`}
                 </span>
                 <input
                   name="vorgabe"
@@ -1251,7 +1251,7 @@ export default async function EinstellungenPage({
             className="flex-1 min-w-[12rem] rounded border border-gray-300 px-3 py-2 text-sm"
           >
             <option value="" disabled>
-              Leistung wählen…
+              {begriff(begriffe, "artikel", "einzahl")} wählen…
             </option>
             {artikel?.map((d) => (
               <option key={d.id} value={d.id}>

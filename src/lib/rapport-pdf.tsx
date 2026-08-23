@@ -201,7 +201,7 @@ export function RapportPdf({ daten }: { daten: RapportDokument }) {
             Browser ist das hier ausdrücklich gewollt und betrifft nur den
             Kopf, nicht das Total. */}
         <View style={stil.tabellenKopf} fixed>
-          <Text style={stil.spalteLeistung}>Leistung</Text>
+          <Text style={stil.spalteLeistung}>{daten.artikelLabel}</Text>
           <Text style={stil.spalteBeschreibung}>Beschreibung</Text>
           <Text style={stil.spalteMenge}>Menge</Text>
         </View>

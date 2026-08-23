@@ -181,7 +181,7 @@ export default async function RapportDruckPage({
       <table className="w-full text-sm mb-2">
         <thead>
           <tr className="border-b-2 border-arcos-navy text-left">
-            <th className="py-2 pr-3">Leistung</th>
+            <th className="py-2 pr-3">{daten.artikelLabel}</th>
             <th className="py-2 pr-3">Beschreibung</th>
             <th className="py-2 text-right whitespace-nowrap">Menge</th>
           </tr>

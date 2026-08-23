@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrganisation } from "@/lib/get-profile";
 import { logoAdresseVon } from "@/lib/logo-adresse";
 import { standorteAktiv } from "@/lib/standorte";
+import { begriff, getBegriffe } from "@/lib/begriffe";
 import type { Rapport, ZeiteintragMitDetails } from "@/lib/types";
 
 export type DokumentAdresse = {
@@ -55,6 +56,10 @@ export type RapportDokument = {
   // Wer vor Ort erreichbar ist: die Ansprechperson beim Kunden und die
   // zusätzlichen Adressen des Auftrags, gültig am Tag des Einsatzes.
   kontakte: DokumentKontakt[];
+  // Wie dieser Betrieb einen Artikel nennt (0073) – der Spaltentitel auf
+  // Papier und im PDF. Steht in den Daten und nicht in der Darstellung,
+  // damit Druckansicht und PDF nicht auseinanderlaufen.
+  artikelLabel: string;
   absender: {
     name: string | null;
     strasse: string | null;
@@ -168,6 +173,7 @@ export async function ladeRapportDokument(id: string): Promise<RapportDokument |
     kunde,
     einsatzort,
     kontakte,
+    artikelLabel: begriff(await getBegriffe(), "artikel", "einzahl"),
     absender: {
       name: organisation?.name ?? null,
       strasse: absenderStrasse,

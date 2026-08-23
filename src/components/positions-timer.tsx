@@ -44,6 +44,11 @@ function Knopf({
   const basis =
     "inline-flex items-center justify-center gap-2 rounded font-medium disabled:opacity-60 disabled:cursor-not-allowed min-h-[44px]";
   const groesse = gross ? "w-full px-6 py-3 text-base" : "px-4 py-2 text-sm";
+  // „Ankunft – Timer stoppen" und „Losfahren – Timer starten" hiess es bis
+  // zum 23.08.2026. Die Wörter kamen von dem Fall, der den Timer veranlasst
+  // hat – der Fahrzeit. Am Artikel „Beratung" stand dann „Ankunft", und der
+  // Nutzer fragte zu Recht, warum. Ein Knopf, der eine Zeit misst, sagt nicht
+  // voraus, WELCHE Zeit das ist.
   const farbe = laeuft
     ? "bg-red-600 text-white hover:bg-red-700"
     : "border border-arcos-steel text-arcos-steel hover:bg-arcos-steel hover:text-white";
@@ -53,7 +58,7 @@ function Knopf({
       {laeuft ? (
         <>
           <span aria-hidden>■</span>
-          Ankunft – Timer stoppen
+          Timer stoppen
           {seit && (
             <>
               {" · "}
@@ -64,7 +69,7 @@ function Knopf({
       ) : (
         <>
           <span aria-hidden>▶</span>
-          {gross ? "Losfahren – Timer starten" : "Timer starten"}
+          Timer starten
         </>
       )}
     </button>

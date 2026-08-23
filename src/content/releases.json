@@ -6,6 +6,18 @@
     "eintraege": [
       {
         "typ": "behoben",
+        "text": "**Der Timer sagte „Ankunft – Timer stoppen“, auch bei einer Beratung.** Die Wörter kamen von dem Fall, der den Timer veranlasst hat – der Fahrzeit. Jetzt heisst es schlicht „Timer starten“ und „Timer stoppen“: Ein Knopf, der eine Zeit misst, sagt nicht voraus, welche Zeit das ist."
+      },
+      {
+        "typ": "behoben",
+        "text": "**Das Feld beim Hinzufügen einer Position hiess „Leistung“**, obwohl man dort einen **Artikel** wählt. Es heisst jetzt so, wie der Betrieb den Artikel nennt – auch in der Positionsliste, in der Druckansicht, im PDF und bei den Standardpositionen."
+      },
+      {
+        "typ": "behoben",
+        "text": "**Auf dem Telefon liess sich die Seite waagrecht schieben** und der Kopf war links abgeschnitten: Die Knopfreihe einer Position war breiter als der Bildschirm. Sie bricht jetzt um."
+      },
+      {
+        "typ": "behoben",
         "text": "**Positionen liessen sich nicht mehr speichern** („column kp.dienstleistung_id does not exist“). Bei der Umbenennung von Dienstleistungen zu Artikeln ist der Preis-Trigger übersehen worden: Postgres zieht Funktionen beim Umbenennen nicht mit, weil ihr Inhalt Text ist. Behoben, und die Prüfung, die das gefunden hätte, ist jetzt Teil des Vorgehens."
       },
       {

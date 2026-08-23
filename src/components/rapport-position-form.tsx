@@ -32,6 +32,7 @@ type ArtikelOption = Pick<
 // losfährt, drückt einen Knopf – er füllt kein Formular aus.
 export function RapportPositionForm({
   artikel,
+  artikelLabel = "Artikel",
   rabattsaetze,
   action,
   position,
@@ -42,6 +43,9 @@ export function RapportPositionForm({
   anreiseKm,
 }: {
   artikel: ArtikelOption[];
+  // Wie dieser Betrieb einen Artikel nennt (0073). Als Prop und nicht
+  // hier geladen: Das Formular ist eine Client-Komponente.
+  artikelLabel?: string;
   rabattsaetze: Rabattsatz[];
   action: (bisher: FormularErgebnis, formData: FormData) => Promise<FormularErgebnis>;
   // Gesetzt beim Bearbeiten einer bestehenden Position.
@@ -162,7 +166,7 @@ export function RapportPositionForm({
 
       <div>
         <label className="block text-xs text-gray-500 mb-1" htmlFor="pos_artikel">
-          Leistung
+          {artikelLabel}
         </label>
         <select
           id="pos_artikel"
@@ -345,7 +349,7 @@ export function RapportPositionForm({
 
       {rabattGesperrt && (
         <p className="text-xs text-gray-400">
-          Für diese Leistung sind keine Teilrabatte zugelassen.
+          Für diese Position sind keine Teilrabatte zugelassen.
         </p>
       )}
     </form>
