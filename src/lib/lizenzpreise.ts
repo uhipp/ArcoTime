@@ -74,11 +74,16 @@ function rohpreis(anzahlBenutzer: number, zyklus: "monatlich" | "jaehrlich"): nu
 // Bestpreis-Garantie.
 //
 // Bei Volume-Pricing entstehen an den Stufengrenzen Sprünge, bei denen eine
-// KLEINERE Menge mehr kostet als eine grössere: 9 Benutzer kosten 9 × 9.– =
-// 81.–, 10 Benutzer aber nur 10 × 8.– = 80.–. Dasselbe bei 18 und 19
-// gegenüber 20. Das ist keine Fehlkonfiguration, sondern eine unvermeidliche
-// Eigenschaft der Staffel 9/8/7 – sprungfrei wäre sie nur mit Sätzen ab
-// 8.10 bzw. 7.70 darstellbar, was die Rabatte praktisch auflöst.
+// KLEINERE Menge mehr kostet als eine grössere: 9 Benutzer kosten 9 × 15.– =
+// 135.–, 10 Benutzer aber nur 10 × 13.– = 130.–. Dasselbe bei 19 gegenüber
+// 20 (247.– gegen 220.–). Das ist keine Fehlkonfiguration, sondern eine
+// unvermeidliche Eigenschaft jeder Staffel – sprungfrei wäre die heutige nur
+// mit Sätzen ab 13.50 bzw. 12.35 darstellbar, was die Rabatte praktisch
+// auflöst.
+//
+// Die Zahlen hier folgen STUFEN und sind bei jeder Preisänderung
+// nachzuziehen; am 23.08.2026 stand hier noch die Staffel 9/8/7 aus der
+// Zeit vor dem 16.08.2026.
 //
 // Statt die Preise zu verwässern wird deshalb auf die günstigere Menge
 // aufgerundet: Wer 9 Benutzer bestellt, bekommt 10 Lizenzen für 80.– und
