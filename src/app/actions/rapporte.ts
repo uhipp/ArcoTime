@@ -1236,20 +1236,31 @@ export async function starteZeitAnPosition(rapportId: string, positionId: string
   // nicht gibt – und beim Stoppen wüsste niemand, welche gemeint ist.
   const { data: laufender } = await supabase
     .from("zeiteintraege")
-    .select("id, rapport_id")
+    .select("id, rapport_id, artikel(bezeichnung)")
     .eq("mitarbeiter_id", meineId)
     .not("timer_gestartet_um", "is", null)
     .limit(1)
     .maybeSingle();
 
   if (laufender && laufender.id !== positionId) {
-    redirect(
-      `/rapporte/${rapportId}?error=${encodeURIComponent(
-        laufender.rapport_id
-          ? "Für dich läuft bereits ein Timer an einem anderen Rapport. Bitte zuerst dort stoppen."
-          : "Für dich läuft bereits ein Timer in der Zeiterfassung. Bitte zuerst dort stoppen."
-      )}`
-    );
+    // Drei Fälle, nicht zwei. Bis zum 23.08.2026 unterschied die Meldung nur
+    // „Rapport" und „Zeiterfassung" und behauptete deshalb bei einem Timer an
+    // DIESEM Rapport, er laufe an einem anderen. Wer die falsche Stelle sucht,
+    // findet sie nicht – und traut der nächsten Meldung auch nicht mehr.
+    const roh = (laufender as { artikel?: unknown }).artikel;
+    const artikelName = (Array.isArray(roh) ? roh[0] : roh) as
+      | { bezeichnung?: string }
+      | null
+      | undefined;
+    const bei = artikelName?.bezeichnung ? ` bei „${artikelName.bezeichnung}“` : "";
+
+    const meldung = !laufender.rapport_id
+      ? "Für dich läuft bereits ein Timer in der Zeiterfassung. Bitte zuerst dort stoppen."
+      : laufender.rapport_id === rapportId
+        ? `An diesem Rapport läuft schon ein Timer${bei}. Bitte zuerst dort stoppen – oben steht der rote Knopf dafür.`
+        : `Für dich läuft bereits ein Timer an einem anderen Rapport${bei}. Bitte zuerst dort stoppen.`;
+
+    redirect(`/rapporte/${rapportId}?error=${encodeURIComponent(meldung)}`);
   }
 
   const jetzt = new Date();

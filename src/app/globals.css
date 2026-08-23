@@ -45,3 +45,25 @@ body {
   padding: 0;
   height: 100%;
 }
+
+/*
+ * Kein waagrechtes Schieben des Dokuments.
+ *
+ * Die Hülle im Layout ist h-screen mit overflow-hidden, das Dokument sollte
+ * also nie seitlich scrollen. Am 23.08.2026 liess es sich auf einem iPhone
+ * trotzdem, und die statische Suche nach einem zu breiten Element blieb
+ * ergebnislos – geprüft sind Mindestbreiten, feste Breiten, Tabellen und
+ * alle fest positionierten Elemente der Rapportseite.
+ *
+ * Das hier ist deshalb ausdrücklich ein RIEGEL und keine Diagnose: Es hält
+ * das Dokument auf Fensterbreite, damit der Kopf nicht wegrutscht. Breite
+ * Inhalte scrollen in ArcoTime ohnehin in ihrem eigenen Rahmen
+ * (overflow-x-auto an der Tabelle), verlieren also nichts.
+ *
+ * Wird die Ursache gefunden, gehört sie behoben und diese Regel geprüft.
+ */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}

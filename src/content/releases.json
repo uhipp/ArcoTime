@@ -6,6 +6,14 @@
     "eintraege": [
       {
         "typ": "behoben",
+        "text": "**Die Meldung beim Timer war falsch.** Wollte man an einer zweiten Position desselben Rapports einen Timer starten, hiess es, es laufe einer „an einem anderen Rapport“. Jetzt unterscheidet die Meldung drei Fälle – dieser Rapport, ein anderer Rapport, die Zeiterfassung – und nennt den Artikel, bei dem der Timer läuft."
+      },
+      {
+        "typ": "behoben",
+        "text": "Auf dem Telefon liess sich die Seite seitlich schieben, wodurch der Kopf wegrutschte. Das Dokument bleibt jetzt auf Fensterbreite. Breite Tabellen scrollen weiterhin in ihrem eigenen Rahmen."
+      },
+      {
+        "typ": "behoben",
         "text": "**Der Timer sagte „Ankunft – Timer stoppen“, auch bei einer Beratung.** Die Wörter kamen von dem Fall, der den Timer veranlasst hat – der Fahrzeit. Jetzt heisst es schlicht „Timer starten“ und „Timer stoppen“: Ein Knopf, der eine Zeit misst, sagt nicht voraus, welche Zeit das ist."
       },
       {
