@@ -6,6 +6,10 @@
     "eintraege": [
       {
         "typ": "behoben",
+        "text": "**Positionen liessen sich nicht mehr speichern** („column kp.dienstleistung_id does not exist“). Bei der Umbenennung von Dienstleistungen zu Artikeln ist der Preis-Trigger übersehen worden: Postgres zieht Funktionen beim Umbenennen nicht mit, weil ihr Inhalt Text ist. Behoben, und die Prüfung, die das gefunden hätte, ist jetzt Teil des Vorgehens."
+      },
+      {
+        "typ": "behoben",
         "text": "**Auf dem iPhone überschrieb der rechte Teil der Kopfleiste das Logo.** Die Leiste bricht jetzt um, statt zu überlappen – das hält bei jedem Namen; eine Breite, die für „Demo AG“ passt, bricht bei „Stiftung Tagesheime Allschwil“. Auf dem Telefon entfallen dafür der Name der Organisation (er steht in der Maske darunter), das Wort „Neuigkeiten“ (das Zeichen bleibt) und der Zusatz „(Admin)“."
       },
       {

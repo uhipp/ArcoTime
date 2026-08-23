@@ -276,6 +276,16 @@ Fehler wird ganz behoben, nicht dokumentiert.
   *Erster Anwendungsfall, umgesetzt am 22.08.2026 (Migration 0078):
   `dienstleistungen` → `artikel`, `dienstleistungsklassen` → `artikelklassen`,
   weil die Tabelle längst auch Material, Spesen und Anfahrt enthält.*
+- **Beim Umbenennen einer Tabelle oder Spalte auch `pg_proc` und die Sichten
+  prüfen.** Postgres benennt beim `alter table … rename` alles mit, was an der
+  Tabelle HÄNGT — Fremdschlüssel, Indizes, RLS-Regeln, Trigger. Es benennt
+  nichts mit, was den alten Namen im **Text** trägt: Ein Funktionskörper ist
+  eine Zeichenkette. *Gelernt am 23.08.2026: 0078 hat Tabellen, Spalten,
+  Bedingungen, Indizes, Regeln und Trigger nachgezählt und „kein
+  dienstleistung mehr im Schema" gemeldet — der Preis-Trigger war trotzdem
+  kaputt, und das Anlegen jeder Position schlug fehl. Eine Prüfung, die an der
+  falschen Stelle nachzählt, ist schlimmer als keine: Sie erzeugt Zutrauen.*
+  Der Abgleich steht als Muster in `0082_funktionskoerper_nachziehen.sql`.
 - **Bei fachlichen Regeln (Recht, Buchhaltung, HR) nicht raten, sondern fragen.**
 - **Jede Arbeitsmaske wird beim Anfassen gegen `docs/masken-leitlinie.md`
   geprüft.** Kein Scrollen auf der Seite, Liste links und Detail rechts,
