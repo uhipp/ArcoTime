@@ -10,7 +10,12 @@
  * Tabellen stehen unten als Datenstruktur; wer eine Spalte ergänzt, ändert
  * eine Zeile und lässt das Skript neu laufen.
  *
- * Stand des abgebildeten Entwurfs: 21.08.2026 (docs/plan-parteien-standorte.md).
+ * Stand des abgebildeten Modells: 23.08.2026, UMGESETZT (Migrationen 0071 bis
+ * 0084). Siehe docs/plan-ablauf-standorte.md.
+ *
+ * Die Marke "neu" zeigt, was seit dem Ausdruck vom 21.08.2026 dazugekommen
+ * oder anders geworden ist – so liest man die Änderung, ohne zwei Blätter
+ * zu vergleichen.
  */
 import { existsSync } from "node:fs";
 import React from "react";
@@ -69,7 +74,8 @@ const E = {
       ["id", "uuid", "PK"],
       ["name", "text", ""],
       ["…", "bestehend", ""],
-      ["standorte_aktiv", "bool", "neu"],
+      ["standorte_aktiv", "bool", ""],
+      ["vortrag_* (7)", "bool", "neu"],
     ],
   },
   begriffe: {
@@ -87,7 +93,7 @@ const E = {
   },
   partner: {
     titel: "kunden",
-    unter: "Geschäftspartner · Adressbuch",
+    unter: "Adressbuch · Kunden und Beteiligte",
     status: "geaendert",
     sp: 1,
     y: 96,
@@ -102,28 +108,26 @@ const E = {
       ["zahlungskond_tage", "int", ""],
       ["standard_rabatt", "num", ""],
       ["adress_schluessel", "text", ""],
-      ["ist_kunde", "bool", "neu"],
-      ["anreise_km", "num", "weg"],
+      ["ist_kunde", "bool", ""],
     ],
   },
   personen: {
     titel: "ansprechpersonen",
-    unter: "Person bei Partner ODER Standort",
+    unter: "Person beim Partner",
     status: "neu",
     sp: 1,
     y: 320,
     felder: [
       ["id", "uuid", "PK"],
       ["organisation_id", "uuid", "FK"],
-      ["kunde_id", "uuid", "FK opt"],
-      ["standort_id", "uuid", "FK opt"],
+      ["kunde_id", "uuid", "FK"],
       ["anrede / vorname", "text", ""],
       ["name", "text", ""],
       ["funktion", "text", ""],
       ["ist_standard", "bool", ""],
       ["aktiv", "bool", ""],
     ],
-    fuss: "check num_nonnulls(kunde_id, standort_id) = 1",
+    fuss: "standort_id gefallen (0079)",
   },
   kontakte: {
     titel: "kontakte",
@@ -135,13 +139,12 @@ const E = {
       ["id", "uuid", "PK"],
       ["organisation_id", "uuid", "FK"],
       ["kunde_id", "uuid", "FK opt"],
-      ["standort_id", "uuid", "FK opt"],
       ["ansprechperson_id", "uuid", "FK opt"],
       ["art_id", "uuid", "FK"],
       ["wert", "text", ""],
       ["ist_standard", "bool", ""],
     ],
-    fuss: "check num_nonnulls(…) = 1",
+    fuss: "check num_nonnulls(kunde, person) = 1",
   },
   kontaktarten: {
     titel: "kontakt_arten",
@@ -165,40 +168,37 @@ const E = {
     felder: [
       ["id", "uuid", "PK"],
       ["organisation_id", "uuid", "FK"],
+      ["kunde_id", "uuid", "FK neu"],
       ["bezeichnung", "text", ""],
       ["strasse / hausnr.", "text", ""],
       ["adresse_zusatz", "text", ""],
       ["plz / ort / land", "text", ""],
-      ["anreise_km", "num", "neu"],
-      ["zugang", "text", ""],
-      ["notiz", "text", ""],
       ["ist_standard", "bool", ""],
       ["aktiv", "bool", ""],
     ],
-    fuss: "KEIN kunde_id – gehört dem Mandanten",
+    fuss: "NUR die Postadresse (0079).\nanreise_km, zugang, notiz → am Auftrag",
   },
   beteiligte: {
-    titel: "beteiligte",
-    unter: "Rolle einer Partei an Ort / Auftrag / Beleg",
+    titel: "projekt_adressen",
+    unter: "Zusätzliche Adresse am Auftrag, mit Rolle",
     status: "neu",
     sp: 2,
     y: 330,
     felder: [
       ["id", "uuid", "PK"],
       ["organisation_id", "uuid", "FK"],
-      ["rolle_id", "uuid", "FK"],
+      ["projekt_id", "uuid", "FK"],
       ["partner_id", "uuid", "FK"],
+      ["rolle_id", "uuid", "FK"],
       ["ansprechperson_id", "uuid", "FK opt"],
-      ["standort_id", "uuid", "FK opt"],
-      ["projekt_id", "uuid", "FK opt"],
-      ["rapport_id", "uuid", "FK opt"],
       ["gueltig_von", "date", "opt"],
       ["gueltig_bis", "date", "opt"],
+      ["notiz", "text", "opt"],
     ],
-    fuss: "check num_nonnulls(standort/projekt/rapport) = 1",
+    fuss: "hiess beteiligte und hing am Standort (0079).\nVerknüpfung, keine Kopie: Adresse steht 1×",
   },
   rollen: {
-    titel: "beteiligten_rollen",
+    titel: "adress_rollen",
     unter: "Auswahlliste je Betrieb",
     status: "neu",
     sp: 2,
@@ -210,7 +210,7 @@ const E = {
       ["sortierung", "int", ""],
       ["aktiv", "bool", ""],
     ],
-    fuss: "Eigentümer · Verwaltung · Hauswart ·\nArchitekt · Bauleitung · Subunternehmer",
+    fuss: "Eigentümer · Verwaltung · Mieter · Hauswart ·\nArchitekt · Bauleitung · Subunt. · Behörde",
   },
   projekte: {
     titel: "projekte",
@@ -222,16 +222,18 @@ const E = {
       ["id", "uuid", "PK"],
       ["organisation_id", "uuid", "FK"],
       ["kunde_id", "uuid", "FK"],
-      ["standort_id", "uuid", "FK neu"],
-      ["verantwortlich_id", "uuid", "FK neu opt"],
+      ["standort_id", "uuid", "FK"],
+      ["projektleiter_id", "uuid", "FK opt"],
       ["bezeichnung", "text", ""],
       ["status", "text", ""],
+      ["anreise_km", "num", "neu"],
+      ["zugang", "text", "neu"],
       ["kostenstelle", "text", ""],
       ["startdatum", "date", ""],
       ["naechste_belegnr", "int", ""],
       ["sichtbar_fuer_alle", "bool", ""],
     ],
-    fuss: "kunde_id = WER bestellt · standort_id = WO",
+    fuss: "kunde_id = WER bestellt · standort_id = WO.\nHIER hängt alles Betriebswissen (0080)",
   },
   rapporte: {
     titel: "rapporte",
@@ -242,22 +244,56 @@ const E = {
     felder: [
       ["id", "uuid", "PK"],
       ["organisation_id", "uuid", "FK"],
-      ["projekt_id", "uuid", "FK neu"],
-      ["kunde_id", "uuid", "weg"],
+      ["projekt_id", "uuid", "FK"],
       ["jahr / nummer", "int", ""],
       ["datum", "date", ""],
       ["mitarbeiter_id", "uuid", "FK"],
       ["status", "text", ""],
       ["unterschrift_png", "text", ""],
       ["unterzeichner_name", "text", ""],
-      ["adressat_partner_id", "uuid", "FK neu opt"],
-      ["adressat_person_id", "uuid", "FK neu opt"],
     ],
-    fuss: "projekt_id war NULL-fähig → Pflicht",
+    fuss: "kunde_id gefallen (0080): der Kunde\nergibt sich aus dem Auftrag",
+  },
+  artikel: {
+    titel: "artikel",
+    unter: "Artikelstamm · Arbeit, Material, Spesen",
+    status: "geaendert",
+    sp: 3,
+    y: 400,
+    felder: [
+      ["id", "uuid", "PK"],
+      ["organisation_id", "uuid", "FK"],
+      ["klasse_id", "uuid", "FK"],
+      ["mwst_code_id", "uuid", "FK opt"],
+      ["bezeichnung", "text", ""],
+      ["einheit", "text", ""],
+      ["preis", "num", ""],
+      ["konto", "text", ""],
+      ["zaehlt_als_arbeitszeit", "bool", ""],
+      ["rabatt_erlaubt", "bool", ""],
+      ["menge_aus_anreise", "bool", ""],
+      ["aktiv", "bool", ""],
+    ],
+    fuss: "hiess dienstleistungen (0078) – der Name war\nfalsch, seit auch Material darin steht",
+  },
+  artikelklassen: {
+    titel: "artikelklassen",
+    unter: "Gruppierung für Rabatte und Auswertungen",
+    status: "geaendert",
+    sp: 3,
+    y: 620,
+    felder: [
+      ["id", "uuid", "PK"],
+      ["organisation_id", "uuid", "FK"],
+      ["bezeichnung", "text", ""],
+      ["menge_summieren", "bool", "neu"],
+      ["sortierung / aktiv", "", ""],
+    ],
+    fuss: "menge_summieren aus = die Auswertung zeigt\nnur den Betrag (gemischte Einheiten)",
   },
   zeiteintraege: {
     titel: "zeiteintraege",
-    unter: "Position · Leistung · Zeit",
+    unter: "Position · Artikel · Zeit",
     status: "geaendert",
     sp: 4,
     y: 400,
@@ -266,7 +302,7 @@ const E = {
       ["organisation_id", "uuid", "FK"],
       ["projekt_id", "uuid", "FK"],
       ["rapport_id", "uuid", "FK opt"],
-      ["dienstleistung_id", "uuid", "FK"],
+      ["artikel_id", "uuid", "FK neu"],
       ["mitarbeiter_id", "uuid", "FK"],
       ["datum", "date", ""],
       ["start_zeit / end_zeit", "time", ""],
@@ -293,18 +329,6 @@ const KANTEN = [
 
   // Partner → Personen  (gleiche Spalte, kurz)
   { punkte: [[SP[1] + 40, unten("partner")], [SP[1] + 40, oben("personen")]], stil: "voll", label: "1:n" },
-  // Standort → Personen (Hauswart) – von links in die Personen-Box
-  {
-    punkte: [
-      [links("standorte"), mitteY("standorte") + 40],
-      [links("standorte") - 20, mitteY("standorte") + 40],
-      [links("standorte") - 20, oben("personen") + 30],
-      [rechts("personen"), oben("personen") + 30],
-    ],
-    stil: "gestrichelt",
-    label: "Hauswart",
-    labelAn: [478, 336],
-  },
   // Personen → Kontakte
   { punkte: [[SP[1] + 40, unten("personen")], [SP[1] + 40, oben("kontakte")]], stil: "voll" },
   // Partner → Kontakte (links aussen herum)
@@ -320,8 +344,18 @@ const KANTEN = [
   // Kontakte → Kontaktarten
   { punkte: [[SP[1] + 40, unten("kontakte")], [SP[1] + 40, oben("kontaktarten")]], stil: "voll" },
 
-  // Standort → Beteiligte (gleiche Spalte)
-  { punkte: [[SP[2] + 50, unten("standorte")], [SP[2] + 50, oben("beteiligte")]], stil: "voll", label: "Eigentümer / Verwaltung" },
+  // Standort → Partner: der Standort gehört genau einem Kunden (0079). Bis
+  // dahin lief das über eine Beteiligtenzeile mit der Rolle „Kunde"; seit die
+  // zusätzlichen Adressen am Auftrag hängen, ist es eine Spalte.
+  {
+    punkte: [
+      [links("standorte"), oben("standorte") + 40],
+      [rechts("partner"), oben("partner") + 30],
+    ],
+    stil: "voll",
+    label: "gehört",
+    labelAn: [472, 118],
+  },
   // Beteiligte → Rollen
   { punkte: [[SP[2] + 50, unten("beteiligte")], [SP[2] + 50, oben("rollen")]], stil: "voll" },
   // Partner → Beteiligte (partner_id)
@@ -372,24 +406,10 @@ const KANTEN = [
     label: "Einsatzort",
     labelAn: [712, 190],
   },
-  // Person → Projekt (verantwortlich)
-  //
-  // Bewusst unter der Beteiligten-Box durch: Der direkte Weg läuft hinter ihr
-  // vorbei, und eine Linie, die in eine Box hinein- und wieder herausführt,
-  // liest sich als Beziehung zu dieser Box.
-  {
-    punkte: [
-      [rechts("personen"), unten("personen") - 12],
-      [rechts("personen") + 10, unten("personen") - 12],
-      [rechts("personen") + 10, 502],
-      [links("projekte") - 26, 502],
-      [links("projekte") - 26, oben("projekte") + 62],
-      [links("projekte"), oben("projekte") + 62],
-    ],
-    stil: "gestrichelt",
-    label: "verantwortlich",
-    labelAn: [580, 496],
-  },
+  // Es gibt KEINE Kante von den Ansprechpersonen zum Auftrag: Die
+  // Projektleitung ist eine Mitarbeitende (projekte.projektleiter_id →
+  // profiles), keine Person beim Kunden. Der Entwurf vom 21.08. hatte hier
+  // eine Linie – sie war falsch und ist mit dem Ausdruck vom 23.08. weg.
 
   // Projekt → Rapporte
   {
@@ -415,6 +435,19 @@ const KANTEN = [
   },
   // Rapport → Zeiteinträge (klammert)
   { punkte: [[SP[4] + 60, unten("rapporte")], [SP[4] + 60, oben("zeiteintraege")]], stil: "voll", label: "klammert" },
+  // Position → Artikel und Artikel → Klasse
+  {
+    punkte: [
+      [links("zeiteintraege"), oben("zeiteintraege") + 54],
+      [links("zeiteintraege") - 16, oben("zeiteintraege") + 54],
+      [links("zeiteintraege") - 16, oben("artikel") + 40],
+      [rechts("artikel"), oben("artikel") + 40],
+    ],
+    stil: "voll",
+    label: "Artikel",
+  },
+  { punkte: [[SP[3] + 60, unten("artikel")], [SP[3] + 60, oben("artikelklassen")]], stil: "voll" },
+
 ];
 
 const s = StyleSheet.create({
@@ -572,11 +605,11 @@ const seite = e(
     e(
       View,
       null,
-      e(Text, { style: s.titel }, "ArcoTime · Datenmodell Parteien, Standorte und Aufträge"),
+      e(Text, { style: s.titel }, "ArcoTime · Datenmodell Adressen, Standorte und Aufträge"),
       e(
         Text,
         { style: s.unter },
-        "Entwurf 21.08.2026 · beschlossen: Standort gehört dem Mandanten, Vertragspartner am Auftrag · noch nicht umgesetzt"
+        "Stand 23.08.2026 · UMGESETZT (0071–0084) · Der Standort ist eine Postadresse; alles Betriebswissen hängt am Auftrag"
       )
     ),
     LOGO ? e(Image, { src: LOGO, style: { width: 96 } }) : null
@@ -612,7 +645,7 @@ const seite = e(
         Text,
         { style: s.legText },
         "Blauer Rahmen = neue Tabelle · dunkler Rahmen = bestehende Tabelle, geändert\n" +
-          "Blaues Feld = neu · durchgestrichen = entfällt · opt = optional · Snapshot = eingefroren"
+          "Blaues Feld = neu seit dem Ausdruck vom 21.08. · opt = optional · Snapshot = eingefroren"
       )
     ),
     e(
@@ -636,10 +669,11 @@ const seite = e(
       e(
         Text,
         { style: s.legText },
-        "Kette: Kunde bestellt · Standort ist der Ort · Auftrag klammert · Rapport\n" +
-          "weist nach. Beteiligte sind die zweite Achse: WER redet mit und WER\n" +
-          "bekommt welchen Beleg. Der Standort trägt kein kunde_id – nur so\n" +
-          "überlebt die Historie einen Wechsel der Verwaltung."
+        "Der Auftrag hat ZWEI Eltern: kunde_id sagt WER bestellt und schuldet,\n" +
+          "standort_id sagt WO gearbeitet wird. Dieselbe Liegenschaft kann einen\n" +
+          "Auftrag mit der Verwaltung und einen mit dem Eigentümer tragen –\n" +
+          "deshalb können Kunden- und Standortauswertung auseinanderfallen,\n" +
+          "ohne dass eine falsch ist."
       )
     ),
     e(
@@ -660,8 +694,8 @@ const seite = e(
   e(
     View,
     { style: s.fuss },
-    e(Text, null, "Arcos Informatik GmbH · ArcoTime · Feldnamen sind Arbeitstitel · Plan: docs/plan-parteien-standorte.md"),
-    e(Text, null, "A3 · 21.08.2026")
+    e(Text, null, "Arcos Informatik GmbH · ArcoTime · Plan und Begründungen: docs/plan-ablauf-standorte.md"),
+    e(Text, null, "A3 · 23.08.2026")
   )
 );
 
