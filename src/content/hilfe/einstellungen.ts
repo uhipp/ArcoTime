@@ -36,6 +36,8 @@ Wie euer Betrieb die Dinge nennt. Die Struktur von ArcoTime ist für alle diesel
 
 Je Bezeichnung hinterlegst du **Einzahl**, **Mehrzahl** und den **Artikel**. Alle drei sind nötig: Die Mehrzahl lässt sich im Deutschen nicht ableiten (Objekt/Objekte, aber Auftrag/Aufträge), und ohne Artikel stünde auf dem Knopf „Neues Auftrag" statt „Neuer Auftrag".
 
+Der Begriff **Adresse** meint die Liste, die alles hält – Kunden, Eigentümer, Architekten, Ämter. Der Begriff **Kunde** meint die Rolle am Auftrag: wer bestellt und schuldet. Zwei Wörter für zwei verschiedene Dinge; deshalb heisst das Register „Adressen" und das Feld am Auftrag weiterhin „Kunde".
+
 Über **Vorlage übernehmen** setzt du alle Bezeichnungen auf einmal – etwa auf „Handwerk" oder „IT-Artikel" – und passt danach einzelne an.
 
 **Wo die Bezeichnung wirkt:** in der Navigation, auf der Startseite, in Seitentiteln, auf den Knöpfen, in Spaltentiteln der Listen und in den Hinweisen leerer Listen. **Unverändert** bleiben die Adressen im Browser (die Seite heisst weiter /projekte), die Hilfeseiten, die Spaltennamen im Comatic-Export – und zusammengesetzte Wörter wie „Projektleitung“ oder „Rapportnummer“. Ein Artikel lässt sich aus dem Geschlecht ableiten, ein Fugen-s nicht: Aus „Auftrag“ würde sonst „Auftragleitung“.
@@ -85,6 +87,19 @@ Die Steuercodes aus eurem Buchhaltungssystem, bestehend aus **Code** (z.B. \`B81
 ## Artikelklassen
 
 Gruppieren die [Artikel](/hilfe/artikel) für die [Auswertungen](/hilfe/auswertungen). Auch hier gilt: deaktivieren statt löschen.
+
+## Artikelklassen und „Menge summieren"
+
+Die Klasse gruppiert alles, was in einer Position stehen kann – Arbeit, Material, Spesen, Anfahrt – und trägt zwei Aufgaben: den **Rabatt je Klasse** und die **Gruppierung der Auswertungen**.
+
+Der Schalter **„Menge summieren"** sagt, ob die Menge dieser Klasse eine Summe verträgt. Bei „Arbeit" ja, dort sind es immer Stunden. Bei „Material" in der Regel nein: Farbe in Liter, Pinsel in Stück, Vlies in m². Eine Summe darüber wäre bedeutungslos, und in der Auswertung sieht man es der Zahl nicht an.
+
+Der Widerspruch wird in **beide Richtungen** abgelehnt, mit einer Meldung, die sagt, was los ist:
+
+- Ein Artikel mit abweichender Einheit lässt sich einer summierenden Klasse nicht zuordnen.
+- Der Schalter lässt sich nicht einschalten, solange die Klasse verschiedene Einheiten führt – die Meldung nennt die gefundenen Einheiten.
+
+Geprüft wird das in der Datenbank und nicht nur im Formular. Damit gilt die Regel auch für Wege, die es noch nicht gibt: Import, Handy-App, Datenpflege.
 
 ## Rabattsätze
 

@@ -3,7 +3,7 @@ import type { HilfeArtikel } from "./typen";
 export const kunden: HilfeArtikel[] = [
   {
     slug: "kunden",
-    titel: "Kunden",
+    titel: "Adressen und Kunden",
     kategorie: "Stammdaten",
     stichworte: [
       "kunde anlegen",
@@ -28,6 +28,8 @@ export const kunden: HilfeArtikel[] = [
     routen: ["/kunden"],
     inhalt: `
 Hier verwaltest du deine Kundenstammdaten – Grundlage für Projekte, Zeiterfassung und Anfragen.
+
+**Drei Sichten auf eine Liste**: Über der Tabelle stehen **Alle**, **nur Kunden** und **nur Adressen**. Die Liste ist das Adressbuch – sie hält auch Eigentümer, Architekten und Ämter, an die kein Auftrag geht. „nur Adressen" zeigt genau diese; vorher musste man dafür nach dem Vermerk suchen.
 
 **Sortieren**: Ein Klick auf einen Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung um. Filter und Suche bleiben dabei erhalten, und die Sortierung steht in der Adresse – sie überlebt also ein Neuladen.
 

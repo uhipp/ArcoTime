@@ -8,6 +8,18 @@ export const auswertungen: HilfeArtikel[] = [
     stichworte: ["tag", "woche", "monat", "filter", "fremde einträge bearbeiten"],
     routen: ["/auswertungen"],
     inhalt: `
+## Gruppieren
+
+Über der Tabelle stehen die Sichten: **Alle Positionen** einzeln, oder gruppiert nach **Auftrag**, nach **Artikelklasse** und – wenn der Betrieb Standorte führt – nach **Einsatzort**.
+
+**Nach Auftrag und nach Einsatzort** zeigt die Tabelle die **Dauer** in Stunden und den Betrag. Beides ist über alle Zeilen dieselbe Einheit, also summierbar.
+
+**Nach Artikelklasse** zeigt sie die **Menge** mit ihrer Einheit – aber nur, wenn die Klasse das verträgt. Eine Klasse kann Farbe in Liter und Pinsel in Stück enthalten; „60" darüber wäre bedeutungslos, und man sieht es der Zahl nicht an. Deshalb trägt jede Artikelklasse den Schalter **„Menge summieren"** (siehe [Einstellungen](/hilfe/einstellungen)). Steht er aus, erscheint in der Mengenspalte ein Strich und nur der Betrag zählt; die einzelnen Mengen stehen weiterhin in den Positionen, wo sie ihre Einheit bei sich haben.
+
+Über **alle** Klassen wird die Menge gar nicht summiert – das wäre genau die sinnlose Zahl, die der Schalter verhindert.
+
+Tauchen in einer Gruppe trotzdem verschiedene Einheiten auf, wird die Menge stumm. Lieber ein Strich als eine falsche Zahl.
+
 Auswertung erfasster Zeit nach **Tag**, **Woche** oder **Monat**, mit Navigation vor/zurück und einem Sprung zu "Heute".
 
 ## Filtern
